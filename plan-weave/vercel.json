@@ -2,5 +2,20 @@
 	"version": 2,
 	"github": {
     	"enabled": false
-  	}
+  	},
+	  "builds": [
+		{
+		  "src": "plan-weave/**",
+		  "use": "@vercel/node"
+		}
+	  ],
+	  "routes": [
+		{
+		  "src": "/(.*)",
+		  "dest": "/plan-weave/$1",
+		  "headers": {
+			"cache-control": "public, max-age=31536000, immutable"
+		  }
+		}
+	  ]
 }
