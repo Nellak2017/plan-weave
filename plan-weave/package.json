@@ -4,18 +4,29 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --warning-all --errant-warning --error",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
+    "firebase": "^9.21.0",
     "next": "13.3.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "vercel": "^29.0.3"
   },
   "devDependencies": {
+    "@storybook/addon-essentials": "^7.0.7",
+    "@storybook/addon-interactions": "^7.0.7",
+    "@storybook/addon-links": "^7.0.7",
+    "@storybook/blocks": "^7.0.7",
+    "@storybook/nextjs": "^7.0.7",
+    "@storybook/react": "^7.0.7",
+    "@storybook/testing-library": "^0.0.14-next.2",
     "eslint": "8.39.0",
-    "eslint-config-next": "13.3.4"
+    "eslint-config-next": "13.3.4",
+    "storybook": "^7.0.7"
   }
 }
