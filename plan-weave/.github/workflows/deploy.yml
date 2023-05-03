@@ -7,7 +7,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Change directory to /plan-weave
         run: cd /plan-weave
-      - name: Build and deploy site to vercel
+      - name: Build and deploy site to Vercel
+        run: vercel --prod --token ${{ secrets.PLAN_WEAVE_TOKEN }}
+      - name: deploy site to vercel
         uses: amondnet/vercel-action@v20
         with:
           vercel-token: ${{ secrets.PLAN_WEAVE_TOKEN }}
