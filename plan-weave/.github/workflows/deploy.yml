@@ -5,8 +5,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Change directory to /plan-weave
+        run: cd /plan-weave
+      - name: Install dependencies
+        run: npm install
       - name: Build and deploy site to Vercel
-        run: vercel --prod --token ${{ secrets.PLAN_WEAVE_TOKEN }}
+        run: npx --prod --token ${{ secrets.PLAN_WEAVE_TOKEN }} --scope plan-weave
       - name: deploy site to vercel
         uses: amondnet/vercel-action@v20
         with:
