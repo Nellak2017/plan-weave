@@ -1,5 +1,4 @@
 import { taskSchema } from "./taskSchema"
-import * as Yup from 'yup'
 
 describe('Task Schema', () => {
 	it('Should work on valid tasks', async () => {
@@ -156,5 +155,72 @@ describe('Task Schema', () => {
 		  const result = await taskSchema.isValid(invalidTask)
 
 		  expect(result).toBe(false)
+	})
+
+	it('Should accept null eta', async () => {
+		const validTask = {
+			name: 'My Task',
+			efficiency: null,
+			eta: null,
+			ata: 4,
+			parentThread: null,
+			dueDate: new Date(),
+			dependencies: [],
+			value: 100, 
+		  }
+	  
+		  const result = await taskSchema.isValid(validTask)
+
+		  expect(result).toBe(true)
+	})
+
+	it('Should accept null ata', async () => {
+		const validTask = {
+			name: 'My Task',
+			efficiency: null,
+			eta: 4,
+			ata: null,
+			parentThread: null,
+			dueDate: new Date(),
+			dependencies: [],
+			value: 100, 
+		  }
+	  
+		  const result = await taskSchema.isValid(validTask)
+
+		  expect(result).toBe(true)
+	})
+
+	it('Should reject numeric efficiency when ata and eta are null', async () => {
+		const invalidTask = {
+			name: 'My Task',
+			efficiency: 1,
+			eta: null,
+			ata: null,
+			parentThread: null,
+			dueDate: new Date(),
+			dependencies: [],
+			value: 100, 
+		  }
+	  
+		  const result = await taskSchema.isValid(invalidTask)
+
+		  expect(result).toBe(false)
+	})
+
+	it('Should accept null ata, eta, and undefined efficiency', async () => {
+		const validTask = {
+			name: 'My Task',
+			eta: 4,
+			ata: null,
+			parentThread: null,
+			dueDate: new Date(),
+			dependencies: [],
+			value: 100, 
+		  }
+	  
+		  const result = await taskSchema.isValid(validTask)
+
+		  expect(result).toBe(true)
 	})
 })
