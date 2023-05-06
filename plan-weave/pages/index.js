@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { taskSchema, fillDefaults } from '../components/schemas/taskSchema/taskSchema.js'
+import { fillDefaults } from '../components/schemas/taskSchema/taskSchema.js'
+import { addTask } from '../firebase/firebase_controller.js'
 
 export default function Home() {
   const [name, setName] = useState('')
@@ -14,6 +15,8 @@ export default function Home() {
     console.log(task) // You can do whatever you want with the task object
     const defaultFilled = fillDefaults(task)
     console.log(defaultFilled)
+
+    addTask(defaultFilled)
   }
 
 
