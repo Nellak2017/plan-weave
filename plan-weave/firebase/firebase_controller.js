@@ -1,6 +1,6 @@
 import { getFirestore, collection, addDoc } from 'firebase/firestore'
 import { fillDefaults } from '../components/schemas/taskSchema/taskSchema.js'
-import { app } from '../firebase/config.js'
+import app from '../firebase/config.js'
 
 const db = getFirestore(app)
 
