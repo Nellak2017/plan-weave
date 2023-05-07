@@ -11,7 +11,7 @@ function PlanWeave() {
 	// Listen for authentication state changes
 	useEffect(() => {
 		return () => onAuthStateChanged(auth, user => user ? setIsLoggedIn(true) : setIsLoggedIn(false))
-	}, [])
+	}, [isLoggedIn])
 
 	const handleLogout = async () => {
 		try {

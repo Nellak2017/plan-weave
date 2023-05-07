@@ -19,7 +19,7 @@ export default function Home() {
 
   useEffect(() => {
 		return () => onAuthStateChanged(auth, user => user ? setIsLoggedIn(true) : setIsLoggedIn(false))
-	}, [])
+	}, [isLoggedIn])
 
   const handleSubmit = (e) => {
     e.preventDefault()
