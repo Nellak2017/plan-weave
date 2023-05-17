@@ -635,6 +635,25 @@ export const nextButtonPreSets = {
   color: colorPreset
 }
 
+export const ellipsesButtonPreSets = {
+  variant: {
+    light: css`
+      color: ${props => props.theme.colors.lightNeutral};
+      &:hover {
+        color: ${props => props.theme.colors.lightNeutralLightHover};
+      }
+      &:active {
+        color: ${props => props.theme.colors.primaryActive};
+      }
+    `,
+    dark: css`
+      color: ${props => props.theme.colors.lightNeutralLight};
+    `
+  },
+  size: {},
+  color: colorPreset
+};
+
 // ------
 // --- Molecules ---
 

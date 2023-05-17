@@ -6,10 +6,8 @@ export const NextButtonStyled = styled.button`
 	// --- Common Styles of most button variants ---
 	border-radius: 50%; // This makes it a circle shape
 	display: flex;
-
 	padding: 0;
 
-	// Todo: Add code to fix the look of this Component
 	&:hover {
         box-shadow: ${props => props.theme.elevations.small};
       }
