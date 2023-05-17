@@ -1,5 +1,4 @@
-import { signOutOfApp } from '../firebase/firebase_auth'
-import { auth } from '../firebase/firebase_auth.js'
+import { signOutOfApp, auth } from '../../firebase/firebase_auth.js'
 import { useRouter } from 'next/router'
 import { useAuthState } from 'react-firebase-hooks/auth'
 
@@ -9,6 +8,10 @@ export default function Home() {
 
   const handleLoginPage = () => {
     router.push('/login')
+  }
+
+  const handleAppPage = () => {
+    router.push('/plan-weave')
   }
 
   const handleLogout = async () => {
@@ -22,13 +25,12 @@ export default function Home() {
 
   return (
     <>
-      {user ? (
-        <button onClick={handleLogout}>Log Out</button>
-      ) : (
-        <button onClick={handleLoginPage}>Log In</button>
-      )
-      }
+      <nav>
+        <button onClick={user ? handleLogout : handleLoginPage}>{user ? 'Log Out' : 'Log In'}</button>
+        <button onClick={handleAppPage}>Go to App</button>
+      </nav>
       <h1>Home Page</h1>
+      <p>Under Construction</p>
     </>
   )
 }

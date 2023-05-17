@@ -1,11 +1,10 @@
 import { React, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { signOutOfApp } from '../firebase/firebase_auth'
-import { auth } from '../firebase/firebase_auth.js'
+import { signOutOfApp, auth } from '../../firebase/firebase_auth.js'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { InfinitySpin } from 'react-loader-spinner'
 import { fillDefaults } from '../components/schemas/taskSchema/taskSchema.js'
-import { addTask } from '../firebase/firebase_controller.js'
+import { addTask } from '../../firebase/firebase_controller.js'
 
 function PlanWeave() {
 	const router = useRouter()
@@ -21,6 +20,10 @@ function PlanWeave() {
 	useEffect(() => {
 		if (!user) router.push('/')
 	}, [user])
+
+	const handleHome = () => {
+		router.push('/')
+	}
 
 	const handleSubmit = (e) => {
 		e.preventDefault()
@@ -65,6 +68,7 @@ function PlanWeave() {
 		<>
 			<nav>
 				<button onClick={handleLogout}>Log out</button>
+				<button onClick={handleHome}>Go Home</button>
 			</nav>
 			<h2>Plan-Weave</h2>
 			<form onSubmit={handleSubmit}>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/router'
-import { signInWithEmail } from '../firebase/firebase_auth.js'
+import { signInWithEmail } from '../../firebase/firebase_auth.js'
 import { InfinitySpin } from  'react-loader-spinner'
 
 function Login() {
