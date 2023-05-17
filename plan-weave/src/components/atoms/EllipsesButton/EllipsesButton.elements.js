@@ -10,7 +10,7 @@ export const EllipsesButtonStyled = styled.button`
 	display: flex;
 	padding: 16px 20.5px 32px 20.5px; // Default for medium
 	line-height: .5;
-	font-size: 32px; // default size if size not given
+	font-size: ${props => props.theme.spaces.large};// default size if size not given
 	&:hover {
       background-color: ${props => props.theme.colors.primaryHover};
     }

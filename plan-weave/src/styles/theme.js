@@ -674,6 +674,64 @@ export const ellipsesButtonPreSets = {
   `
   },
   color: colorPreset
+}
+
+export const searchBarPreSets = {
+  variant: {
+    light: css`
+      background-color: ${props => props.theme.colors.lightNeutralLight};
+      color: ${props => props.theme.colors.darkNeutral};
+      input {
+        color: ${props => props.theme.colors.darkNeutral}60;
+        &::placeholder {
+    	    color: ${props => props.theme.colors.darkNeutral}60; /* Placeholder color */
+  	    }
+        &:hover,
+        &:focus,
+        &:active {
+          color: ${props => props.theme.colors.darkNeutral};
+          &::placeholder {
+    	      color: ${props => props.theme.colors.darkNeutral}; /* Placeholder color */
+  	      }
+        }
+        &:active,
+        &:focus {
+          &::placeholder {
+            color: ${props => props.theme.colors.darkNeutral}00; /* Placeholder color */
+          }
+        }
+        &:focus ~ svg,
+        &:hover ~ svg {
+          color: ${props => props.theme.colors.darkNeutral};
+        }
+      }
+    `,
+    dark: css`
+      background-color: ${props => props.theme.colors.lightNeutral};
+      color: ${props => props.theme.colors.lightNeutralLight};
+      input {
+        color: ${props => props.theme.colors.lightNeutralLight}60;
+        &:hover,
+        &:focus, 
+        &:active {
+          color: ${props => props.theme.colors.lightNeutralLight};
+          &::placeholder {
+            color: ${props => props.theme.colors.lightNeutralLight}; 
+          }
+        }
+        &:active,
+        &:focus {
+          &::placeholder {
+            color: ${props => props.theme.colors.lightNeutralLight}00; 
+          }
+        }
+        &:focus ~ svg,
+        &:hover ~ svg {
+          color: ${props => props.theme.colors.lightNeutralLight};
+        }
+      }
+    `,
+  },
 };
 
 // ------
