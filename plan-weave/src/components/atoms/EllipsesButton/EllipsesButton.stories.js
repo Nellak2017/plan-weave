@@ -18,5 +18,5 @@ Light.args = {
 
 export const Dark = Template.bind({})
 Dark.args = {
-  variant: 'dark',
+  variant: 'dark'
 }

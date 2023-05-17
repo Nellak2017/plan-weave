@@ -8,9 +8,8 @@ export const EllipsesButtonStyled = styled.button`
 	// --- Common Styles of most button variants ---
 	background-color: transparent;
 	display: flex;
-	padding-top: 0;
-	padding-bottom: .5em;
-	line-height: 1;
+	padding: 16px 20.5px 32px 20.5px; // Default for medium
+	line-height: .5;
 	font-size: 32px; // default size if size not given
 	&:hover {
       background-color: ${props => props.theme.colors.primaryHover};
