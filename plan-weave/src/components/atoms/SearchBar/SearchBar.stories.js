@@ -1,7 +1,7 @@
 import SearchBar from './SearchBar'
 
 export default {
-  title: 'Atoms/SearchBar',
+  title: 'Atoms/Input/SearchBar',
   component: SearchBar,
   argTypes: {
     variant: { control: 'text' },
