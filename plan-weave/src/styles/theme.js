@@ -732,7 +732,95 @@ export const searchBarPreSets = {
       }
     `,
   },
-};
+}
+
+export const taskInputPreSets = {
+  variant: {
+    light: css`
+      color: ${props => props.theme.colors.lightNeutral};
+      &::placeholder {
+        color: ${props => props.theme.colors.lightNeutral}60;
+      }
+      &:hover {
+		    color: ${props => props.theme.colors.lightNeutralHover};
+        &::placeholder {
+          color: ${props => props.theme.colors.lightNeutralHover}60;
+        }
+      }
+      &:focus {
+        color: ${props => props.theme.colors.lightNeutralActive};
+        &::placeholder {
+          color: ${props => props.theme.colors.lightNeutralActive}60;
+        }
+      }
+    `,
+    dark: css`
+      color: ${props => props.theme.colors.lightNeutralLight};
+      &::placeholder {
+        color: ${props => props.theme.colors.lightNeutralLight}60;
+      }
+      &:hover {
+		    color: ${props => props.theme.colors.lightNeutralLightHover};
+        &::placeholder {
+          color: ${props => props.theme.colors.lightNeutralLightHover}60;
+        }
+      }
+      &:focus {
+        color: ${props => props.theme.colors.lightNeutralLight};
+        &::placeholder {
+          color: ${props => props.theme.colors.lightNeutralLightActive}60;
+        }
+      }
+    `,
+  },
+  color: colorPreset,
+}
+
+export const hoursInputContainerPreSets = {
+  variant: {
+    light: css`
+      & > span {
+        color: ${props => props.theme.colors.lightNeutral};
+          &::placeholder {
+            color: ${props => props.theme.colors.lightNeutral}60;
+          }
+          &:hover {
+            color: ${props => props.theme.colors.lightNeutralHover};
+            &::placeholder {
+              color: ${props => props.theme.colors.lightNeutralHover}60;
+            }
+          }
+          &:focus {
+            color: ${props => props.theme.colors.lightNeutralActive};
+            &::placeholder {
+              color: ${props => props.theme.colors.lightNeutralActive}60;
+            }
+          }
+      }
+    `,
+    dark: css`
+      & > span {
+        color: ${props => props.theme.colors.lightNeutralLight};
+          &::placeholder {
+            color: ${props => props.theme.colors.lightNeutralLight}60;
+          }
+          &:hover {
+            color: ${props => props.theme.colors.lightNeutralLightHover};
+            &::placeholder {
+              color: ${props => props.theme.colors.lightNeutralLightHover}60;
+            }
+          }
+          &:focus {
+            color: ${props => props.theme.colors.lightNeutralLight};
+            &::placeholder {
+              color: ${props => props.theme.colors.lightNeutralLightActive}60;
+            }
+          }
+      }
+    `
+  },
+  color: colorPreset
+}
 
 // ------
 // --- Molecules ---

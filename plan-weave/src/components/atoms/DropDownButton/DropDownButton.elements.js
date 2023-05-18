@@ -33,7 +33,6 @@ export const DropdownContainer = styled.div`
 // Styled component for the dropdown menu
 export const DropdownMenu = styled.ul`
   position: absolute;
-  z-index: 999;
   width: 100%;
   top: 100%;
   left: 0;
