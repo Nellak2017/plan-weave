@@ -681,6 +681,7 @@ export const searchBarPreSets = {
     light: css`
       background-color: ${props => props.theme.colors.lightNeutralLight};
       color: ${props => props.theme.colors.darkNeutral};
+      border: 1px solid ${props => props.theme.colors.lightNeutral}60;
       input {
         color: ${props => props.theme.colors.darkNeutral}60;
         &::placeholder {
@@ -709,6 +710,7 @@ export const searchBarPreSets = {
     dark: css`
       background-color: ${props => props.theme.colors.lightNeutral};
       color: ${props => props.theme.colors.lightNeutralLight};
+      border: 1px solid ${props => props.theme.colors.lightNeutralLight}60;
       input {
         color: ${props => props.theme.colors.lightNeutralLight}60;
         &:hover,
@@ -818,6 +820,20 @@ export const hoursInputContainerPreSets = {
           }
       }
     `
+  },
+  color: colorPreset
+}
+
+export const taskControlPresets = {
+  variant: {
+    light: css`
+      background-color: ${props => props.theme.colors.lightNeutralLight};
+      color: ${props => props.theme.colors.darkNeutral};
+    `,
+    dark: css`
+      background-color: ${props => props.theme.colors.darkNeutral};
+      color: ${props => props.theme.colors.lightNeutralLight};
+    `,
   },
   color: colorPreset
 }

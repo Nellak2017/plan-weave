@@ -5,12 +5,18 @@ import { getPresetCSS, dropDownButtonPreSets } from '../../../styles/theme.js'
 // Styled component for the dropdown button
 export const DropDownButtonStyled = styled.button`
     position: relative;
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-	align-items: center;
-	column-gap: 10px;
-	padding: ${props => props.theme.spaces.small} ${props => props.theme.spaces.small};
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 10px;
+    max-height: 32px;
+    max-width: 150px;
+    /* Apply ellipsis for text overflow */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: ${props => props.theme.spaces.small} ${props => props.theme.spaces.small};
 
     &:hover {
         box-shadow: ${props => props.theme.elevations.small};

@@ -8,7 +8,7 @@ import { AiFillCaretDown } from 'react-icons/ai'
 import { useState } from 'react'
 
 function DropDownButton(props) {
-  const { size = 's', color = 'lightNeutral', options, children, ...rest } = props
+  const { size = 's', color = 'primary', options, children = 'Auto Sort', ...rest } = props
   const [isOpen, setIsOpen] = useState(false)
   const handleToggle = () => { setIsOpen(!isOpen) }
   const handleOptionClick = (e, listener) => {
@@ -21,16 +21,19 @@ function DropDownButton(props) {
       <DropDownButtonStyled
         onClick={handleToggle}
         size={size}
-        color={color} {...rest}>
+        color={color} {...rest}
+        onBlur={() => setIsOpen(false)} // close if clicked off
+        >
         {children}
         <AiFillCaretDown />
       </DropDownButtonStyled>
       <DropdownMenu open={isOpen}>
-        {options.map((option, index) => (
+        {options?.map((option, index) => (
           <DropdownMenuItem
-            key={index}
-            onClick={e => handleOptionClick(e, option?.listener)}>
-            {option?.name}
+              key={index}
+              onClick={e => handleOptionClick(e, option?.listener)}
+              >
+              {option?.name}
           </DropdownMenuItem>
         ))}
       </DropdownMenu>
