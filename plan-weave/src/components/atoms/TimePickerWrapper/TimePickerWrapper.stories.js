@@ -11,12 +11,12 @@ export default {
 
 const Template = args => <TimePickerWrapper {...args} />
 
-export const light = Template.bind({})
-light.args = {
+export const Light = Template.bind({})
+Light.args = {
   variant: 'light'
 }
 
-export const dark = Template.bind({})
-light.args = {
+export const Dark = Template.bind({})
+Dark.args = {
   variant: 'dark'
 }

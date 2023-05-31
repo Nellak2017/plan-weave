@@ -838,6 +838,21 @@ export const taskControlPresets = {
   color: colorPreset
 }
 
+export const timePickerPresets = {
+  variant: {
+    light: css`
+      p, svg {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+    `,
+    dark: css`
+      p, svg {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
+    `,
+  }
+}
+
 // ------
 // --- Molecules ---
 

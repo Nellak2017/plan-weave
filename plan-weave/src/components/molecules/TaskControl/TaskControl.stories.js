@@ -6,8 +6,8 @@ export default {
   argTypes: {
     variant: { control: 'text' },
     maxwidth: { control: 'number' },
-	maxwidthsearch: {control: 'number'},
-	color: {control: 'text'}
+	  maxwidthsearch: {control: 'number'},
+	  color: {control: 'text'}
     // Add other argTypes for SearchBar, DropDownButton, and Date Picker props
   },
 };
@@ -20,16 +20,17 @@ const options = [
 	{ name: 'Option 3', listener: () => console.log('Option 3 clicked') },
   ]  
 
-export const light = Template.bind({});
-light.args = {
+export const Light = Template.bind({});
+Light.args = {
   variant: 'light',
-  options: options
+  options: options,
+  x1: -36
   // Add other args for SearchBar, DropDownButton, and Date Picker
 };
 
-export const dark = Template.bind({});
-dark.args = {
+export const Dark = Template.bind({});
+Dark.args = {
   variant: 'dark',
-  options: options
+  options: options,
   // Add other args for SearchBar, DropDownButton, and Date Picker
 };

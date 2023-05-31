@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   ClockStyled,
   TimePickerWrapperStyled,
@@ -14,45 +14,63 @@ import { AiOutlineClockCircle } from 'react-icons/ai'
 
 /*
 TODO:
- 1. Add a display prop that is like it is in the dropdownbutton to 
-    conditionally render the dropdown Clock. Be sure to linearly 
-    fade in and out.
- 2. Mess with the styles so that it works for both themes
-    Also be sure to add the box shadows and hover effects too
- 3. Remove the red borders
- 4. Add a prop to control am/pm formatting or 24 hour (It will be a setting)
- 5. Make a Molecule of 2 date pickers to have start/end time choosing
+ X 3. Fix the onClick,onBlur race condition
+ X 4. Add a prop to control am/pm formatting or 24 hour (It will be a setting)
  6. Make sure to pass this time data up to your TaskControl Molecule
- 7. Make sure to reset the component when clicked off or pressed again
- 8. Be sure to make the clock go down a few px so it is even with the parent 
-    molecule container (maybe)
- 9. Add a Clock vertical and horizontal offset prop so that you can 
+ X 7. Make sure to reset the component when clicked off or pressed again
+ X 8. Add a Clock vertical and horizontal offset prop so that you can 
     manually adjust the clock's x/y position so it looks good on any
     viewport
- 10. Adjust the clock so it is more user friendly, user should be able to jump 
+ X 9. Adjust the clock so it is more user friendly, user should be able to jump 
      between hour and minute views at will
 */
 
-function TimePickerWrapper({ variant, defaultTime = '14:00', displayText = 'Start', ...rest }) {
+function TimePickerWrapper({
+  variant,
+  defaultTime = '14:00',
+  displayText = 'Start',
+  ampm = false,
+  verticalOffset = 0,
+  horizontalOffset = 0,
+  ...rest }) {
+
   const [time, setTime] = useState(parse(defaultTime, 'HH:mm', new Date()))
   const [showClock, setShowClock] = useState(false)
-  const handleTimeChange = (newTime) => setTime(newTime)
-  const toggleClock = () => setShowClock(!showClock)
+  const [view, setView] = useState('hours')
+  const [buttonClicked, setButtonClicked] = useState(false)
+  const handleTimeChange = newTime => setTime(newTime)
+  const toggleClock = () => { setButtonClicked(true); setShowClock(!showClock); setView('hours'); setTime(time) }
+  const handleBlur = () => {
+    if (!buttonClicked) {
+      setShowClock(false)
+      setView('hours')
+      setTime(time)
+    }
+    setButtonClicked(false)
+  }
+  const handleViewChange = changed => { setView(changed !== null ? changed : 'hours'); setShowClock(view !== 'minutes') }
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <TimePickerWrapperStyled>
-        <Display><p>{displayText}</p><p>{format(time, 'HH:mm')}</p></Display>
-        <ClockIconWrapper onClick={toggleClock}>
+      <TimePickerWrapperStyled variant={variant} >
+        <Display><p>{displayText}</p><p>{ampm ? format(time, 'hh:mm a') : format(time, 'HH:mm')}</p></Display>
+        <ClockIconWrapper onMouseDown={toggleClock}>
           <AiOutlineClockCircle size={32} />
         </ClockIconWrapper>
-        <TimeClockWrapper>
+        <TimeClockWrapper
+          $showclock={showClock}
+          $verticalOffset={verticalOffset}
+          $horizontalOffset={horizontalOffset}>
           <ClockStyled
             value={time}
             onChange={handleTimeChange}
+            onFocusedViewChange={handleViewChange}
             ampm={false}
             minutesStep={5}
             size={32}
-          // Customize any other props as needed
+            view={view}
+            onBlur={handleBlur}
+            ref={input => input && input.focus()}
+            tabIndex={0}
           />
         </TimeClockWrapper>
       </TimePickerWrapperStyled>
