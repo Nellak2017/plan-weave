@@ -4,7 +4,7 @@ import { getPresetCSS, searchBarPreSets } from '../../../styles/theme'
 
 export const SearchBarStyled = styled.div`
   display: flex;
-  align-items: flex-start;
+  justify-content: flex-end; // used instead of flex-start because of sibling selector row-reverse
   align-items: center;
   flex-direction: row-reverse; // used to get around sibling selector limitation
   border-radius: 22px;
@@ -24,8 +24,9 @@ export const SearchBarStyled = styled.div`
     border: none;
     background: none; // This is to simplify the code, just take on bg of parent
     outline: none;
-    width: 100%;
+    width: 80%;
     box-shadow: none;
+    border-radius: 0;
 	
 	&:hover {
 		background: none;
