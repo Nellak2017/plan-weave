@@ -5,6 +5,8 @@ export default {
 	component: TaskInput,
 	argTypes: {
 		maxwidth: { control: 'number' },
+		initialValue: {control: 'text'},
+		variant: {control: 'text'}
 	},
 }
 
@@ -20,4 +22,5 @@ export const Dark = Template.bind({})
 Dark.args = {
 	variant: 'dark',
 	maxwidth: 200,
+	initialValue: 'Hello'
 }
