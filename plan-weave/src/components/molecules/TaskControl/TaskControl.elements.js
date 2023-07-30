@@ -17,3 +17,16 @@ export const TaskControlContainer = styled.div`
   	${getPresetCSS(taskControlPresets, 'variant')};
 	${getPresetCSS(taskControlPresets, 'color')};
 `
+
+export const TimePickerContainer = styled.div`
+	display: flex;
+	column-gap: 8px;
+	svg {
+		cursor: pointer;
+		border-radius: 50%;
+		&:hover {
+			color: ${props => props.theme.colors.primary};
+          	box-shadow: ${props => props.theme.elevations.small};
+		}
+	}
+`
