@@ -32,5 +32,7 @@ export const Dark = Template.bind({});
 Dark.args = {
   variant: 'dark',
   options: options,
+  clock1Text: '',
+  clock2Text: ''
   // Add other args for SearchBar, DropDownButton, and Date Picker
 };

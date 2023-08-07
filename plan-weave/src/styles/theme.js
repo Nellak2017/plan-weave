@@ -829,10 +829,30 @@ export const taskControlPresets = {
     light: css`
       background-color: ${props => props.theme.colors.lightNeutralLight};
       color: ${props => props.theme.colors.darkNeutral};
+      p {
+        color: ${props => props.theme.colors.darkNeutral};
+      }
+      span > p, span > svg {
+        color: ${props => props.theme.colors.darkNeutral};
+        font-size: ${props => props.theme.fontSizes.medium};
+      }
+      i {
+        background-color: ${props => props.theme.colors.lightNeutralLightActive};
+      } 
     `,
     dark: css`
       background-color: ${props => props.theme.colors.darkNeutral};
       color: ${props => props.theme.colors.lightNeutralLight};
+      p {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
+      span > p, span > svg {
+        color: ${props => props.theme.colors.lightNeutralLight};
+        font-size: ${props => props.theme.fontSizes.medium};
+      }
+      i {
+        background-color: ${props => props.theme.colors.darkNeutralLightActive};
+      } 
     `,
   },
   color: colorPreset

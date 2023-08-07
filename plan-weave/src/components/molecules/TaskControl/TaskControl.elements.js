@@ -6,7 +6,8 @@ export const TaskControlContainer = styled.div`
 	display: flex;
 	align-items: center;
 	justify-content: space-evenly;
-	height: ${props => props.theme.spaces.extraLarge};
+	flex-direction: column;
+	min-height: ${props => props.theme.spaces.extraLarge};
 	width: 100%;
 	max-width: ${props => props.maxwidth}px;
 	border-radius: 36px 36px 0 0;
@@ -16,11 +17,6 @@ export const TaskControlContainer = styled.div`
 	${typography};
   	${getPresetCSS(taskControlPresets, 'variant')};
 	${getPresetCSS(taskControlPresets, 'color')};
-`
-
-export const TimePickerContainer = styled.div`
-	display: flex;
-	column-gap: 8px;
 	svg {
 		cursor: pointer;
 		border-radius: 50%;
@@ -29,4 +25,69 @@ export const TimePickerContainer = styled.div`
           	box-shadow: ${props => props.theme.elevations.small};
 		}
 	}
+`
+
+export const TopContainer = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-direction: row;
+	height: ${props => props.theme.spaces.extraLarge};
+	width: 100%;
+	max-width: ${props => props.maxwidth}px;
+	border-radius: 36px 36px 0 0;
+	padding-top: ${props => props.theme.spaces.small};
+	padding-left: ${props => props.theme.spaces.medium};
+	padding-right: ${props => props.theme.spaces.medium};
+	${space};
+	${layout};
+	${typography};
+  	${getPresetCSS(taskControlPresets, 'variant')};
+	${getPresetCSS(taskControlPresets, 'color')};
+
+	& > p {
+		font-size: ${props => props.theme.fontSizes.large};
+	}
+`
+
+export const BottomContainer = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-direction: row;
+	width: 100%;
+	max-width: ${props => props.maxwidth}px;
+	border-radius: 36px 36px 0 0;
+	padding-left: ${props => props.theme.spaces.medium};
+	padding-right: ${props => props.theme.spaces.medium};
+	${space};
+	${layout};
+	${typography};
+  	${getPresetCSS(taskControlPresets, 'variant')};
+	${getPresetCSS(taskControlPresets, 'color')};
+`
+
+export const BottomContentContainer = styled.span`
+	display: inline-flex;
+	flex-direction: row;
+	align-items: center;
+	font-size: ${props => props.theme.fontSizes.medium};
+	column-gap: ${props => props.theme.spaces.small};
+	padding-bottom: ${props => props.theme.spaces.small};
+`
+
+export const Separator = styled.i`
+	width: 1px;
+	height: ${props => props.theme.fontSizes.large}; 
+	margin: 0 5px;
+	${space};
+	${layout};
+	${typography};
+  	${getPresetCSS(taskControlPresets, 'variant')};
+	${getPresetCSS(taskControlPresets, 'color')}; 
+`;
+
+export const TimePickerContainer = styled.div`
+	display: flex;
+	column-gap: 8px;
 `

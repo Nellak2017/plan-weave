@@ -26,6 +26,9 @@ function TimePickerWrapper({
   onTimeChange, // Prop to pass the selected time back to the parent component
   controlled = false, // Flag to indicate if time is controlled by the parent
   time: controlledTime, // Controlled time passed from the parent
+  tabIndex, // used for selecting the icon
+  onKeyDown, // used for using enter key to press on icon
+  title // used to tell the user what clicking the icon will do whenever they hover over it (tool tip)
 }) {
   const [time, setTime] = useState(parse(defaultTime, 'HH:mm', new Date()))
   const [showClock, setShowClock] = useState(false)
@@ -61,8 +64,8 @@ function TimePickerWrapper({
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <TimePickerWrapperStyled variant={variant} >
         <Display><p>{displayText}</p><p>{ampm ? format(currentTime, 'hh:mm a') : format(currentTime, 'HH:mm')}</p></Display>
-        <ClockIconWrapper onMouseDown={toggleClock}>
-          <AiOutlineClockCircle size={32} />
+        <ClockIconWrapper role="button" onMouseDown={toggleClock} onKeyDown={(e) => {if(e.key==='Enter'){toggleClock()}}}>
+          <AiOutlineClockCircle tabIndex={tabIndex} size={32} title={title}/>
         </ClockIconWrapper>
         <TimeClockWrapper
           $showclock={showClock}

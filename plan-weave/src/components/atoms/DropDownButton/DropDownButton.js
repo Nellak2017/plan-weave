@@ -7,8 +7,13 @@ import {
 import { AiFillCaretDown } from 'react-icons/ai'
 import { useState } from 'react'
 
+/* 
+TODO:
+- [ ] Add Support for on Enter Pressed, open the Drop-down menu
+*/
+
 function DropDownButton(props) {
-  const { size = 's', color = 'primary', options, children = 'Auto Sort', ...rest } = props
+  const { size = 's', color = 'primary', options, children = 'Auto Sort', tabIndex, ...rest } = props
   const [isOpen, setIsOpen] = useState(false)
   const handleToggle = () => { setIsOpen(!isOpen) }
   const handleOptionClick = (e, listener) => {
@@ -17,9 +22,10 @@ function DropDownButton(props) {
     setIsOpen(false) // Close the dropdown menu
   }
   return (
-    <DropdownContainer>
+    <DropdownContainer tabIndex={tabIndex}>
       <DropDownButtonStyled
         onClick={handleToggle}
+        onKeyDown={e => {if(e.key==='Enter'){handleToggle()}}}
         size={size}
         color={color} {...rest}
         onBlur={() => setIsOpen(false)} // close if clicked off
