@@ -1,4 +1,4 @@
-import TaskControl from './TaskControl';
+import TaskControl from './TaskControl'
 
 export default {
   title: 'Molecules/TaskControl',
@@ -10,9 +10,9 @@ export default {
 	  color: {control: 'text'}
     // Add other argTypes for SearchBar, DropDownButton, and Date Picker props
   },
-};
+}
 
-const Template = args => <TaskControl {...args} />;
+const Template = args => <TaskControl {...args} />
 
 const options = [
 	{ name: 'Option 1', listener: () => console.log('Option 1 clicked') },
@@ -20,19 +20,19 @@ const options = [
 	{ name: 'Option 3', listener: () => console.log('Option 3 clicked') },
   ]  
 
-export const Light = Template.bind({});
+export const Light = Template.bind({})
 Light.args = {
   variant: 'light',
   options: options,
   x1: -36
   // Add other args for SearchBar, DropDownButton, and Date Picker
-};
+}
 
-export const Dark = Template.bind({});
+export const Dark = Template.bind({})
 Dark.args = {
   variant: 'dark',
   options: options,
   clock1Text: '',
   clock2Text: ''
   // Add other args for SearchBar, DropDownButton, and Date Picker
-};
+}

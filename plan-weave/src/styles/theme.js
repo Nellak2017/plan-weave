@@ -824,6 +824,39 @@ export const hoursInputContainerPreSets = {
   color: colorPreset
 }
 
+export const timePickerPresets = {
+  variant: {
+    light: css`
+      p, svg {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+    `,
+    dark: css`
+      p, svg {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
+    `
+  },
+  color: colorPreset
+}
+
+export const tableHeaderPresets = {
+  variant: {
+    light: css`
+        background-color: ${props => props.theme.colors.lightNeutralLight};
+        color: ${props => props.theme.colors.darkNeutralDark};
+    `,
+    dark: css`
+        background-color: ${props => props.theme.colors.lightNeutral};
+        color: ${props => props.theme.colors.lightNeutralLight};
+    `
+  },
+  color: colorPreset
+}
+
+// ------
+// --- Molecules ---
+
 export const taskControlPresets = {
   variant: {
     light: css`
@@ -841,7 +874,7 @@ export const taskControlPresets = {
       } 
     `,
     dark: css`
-      background-color: ${props => props.theme.colors.darkNeutral};
+      background-color: ${props => props.theme.colors.darkNeutralDark};
       color: ${props => props.theme.colors.lightNeutralLight};
       p {
         color: ${props => props.theme.colors.lightNeutralLight};
@@ -858,25 +891,45 @@ export const taskControlPresets = {
   color: colorPreset
 }
 
-export const timePickerPresets = {
+export const taskRowPresets = {
   variant: {
     light: css`
-      p, svg {
+        background-color: ${props => props.theme.colors.lightNeutralLight};
         color: ${props => props.theme.colors.darkNeutralDark};
-      }
+        p, svg {
+          color: ${props => props.theme.colors.darkNeutralDark};
+        }
     `,
     dark: css`
-      p, svg {
+        background-color: ${props => props.theme.colors.lightNeutral};
         color: ${props => props.theme.colors.lightNeutralLight};
-      }
-    `,
-  }
+        p, svg {
+          color: ${props => props.theme.colors.lightNeutralLight};
+        }
+    `
+  },
+  color: colorPreset
 }
 
-// ------
-// --- Molecules ---
-
-
+export const taskTablePresets = {
+  variant: {
+    light: css`
+        background-color: ${props => props.theme.colors.lightNeutralLight};
+        color: ${props => props.theme.colors.darkNeutralDark};
+        p, svg {
+          color: ${props => props.theme.colors.darkNeutralDark};
+        }
+    `,
+    dark: css`
+        background-color: ${props => props.theme.colors.lightNeutral};
+        color: ${props => props.theme.colors.lightNeutralLight};
+        p, svg {
+          color: ${props => props.theme.colors.lightNeutralLight};
+        }
+    `
+  },
+  color: colorPreset
+}
 
 // ------
 // --- Organisms ---

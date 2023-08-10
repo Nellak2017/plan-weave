@@ -5,14 +5,17 @@ import {
 	MdOutlineCheckBox
 } from 'react-icons/md'
 import { AiOutlineEllipsis } from 'react-icons/ai'
+import { space, layout, typography } from 'styled-system'
+import { getPresetCSS, taskRowPresets } from '../../../styles/theme.js'
+
 
 // Style the td's from here unless specifics are needed
 export const TaskRowStyled = styled.tr`
-	border: 1px solid red;
-	display: flex;
-	align-items: center;
-	justify-content: space-evenly;
-	column-gap: ${props => props.theme.spaces.small};
+	${space};
+	${layout};
+	${typography};
+  	${getPresetCSS(taskRowPresets, 'variant')};
+	${getPresetCSS(taskRowPresets, 'color')};
 `
 
 export const DragIndicator = styled(MdDragIndicator)`
@@ -45,14 +48,15 @@ export const EllipsesStyled = styled(AiOutlineEllipsis)`
 
 // Containers
 
-export const TaskContainer = styled.div`
-	display: flex;
-	align-items: center;
-	column-gap: ${props => props.theme.spaces.small};
+export const TaskContainer = styled.td`
+	display: table-cell;
+	padding: ${props => props.theme.spaces.small};
 `
 
-export const TimeContainer = styled.div`
-	display: flex;
-	align-items: center;
-	column-gap: ${props => props.theme.spaces.small};
+export const TimeContainer = styled.td`
+	display: table-cell;
+	padding: ${props => props.theme.spaces.small};
+	p {
+		font-size: ${props => props.theme.fontSizes.medium};
+	}
 `

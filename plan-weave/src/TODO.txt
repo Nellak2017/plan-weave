@@ -10,7 +10,7 @@ Today's Tasks Organism (31 - (2) hours remain)(7.75 days at 4 hours/day)
 	- [X] Tab Indices (Component Level)
 	- [X] Tool Tips
 - [ ] Simple Task (Display logic for now, sorting and highlighting and other will be solved later)
-	- [ ] Column Names (like Task, Inefficiency, etc.)
+	- [X] Column Names (like Task, Inefficiency, etc.)
 	- [ ] Task Area in the table
 	- [ ] Checkbox
 	- [ ] Gray out,Yellow Orange and Green highlight tasks 

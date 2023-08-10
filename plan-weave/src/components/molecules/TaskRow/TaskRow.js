@@ -15,25 +15,33 @@ function TaskRow({ variant, task, waste, ttc, eta = '0 hours' }) {
 	const [isChecked, setIsChecked] = useState(false)
 	const handleCheckBoxClicked = () => setIsChecked(!isChecked)
 	return (
-		<TaskRowStyled variant={variant}>
-			<td><DragIndicator size={32} /></td>
-			<TaskContainer>
-				<td>
+		<tbody>
+			<TaskRowStyled variant={variant}>
+				<td><DragIndicator size={32} /></td>
+				<TaskContainer>
 					{isChecked ? (
 						<CheckBoxStyled size={32} onClick={handleCheckBoxClicked} />
 					) : (
 						<CheckBoxEmptyStyled size={32} onClick={handleCheckBoxClicked} />
 					)}
+				</TaskContainer>
+				<TaskContainer>
+					<TaskInput initialValue={task} variant={variant} />
+				</TaskContainer>
+				<TimeContainer>
+					<p>{waste}</p>
+				</TimeContainer>
+				<TimeContainer>
+					<HoursInput initialValue={ttc} variant={variant} />
+				</TimeContainer>
+				<TimeContainer>
+					<p>{eta ? eta : '0 hours'}</p>
+				</TimeContainer>
+				<td>
+					<EllipsesStyled size={32} />
 				</td>
-				<td><TaskInput initialValue={task} variant={variant} /></td>
-			</TaskContainer>
-			<TimeContainer>
-				<td><HoursInput initialValue={waste} variant={variant} /></td>
-				<td><HoursInput initialValue={ttc} variant={variant} /></td>
-			</TimeContainer>
-			<td><p>{eta ? eta : '0 hours'}</p></td>
-			<td><EllipsesStyled size={32} /></td>
-		</TaskRowStyled>
+			</TaskRowStyled>
+		</tbody>
 	)
 }
 

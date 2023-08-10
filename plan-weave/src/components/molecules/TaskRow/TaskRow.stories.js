@@ -13,9 +13,11 @@ const Template = args => <TaskRow {...args} />
 export const Light = Template.bind({})
 Light.args = {
 	variant: 'light',
+	waste: '1 hour'
 }
 
 export const Dark = Template.bind({})
 Dark.args = {
 	variant: 'dark',
+	waste: '1 hour'
 }

@@ -37,9 +37,9 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	useEffect(() => { checkTimeRange() }, [])
 	useEffect(() => { checkTimeRange() }, [overNightMode])
 	useEffect(() => {
-		const intervalId = setInterval(() => { setCurrentTime(new Date()) }, 30000)
+		const intervalId = setInterval(() => { setCurrentTime(new Date()) }, 1000)
 		return () => { clearInterval(intervalId) }
-	}, []) // update time every 30 seconds
+	}, []) // update time every 1 second
 	useEffect(() => {
 		calculateTimeLeft({overNight:overNightMode})
 	}, [currentTime, startTime, endTime])
@@ -75,7 +75,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 		let endTimeValue = getTime(endTime)
 
 		// If the end time is before the current time, assume it is on the next day
-		if (endTimeValue < currentTimeValue && overNight) {
+		if ((endTimeValue < currentTimeValue) && overNight === true) {
 			let nextDay = new Date(endTime)
 			nextDay.setDate(nextDay.getDate() + 1)
 			endTimeValue = getTime(nextDay)
