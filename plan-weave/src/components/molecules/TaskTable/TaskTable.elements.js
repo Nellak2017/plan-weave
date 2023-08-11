@@ -11,15 +11,24 @@ export const TaskTableContainer = styled.div`
 		border: none; // Add border for entire table
   	}
 
-	th,
+	tr {
+		width: 100%;
+		max-width: ${props => props.maxwidth}px; // added to make the squeezing stop when dnd
+	}
+
+	td, th {
+		border-bottom: 1px solid ${props => props.theme.colors.lightNeutralLight}50;
+	}
+
 	td {
-		padding: 8px; // Adjust padding as needed
-		border-bottom: 1px solid ${props => props.theme.colors.lightNeutralLight}50; // Add border to bottom of each cell
+		display: table-cell;
 	}
 
 	th {
-		font-weight: bold;
+		padding: ${props => props.theme.spaces.small};
+		font-weight: normal;
 		text-align: left;
+		font-size: ${props => props.theme.fontSizes.large};
 	}
 	${space};
 	${layout};

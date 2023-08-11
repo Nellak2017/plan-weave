@@ -1,4 +1,3 @@
-import React from 'react'
 import { TableHeaderContainer, StyledRow } from './TableHeader.elements'
 
 const TableHeader = ({ variant, labels }) => {

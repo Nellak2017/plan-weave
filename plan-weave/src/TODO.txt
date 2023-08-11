@@ -11,18 +11,28 @@ Today's Tasks Organism (31 - (2) hours remain)(7.75 days at 4 hours/day)
 	- [X] Tool Tips
 - [ ] Simple Task (Display logic for now, sorting and highlighting and other will be solved later)
 	- [X] Column Names (like Task, Inefficiency, etc.)
-	- [ ] Task Area in the table
-	- [ ] Checkbox
+	- [X] Task Area in the table
+	- [X] Checkbox
 	- [ ] Gray out,Yellow Orange and Green highlight tasks 
 		(Gray out tasks completed and those outside start,end range. Orange highlight tasks that are not possible given constraints.
 		 Yellow highlight tasks that are waiting. Green Highlight tasks that are complete on our particular Day.)
 	- [ ] White outline for selected tasks (This is for the Dependency selection)
-	- [ ] Task Name Input
-	- [ ] Inefficiency display (calculuted, default == 0)
-	- [ ] Completion Time (Hours input)
-	- [ ] ETA display (calculated, in range of start,end, increment of hours input for each task)
+	- [X] Task Name Input
+		- [X] Display Part
+	- [X] Inefficiency display (calculuted, default == 0)
+		- [X] Display Part
+	- [X] Completion Time (Hours input)
+		- [X] Display Part
+	- [X] ETA display (calculated, in range of start,end, increment of hours input for each task)
+		- [X] Display Part
 	- [ ] Drag bar
-		- [ ] Drag-n-drop
+		- [X] Drag-n-drop basic
+		- [ ] Perfected Drag-n-drop (Fix all minor errors in it, like it squeezing together)
+	- [ ] Passing State Up/Down
+		- [ ] TaskRow -> TaskTable
+		- [ ] TaskTable -> Parent
+		- [ ] TaskRow <- TaskTable
+		- [ ] TaskTable <- Parent
 - [ ] Full Task (Display logic)
 	- [ ] Column Names 
 	- [ ] Task Name Input (re-use)

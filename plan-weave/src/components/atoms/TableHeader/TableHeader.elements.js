@@ -2,12 +2,8 @@ import styled from 'styled-components'
 import { space, layout, typography } from 'styled-system'
 import { getPresetCSS, tableHeaderPresets } from '../../../styles/theme'
 
-// TODO: Remove !important from font-weight normal definition, figure out why 
-
+// This is here in case we need custom styles for this
 export const TableHeaderContainer = styled.th`
-	font-weight: normal!important; // Not sure why I have to specify this, leaving it for now
-  	text-align: center;
-	font-size: ${props => props.theme.fontSizes.large};
  	${space};
 	${layout};
 	${typography};
@@ -16,6 +12,10 @@ export const TableHeaderContainer = styled.th`
 `
 
 export const StyledRow = styled.tr`
+	:nth-child(1), :nth-child(2) {
+    	width: 5px; /* You can adjust the value to make them skinnier */
+		padding: ${props => props.theme.spaces.smaller};
+  	}
 	${getPresetCSS(tableHeaderPresets, 'variant')};
 	${getPresetCSS(tableHeaderPresets, 'color')};
 `

@@ -16,8 +16,8 @@ light.args = {
   variant: 'light',
   headerLabels: ['Task', 'Waste', 'TTC', 'ETA'],
   tasks: [
-    { task: 'Example Task 1', waste: '2 hours', ttc: '5', eta: '3 hours' },
-    { task: 'Example Task 2', waste: '1 hour', ttc: '3', eta: '2 hours' },
+    { task: 'Example Task 1', waste: '2 hours', ttc: '5', eta: '3 hours', id: 0 },
+    { task: 'Example Task 2', waste: '1 hour', ttc: '3', eta: '2 hours', id: 1 },
     // Add more tasks here
   ],
 }
@@ -27,8 +27,8 @@ dark.args = {
   variant: 'dark',
   headerLabels: ['Task', 'Waste', 'TTC', 'ETA'],
   tasks: [
-    { waste: '2 hours', ttc: '5', eta: '3 hours' },
-    { task: 'Example Task 2', waste: '1 hour', ttc: '3', eta: '2 hours' },
+    { waste: '2 hours', ttc: '5', eta: '3 hours', id: 0 },
+    { task: 'Example Task 2', waste: '1 hour', ttc: '3', eta: '2 hours', id: 1 },
     // Add more tasks here
   ],
 }
