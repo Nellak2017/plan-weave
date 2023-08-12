@@ -16,7 +16,8 @@ import { format, parse, getTime } from 'date-fns'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { ThemeContext } from 'styled-components' // needed for theme object
-
+import { formatTimeLeft } from '../../utils/helpers.js'
+import { THEMES } from '../../utils/constants.js'
 /* 
 TODO: 
 - [ ] Add in the Add and Delete Events From Parent Organism whenever we make the Task Row Molecule
@@ -28,6 +29,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	clock1Text = '', clock2Text = '', owlToolTip = 'Toggle Overnight Mode', addToolTip = 'Add a New Task',
 	deleteToolTip = 'Delete selected', dropDownToolTip = 'Select Sorting Method',
 	...rest }) {
+	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const theme = useContext(ThemeContext)
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
@@ -41,7 +43,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 		return () => { clearInterval(intervalId) }
 	}, []) // update time every 1 second
 	useEffect(() => {
-		calculateTimeLeft({overNight:overNightMode})
+		formatTimeLeft({ currentTime, endTime, overNightMode })
 	}, [currentTime, startTime, endTime])
 	const checkTimeRange = () => {
 		if ((getTime(endTime) < getTime(startTime)) && !overNightMode) {
@@ -68,29 +70,6 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	const deleteEvent = () => {
 		toast.info('TODO: Complete Delete Event')
 		console.log('TODO: Complete Delete Event')
-	}
-	// Bottom Center Calculations
-	const calculateTimeLeft = ({minuteText = ' minutes left', hourText = ' hours', hourText2 = ' hours left', overNight = false}) => {
-		const currentTimeValue = currentTime.getTime()
-		let endTimeValue = getTime(endTime)
-
-		// If the end time is before the current time, assume it is on the next day
-		if ((endTimeValue < currentTimeValue) && overNight === true) {
-			let nextDay = new Date(endTime)
-			nextDay.setDate(nextDay.getDate() + 1)
-			endTimeValue = getTime(nextDay)
-		}
-
-		const timeLeftInHours = Math.max(Math.floor((endTimeValue - currentTimeValue) / (1000 * 60 * 60)), 0)
-		const timeLeftInMinutes = Math.max(Math.floor((endTimeValue - currentTimeValue) / (1000 * 60)) % 60, 0)
-
-		if (timeLeftInHours > 0) {
-			return timeLeftInMinutes > 0 ?
-				`${timeLeftInHours} ${hourText} ${timeLeftInMinutes} ${minuteText}` :
-				`${timeLeftInHours} ${hourText2}`
-		} else {
-			return `${timeLeftInMinutes} ${minuteText}`
-		}
 	}
 
 	return (
@@ -154,7 +133,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 					<Separator variant={variant} color={color} />
 				</BottomContentContainer>
 				<BottomContentContainer>
-					<p title={'time left until end of task period'}>{calculateTimeLeft({overNight:overNightMode})}</p>
+					<p title={'time left until end of task period'}>{formatTimeLeft({ currentTime, endTime, overNightMode })}</p>
 				</BottomContentContainer>
 				<BottomContentContainer>
 					<Separator variant={variant} color={color} />

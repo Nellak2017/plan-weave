@@ -14,16 +14,24 @@ import {
 } from 'react-icons/md'
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { Draggable } from 'react-beautiful-dnd'
+import { formatTimeLeft } from '../../utils/helpers.js'
+import { THEMES } from '../../utils/constants.js'
+/*
+TODO: When Dragging, ensure consistent sizing
+TODO: Pass State up/down
+TODO: Add Status Prop that will conditionally render the Gray, Yellow, Orange, and Green highlights for tasks 
+TODO: Add Outline Prop that will let you define a color for the outline if there is one at all (used in selection)
+*/
 
-// TODO: Verify that passed index is a number and is defined, not null
-// TODO: When Dragging, ensure consistent sizing
-// TODO: Find out why dnd feature is sometimes inconsistent
-// TODO: Pass State up/down
+function TaskRow({ task, waste, ttc, eta = '0 hours', variant = 'dark', maxwidth = 818, id = 0, updateTask, index }) {
+	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	if (!maxwidth || isNaN(maxwidth) || maxwidth <= 0) maxwidth = 818
+	if (id === undefined || id === null || isNaN(id) || id < 0) console.error(`Id is not a valid number, id = ${id}`)
+	if (index === undefined || index === null || isNaN(index) || index < 0) console.error(`index is not a valid number in row = ${id}, index = ${index}`)
 
-function TaskRow({ variant, task, updateTask, waste, ttc, eta = '0 hours', maxwidth = 818, id = 0, index }) {
 	const [isChecked, setIsChecked] = useState(false)
 	const handleCheckBoxClicked = () => setIsChecked(!isChecked)
-	const uniqueId = `task-${id}` // used for drag-n-drop feature. Check if undefined/null
+	const uniqueId = `task-${id}` // used for drag-n-drop feature.
 	const handleTaskChange = newTask => {
 		updateTask(task.id, newTask)
 	}
@@ -55,13 +63,31 @@ function TaskRow({ variant, task, updateTask, waste, ttc, eta = '0 hours', maxwi
 						<TaskInput initialValue={task} variant={variant} />
 					</TaskContainer>
 					<TimeContainer>
-						<p>{waste}</p>
+						<p>
+							{waste && !isNaN(waste) && waste > 0 ?
+								formatTimeLeft({
+									timeDifference: waste,
+									minuteText: 'minutes',
+									hourText: 'hour',
+									hourText2: 'hours'
+								}) :
+								'0 minutes'}
+						</p>
 					</TimeContainer>
 					<TimeContainer>
-						<HoursInput initialValue={ttc} variant={variant} placeholder='hours' text='hours'/>
+						<HoursInput initialValue={ttc} variant={variant} placeholder='hours' text='hours' />
 					</TimeContainer>
 					<TimeContainer>
-						<p>{eta ? eta : '0 hours'}</p>
+						<p>
+							{eta && !isNaN(eta) && eta > 0 ?
+								formatTimeLeft({
+									timeDifference: eta,
+									minuteText: 'minutes',
+									hourText: 'hour',
+									hourText2: 'hours'
+								}) :
+								'0 minutes'}
+						</p>
 					</TimeContainer>
 					<IconContainer>
 						<AiOutlineEllipsis size={32} />

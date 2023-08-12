@@ -28,7 +28,7 @@ dark.args = {
   headerLabels: ['Task', 'Waste', 'TTC', 'ETA'],
   tasks: [
     { waste: 2, ttc: 5, eta: 3, id: 1 },
-    { task: 'Example Task 2', waste: -1, ttc: 1, eta: 2, id: 2},
+    { task: 'Example Task 2', waste: 1, ttc: 1, eta: 2, id: 2},
     // Add more tasks here
   ],
 }

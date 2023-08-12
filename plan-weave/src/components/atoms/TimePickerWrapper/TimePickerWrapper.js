@@ -10,6 +10,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { format, parse } from 'date-fns'
 import { AiOutlineClockCircle } from 'react-icons/ai'
+import { THEMES } from '../../utils/constants'
 
 /*
   TODO: Possibly refactor this with XState FSM library if the code becomes unmanageable
@@ -30,6 +31,7 @@ function TimePickerWrapper({
   onKeyDown, // used for using enter key to press on icon
   title // used to tell the user what clicking the icon will do whenever they hover over it (tool tip)
 }) {
+  if (variant && !THEMES.includes(variant)) variant = 'dark'
   const [time, setTime] = useState(parse(defaultTime, 'HH:mm', new Date()))
   const [showClock, setShowClock] = useState(false)
   const [view, setView] = useState('hours')

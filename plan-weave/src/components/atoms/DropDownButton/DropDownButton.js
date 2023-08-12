@@ -12,8 +12,7 @@ TODO:
 - [ ] Add Support for on Enter Pressed, open the Drop-down menu
 */
 
-function DropDownButton(props) {
-  const { size = 's', color = 'primary', options, children = 'Auto Sort', tabIndex, ...rest } = props
+function DropDownButton({ size = 's', color = 'primary', options, children = 'Auto Sort', tabIndex, ...rest }) {
   const [isOpen, setIsOpen] = useState(false)
   const handleToggle = () => { setIsOpen(!isOpen) }
   const handleOptionClick = (e, listener) => {

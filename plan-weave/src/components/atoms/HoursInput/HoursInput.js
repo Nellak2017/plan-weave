@@ -2,8 +2,11 @@ import {
 	HoursInputStyled, HoursContainer
 } from './HoursInput.elements'
 import { useState } from 'react'
+import { THEMES } from '../../utils/constants'
 
 const HoursInput = ({ placeholder='0', text, variant, maxwidth=61, color, initialValue}) => {
+	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	
 	const [value, setValue] = useState(initialValue)
 	const handleChange = e => setValue(e.target.value)
 	const handleBlur = () => {

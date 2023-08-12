@@ -7,18 +7,26 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { pureTaskAttributeUpdate } from '../../utils/helpers'
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../../schemas/simpleTaskSchema/simpleTaskSchema'
+import { THEMES } from '../../utils/constants'
 
 /* 
  TODO: Add a parent to pass down props to this
  TODO: Verify that prop drilling works
+ TODO: Add Status to the Schema!!
+ TODO: Add in the same hour display logic as in TaskControl, maybe extract it out and test it too if needed
+ TODO: Fix the squeezing when Drag-n-Dropping
+
+ TODO: Fix the Full Task Schema (See Full Task TODO)
 */
 
-const TaskTable = ({ variant, headerLabels, tasks, maxwidth = 818, onTasksUpdate }) => {
+const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTasksUpdate }) => {
+	if (variant && !THEMES.includes(variant)) variant = 'dark'
+
 	const [taskList, setTaskList] = useState(tasks)
 
-	const handleTaskAttributeUpdate = async (index = 1, attribute = 'waste', value = 4, taskList) => {
+	const handleTaskAttributeUpdate = async (index, attribute, value, taskList) => {
 		try {
-			const updatedTaskList = await pureTaskAttributeUpdate(index, attribute, value, taskList, simpleTaskSchema, fillDefaultsForSimpleTask)
+			const updatedTaskList = await pureTaskAttributeUpdate({index, attribute, value, taskList, schema:simpleTaskSchema, schemaDefaultFx:fillDefaultsForSimpleTask})
 			setTaskList(updatedTaskList)
 		} catch (updateError) {
 			console.error(updateError.message)
@@ -26,10 +34,8 @@ const TaskTable = ({ variant, headerLabels, tasks, maxwidth = 818, onTasksUpdate
 		}
 		//onTasksUpdate(updatedTaskList) // Notify parent about the change
 	}
-	const onDragEnd = (result) => {
-		if (!result.destination) {
-			return // Drag was canceled or dropped outside the list
-		}
+	const onDragEnd = result => {
+		if (!result.destination) return // Drag was canceled or dropped outside the list
 		const newTaskList = Array.from(taskList)
 		const [movedTask] = newTaskList.splice(result.source.index, 1)
 		newTaskList.splice(result.destination.index, 0, movedTask)
@@ -43,7 +49,7 @@ const TaskTable = ({ variant, headerLabels, tasks, maxwidth = 818, onTasksUpdate
 				<table>
 					<TableHeader variant={variant} labels={headerLabels} />
 					<Droppable droppableId="taskTable" type="TASK">
-						{(provided) => (
+						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
 								{taskList.map((task, idx) => (
 									<TaskRow

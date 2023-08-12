@@ -3,8 +3,7 @@ import { NextButtonStyled } from './NextButton.elements'
 import { BiChevronLeft, BiChevronRight } from 'react-icons/bi'
 import theme from '../../../styles/theme.js'
 
-function NextButton(props) {
-	const { variant, size, color, children, ...rest } = props
+function NextButton({ variant, size, color, children, ...rest }) {
 	const sizeOfIcon = letterToSize(size) // ex: 'm' -> 16, 'l' -> 32 
 	return (
 		<NextButtonStyled variant={variant} size={typeof size != 'string' ? 'l' : size} color={color} {...rest}>
