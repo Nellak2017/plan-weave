@@ -1,5 +1,10 @@
 import * as Yup from 'yup'
 
+// This schema is for the Full Task
+// TODO: Add in the remaining fields like Periodicity and stuff
+// TODO: Rename the fields to be consistent with simple task
+// TODO: Add id field
+// TODO: Refactor this schema to be consistent in rules to Simple Task Schema
 /* 
 Legend: 
 

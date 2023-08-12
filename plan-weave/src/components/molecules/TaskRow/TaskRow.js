@@ -18,11 +18,15 @@ import { Draggable } from 'react-beautiful-dnd'
 // TODO: Verify that passed index is a number and is defined, not null
 // TODO: When Dragging, ensure consistent sizing
 // TODO: Find out why dnd feature is sometimes inconsistent
+// TODO: Pass State up/down
 
-function TaskRow({ variant, task, waste, ttc, eta = '0 hours', maxwidth = 818, id = 0, index }) {
+function TaskRow({ variant, task, updateTask, waste, ttc, eta = '0 hours', maxwidth = 818, id = 0, index }) {
 	const [isChecked, setIsChecked] = useState(false)
 	const handleCheckBoxClicked = () => setIsChecked(!isChecked)
 	const uniqueId = `task-${id}` // used for drag-n-drop feature. Check if undefined/null
+	const handleTaskChange = newTask => {
+		updateTask(task.id, newTask)
+	}
 	return (
 		<Draggable draggableId={uniqueId} index={index}>
 			{(provided) => (
@@ -54,7 +58,7 @@ function TaskRow({ variant, task, waste, ttc, eta = '0 hours', maxwidth = 818, i
 						<p>{waste}</p>
 					</TimeContainer>
 					<TimeContainer>
-						<HoursInput initialValue={ttc} variant={variant} />
+						<HoursInput initialValue={ttc} variant={variant} placeholder='hours' text='hours'/>
 					</TimeContainer>
 					<TimeContainer>
 						<p>{eta ? eta : '0 hours'}</p>

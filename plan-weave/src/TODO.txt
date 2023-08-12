@@ -1,6 +1,6 @@
 Plan Weave Todo List
 
-Today's Tasks Organism (31 - (2) hours remain)(7.75 days at 4 hours/day)
+Today's Tasks Organism (31 - (10) hours remain)(7.75 days at 4 hours/day)
 - [X] Task Control Top
 - [X] Task Control Bottom
 	- [X] Bottom Area 
