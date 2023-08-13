@@ -1,4 +1,5 @@
 import { simpleTaskSchema, fillDefaultsForSimpleTask } from "./simpleTaskSchema"
+import { TASK_STATUSES } from '../../utils/constants'
 
 describe('Simple Task Schema', () => {
 	it('Should work on valid tasks', async () => {
@@ -208,4 +209,49 @@ describe('Simple Task Schema', () => {
 
 		expect(result).toBe(true)
 	})
+
+	it('Should accept valid status', async () => {
+		const validTask = {
+			task: 'Example task',
+			waste: 1,
+			ttc: 1,
+			eta: 1,
+			id: 1,
+			status: TASK_STATUSES.COMPLETED, // or 'Incomplete', 'Waiting', 'Inconsistent'
+		}
+
+		const result = await simpleTaskSchema.isValid(validTask)
+
+		expect(result).toBe(true)
+	})
+
+	it('Should reject invalid status', async () => {
+		const invalidTask = {
+			task: 'Example task',
+			waste: 1,
+			ttc: 1,
+			eta: 1,
+			id: 1,
+			status: 'InvalidStatus', // This status is not one of the allowed values
+		}
+
+		const result = await simpleTaskSchema.isValid(invalidTask)
+
+		expect(result).toBe(false)
+	})
+
+	it('Should accept task with missing status', async () => {
+		const validTask = {
+		  task: 'Example task',
+		  waste: 1,
+		  ttc: 1,
+		  eta: 1,
+		  id: 1,
+		  // no status
+		}
+	  
+		const result = await simpleTaskSchema.isValid(validTask)
+	  
+		expect(result).toBe(true)
+	  })
 })

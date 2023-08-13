@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import TableHeader from '../../atoms/TableHeader/TableHeader'
 import TaskRow from '../TaskRow/TaskRow'
 import { TaskTableContainer } from './TaskTable.elements'
@@ -12,11 +12,14 @@ import { THEMES } from '../../utils/constants'
 /* 
  TODO: Add a parent to pass down props to this
  TODO: Verify that prop drilling works
- TODO: Add Status to the Schema!!
- TODO: Add in the same hour display logic as in TaskControl, maybe extract it out and test it too if needed
- TODO: Fix the squeezing when Drag-n-Dropping
 
  TODO: Fix the Full Task Schema (See Full Task TODO)
+
+ TODO: Gray out, out of range completed tasks.
+ TODO: Disable everything for completed tasks, except the checkbox and dnd and delete button.
+ TODO: All Completed tasks must have a checkmark beside them. 
+	   Do this on page load and everytime the checkmarks change.
+ TODO: Set the status of a task to completed if checkmark is pressed
 */
 
 const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTasksUpdate }) => {
@@ -24,9 +27,35 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTa
 
 	const [taskList, setTaskList] = useState(tasks)
 
+	// Validate tasks and correct invalid ones when the page loads in
+	useEffect(() => {
+		// Note you can't use the handleTaskAttributeUpdate in a loop, hence DRY violations here
+		const validateTasks = async () => {
+			const updatedTaskList = [...taskList]
+			for (let idx of Object.keys(taskList)) {
+				try {
+					const updatedTask = await pureTaskAttributeUpdate({
+						index: idx,
+						attribute: 'id',
+						value: taskList[idx]['id'],
+						taskList,
+						schema: simpleTaskSchema,
+						schemaDefaultFx: fillDefaultsForSimpleTask
+					})
+					updatedTaskList[idx] = updatedTask[idx]
+				} catch (updateError) {
+					console.error(updateError.message)
+					toast.error('Your Tasks are messed up and things might not display right. Check Dev Tools for more info.')
+				}
+			}
+			setTaskList(updatedTaskList)
+		}
+		validateTasks()
+	}, [])
+
 	const handleTaskAttributeUpdate = async (index, attribute, value, taskList) => {
 		try {
-			const updatedTaskList = await pureTaskAttributeUpdate({index, attribute, value, taskList, schema:simpleTaskSchema, schemaDefaultFx:fillDefaultsForSimpleTask})
+			const updatedTaskList = await pureTaskAttributeUpdate({ index, attribute, value, taskList, schema: simpleTaskSchema, schemaDefaultFx: fillDefaultsForSimpleTask })
 			setTaskList(updatedTaskList)
 		} catch (updateError) {
 			console.error(updateError.message)
@@ -34,6 +63,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTa
 		}
 		//onTasksUpdate(updatedTaskList) // Notify parent about the change
 	}
+
 	const onDragEnd = result => {
 		if (!result.destination) return // Drag was canceled or dropped outside the list
 		const newTaskList = Array.from(taskList)
@@ -60,8 +90,9 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTa
 										ttc={task.ttc}
 										eta={task.eta}
 										id={task.id}
-										index={idx} />
-								))}
+										status={task.status}
+										index={idx} />)
+								)}
 								{provided.placeholder}
 							</tbody>
 						)}

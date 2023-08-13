@@ -12,7 +12,7 @@ export const TaskTableContainer = styled.div`
   	}
 
 	tr {
-		width: 100%;
+		width: ${props => props.maxwidth}px !important;
 		max-width: ${props => props.maxwidth}px; // added to make the squeezing stop when dnd
 	}
 

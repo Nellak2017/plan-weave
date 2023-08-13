@@ -13,10 +13,11 @@ Today's Tasks Organism (31 - (10) hours remain)(7.75 days at 4 hours/day)
 	- [X] Column Names (like Task, Inefficiency, etc.)
 	- [X] Task Area in the table
 	- [X] Checkbox
-	- [ ] Gray out,Yellow Orange and Green highlight tasks 
-		(Gray out tasks completed and those outside start,end range. Orange highlight tasks that are not possible given constraints.
-		 Yellow highlight tasks that are waiting. Green Highlight tasks that are complete on our particular Day.)
+	- [X] Yellow Red and Green highlight tasks 
+		(Green for completed, Red highlight tasks that are not possible given constraints.
+		 Yellow highlight tasks that are waiting.)
 	- [ ] White outline for selected tasks (This is for the Dependency selection)
+	- [ ] Gray out tasks completed and those outside start,end range.
 	- [X] Task Name Input
 		- [X] Display Part
 	- [X] Inefficiency display (calculuted, default == 0)
@@ -25,9 +26,9 @@ Today's Tasks Organism (31 - (10) hours remain)(7.75 days at 4 hours/day)
 		- [X] Display Part
 	- [X] ETA display (calculated, in range of start,end, increment of hours input for each task)
 		- [X] Display Part
-	- [ ] Drag bar
+	- [X] Drag bar
 		- [X] Drag-n-drop basic
-		- [ ] Perfected Drag-n-drop (Fix all minor errors in it, like it squeezing together)
+		- [X] Perfected Drag-n-drop (Fix all minor errors in it, like it squeezing together)
 	- [ ] Passing State Up/Down
 		- [ ] TaskRow -> TaskTable
 		- [ ] TaskTable -> Parent

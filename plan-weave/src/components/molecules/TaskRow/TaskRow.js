@@ -15,15 +15,16 @@ import {
 import { AiOutlineEllipsis } from 'react-icons/ai'
 import { Draggable } from 'react-beautiful-dnd'
 import { formatTimeLeft } from '../../utils/helpers.js'
-import { THEMES } from '../../utils/constants.js'
+import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 /*
-TODO: When Dragging, ensure consistent sizing
+TODO: Based on Status, conditionally render the highlighting feature
 TODO: Pass State up/down
 TODO: Add Status Prop that will conditionally render the Gray, Yellow, Orange, and Green highlights for tasks 
 TODO: Add Outline Prop that will let you define a color for the outline if there is one at all (used in selection)
+TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
 */
 
-function TaskRow({ task, waste, ttc, eta = '0 hours', variant = 'dark', maxwidth = 818, id = 0, updateTask, index }) {
+function TaskRow({ task, waste, ttc, eta = '0 hours', status=TASK_STATUSES.INCOMPLETE, id = 0, variant = 'dark', maxwidth = 818, updateTask, index }) {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (!maxwidth || isNaN(maxwidth) || maxwidth <= 0) maxwidth = 818
 	if (id === undefined || id === null || isNaN(id) || id < 0) console.error(`Id is not a valid number, id = ${id}`)
@@ -40,6 +41,7 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', variant = 'dark', maxwidth
 			{(provided) => (
 				<TaskRowStyled
 					variant={variant}
+					status={status}
 					ref={provided.innerRef}
 					{...provided.draggableProps}
 					style={{

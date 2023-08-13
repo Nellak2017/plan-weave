@@ -1,4 +1,4 @@
-import styled from "styled-components"
+import styled, {css} from "styled-components"
 import {
 	MdDragIndicator,
 	MdOutlineCheckBoxOutlineBlank,
@@ -8,7 +8,6 @@ import { AiOutlineEllipsis } from 'react-icons/ai'
 import { space, layout, typography } from 'styled-system'
 import { getPresetCSS, taskRowPresets } from '../../../styles/theme.js'
 
-
 // TODO: Clean up uneeded styled components when you know you won't need it anymore
 
 // Style the td's from here unless specifics are needed
@@ -17,15 +16,14 @@ export const TaskRowStyled = styled.tr`
 	${layout};
 	${typography};
   	${getPresetCSS(taskRowPresets, 'variant')};
+	${getPresetCSS(taskRowPresets, 'status')};
 	${getPresetCSS(taskRowPresets, 'color')};
-
-	width: 100%;
-	max-width: ${props => props.maxwidth}px; // added to make the squeezing stop when dnd
 
 	* > svg:hover {
 		cursor: pointer;
 		color: ${props => props.theme.colors.primary};
 	}
+
 `
 
 export const DragIndicator = styled(MdDragIndicator)`
@@ -61,19 +59,21 @@ export const EllipsesStyled = styled(AiOutlineEllipsis)`
 
 export const TaskContainer = styled.td`
 	display: table-cell;
+	width: 400px;
 	padding: ${props => props.theme.spaces.small};
 `
 
 export const TimeContainer = styled.td`
 	display: table-cell;
 	padding: ${props => props.theme.spaces.small};
+	width: 100px;
 	p {
 		font-size: ${props => props.theme.fontSizes.medium};
 	}
 `
-
 export const IconContainer = styled.td`
 	display: table-cell;
-	padding: 0;
+	padding: 5px 10px 5px 0px;
 	vertical-align: 'middle';
+	width: 32px;
 `

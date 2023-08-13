@@ -27,8 +27,10 @@ dark.args = {
   variant: 'dark',
   headerLabels: ['Task', 'Waste', 'TTC', 'ETA'],
   tasks: [
-    { waste: 2, ttc: 5, eta: 3, id: 1 },
-    { task: 'Example Task 2', waste: 1, ttc: 1, eta: 2, id: 2},
+    { status: 'completed', waste: 2, ttc: 5, eta: 3, id: 1 },
+    { status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 1, eta: 2, id: 2},
+    { status: 'waiting', waste: 2, ttc: 5, eta: 3, id: 3 },
+    { status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 1, eta: 2, id: 4},
     // Add more tasks here
   ],
 }

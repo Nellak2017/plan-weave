@@ -908,6 +908,73 @@ export const taskRowPresets = {
         }
     `
   },
+  status: {
+    completed: css`
+      td {
+        position: relative;
+        &::before {
+          content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: ${props => props.theme.colors.success}70;
+            z-index: 1;
+            pointer-events: none; /* Make the overlay non-interactive */
+        }
+      }
+    `,
+    incomplete: css`
+        // Added for consistency
+        td {
+            position: relative;
+            &::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background-color: transparent; /* Semi-transparent yellow */
+              z-index: 1;
+              pointer-events: none; /* Make the overlay non-interactive */
+            }
+          }
+    `,
+    waiting: css`
+      td {
+        position: relative;
+        &::before {
+          content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: ${props => props.theme.colors.warning}70; 
+            z-index: 1;
+            pointer-events: none; /* Make the overlay non-interactive */
+        }
+      }
+    `,
+    inconsistent: css`
+      td {
+        position: relative;
+        &::before {
+          content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: ${props => props.theme.colors.danger}70; 
+            z-index: 1;
+            pointer-events: none; /* Make the overlay non-interactive */
+        }
+      }
+    `,
+  },
   color: colorPreset
 }
 

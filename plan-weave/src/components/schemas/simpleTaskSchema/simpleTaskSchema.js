@@ -1,4 +1,5 @@
 import * as Yup from 'yup'
+import { TASK_STATUSES, STATUS_COLORS } from '../../utils/constants'
 
 // This schema is for the Simple Task
 
@@ -53,6 +54,8 @@ export const simpleTaskSchema = Yup.object({
 			return value
 		}),
 	id: Yup.number().positive('Id must be greater than 0').required('Id is required'),
+	status: Yup.string()
+		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value')
 }).default({})
 
 // NOTE: Avoid using default id, as it will not be unique
@@ -63,6 +66,7 @@ export const fillDefaultsForSimpleTask = (obj) => {
 		ttc: 1,
 		eta: 1,
 		id: 1,
+		status: TASK_STATUSES.INCOMPLETE,
 		...obj,
 	}
 
