@@ -1,31 +1,50 @@
-import React from 'react'
-import TaskTable from './TaskTable' 
+// This story uses Redux to get the task information
+
+import TaskTable from './TaskTable'
+// redux stuff
+import store from '../../../redux/store'
+import { Provider, useSelector } from 'react-redux'
 
 export default {
   title: 'Molecules/TaskTable',
   component: TaskTable,
   argTypes: {
-	variant: { control: 'text' },
+    variant: { control: 'text' },
   },
 }
 
-const Template = args => <TaskTable {...args} />
 
-export const light = Template.bind({})
+const TemplateWithProvider = args => {
+  return (
+    <Provider store={store}>
+      <Template {...args} />
+    </Provider>
+  )
+}
+
+const Template = args => {
+  const tasks = useSelector(state => state.tasks.tasks)
+  return <TaskTable {...args} tasks={tasks} />
+}
+
+export const light = TemplateWithProvider.bind({})
 light.args = {
   variant: 'light',
   headerLabels: ['Task', 'Waste', 'TTC', 'ETA'],
+  /*
   tasks: [
     { task: 'Example Task 1', waste: 2, ttc: 5, eta: '15:30', id: 1 },
     { task: 'Example Task 2', waste: 1, ttc: 3, eta: '18:30', id: 2 },
     // Add more tasks here
   ],
+  */
 }
 
-export const dark = Template.bind({})
+export const dark = TemplateWithProvider.bind({})
 dark.args = {
   variant: 'dark',
   headerLabels: ['Task', 'Waste', 'TTC', 'ETA'],
+  /*
   tasks: [
     { status: 'completed', waste: 2, ttc: 5, eta: '15:30', id: 1 },
     { status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: '18:30', id: 2},
@@ -33,4 +52,5 @@ dark.args = {
     { status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4},
     // Add more tasks here
   ],
+  */
 }

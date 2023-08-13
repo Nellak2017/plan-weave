@@ -4,7 +4,20 @@ import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY } from './constants'
 
 // This file contains many helpers used through out the application
 
-// This one is used to update an attribute of a task in a list of tasks in a pure way
+/**
+ * Update an attribute of a task in a list of tasks in a pure way.
+ *
+ * @param {Object} options - Options object containing parameters.
+ * @param {number} options.index - Index of the task to update.
+ * @param {string} options.attribute - Attribute to update.
+ * @param {*} options.value - New value for the attribute.
+ * @param {Array} options.taskList - List of tasks to update.
+ * @param {Object} [options.schema=simpleTaskSchema] - Validation schema.
+ * @param {Function} [options.schemaDefaultFx=fillDefaultsForSimpleTask] - Default filling function.
+ * @returns {Array} Updated list of tasks.
+ * @throws {TypeError} If any argument is undefined or invalid.
+ * @throws {Error} If attribute is not valid, task id is missing, or duplicate ids exist.
+ */
 export const pureTaskAttributeUpdate = async ({
 	index,
 	attribute,
@@ -76,8 +89,19 @@ export const pureTaskAttributeUpdate = async ({
 	return updatedTaskList
 }
 
-// This one is used to properly display time left for tasks in a pure way
-// currentTime, endTime are Date objects. Formatting is responsibility of Caller!3
+/**
+ * Format time left for tasks in a pure way.
+ *
+ * @param {Object} options - Options object containing parameters.
+ * @param {string} [options.minuteText='minutes left'] - Text for minutes.
+ * @param {string} [options.hourText='hour'] - Text for hour.
+ * @param {string} [options.hourText2='hours left'] - Text for hours.
+ * @param {boolean} [options.overNightMode=false] - Over-night mode.
+ * @param {Date} [options.currentTime=new Date()] - Current time.
+ * @param {Date} options.endTime - End time.
+ * @param {number} [options.timeDifference=0] - Time difference.
+ * @returns {string} Formatted time left.
+ */
 export const formatTimeLeft = ({
 	minuteText = 'minutes left',
 	hourText = 'hour',

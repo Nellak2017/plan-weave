@@ -32,24 +32,26 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTa
 	useEffect(() => {
 		// Note you can't use the handleTaskAttributeUpdate in a loop, hence DRY violations here
 		const validateTasks = async () => {
-			const updatedTaskList = [...taskList]
-			for (let idx of Object.keys(taskList)) {
-				try {
-					const updatedTask = await pureTaskAttributeUpdate({
-						index: idx,
-						attribute: 'id',
-						value: taskList[idx]['id'],
-						taskList,
-						schema: simpleTaskSchema,
-						schemaDefaultFx: fillDefaultsForSimpleTask
-					})
-					updatedTaskList[idx] = updatedTask[idx]
-				} catch (updateError) {
-					console.error(updateError.message)
-					toast.error('Your Tasks are messed up and things might not display right. Check Dev Tools for more info.')
+			if (taskList) {
+				const updatedTaskList = [...taskList]
+				for (let idx of Object.keys(taskList)) {
+					try {
+						const updatedTask = await pureTaskAttributeUpdate({
+							index: idx,
+							attribute: 'id',
+							value: taskList[idx]['id'],
+							taskList,
+							schema: simpleTaskSchema,
+							schemaDefaultFx: fillDefaultsForSimpleTask
+						})
+						updatedTaskList[idx] = updatedTask[idx]
+					} catch (updateError) {
+						console.error(updateError.message)
+						toast.error('Your Tasks are messed up and things might not display right. Check Dev Tools for more info.')
+					}
 				}
+				setTaskList(updatedTaskList)
 			}
-			setTaskList(updatedTaskList)
 		}
 		validateTasks()
 	}, [])
@@ -82,7 +84,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTa
 					<Droppable droppableId="taskTable" type="TASK">
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
-								{taskList.map((task, idx) => (
+								{taskList && taskList?.map((task, idx) => (
 									<TaskRow
 										key={`task-${task.id}`}
 										variant={variant}

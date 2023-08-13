@@ -13,6 +13,29 @@ eta,
 id
 */
 
+/**
+ * Schema for a simple task with validation rules.
+ * @typedef {Object} SimpleTaskSchema
+ * @property {Yup.StringSchema} task - Validation schema for the task name.
+ * @property {Yup.NumberSchema} waste - Validation schema for the waste value.
+ * @property {Yup.NumberSchema} ttc - Validation schema for the time-to-complete value.
+ * @property {Yup.StringSchema} eta - Validation schema for the estimated time of arrival.
+ * @property {Yup.NumberSchema} id - Validation schema for the task ID.
+ * @property {Yup.StringSchema} status - Validation schema for the task status.
+ */
+
+/**
+ * Default values for a simple task, optionally overridden by provided object.
+ * @callback FillDefaultsForSimpleTask
+ * @param {Object} obj - Object with task properties to override defaults.
+ * @returns {Object} Object with default or overridden task properties.
+ */
+
+/**
+ * Validation schema for a simple task with default values and transformation logic.
+ * @type {SimpleTaskSchema}
+ */
+
 export const simpleTaskSchema = Yup.object({
 	task: Yup.string()
 		.max(50, 'Task must be at most 50 characters')
@@ -58,6 +81,10 @@ export const simpleTaskSchema = Yup.object({
 }).default({})
 
 // NOTE: Avoid using default id, as it will not be unique
+/**
+ * Fill default values for a simple task, optionally overridden by provided object.
+ * @type {FillDefaultsForSimpleTask}
+ */
 export const fillDefaultsForSimpleTask = (obj) => {
 	const objWithDefaults = {
 		task: 'Example task',
