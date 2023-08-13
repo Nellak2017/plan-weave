@@ -16,6 +16,10 @@ Today's Tasks Organism (31 - (10) hours remain)(7.75 days at 4 hours/day)
 	- [X] Yellow Red and Green highlight tasks 
 		(Green for completed, Red highlight tasks that are not possible given constraints.
 		 Yellow highlight tasks that are waiting.)
+	- [ ] Add Timestamp to schema
+		- [ ] Add it
+		- [ ] Test it
+		- [ ] Integrate it in the Components and Stories Properly
 	- [ ] White outline for selected tasks (This is for the Dependency selection)
 	- [ ] Gray out tasks completed and those outside start,end range.
 	- [X] Task Name Input

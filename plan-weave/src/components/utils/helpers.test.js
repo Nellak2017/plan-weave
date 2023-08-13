@@ -1,6 +1,112 @@
 import { pureTaskAttributeUpdate, formatTimeLeft } from './helpers'
 
 describe('pureTaskAttributeUpdate function', () => {
+	// Data
+	const validTaskLists = [
+		[ // should work for valid lists of tasks
+			{ task: 'Example Task 1', waste: 10, ttc: 5, eta: '01:30', id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: '01:30', id: 2 },
+		],
+		[{ task: 'Example Task', waste: 1, ttc: 2, eta: '01:30', id: 1 }],
+	]
+
+	const extraneousTaskLists = [
+		[ // should remove extraneous fields
+			{ task: 'Example Task 1', waste: 10, ttc: 5, eta: '01:30', id: 1, extra: 'foo' },
+			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: '01:30', id: 2 },
+		],
+	]
+
+	const missingFields = [
+		[ // should fill in missing fields
+			{ task: 'Example Task 1', waste: 10, ttc: 5, id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: '01:30', id: 2 },
+		],
+	]
+
+	const invalidUpdateFields = [
+		[ // should update field, even if field is invalid
+			{ task: 'Example Task', waste: 1, ttc: -1, eta: '01:30', id: 1 }
+		],
+	]
+
+	const invalidFunctionParameters = [ // All of these should .rejects.toThrow(TypeError)
+		{ index: null, attribute: 'waste', value: 2, taskList: [] },
+		{ index: 0, attribute: null, value: 2, taskList: [] },
+		{ index: 0, attribute: 'waste', value: null, taskList: [] },
+		{ index: 0, attribute: 'waste', value: 2, taskList: null },
+		{ index: 1, attribute: 'waste', value: 2, taskList: validTaskLists[1] },  // should return an error if the index is invalid
+		{ index: 1, attribute: 'invalidAttribute', value: 2, taskList: validTaskLists[1] }, // invalid attribute
+		{ index: 1, attribute: 'waste', value: 'invalid', taskList: validTaskLists[1] }, // should return an error if the value is invalid
+	]
+
+	const invalidIds = [ // should return an error if any id for the given list is undefined/null/invalid
+		[
+			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: '01:30', id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: undefined },
+		],
+		[
+			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: '01:30', id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 0 },
+		],
+		[
+			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: '01:30', id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: -1 },
+		],
+		[
+			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: '01:30', id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: null },
+		],
+	]
+
+	const duplicateIds = [ // should return an error if any valid id is a duplicate of another in the list
+		[
+			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: '01:30', id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 1 },
+		]
+	]
+
+	// Tests
+	it.each(validTaskLists)('Should work for valid list of tasks', async (...testCase) => {
+		const updatedTaskList = await pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })
+		expect(updatedTaskList[0]['waste']).toBe(2)
+	})
+
+	it.each(extraneousTaskLists)('Should remove extraneous fields, for the task to update only', async (...testCase) => {
+		// TODO: Change hard coded 'extra' to be any attribute found that is not in the list
+		const updatedTaskList = await pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })
+		expect(updatedTaskList[0]['extra']).toBeUndefined()
+	})
+
+	it.each(missingFields)('Should fill in empty or missing fields, for the task to update only, with defaults', async (...testCase) => {
+		// TODO: Change hard coded eta to be any one of the missing fields and the 'toBe' should be the default value
+		const updatedTaskList = await pureTaskAttributeUpdate({ index: 0, attribute: 'ttc', value: 1, taskList: testCase })
+		expect(updatedTaskList[0].eta).toBe('12:00')
+	})
+
+	it.each(invalidUpdateFields)('Should update the given valid field even if the field is invalid', async (...testCase) => {
+		// TODO: Should scan for invalid fields, choose the first one, then do the test with default values applied
+		const updatedTaskList = await pureTaskAttributeUpdate({ index: 0, attribute: 'ttc', value: 2, taskList: testCase })
+		expect(updatedTaskList[0].ttc).toBe(2)
+	})
+
+	it.each(invalidFunctionParameters)('Should return an error if index, attribute, value, or taskList are null/undefined/invalid', async (...testCase) => {
+		await expect(() => pureTaskAttributeUpdate(testCase)).rejects.toThrow()
+	})
+
+	it.each(invalidIds)('Should return an error if any id for the given list is undefined/null/invalid', async (...testCase) => {
+		// Note, this test only covers index = 0, it is to ensure that if there is any id in the list other than index 0, it will throw
+		await expect(() => pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })).rejects.toThrow()
+	})
+
+	it.each(duplicateIds)('Should return an error if any valid id is a duplicate of another in the list', async (...testCase) => {
+		// Note, this test only covers index = 0, it because a duplicate found should throw from any index in the list
+		await expect(() => pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })).rejects.toThrow()
+	})
+})
+
+/*
+describe('pureTaskAttributeUpdate function', () => {
 	it('should work for a valid task, for the task to update only', async () => {
 		const taskList = [
 			{ task: 'Example Task 1', waste: 10, ttc: 5, eta: 3, id: 1 },
@@ -22,7 +128,7 @@ describe('pureTaskAttributeUpdate function', () => {
 			{ task: 'Example Task 1', waste: 10, ttc: 5, id: 1 },
 			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: 2, id: 2 },]
 		const updatedTaskList = await pureTaskAttributeUpdate({index: 0, attribute: 'ttc', value: 1, taskList})
-		expect(updatedTaskList[0].eta).toBe(1)
+		expect(updatedTaskList[0].eta).toBe('12:00')
 	})
 
 	it('should update the given valid field even if the field is invalid', async () => {
@@ -88,6 +194,7 @@ describe('pureTaskAttributeUpdate function', () => {
 	})
 }
 )
+*/
 
 describe('calculateTimeLeft', () => {
 	it('should return the correct string when endTime - startTime = 1', () => {
@@ -124,34 +231,34 @@ describe('calculateTimeLeft', () => {
 
 	it('should display "1 hour left" when timeDifference is 1', () => {
 		const result = formatTimeLeft({
-		  timeDifference: 1,
+			timeDifference: 1,
 		})
-	
+
 		expect(result).toBe('1 hours left')
-	  })
-	
-	  it('should display "${minutes} minutes left" when timeDifference is .5', () => {
+	})
+
+	it('should display "${minutes} minutes left" when timeDifference is .5', () => {
 		const result = formatTimeLeft({
-		  timeDifference: 0.5,
+			timeDifference: 0.5,
 		})
-	
+
 		expect(result).toBe('30 minutes left')
-	  })
-	
-	  it('should display "${hours} hours ${minutes} minutes left" when timeDifference is 2.75', () => {
+	})
+
+	it('should display "${hours} hours ${minutes} minutes left" when timeDifference is 2.75', () => {
 		const result = formatTimeLeft({
-		  timeDifference: 2.75,
+			timeDifference: 2.75,
 		})
-	
+
 		expect(result).toBe('2 hours 45 minutes left')
-	  })
-	
-	  it('should display "2 hours left" when timeDifference is 2', () => {
+	})
+
+	it('should display "2 hours left" when timeDifference is 2', () => {
 		const result = formatTimeLeft({
-		  timeDifference: 2,
+			timeDifference: 2,
 		})
-	
+
 		expect(result).toBe('2 hours left')
-	  })
-	
+	})
+
 })

@@ -43,13 +43,12 @@ export const simpleTaskSchema = Yup.object({
 			}
 			return value
 		}),
-	eta: Yup.number()
-		.nullable(false)
-		.min(0.01)
-		.default(1)
+	eta: Yup.string()
+		.matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid HH:MM format')
+		.default('12:00')
 		.transform((value, originalValue) => {
 			if (originalValue === '' || originalValue === null) {
-				return 1
+				return '12:00'
 			}
 			return value
 		}),
@@ -64,7 +63,7 @@ export const fillDefaultsForSimpleTask = (obj) => {
 		task: 'Example task',
 		waste: 1,
 		ttc: 1,
-		eta: 1,
+		eta: '12:00',
 		id: 1,
 		status: TASK_STATUSES.INCOMPLETE,
 		...obj,

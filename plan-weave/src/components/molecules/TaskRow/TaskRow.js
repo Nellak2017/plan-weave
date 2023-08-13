@@ -24,7 +24,7 @@ TODO: Add Outline Prop that will let you define a color for the outline if there
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
 */
 
-function TaskRow({ task, waste, ttc, eta = '0 hours', status=TASK_STATUSES.INCOMPLETE, id = 0, variant = 'dark', maxwidth = 818, updateTask, index }) {
+function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INCOMPLETE, id = 0, variant = 'dark', maxwidth = 818, updateTask, index }) {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (!maxwidth || isNaN(maxwidth) || maxwidth <= 0) maxwidth = 818
 	if (id === undefined || id === null || isNaN(id) || id < 0) console.error(`Id is not a valid number, id = ${id}`)
@@ -81,14 +81,7 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status=TASK_STATUSES.INCOM
 					</TimeContainer>
 					<TimeContainer>
 						<p>
-							{eta && !isNaN(eta) && eta > 0 ?
-								formatTimeLeft({
-									timeDifference: eta,
-									minuteText: 'minutes',
-									hourText: 'hour',
-									hourText2: 'hours'
-								}) :
-								'0 minutes'}
+							{eta && /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(eta) ? eta : '00:00'}
 						</p>
 					</TimeContainer>
 					<IconContainer>

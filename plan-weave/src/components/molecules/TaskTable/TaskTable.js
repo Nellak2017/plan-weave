@@ -20,6 +20,7 @@ import { THEMES } from '../../utils/constants'
  TODO: All Completed tasks must have a checkmark beside them. 
 	   Do this on page load and everytime the checkmarks change.
  TODO: Set the status of a task to completed if checkmark is pressed
+ TODO: Add a TimeStamp to the Schema for tasks, it is necessary for purging old, graying out old, etc.
 */
 
 const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTasksUpdate }) => {
