@@ -13,12 +13,16 @@ import {
 	MdOutlineCheckBox
 } from 'react-icons/md'
 import { AiOutlineEllipsis } from 'react-icons/ai'
+import { BiTrash } from 'react-icons/bi'
 import { Draggable } from 'react-beautiful-dnd'
 import { formatTimeLeft } from '../../utils/helpers.js'
 import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { removeTask } from '../../../redux/thunks/taskThunks.js'
+import { useDispatch, useSelector } from 'react-redux'
 /*
 TODO: Based on Status, conditionally render the highlighting feature
-TODO: Pass State up/down
 TODO: Add Status Prop that will conditionally render the Gray, Yellow, Orange, and Green highlights for tasks 
 TODO: Add Outline Prop that will let you define a color for the outline if there is one at all (used in selection)
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
@@ -30,12 +34,21 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INC
 	if (id === undefined || id === null || isNaN(id) || id < 0) console.error(`Id is not a valid number, id = ${id}`)
 	if (index === undefined || index === null || isNaN(index) || index < 0) console.error(`index is not a valid number in row = ${id}, index = ${index}`)
 
-	const [isChecked, setIsChecked] = useState(false)
+	const dispatch = useDispatch()
+	const tasks = useSelector(state => state.tasks)
+	const [isChecked, setIsChecked] = useState(status === TASK_STATUSES.COMPLETED)
 	const handleCheckBoxClicked = () => setIsChecked(!isChecked)
 	const uniqueId = `task-${id}` // used for drag-n-drop feature.
 	const handleTaskChange = newTask => {
 		updateTask(task.id, newTask)
 	}
+	const handleDeleteTask = () => {
+		dispatch(removeTask(id))
+		toast.info('This Task was deleted')
+	}
+
+	// Add Update Feature
+
 	return (
 		<Draggable draggableId={uniqueId} index={index}>
 			{(provided) => (
@@ -85,7 +98,7 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INC
 						</p>
 					</TimeContainer>
 					<IconContainer>
-						<AiOutlineEllipsis size={32} />
+						<BiTrash onClick={handleDeleteTask} size={32} />
 					</IconContainer>
 				</TaskRowStyled>
 			)}

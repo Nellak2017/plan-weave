@@ -196,6 +196,8 @@ describe('pureTaskAttributeUpdate function', () => {
 )
 */
 
+// TODO: TEST THIS FUNCTION MORE RIGOUROUSLY! I think the Overnight mode is messed up.
+
 describe('calculateTimeLeft', () => {
 	it('should return the correct string when endTime - startTime = 1', () => {
 		const currentTime = new Date('2023-08-09T12:00:00')

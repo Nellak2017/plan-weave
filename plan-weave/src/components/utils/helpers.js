@@ -117,7 +117,7 @@ export const formatTimeLeft = ({
 
 		const currentTimeValue = currentTime.getTime()
 		const adjustedEndTimeValue = overNightMode
-			? getTime(new Date(endTime)).getTime() + MILLISECONDS_PER_DAY // Add one day's worth of milliseconds
+			? getTime(new Date(endTime)) + MILLISECONDS_PER_DAY // Add one day's worth of milliseconds
 			: getTime(endTime)
 
 		return Math.max(0, adjustedEndTimeValue - currentTimeValue)

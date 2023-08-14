@@ -24,7 +24,7 @@ const TemplateWithProvider = args => {
 
 const Template = args => {
   const tasks = useSelector(state => state.tasks.tasks)
-  return <TaskTable {...args} tasks={tasks} />
+  return <TaskTable {...args}  />
 }
 
 export const light = TemplateWithProvider.bind({})
@@ -44,13 +44,12 @@ export const dark = TemplateWithProvider.bind({})
 dark.args = {
   variant: 'dark',
   headerLabels: ['Task', 'Waste', 'TTC', 'ETA'],
-  /*
   tasks: [
     { status: 'completed', waste: 2, ttc: 5, eta: '15:30', id: 1 },
     { status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: '18:30', id: 2},
     { status: 'waiting', waste: 2, ttc: 5, eta: '23:30', id: 3 },
     { status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4},
+    { status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 5},
     // Add more tasks here
   ],
-  */
 }

@@ -33,11 +33,21 @@ Today's Tasks Organism (31 - (10) hours remain)(7.75 days at 4 hours/day)
 	- [X] Drag bar
 		- [X] Drag-n-drop basic
 		- [X] Perfected Drag-n-drop (Fix all minor errors in it, like it squeezing together)
-	- [ ] Passing State Up/Down
-		- [ ] TaskRow -> TaskTable
-		- [ ] TaskTable -> Parent
-		- [ ] TaskRow <- TaskTable
-		- [ ] TaskTable <- Parent
+	- [X] Passing State Up/Down
+		- [X] Redux Store Set up
+	- [ ] Testing Reducers
+	- [ ] Defining Selectors
+	- [ ] Defining API for Thunks
+	- [ ] Defining Store
+		- [ ] Tasks
+		- [ ] Settings
+			- [ ] Dark mode
+			- [ ] Notifications
+		- [ ] User
+			- [ ] id
+			- [ ] name
+			- [ ] display name
+			- [ ] profile picture
 - [ ] Full Task (Display logic)
 	- [ ] Column Names 
 	- [ ] Task Name Input (re-use)

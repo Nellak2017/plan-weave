@@ -9,6 +9,9 @@ import { pureTaskAttributeUpdate } from '../../utils/helpers'
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../../schemas/simpleTaskSchema/simpleTaskSchema'
 import { THEMES } from '../../utils/constants'
 
+import { addNewTask } from '../../../redux/thunks/taskThunks'
+import { useDispatch, useSelector } from 'react-redux'
+
 /* 
  TODO: Add a parent to pass down props to this
  TODO: Verify that prop drilling works
@@ -23,10 +26,14 @@ import { THEMES } from '../../utils/constants'
  TODO: Add a TimeStamp to the Schema for tasks, it is necessary for purging old, graying out old, etc.
 */
 
-const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTasksUpdate }) => {
+const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useReduxData = true }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const [taskList, setTaskList] = useState(tasks)
+	const dispatch = useDispatch()
+	const tasksFromRedux = useSelector(state => state.tasks.tasks)
+	const [taskList, setTaskList] = useState(useReduxData ? tasksFromRedux : tasks)
+
+	useEffect(() => { useReduxData ? setTaskList(tasksFromRedux) : setTaskList(tasks)}, [tasksFromRedux])
 
 	// Validate tasks and correct invalid ones when the page loads in
 	useEffect(() => {
@@ -74,6 +81,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTa
 		newTaskList.splice(result.destination.index, 0, movedTask)
 		setTaskList(newTaskList)
 	}
+
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
 			<TaskTableContainer maxwidth={maxwidth}>
@@ -84,7 +92,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, onTa
 					<Droppable droppableId="taskTable" type="TASK">
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
-								{taskList && taskList?.map((task, idx) => (
+								{taskList && taskList.length >= 1 && taskList?.map((task, idx) => (
 									<TaskRow
 										key={`task-${task.id}`}
 										variant={variant}

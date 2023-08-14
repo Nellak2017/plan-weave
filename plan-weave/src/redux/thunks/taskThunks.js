@@ -1,12 +1,12 @@
-import { addTask, deleteTask, editTask } from './taskReducer'
+import { addTask, deleteTask, editTask } from '../reducers/taskReducer'
 
-// Action Creators
-export const addNewTask = (task) => (dispatch) => {
+// Thunks for tasks
+export const addNewTask = task => (dispatch) => {
   // You can perform any necessary logic here before dispatching the action
   dispatch(addTask(task))
 }
 
-export const removeTask = (taskId) => (dispatch) => {
+export const removeTask = taskId => (dispatch) => {
   // You can perform any necessary logic here before dispatching the action
   dispatch(deleteTask(taskId))
 }
