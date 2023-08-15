@@ -19,42 +19,54 @@ import { formatTimeLeft } from '../../utils/helpers.js'
 import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { removeTask } from '../../../redux/thunks/taskThunks.js'
+import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
 import { useDispatch, useSelector } from 'react-redux'
+import { pureTaskAttributeUpdate } from '../../utils/helpers'
 /*
 TODO: Based on Status, conditionally render the highlighting feature
 TODO: Add Status Prop that will conditionally render the Gray, Yellow, Orange, and Green highlights for tasks 
 TODO: Add Outline Prop that will let you define a color for the outline if there is one at all (used in selection)
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
+TODO: Instead of passing many task props, pass task Object instead
 */
 
-function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INCOMPLETE, id = 0, variant = 'dark', maxwidth = 818, updateTask, index }) {
+function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INCOMPLETE, id = 0, variant = 'dark', maxwidth = 818, index, useReduxData = true}) {
+	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (!maxwidth || isNaN(maxwidth) || maxwidth <= 0) maxwidth = 818
 	if (id === undefined || id === null || isNaN(id) || id < 0) console.error(`Id is not a valid number, id = ${id}`)
 	if (index === undefined || index === null || isNaN(index) || index < 0) console.error(`index is not a valid number in row = ${id}, index = ${index}`)
 
+	// Redux + Some Optional Local State
 	const dispatch = useDispatch()
-	const tasks = useSelector(state => state.tasks)
-	const [isChecked, setIsChecked] = useState(status === TASK_STATUSES.COMPLETED)
-	const handleCheckBoxClicked = () => setIsChecked(!isChecked)
 	const uniqueId = `task-${id}` // used for drag-n-drop feature.
-	const handleTaskChange = newTask => {
-		updateTask(task.id, newTask)
+	const [isChecked, setIsChecked] = useState(status === TASK_STATUSES.COMPLETED)
+	const [localStatus, setLocalStatus] = useState(status) // Used to have local task highlighting instead of relying on redux solely (optional)
+
+	// Handlers
+	const handleCheckBoxClicked = async () => {
+		if (!isChecked) toast.info('This Task was Completed')
+		const updatedTask = await pureTaskAttributeUpdate({
+			index: 0,
+			attribute: 'status',
+			value: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
+			taskList: [{ task, waste, ttc, eta, status, id }]
+		})
+		updateTask(id, updatedTask[0])(dispatch)
+		setIsChecked(!isChecked)
+		if (!useReduxData) setLocalStatus(isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED) // Local Status Update if not using redux
 	}
 	const handleDeleteTask = () => {
-		dispatch(removeTask(id))
+		removeTask(id)(dispatch)
 		toast.info('This Task was deleted')
 	}
 
-	// Add Update Feature
-
 	return (
 		<Draggable draggableId={uniqueId} index={index}>
-			{(provided) => (
+			{provided => (
 				<TaskRowStyled
 					variant={variant}
-					status={status}
+					status={useReduxData ? status : localStatus}
 					ref={provided.innerRef}
 					{...provided.draggableProps}
 					style={{

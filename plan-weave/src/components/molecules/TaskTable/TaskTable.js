@@ -87,6 +87,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useR
 			<TaskTableContainer maxwidth={maxwidth}>
 				<button onClick={() => console.log(taskList)}>Test</button>
 				<button onClick={() => handleTaskAttributeUpdate(1, 'waste', 4, taskList)}>task attrib update</button>
+				<button onClick={() => console.log(tasksFromRedux)}>Check Store</button>
 				<table>
 					<TableHeader variant={variant} labels={headerLabels} />
 					<Droppable droppableId="taskTable" type="TASK">

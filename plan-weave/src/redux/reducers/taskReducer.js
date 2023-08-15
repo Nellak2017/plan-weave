@@ -8,6 +8,7 @@ const initialState = {
 		{ status: 'waiting', waste: 2, ttc: 5, eta: '23:30', id: 3 },
 		{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4 },
 	], // Initial state for tasks
+	//tasks: []
 }
 
 // TODO: Test this reducer 
