@@ -13,9 +13,6 @@ import { addNewTask } from '../../../redux/thunks/taskThunks'
 import { useDispatch, useSelector } from 'react-redux'
 
 /* 
- TODO: Add a parent to pass down props to this
- TODO: Verify that prop drilling works
-
  TODO: Fix the Full Task Schema (See Full Task TODO)
 
  TODO: Gray out, out of range completed tasks.
@@ -33,7 +30,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useR
 	const tasksFromRedux = useSelector(state => state.tasks.tasks)
 	const [taskList, setTaskList] = useState(useReduxData ? tasksFromRedux : tasks)
 
-	useEffect(() => { useReduxData ? setTaskList(tasksFromRedux) : setTaskList(tasks)}, [tasksFromRedux])
+	useEffect(() => { useReduxData ? setTaskList(tasksFromRedux) : setTaskList(tasks) }, [tasksFromRedux])
 
 	// Validate tasks and correct invalid ones when the page loads in
 	useEffect(() => {
@@ -82,12 +79,20 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useR
 		setTaskList(newTaskList)
 	}
 
+	// Sort by timestamp, re-arranges the tasks by timestamp locally only
+	// For testing purposes only, parent will handle this task
+	const testSortByTimeStamp = () => {
+		const sortedTasks = [...taskList].sort((a, b) => a.timestamp - b.timestamp)
+		setTaskList(sortedTasks)
+	}
+
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
 			<TaskTableContainer maxwidth={maxwidth}>
 				<button onClick={() => console.log(taskList)}>Test</button>
 				<button onClick={() => handleTaskAttributeUpdate(1, 'waste', 4, taskList)}>task attrib update</button>
 				<button onClick={() => console.log(tasksFromRedux)}>Check Store</button>
+				<button onClick={() => testSortByTimeStamp()}>Sort By Timestamp</button>
 				<table>
 					<TableHeader variant={variant} labels={headerLabels} />
 					<Droppable droppableId="taskTable" type="TASK">

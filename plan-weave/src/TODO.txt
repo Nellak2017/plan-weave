@@ -37,7 +37,6 @@ Today's Tasks Organism (31 - (10) hours remain)(7.75 days at 4 hours/day)
 		- [X] Redux Store Set up
 	- [ ] Testing Reducers
 	- [ ] Defining Selectors
-	- [ ] Defining API for Thunks
 	- [ ] Defining Store
 		- [ ] Tasks
 		- [ ] Settings
@@ -48,6 +47,8 @@ Today's Tasks Organism (31 - (10) hours remain)(7.75 days at 4 hours/day)
 			- [ ] name
 			- [ ] display name
 			- [ ] profile picture
+	- [ ] Defining API for Thunks
+
 - [ ] Full Task (Display logic)
 	- [ ] Column Names 
 	- [ ] Task Name Input (re-use)
@@ -71,6 +72,7 @@ Today's Tasks Organism (31 - (10) hours remain)(7.75 days at 4 hours/day)
 		- [ ] Deleting Task -> Delete Task Id, either simply or update DB repr of open spaces on delete
 		- [ ] Editing/Reading Task -> Don't change Id
 	- [ ] Task Display Toggle button (Toggles between Simple Display and Full task display)
+	
 - [ ] Pagination
 	- [ ] Copy what you saw on other site that looks pretty
 - [ ] Today's Tasks Display Header

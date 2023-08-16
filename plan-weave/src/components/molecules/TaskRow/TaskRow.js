@@ -12,7 +12,6 @@ import {
 	MdOutlineCheckBoxOutlineBlank,
 	MdOutlineCheckBox
 } from 'react-icons/md'
-import { AiOutlineEllipsis } from 'react-icons/ai'
 import { BiTrash } from 'react-icons/bi'
 import { Draggable } from 'react-beautiful-dnd'
 import { formatTimeLeft } from '../../utils/helpers.js'
@@ -20,11 +19,9 @@ import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch} from 'react-redux'
 import { pureTaskAttributeUpdate } from '../../utils/helpers'
 /*
-TODO: Based on Status, conditionally render the highlighting feature
-TODO: Add Status Prop that will conditionally render the Gray, Yellow, Orange, and Green highlights for tasks 
 TODO: Add Outline Prop that will let you define a color for the outline if there is one at all (used in selection)
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
 TODO: Instead of passing many task props, pass task Object instead
@@ -66,7 +63,7 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INC
 			{provided => (
 				<TaskRowStyled
 					variant={variant}
-					status={useReduxData ? status : localStatus}
+					status={useReduxData ? status : localStatus} // local status update optionally or redux status
 					ref={provided.innerRef}
 					{...provided.draggableProps}
 					style={{

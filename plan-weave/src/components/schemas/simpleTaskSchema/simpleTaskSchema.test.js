@@ -1,5 +1,8 @@
 import { simpleTaskSchema, fillDefaultsForSimpleTask } from "./simpleTaskSchema"
 import { TASK_STATUSES } from '../../utils/constants'
+import { Timestamp } from 'firebase/firestore'
+
+const timestamp = Timestamp.fromDate(new Date()).seconds
 
 const validTask = {
 	task: 'Example task',
@@ -8,6 +11,7 @@ const validTask = {
 	eta: '14:30',
 	id: 1,
 	// missing status
+	// missing timestamp
 }
 
 describe('Simple Task Schema', () => {
@@ -169,6 +173,30 @@ describe('Simple Task Schema', () => {
 		// Add more invalid length test cases as needed
 	]
 
+	const validTimeStamps = [
+		{
+			task: 'Example task',
+			waste: 1,
+			ttc: 1,
+			eta: '12:00',
+			id: 1,
+			status: 'incomplete',
+			timestamp: timestamp,
+		},
+	]
+
+	const invalidTimeStamps = [
+		{
+			task: 'Example task',
+			waste: 1,
+			ttc: 1,
+			eta: '12:00',
+			id: 1,
+			status: 'incomplete',
+			timestamp: 'invalid-timestamp', // An invalid timestamp
+		},
+	]
+
 	it.each(validTestCases)('Should work on valid task', async (testCase) => {
 		const result = await simpleTaskSchema.isValid(testCase)
 		expect(result).toBe(true)
@@ -221,6 +249,14 @@ describe('Simple Task Schema', () => {
 	})
 	it.each(invalidLengthTestCases)('Should reject task with incorrect length', async (testCase) => {
 		const result = await simpleTaskSchema.isValid(testCase)
+		expect(result).toBe(false)
+	})
+	it.each(validTimeStamps)('Should accept tasks with valid time stamps', async (testcase) => {
+		const result = await simpleTaskSchema.isValid(testcase)
+		expect(result).toBe(true)
+	})
+	it.each(invalidTimeStamps)('Should reject tasks with invalid time stamps', async (testcase) => {
+		const result = await simpleTaskSchema.isValid(testcase)
 		expect(result).toBe(false)
 	})
 })

@@ -1,12 +1,15 @@
 // reducers/taskReducer.js
 import { createSlice } from '@reduxjs/toolkit'
 
+import { Timestamp } from 'firebase/firestore'
+const timestamp = Timestamp.fromDate(new Date()).seconds // used for testing purposes
+
 const initialState = {
 	tasks: [
-		{ status: 'completed', waste: 2, ttc: 5, eta: '15:30', id: 1 },
-		{ status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: '18:30', id: 2 },
-		{ status: 'waiting', waste: 2, ttc: 5, eta: '23:30', id: 3 },
-		{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4 },
+		{ status: 'completed', waste: 2, ttc: 5, eta: '15:30', id: 1, timestamp: timestamp },
+		{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4, timestamp: timestamp + 3 },
+		{ status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: '18:30', id: 2, timestamp: timestamp + 1 },
+		{ status: 'waiting', waste: 2, ttc: 5, eta: '23:30', id: 3, timestamp: timestamp + 2 },
 	], // Initial state for tasks
 	//tasks: []
 }

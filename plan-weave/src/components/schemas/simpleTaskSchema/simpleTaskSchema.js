@@ -1,5 +1,8 @@
 import * as Yup from 'yup'
 import { TASK_STATUSES, STATUS_COLORS } from '../../utils/constants'
+import { Timestamp } from 'firebase/firestore'
+
+const timestamp = Timestamp.fromDate(new Date()).seconds
 
 // This schema is for the Simple Task
 
@@ -77,7 +80,8 @@ export const simpleTaskSchema = Yup.object({
 		}),
 	id: Yup.number().positive('Id must be greater than 0').required('Id is required'),
 	status: Yup.string()
-		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value')
+		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value'),
+	timestamp: Yup.number().positive('Timestamp must be a positive number'),
 }).default({})
 
 // NOTE: Avoid using default id, as it will not be unique
@@ -93,6 +97,7 @@ export const fillDefaultsForSimpleTask = (obj) => {
 		eta: '12:00',
 		id: 1,
 		status: TASK_STATUSES.INCOMPLETE,
+		timestamp: timestamp.seconds,
 		...obj,
 	}
 
