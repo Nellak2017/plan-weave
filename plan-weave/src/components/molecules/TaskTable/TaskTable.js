@@ -23,7 +23,7 @@ import { useDispatch, useSelector } from 'react-redux'
  TODO: Add a TimeStamp to the Schema for tasks, it is necessary for purging old, graying out old, etc.
 */
 
-const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useReduxData = true }) => {
+const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useReduxData = false }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const dispatch = useDispatch()

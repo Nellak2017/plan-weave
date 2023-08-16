@@ -24,21 +24,21 @@ function DropDownButton({ size = 's', color = 'primary', options, children = 'Au
     <DropdownContainer tabIndex={tabIndex}>
       <DropDownButtonStyled
         onClick={handleToggle}
-        onKeyDown={e => {if(e.key==='Enter'){handleToggle()}}}
+        onKeyDown={e => { if (e.key === 'Enter') { handleToggle() } }}
         size={size}
         color={color} {...rest}
         onBlur={() => setIsOpen(false)} // close if clicked off
-        >
+      >
         {children}
         <AiFillCaretDown />
       </DropDownButtonStyled>
       <DropdownMenu open={isOpen}>
         {options?.map((option, index) => (
           <DropdownMenuItem
-              key={index}
-              onClick={e => handleOptionClick(e, option?.listener)}
-              >
-              {option?.name}
+            key={index}
+            onMouseDown={ e => handleOptionClick(e, option?.listener)}
+          >
+            {option?.name}
           </DropdownMenuItem>
         ))}
       </DropdownMenu>

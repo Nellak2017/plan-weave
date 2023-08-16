@@ -27,7 +27,7 @@ TODO: Fine tune the spacing of the row items to make it more natural. Especially
 TODO: Instead of passing many task props, pass task Object instead
 */
 
-function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INCOMPLETE, id = 0, variant = 'dark', maxwidth = 818, index, useReduxData = true}) {
+function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INCOMPLETE, id = 0, variant = 'dark', maxwidth = 818, index, useReduxData = false}) {
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (!maxwidth || isNaN(maxwidth) || maxwidth <= 0) maxwidth = 818

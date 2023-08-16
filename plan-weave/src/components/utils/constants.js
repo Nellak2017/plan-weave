@@ -17,3 +17,15 @@ export const STATUS_COLORS = {
 	[TASK_STATUSES.WAITING]: colors.warning,
 	[TASK_STATUSES.INCONSISTENT]: colors.danger,
 }
+
+export const SORTING_METHODS = {
+	'timestamp': tasks => {
+		return tasks.slice().sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+	},
+	'name': tasks => {
+		return tasks.slice().sort((a, b) => (a.task || '').localeCompare(b.task || ''))
+	},
+	'': tasks => {
+		return tasks.slice()
+	},
+}

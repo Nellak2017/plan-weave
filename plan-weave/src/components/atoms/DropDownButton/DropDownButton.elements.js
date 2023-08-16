@@ -47,7 +47,7 @@ export const DropdownMenu = styled.ul`
 
 // Styled component for dropdown menu items
 export const DropdownMenuItem = styled.li`
-  display: ${props => props.open} ? block : none;
+  display: ${props => (props.open ? 'block' : 'none')};
   cursor: pointer;
   height: 2rem;
   display: flex;

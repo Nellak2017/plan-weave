@@ -29,6 +29,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	clock1Text = '', clock2Text = '', owlToolTip = 'Toggle Overnight Mode', addToolTip = 'Add a New Task',
 	deleteToolTip = 'Delete selected', dropDownToolTip = 'Select Sorting Method',
 	...rest }) {
+
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const theme = useContext(ThemeContext)
@@ -36,6 +37,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	const [startTime, setStartTime] = useState(parse(start, 'HH:mm', new Date()))
 	const [endTime, setEndTime] = useState(parse(end, 'HH:mm', new Date()))
 	const [overNightMode, setOverNightMode] = useState(overNight) // if true, then end<start means over-night
+
 	useEffect(() => { checkTimeRange() }, [])
 	useEffect(() => { checkTimeRange() }, [overNightMode])
 	useEffect(() => {
@@ -45,6 +47,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	useEffect(() => {
 		formatTimeLeft({ currentTime, endTime, overNightMode })
 	}, [currentTime, startTime, endTime])
+
 	const checkTimeRange = () => {
 		if ((getTime(endTime) < getTime(startTime)) && !overNightMode) {
 			setEndTime(startTime)
@@ -62,6 +65,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 				autoClose: 5000,
 			})
 	}
+
 	// Bottom Left Icon Events
 	const addEvent = () => {
 		toast.info('TODO: Complete Add Event')
