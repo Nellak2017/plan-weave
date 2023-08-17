@@ -9,7 +9,7 @@ Today's Tasks Organism (31 - (20) hours remain)(7.75 days at 4 hours/day)
 	- [X] Right Buttons (Auto Sort only)
 	- [X] Tab Indices (Component Level)
 	- [X] Tool Tips
-- [ ] Simple Task (Display logic for now, sorting and highlighting and other will be solved later)
+- [ ] Simple Task 
 	- [X] Column Names (like Task, Inefficiency, etc.)
 	- [X] Task Area in the table
 	- [X] Checkbox
@@ -40,8 +40,10 @@ Today's Tasks Organism (31 - (20) hours remain)(7.75 days at 4 hours/day)
 	- [ ] Defining Store
 		- [ ] Tasks
 		- [ ] Settings
-			- [ ] Dark mode
+			- [ ] Dark mode (Switch at top)
 			- [ ] Notifications
+			- [ ] Default Tasks
+			- [ ] Default Ordering of Tasks
 		- [ ] User
 			- [ ] id
 			- [ ] name

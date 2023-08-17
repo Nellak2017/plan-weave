@@ -3,6 +3,7 @@ import { useDispatch, useSelector, Provider } from 'react-redux'
 import { THEMES, SORTING_METHODS, SORTING_METHODS_NAMES, SIMPLE_TASK_HEADERS } from '../../utils/constants'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
+import { StyledTaskEditor } from './TaskEditor.elements'
 
 /*
 	TODO: Add Schema validation for the input Options for the Drop-down menu
@@ -54,17 +55,19 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = '', maxwidth =
 			<button onClick={() => {
 				console.log(tasksFromRedux)
 			}}>Show Redux Store</button>
-			<TaskControl
-				variant={variant}
-				options={newDropdownOptions}
-				clock1Text={''}
-				clock2Text={''}
-			/>
-			<TaskTable
-				variant={variant}
-				headerLabels={SIMPLE_TASK_HEADERS}
-				maxwidth={maxwidth}
-			/>
+			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
+				<TaskControl
+					variant={variant}
+					options={newDropdownOptions}
+					clock1Text={''}
+					clock2Text={''}
+				/>
+				<TaskTable
+					variant={variant}
+					headerLabels={SIMPLE_TASK_HEADERS}
+					maxwidth={maxwidth}
+				/>
+			</StyledTaskEditor>
 		</TaskEditorContext.Provider>
 	)
 }

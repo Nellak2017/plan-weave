@@ -25,13 +25,21 @@ import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
  TODO: Extract out validate tasks to it's own function / hook
  TODO: Extract out certain functions to helpers to be tested etc
  TODO: Check if tasks are old every so often using a useEffect hook or something
+ TODO: Verify that the Context / Local dual feature actually works!!!!!
 */
 
 const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useContextData = true }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const { taskList, setTaskList } = useContext(TaskEditorContext)
+	const defaultTask = [
+		{ status: 'completed', waste: 2, ttc: 5, eta: '15:30', id: 1 },
+		{ status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: '18:30', id: 2 },
+		{ status: 'waiting', waste: 2, ttc: 5, eta: '23:30', id: 3 },
+		{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4 },
+	  ]
 
+	const { taskList, setTaskList } = !TaskEditorContext._currentValue ? {1:'example', 2:'example'} : useContext(TaskEditorContext)
+	const [localTasks, setLocalTasks] = useState(!tasks ? defaultTask: tasks)
 	const dispatch = useDispatch()
 
 	// Validate tasks and correct invalid ones when the page loads in
@@ -73,19 +81,20 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useC
 		//onTasksUpdate(updatedTaskList) // Notify parent about the change
 	}
 
+	// Modded to include the local tasks
 	const onDragEnd = result => {
 		if (!result.destination) return // Drag was canceled or dropped outside the list
-		const newTaskList = Array.from(taskList)
+		const newTaskList = Array.from(taskList ? taskList : localTasks)
 		const [movedTask] = newTaskList.splice(result.source.index, 1)
 		newTaskList.splice(result.destination.index, 0, movedTask)
-		setTaskList(newTaskList)
+		taskList ? setTaskList(newTaskList) : setLocalTasks(newTaskList)
 	}
 
 	// today is a Date, timestamp is a number of seconds
 	// returns true if timestamp is from yesterday, false otherwise
 	function isTimestampFromYesterday(today, timestamp) {
 		// Seconds since start of today
-		const todayToSeconds = today.getTime()/1000
+		const todayToSeconds = today.getTime() / 1000
 		const seconds = Math.floor((today.getTime() - today.setHours(0, 0, 0, 0)) / 1000)
 
 		// If seconds since start of today < today - timestamp, then it is from yesterday
@@ -115,6 +124,22 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useC
 										old={isTimestampFromYesterday(new Date(), task.timestamp) ? 'old' : ''}
 									/>)
 								)}
+								{!taskList && localTasks.length >= 1 && localTasks?.map((task, idx) => (
+									<TaskRow
+										key={`task-${task.id}`}
+										variant={variant}
+										task={task.task}
+										waste={task.waste}
+										ttc={task.ttc}
+										eta={task.eta}
+										id={task.id}
+										status={task.status}
+										index={idx}
+										timestamp={task.timestamp}
+										old={isTimestampFromYesterday(new Date(), task.timestamp) ? 'old' : ''}
+									/>
+								))
+								}
 								{provided.placeholder}
 							</tbody>
 						)}

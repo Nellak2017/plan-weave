@@ -30,6 +30,7 @@ TODO: Add Outline Prop that will let you define a color for the outline if there
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
 TODO: Instead of passing many task props, pass task Object instead
 TODO: Find out if validation is needed or not
+TODO: Add required Redux stuff to stories
 */
 
 function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INCOMPLETE, id = 0, timestamp = timestampOuter,
@@ -102,20 +103,20 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INC
 					maxwidth={maxwidth}
 					old={old}
 				>
-					<IconContainer {...provided.dragHandleProps}>
+					<IconContainer title={'Drag-n-Drop tasks to change view'} {...provided.dragHandleProps}>
 						<DragIndicator size={32} />
 					</IconContainer>
-					<IconContainer>
+					<IconContainer title={isChecked ? 'Mark Incomplete' : 'Mark Complete'}>
 						{isChecked ? (
 							<MdOutlineCheckBox size={32} onClick={handleCheckBoxClicked} />
 						) : (
 							<MdOutlineCheckBoxOutlineBlank size={32} onClick={handleCheckBoxClicked} />
 						)}
 					</IconContainer>
-					<TaskContainer>
+					<TaskContainer title={'Task Name'}>
 						<TaskInput initialValue={task} variant={variant} />
 					</TaskContainer>
-					<TimeContainer>
+					<TimeContainer title={'Wasted Time on this Task'}>
 						<p>
 							{waste && !isNaN(waste) && waste > 0 ?
 								formatTimeLeft({
@@ -127,16 +128,16 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INC
 								'0 minutes'}
 						</p>
 					</TimeContainer>
-					<TimeContainer>
+					<TimeContainer title={'Time To Complete Task'}>
 						<HoursInput initialValue={ttc} variant={variant} placeholder='hours' text='hours' />
 					</TimeContainer>
-					<TimeContainer>
+					<TimeContainer title={'Estimated Time to Finish Task'}>
 						<p>
 							{eta && /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(eta) ? eta : '00:00'}
 						</p>
 					</TimeContainer>
 					<IconContainer>
-						<BiTrash onClick={handleDeleteTask} size={32} />
+						<BiTrash title={'Delete this task'} onClick={handleDeleteTask} size={32} />
 					</IconContainer>
 				</TaskRowStyled>
 			)}

@@ -1019,6 +1019,13 @@ export const taskTablePresets = {
 // ------
 // --- Organisms ---
 
+export const taskEditorPresets = {
+  variant: {
+    light: css``,
+    dark: css``
+  },
+  color: colorPreset
+}
 
 
 // Pre-set Getter function

@@ -18,10 +18,15 @@ import 'react-toastify/dist/ReactToastify.css'
 import { ThemeContext } from 'styled-components' // needed for theme object
 import { formatTimeLeft } from '../../utils/helpers.js'
 import { THEMES } from '../../utils/constants.js'
+
+import { useDispatch } from 'react-redux'
+import { addNewTask } from '../../../redux/thunks/taskThunks.js'
+import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 /* 
 TODO: 
 - [ ] Add in the Add and Delete Events From Parent Organism whenever we make the Task Row Molecule
 - [ ] If Tab Index is messed up from Other Components, fix it with dynamic tab index assignment
+- [ ] Whenever you add the API middleware for adding tasks, update add method so that unique id is ensured even on db
 */
 
 function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x0, x1 = -36,
@@ -33,6 +38,9 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const theme = useContext(ThemeContext)
+	const dispatch = useDispatch()
+	const { taskList, setTaskList } = useContext(TaskEditorContext)
+
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
 	const [startTime, setStartTime] = useState(parse(start, 'HH:mm', new Date()))
 	const [endTime, setEndTime] = useState(parse(end, 'HH:mm', new Date()))
@@ -68,8 +76,17 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 
 	// Bottom Left Icon Events
 	const addEvent = () => {
-		toast.info('TODO: Complete Add Event')
-		console.log('TODO: Complete Add Event')
+		toast.info('You added a New Default Task')
+		addNewTask({
+			task: '',
+			waste: 0,
+			ttc: 1,
+			eta: '12:00',
+			status: 'incomplete',
+			id: taskList.length + 1,
+			timestamp: Math.floor((new Date().getTime()) / 1000)
+		})(dispatch)
+		console.log('You added a New Default Task')
 	}
 	const deleteEvent = () => {
 		toast.info('TODO: Complete Delete Event')
@@ -137,7 +154,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 					<Separator variant={variant} color={color} />
 				</BottomContentContainer>
 				<BottomContentContainer>
-					<p title={'time left until end of task period'}>{formatTimeLeft({ currentTime, endTime, overNightMode })}</p>
+					<p title={'Time left until End of Task Period'}>{formatTimeLeft({ currentTime, endTime, overNightMode })}</p>
 				</BottomContentContainer>
 				<BottomContentContainer>
 					<Separator variant={variant} color={color} />
