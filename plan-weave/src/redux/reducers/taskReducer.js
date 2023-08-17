@@ -6,10 +6,10 @@ const timestamp = Timestamp.fromDate(new Date()).seconds // used for testing pur
 
 const initialState = {
 	tasks: [
-		{ status: 'completed', waste: 2, ttc: 5, eta: '15:30', id: 1, timestamp: timestamp },
-		{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4, timestamp: timestamp + 3 },
-		{ status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: '18:30', id: 2, timestamp: timestamp + 1 },
-		{ status: 'waiting', waste: 2, ttc: 5, eta: '23:30', id: 3, timestamp: timestamp + 2 },
+		{ status: 'completed', task: 'AAA', waste: 2, ttc: 5, eta: '15:30', id: 1, timestamp: timestamp },
+		{ status: 'incomplete', task: 'CCC', waste: 1, ttc: 2, eta: '18:30', id: 2, timestamp: timestamp + 1 },
+		{ status: 'waiting', task: 'DDD', waste: 2, ttc: 5, eta: '23:30', id: 3, timestamp: timestamp + 3 },
+		{ status: 'inconsistent', task: 'BBB', waste: 1, ttc: 2, eta: '01:30', id: 4, timestamp: timestamp + 2 },
 	], // Initial state for tasks
 	//tasks: []
 }

@@ -28,7 +28,7 @@ export const pureTaskAttributeUpdate = async ({
 }) => {
 	// Verify Inputs
 	// ---
-	if (isNaN(index) || index < 0 || index === null || index > taskList?.length || !attribute || !value || taskList === undefined || !schema || !schemaDefaultFx)
+	if (isNaN(index) || index < 0 || index === null || index > taskList?.length || attribute === undefined || !attribute || !value || taskList === undefined || !schema || !schemaDefaultFx)
 		throw new TypeError(
 			`Atleast one of the arguments in pureTaskAttributeUpdate is undefined
 				index : ${index}

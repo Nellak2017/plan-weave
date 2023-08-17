@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import TableHeader from '../../atoms/TableHeader/TableHeader'
 import TaskRow from '../TaskRow/TaskRow'
 import { TaskTableContainer } from './TaskTable.elements'
@@ -12,6 +12,8 @@ import { THEMES } from '../../utils/constants'
 import { addNewTask } from '../../../redux/thunks/taskThunks'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
+
 /* 
  TODO: Fix the Full Task Schema (See Full Task TODO)
 
@@ -20,17 +22,15 @@ import { useDispatch, useSelector } from 'react-redux'
  TODO: All Completed tasks must have a checkmark beside them. 
 	   Do this on page load and everytime the checkmarks change.
  TODO: Set the status of a task to completed if checkmark is pressed
- TODO: Add a TimeStamp to the Schema for tasks, it is necessary for purging old, graying out old, etc.
+ TODO: Extract out validate tasks to it's own function / hook
 */
 
-const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useReduxData = false }) => {
+const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useContextData = true}) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const dispatch = useDispatch()
-	const tasksFromRedux = useSelector(state => state.tasks.tasks)
-	const [taskList, setTaskList] = useState(useReduxData ? tasksFromRedux : tasks)
+	const { taskList, setTaskList } = useContextData ? useContext(TaskEditorContext) : useState(tasks) 
 
-	useEffect(() => { useReduxData ? setTaskList(tasksFromRedux) : setTaskList(tasks) }, [tasksFromRedux])
+	const dispatch = useDispatch()
 
 	// Validate tasks and correct invalid ones when the page loads in
 	useEffect(() => {
@@ -79,20 +79,9 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useR
 		setTaskList(newTaskList)
 	}
 
-	// Sort by timestamp, re-arranges the tasks by timestamp locally only
-	// For testing purposes only, parent will handle this task
-	const testSortByTimeStamp = () => {
-		const sortedTasks = [...taskList].sort((a, b) => a.timestamp - b.timestamp)
-		setTaskList(sortedTasks)
-	}
-
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
 			<TaskTableContainer maxwidth={maxwidth}>
-				<button onClick={() => console.log(taskList)}>Test</button>
-				<button onClick={() => handleTaskAttributeUpdate(1, 'waste', 4, taskList)}>task attrib update</button>
-				<button onClick={() => console.log(tasksFromRedux)}>Check Store</button>
-				<button onClick={() => testSortByTimeStamp()}>Sort By Timestamp</button>
 				<table>
 					<TableHeader variant={variant} labels={headerLabels} />
 					<Droppable droppableId="taskTable" type="TASK">

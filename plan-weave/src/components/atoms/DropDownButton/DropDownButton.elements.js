@@ -42,7 +42,8 @@ export const DropdownMenu = styled.ul`
   width: 100%;
   top: 100%;
   left: 0;
-  display: ${props => (props.open ? 'block' : 'none')};
+  display: ${props => (props.open ? 'sblock' : 'none')};
+  z-index: 999; // be above all other stuff
 `;
 
 // Styled component for dropdown menu items

@@ -18,6 +18,12 @@ export const STATUS_COLORS = {
 	[TASK_STATUSES.INCONSISTENT]: colors.danger,
 }
 
+export const SORTING_METHODS_NAMES = {
+	TIMESTAMP: 'timestamp',
+	NAME: 'name',
+	DEFAULT: ''
+}
+
 export const SORTING_METHODS = {
 	'timestamp': tasks => {
 		return tasks.slice().sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
@@ -29,3 +35,5 @@ export const SORTING_METHODS = {
 		return tasks.slice()
 	},
 }
+
+export const SIMPLE_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA']

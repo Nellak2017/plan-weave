@@ -19,15 +19,19 @@ import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
-import { useDispatch} from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { pureTaskAttributeUpdate } from '../../utils/helpers'
+import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../../schemas/simpleTaskSchema/simpleTaskSchema'
+
+import { Timestamp } from 'firebase/firestore'
+const timestampOuter = Timestamp.fromDate(new Date()).seconds
 /*
 TODO: Add Outline Prop that will let you define a color for the outline if there is one at all (used in selection)
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
 TODO: Instead of passing many task props, pass task Object instead
 */
 
-function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INCOMPLETE, id = 0, variant = 'dark', maxwidth = 818, index, useReduxData = false}) {
+function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INCOMPLETE, id = 0, timestamp = timestampOuter, variant = 'dark', maxwidth = 818, index, useContextData = true}) {
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (!maxwidth || isNaN(maxwidth) || maxwidth <= 0) maxwidth = 818
@@ -43,16 +47,39 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INC
 	// Handlers
 	const handleCheckBoxClicked = async () => {
 		if (!isChecked) toast.info('This Task was Completed')
+
+		// Try to validate the task, if it fails then use defaults and warn user
+		const validateTask = task => {
+			try {
+				// validate task using schema
+				const validatedTask = simpleTaskSchema.validateSync(task, {
+					abortEarly: false, // Report all validation errors
+					stripUnknown: true, // Remove unknown fields
+				})
+				// Fill defaults for missing properties in the validated task
+				const modifiedTask = fillDefaultsForSimpleTask(validatedTask)
+				return modifiedTask
+			} catch (validationError) {
+				console.error('Task validation error:', error)
+				return null // Return null for invalid tasks
+			}
+		}
+
+		const validTask = validateTask({ task, waste, ttc, eta, status, id, timestamp })
+
 		const updatedTask = await pureTaskAttributeUpdate({
 			index: 0,
 			attribute: 'status',
 			value: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
-			taskList: [{ task, waste, ttc, eta, status, id }]
+			taskList: [validTask]
 		})
+
 		updateTask(id, updatedTask[0])(dispatch)
 		setIsChecked(!isChecked)
-		if (!useReduxData) setLocalStatus(isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED) // Local Status Update if not using redux
+		
+		if (!useContextData) setLocalStatus(isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED) // Local Status Update if not using redux
 	}
+
 	const handleDeleteTask = () => {
 		removeTask(id)(dispatch)
 		toast.info('This Task was deleted')
@@ -63,7 +90,7 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INC
 			{provided => (
 				<TaskRowStyled
 					variant={variant}
-					status={useReduxData ? status : localStatus} // local status update optionally or redux status
+					status={useContextData ? status : localStatus} // local status update optionally or context status
 					ref={provided.innerRef}
 					{...provided.draggableProps}
 					style={{

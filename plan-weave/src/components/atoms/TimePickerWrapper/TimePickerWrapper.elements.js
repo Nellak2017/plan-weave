@@ -39,7 +39,7 @@ export const TimeClockWrapper = styled.div`
 	position: absolute;
 	top: calc(100% + ${props => props.$verticalOffset + 12}px);
 	left: ${props => props.$horizontalOffset}px;
-	z-index: 1;
+	z-index: 10;
 	border-radius: 0 0 ${props => props.theme.spaces.medium} ${props => props.theme.spaces.medium};
 	background-color: ${props => props.theme.colors.lightNeutralLight};
 	width: 211px; /* Adjust the width as needed */
