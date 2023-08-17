@@ -975,6 +975,24 @@ export const taskRowPresets = {
       }
     `,
   },
+  old: {
+    old: css`
+      td {
+        position: relative;
+        &::before {
+          content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: ${props => props.theme.colors.lightNeutral}70;
+            z-index: 1;
+            pointer-events: none; /* Make the overlay non-interactive */
+        }
+      }
+      `
+  },
   color: colorPreset
 }
 

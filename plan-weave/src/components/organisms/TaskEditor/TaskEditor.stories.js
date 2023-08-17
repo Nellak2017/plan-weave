@@ -24,7 +24,7 @@ const Template = args => {
 
 const options = [
 	{ name: 'name', listener: () => console.log('Option 1 clicked'), algorithm: 'name' },
-	{ name: 'timestamp', listener: () => console.log('Option 2 clicked'), algorithm: 'timestamp' },
+	{ name: 'time created', listener: () => console.log('Option 2 clicked'), algorithm: 'timestamp' },
 	{ name: 'default', listener: () => console.log('Option 3 clicked'), algorithm: '' },
 ]
 

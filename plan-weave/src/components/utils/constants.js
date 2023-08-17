@@ -26,7 +26,7 @@ export const SORTING_METHODS_NAMES = {
 
 export const SORTING_METHODS = {
 	'timestamp': tasks => {
-		return tasks.slice().sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+		return tasks.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
 	},
 	'name': tasks => {
 		return tasks.slice().sort((a, b) => (a.task || '').localeCompare(b.task || ''))

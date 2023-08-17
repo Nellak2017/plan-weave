@@ -29,9 +29,11 @@ const timestampOuter = Timestamp.fromDate(new Date()).seconds
 TODO: Add Outline Prop that will let you define a color for the outline if there is one at all (used in selection)
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
 TODO: Instead of passing many task props, pass task Object instead
+TODO: Find out if validation is needed or not
 */
 
-function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INCOMPLETE, id = 0, timestamp = timestampOuter, variant = 'dark', maxwidth = 818, index, useContextData = true}) {
+function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INCOMPLETE, id = 0, timestamp = timestampOuter,
+	variant = 'dark', maxwidth = 818, index, old = 'no', useContextData = true }) {
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (!maxwidth || isNaN(maxwidth) || maxwidth <= 0) maxwidth = 818
@@ -64,7 +66,6 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INC
 				return null // Return null for invalid tasks
 			}
 		}
-
 		const validTask = validateTask({ task, waste, ttc, eta, status, id, timestamp })
 
 		const updatedTask = await pureTaskAttributeUpdate({
@@ -73,10 +74,9 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INC
 			value: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
 			taskList: [validTask]
 		})
-
 		updateTask(id, updatedTask[0])(dispatch)
 		setIsChecked(!isChecked)
-		
+
 		if (!useContextData) setLocalStatus(isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED) // Local Status Update if not using redux
 	}
 
@@ -99,7 +99,9 @@ function TaskRow({ task, waste, ttc, eta = '0 hours', status = TASK_STATUSES.INC
 						boxShadow: provided.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none',
 						// Add any other styles you want to maintain during dragging
 					}}
-					maxwidth={maxwidth}>
+					maxwidth={maxwidth}
+					old={old}
+				>
 					<IconContainer {...provided.dragHandleProps}>
 						<DragIndicator size={32} />
 					</IconContainer>

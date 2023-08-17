@@ -23,12 +23,14 @@ import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 	   Do this on page load and everytime the checkmarks change.
  TODO: Set the status of a task to completed if checkmark is pressed
  TODO: Extract out validate tasks to it's own function / hook
+ TODO: Extract out certain functions to helpers to be tested etc
+ TODO: Check if tasks are old every so often using a useEffect hook or something
 */
 
-const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useContextData = true}) => {
+const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useContextData = true }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const { taskList, setTaskList } = useContextData ? useContext(TaskEditorContext) : useState(tasks) 
+	const { taskList, setTaskList } = useContext(TaskEditorContext)
 
 	const dispatch = useDispatch()
 
@@ -79,6 +81,17 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useC
 		setTaskList(newTaskList)
 	}
 
+	// today is a Date, timestamp is a number of seconds
+	// returns true if timestamp is from yesterday, false otherwise
+	function isTimestampFromYesterday(today, timestamp) {
+		// Seconds since start of today
+		const todayToSeconds = today.getTime()/1000
+		const seconds = Math.floor((today.getTime() - today.setHours(0, 0, 0, 0)) / 1000)
+
+		// If seconds since start of today < today - timestamp, then it is from yesterday
+		return seconds < (todayToSeconds - timestamp)
+	}
+
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
 			<TaskTableContainer maxwidth={maxwidth}>
@@ -97,7 +110,10 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818, useC
 										eta={task.eta}
 										id={task.id}
 										status={task.status}
-										index={idx} />)
+										index={idx}
+										timestamp={task.timestamp}
+										old={isTimestampFromYesterday(new Date(), task.timestamp) ? 'old' : ''}
+									/>)
 								)}
 								{provided.placeholder}
 							</tbody>

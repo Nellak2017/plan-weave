@@ -18,6 +18,7 @@ export const TaskRowStyled = styled.tr`
   	${getPresetCSS(taskRowPresets, 'variant')};
 	${getPresetCSS(taskRowPresets, 'status')};
 	${getPresetCSS(taskRowPresets, 'color')};
+	${getPresetCSS(taskRowPresets, 'old')}; // intended to gray out old tasks if old prop ='old'
 
 	* > svg:hover {
 		cursor: pointer;
