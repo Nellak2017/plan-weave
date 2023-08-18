@@ -4,7 +4,7 @@ import TaskTable from './TaskTable'
 import { SIMPLE_TASK_HEADERS } from '../../utils/constants.js'
 // redux stuff
 import store from '../../../redux/store'
-import { Provider, useSelector } from 'react-redux'
+import { Provider } from 'react-redux'
 
 export default {
   title: 'Molecules/TaskTable',
@@ -23,22 +23,13 @@ const TemplateWithProvider = args => {
   )
 }
 
-const Template = args => {
-  const tasks = useSelector(state => state.tasks.tasks)
-  return <TaskTable {...args} />
-}
+const Template = args => <TaskTable {...args} />
+
 
 export const light = TemplateWithProvider.bind({})
 light.args = {
   variant: 'light',
   headerLabels: SIMPLE_TASK_HEADERS,
-  /*
-  tasks: [
-    { task: 'Example Task 1', waste: 2, ttc: 5, eta: '15:30', id: 1 },
-    { task: 'Example Task 2', waste: 1, ttc: 3, eta: '18:30', id: 2 },
-    // Add more tasks here
-  ],
-  */
 }
 
 export const dark = TemplateWithProvider.bind({})

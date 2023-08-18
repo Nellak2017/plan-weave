@@ -112,7 +112,7 @@ export const formatTimeLeft = ({
 	timeDifference = 0,
 }) => {
 	// Returns Time in Milliseconds, given the constaints of the application
-	const calculateTimeDifference = ({endTime, currentTime = new Date(), timeDifference = 0, overNightMode = false}) => {
+	const calculateTimeDifference = ({ endTime, currentTime = new Date(), timeDifference = 0, overNightMode = false }) => {
 		if (timeDifference > 0) return timeDifference * MILLISECONDS_PER_HOUR // Convert hours to milliseconds
 
 		const currentTimeValue = currentTime.getTime()
@@ -138,5 +138,34 @@ export const formatTimeLeft = ({
 		}
 	}
 
-	return formatTime(calculateTimeDifference({endTime, currentTime, timeDifference, overNightMode}))
+	return formatTime(calculateTimeDifference({ endTime, currentTime, timeDifference, overNightMode }))
+}
+
+// today is a Date, timestamp is a number of seconds
+// returns true if timestamp is from yesterday, false otherwise
+export const isTimestampFromYesterday = (today, timestamp) => {
+	// Seconds since start of today
+	const todayToSeconds = today.getTime() / 1000
+	const seconds = Math.floor((today.getTime() - today.setHours(0, 0, 0, 0)) / 1000)
+
+	// If seconds since start of today < today - timestamp, then it is from yesterday
+	return seconds < (todayToSeconds - timestamp)
+}
+
+// Try to validate the task, if it fails then use defaults and warn user
+export const validateTask = task => {
+	try {
+		// validate task using schema
+		const validatedTask = simpleTaskSchema.validateSync(task, {
+			abortEarly: false, // Report all validation errors
+			stripUnknown: true, // Remove unknown fields
+		})
+		// Fill defaults for missing properties in the validated task
+		const modifiedTask = fillDefaultsForSimpleTask(validatedTask)
+		return modifiedTask
+	} catch (validationError) {
+		console.error('Task validation error:', validationError)
+		// Fill defaults for missing properties in the validated task
+		return null
+	}
 }

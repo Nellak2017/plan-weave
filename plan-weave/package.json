@@ -21,6 +21,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "date-fns": "^2.30.0",
     "firebase": "^9.23.0",
+    "lodash": "^4.17.21",
     "next": "13.3.4",
     "react-beautiful-dnd": "^13.1.1",
     "react-firebase-hooks": "^5.1.1",

@@ -1,4 +1,7 @@
 import TaskControl from './TaskControl'
+// redux stuff
+import store from '../../../redux/store'
+import { Provider } from 'react-redux'
 
 export default {
   title: 'Molecules/TaskControl',
@@ -12,6 +15,14 @@ export default {
   },
 }
 
+const TemplateWithProvider = args => {
+  return (
+    <Provider store={store}>
+      <Template {...args} />
+    </Provider>
+  )
+}
+
 const Template = args => <TaskControl {...args} />
 
 const options = [
@@ -20,7 +31,7 @@ const options = [
 	{ name: 'Option 3', listener: () => console.log('Option 3 clicked') },
   ]  
 
-export const Light = Template.bind({})
+export const Light = TemplateWithProvider.bind({})
 Light.args = {
   variant: 'light',
   options: options,
@@ -28,11 +39,11 @@ Light.args = {
   // Add other args for SearchBar, DropDownButton, and Date Picker
 }
 
-export const Dark = Template.bind({})
+export const Dark = TemplateWithProvider.bind({})
 Dark.args = {
   variant: 'dark',
   options: options,
   clock1Text: '',
-  clock2Text: ''
+  clock2Text: '',
   // Add other args for SearchBar, DropDownButton, and Date Picker
 }

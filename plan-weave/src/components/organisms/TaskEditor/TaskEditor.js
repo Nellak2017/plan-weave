@@ -12,19 +12,19 @@ import { StyledTaskEditor } from './TaskEditor.elements'
 
 export const TaskEditorContext = createContext()
 
-const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = '', maxwidth = 818, options, useReduxData = true }) => {
+const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', maxwidth = 818, options }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
-	if (sortingAlgorithm && !Object.keys(SORTING_METHODS_NAMES).includes(sortingAlgorithm)) sortingAlgorithm = ''
+	if (sortingAlgorithm && !Object.keys(SORTING_METHODS_NAMES).includes(sortingAlgorithm)) sortingAlgorithm = 'timestamp'
 
-	const tasksFromRedux = useSelector(state => state.tasks.tasks)
-	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm.toLowerCase().trim() || '')
-	const [taskList, setTaskList] = useState(useReduxData ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
+	const tasksFromRedux = useSelector(state => state?.tasks?.tasks)
+	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
+	const [taskList, setTaskList] = useState(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
 
 	useEffect(() => {
-		setTaskList(!sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](tasksFromRedux))
+		if (tasksFromRedux) setTaskList(!sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](tasksFromRedux))
 	}, [tasksFromRedux])
 	useEffect(() => {
-		setTaskList(old => !sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](old))
+		if (tasksFromRedux) setTaskList(old => !sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](old))
 	}, [sortingAlgo])
 
 

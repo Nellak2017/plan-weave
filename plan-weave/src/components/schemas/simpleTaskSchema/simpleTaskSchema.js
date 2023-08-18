@@ -64,7 +64,7 @@ export const simpleTaskSchema = Yup.object({
 		.min(0.01)
 		.default(1)
 		.transform((value, originalValue) => {
-			if (originalValue === '' || originalValue === null) {
+			if (originalValue === '' || originalValue === null || originalValue <= .01) {
 				return 1
 			}
 			return value

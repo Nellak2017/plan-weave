@@ -17,7 +17,7 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { ThemeContext } from 'styled-components' // needed for theme object
 import { formatTimeLeft } from '../../utils/helpers.js'
-import { THEMES } from '../../utils/constants.js'
+import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS } from '../../utils/constants.js'
 
 import { useDispatch } from 'react-redux'
 import { addNewTask } from '../../../redux/thunks/taskThunks.js'
@@ -31,31 +31,32 @@ TODO:
 
 function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x0, x1 = -36,
 	start = '10:30', end = '23:30', owlSize: iconSize = '32px', overNight = false,
-	clock1Text = '', clock2Text = '', owlToolTip = 'Toggle Overnight Mode', addToolTip = 'Add a New Task',
-	deleteToolTip = 'Delete selected', dropDownToolTip = 'Select Sorting Method',
+	clock1Text = '', clock2Text = '', toolTips = DEFAULT_TASK_CONTROL_TOOL_TIPS,
 	...rest }) {
 
+	// Input Validation and Destructuring
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip } = { ...toolTips }
 
+	// Context and Redux Stuff
 	const theme = useContext(ThemeContext)
 	const dispatch = useDispatch()
-	const { taskList, setTaskList } = useContext(TaskEditorContext)
+	const { taskList, setTaskList } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
 
+	// State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
 	const [startTime, setStartTime] = useState(parse(start, 'HH:mm', new Date()))
 	const [endTime, setEndTime] = useState(parse(end, 'HH:mm', new Date()))
 	const [overNightMode, setOverNightMode] = useState(overNight) // if true, then end<start means over-night
 
-	useEffect(() => { checkTimeRange() }, [])
+	// Effects
 	useEffect(() => { checkTimeRange() }, [overNightMode])
 	useEffect(() => {
 		const intervalId = setInterval(() => { setCurrentTime(new Date()) }, 1000)
 		return () => { clearInterval(intervalId) }
 	}, []) // update time every 1 second
-	useEffect(() => {
-		formatTimeLeft({ currentTime, endTime, overNightMode })
-	}, [currentTime, startTime, endTime])
 
+	// Clock helpers (with side-effects)
 	const checkTimeRange = () => {
 		if ((getTime(endTime) < getTime(startTime)) && !overNightMode) {
 			setEndTime(startTime)
@@ -77,13 +78,13 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	// Bottom Left Icon Events
 	const addEvent = () => {
 		toast.info('You added a New Default Task')
-		addNewTask({
+		if (taskList) addNewTask({
 			task: '',
 			waste: 0,
 			ttc: 1,
 			eta: '12:00',
 			status: 'incomplete',
-			id: taskList.length + 1,
+			id: taskList?.length + 1,
 			timestamp: Math.floor((new Date().getTime()) / 1000)
 		})(dispatch)
 		console.log('You added a New Default Task')

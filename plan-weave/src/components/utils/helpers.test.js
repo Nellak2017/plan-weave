@@ -22,6 +22,14 @@ describe('pureTaskAttributeUpdate function', () => {
 			{ task: 'Example Task 1', waste: 10, ttc: 5, id: 1 },
 			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: '01:30', id: 2 },
 		],
+		[
+			{ status: 'completed', task: 'AAA', waste: 2, ttc: 1, eta: null, id: 3 }, // missing timestamp, eta
+			{ status: 'completed', task: 'AAA', waste: 2, ttc: 1, eta: undefined, id: 4 }, // missing timestamp, eta
+		],
+		[
+			{ status: 'completed', task: 'AAA', waste: 2, ttc: 1, eta: undefined, id: 4 }, // missing timestamp, eta
+			{ status: 'completed', task: 'AAA', waste: 2, ttc: 1, eta: null, id: 3 }, // missing timestamp, eta
+		]
 	]
 
 	const invalidUpdateFields = [
