@@ -30,8 +30,13 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	}, [sortingAlgo])
 	// Search Filter Feature
 	useEffect(() => {
-		if (taskList && taskList?.length > 0) setTaskList(filterTaskList({ list: taskList, filter: search, attribute: 'task' }))
-		if (taskList?.length === 0 || search.trim() === '') setTaskList(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
+		if (search?.length > 0) {
+			const temp = SORTING_METHODS[sortingAlgo](tasksFromRedux)
+			setTaskList(filterTaskList({ list: temp, filter: search, attribute: 'task' }))
+		}
+		if (search?.length === 0 && search.trim() === '') {
+			setTaskList(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
+		}
 	}, [search])
 
 	// TODO: Inject Custom Dropdown options listeners from this component
@@ -54,7 +59,11 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const filterTaskList = ({ filter, list, attribute }) => {
 		if (!filter || !attribute) return list
 		if (!list) return []
-		return list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
+		return list.filter(item => {
+			if (item[attribute].length < filter.length) return false
+			else return item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase())
+		}
+		)
 	}
 
 	return (

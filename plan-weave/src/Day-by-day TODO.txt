@@ -10,7 +10,7 @@ X Code Clean up, go through files and delete unnecessary comments, etc
 8/17/2023
 // git push
 // Finish UI Controls
-Search Filtering
+X Search Filtering
 Start Time, End Time Task Auto Calculations
 	Alter first task to initial time
 	Alter each next task to be calculated from TTC
@@ -37,6 +37,8 @@ Today's Tasks Title
 8/18/2023
 // git push
 // Authentication
+Add Tests and JSDOCS to marked Helpers
+Look at other easy TODO items like so
 Figure out how to have Stories auto authenticated so I can test out the API 
 Implement Auth Page (static)
 	Google Auth
