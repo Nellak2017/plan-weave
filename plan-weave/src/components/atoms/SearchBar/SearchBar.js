@@ -1,15 +1,31 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { SearchBarStyled } from './SearchBar.elements'
 import { MdSearch } from 'react-icons/md'
 import { THEMES } from '../../utils/constants'
 
 // Icon is placed AFTER input but displayed before 
 // because of ~ sibling selector limitations (SMH)
-function SearchBar({ variant, placeholder="Search for a Task", maxwidth=240, tabIndex, ...rest }) {
+function SearchBar({ variant, placeholder = "Search for a Task", maxwidth = 240, tabIndex, onChange, ...rest }) {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
+
+	const [searchValue, setSearchValue] = useState('')
+
+	const handleSearchChange = (event) => {
+		const newValue = event.target.value
+		setSearchValue(newValue)
+		// Call the onChange function from props to pass the value to the parent
+		if (onChange) onChange(newValue)
+	}
+
 	return (
 		<SearchBarStyled variant={variant} maxwidth={maxwidth} {...rest}>
-			<input tabIndex={tabIndex} type="text" placeholder={placeholder} />
+			<input
+				tabIndex={tabIndex}
+				type="text"
+				placeholder={placeholder}
+				value={searchValue}
+				onChange={handleSearchChange}
+			/>
 			<MdSearch size={32} />
 		</SearchBarStyled>
 	)

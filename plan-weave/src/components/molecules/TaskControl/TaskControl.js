@@ -41,7 +41,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	// Context and Redux Stuff
 	const theme = useContext(ThemeContext)
 	const dispatch = useDispatch()
-	const { taskList, setTaskList } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
+	const { taskList, setTaskList, search, setSearch } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
 
 	// State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
@@ -97,7 +97,14 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	return (
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
 			<TopContainer>
-				<SearchBar tabIndex={1} title={'Search for Tasks'} variant={variant} maxwidth={maxwidthsearch}{...rest} />
+				<SearchBar
+					tabIndex={1}
+					title={'Search for Tasks'}
+					variant={variant}
+					maxwidth={maxwidthsearch}
+					onChange={value => setSearch(value)}
+					{...rest}
+				/>
 				<p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>
 				<TimePickerContainer onBlur={checkTimeRange}>
 					<TimePickerWrapper

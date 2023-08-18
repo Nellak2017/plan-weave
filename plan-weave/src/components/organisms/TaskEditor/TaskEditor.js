@@ -8,6 +8,7 @@ import { StyledTaskEditor } from './TaskEditor.elements'
 /*
 	TODO: Add Schema validation for the input Options for the Drop-down menu
 	TODO: Extract the Drop Down logic into custom hook that will return an enhanced options file
+	TODO: Extract searchFilter function to helpers and provide tests and JSDOCS 
 */
 
 export const TaskEditorContext = createContext()
@@ -19,6 +20,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const tasksFromRedux = useSelector(state => state?.tasks?.tasks)
 	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
 	const [taskList, setTaskList] = useState(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
+	const [search, setSearch] = useState('') // value of searchbar, for filtering tasks
 
 	useEffect(() => {
 		if (tasksFromRedux) setTaskList(!sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](tasksFromRedux))
@@ -26,9 +28,13 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	useEffect(() => {
 		if (tasksFromRedux) setTaskList(old => !sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](old))
 	}, [sortingAlgo])
+	// Search Filter Feature
+	useEffect(() => {
+		if (taskList && taskList?.length > 0) setTaskList(filterTaskList({ list: taskList, filter: search, attribute: 'task' }))
+		if (taskList?.length === 0 || search.trim() === '') setTaskList(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
+	}, [search])
 
-
-	// Inject Custom Dropdown options listeners from this component
+	// TODO: Inject Custom Dropdown options listeners from this component
 
 	// 1. Define the Middleware for Dropdown options, to build on top of original provided
 	const handleSortingAlgoChange = algorithm => { setSortingAlgo(algorithm) }
@@ -44,8 +50,15 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 		}
 	}))
 
+	// Search Filter Function
+	const filterTaskList = ({ filter, list, attribute }) => {
+		if (!filter || !attribute) return list
+		if (!list) return []
+		return list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
+	}
+
 	return (
-		<TaskEditorContext.Provider value={{ taskList, setTaskList }}>
+		<TaskEditorContext.Provider value={{ taskList, setTaskList, search, setSearch }}>
 			<button onClick={() => {
 				console.log(sortingAlgo)
 			}}>Show Sorting Algo</button>
