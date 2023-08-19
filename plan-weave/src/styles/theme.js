@@ -975,7 +975,7 @@ export const taskRowPresets = {
       }
     `,
   },
-  old: {
+  highlight: {
     old: css`
       td {
         position: relative;

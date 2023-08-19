@@ -35,7 +35,7 @@ TODO: Add Schema prop for TaskRow so that it can handle the Full Task
 */
 
 function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hours', status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: timestampOuter },
-	variant = 'dark', maxwidth = 818, index, old = 'no' }) {
+	variant = 'dark', maxwidth = 818, index, highlight = 'no' }) {
 
 	// destructure taskObject
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
@@ -92,7 +92,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 							// Add any other styles you want to maintain during dragging
 						}}
 						maxwidth={maxwidth}
-						old={old}
+						highlight={highlight}
 					>
 						<IconContainer title={'Drag-n-Drop tasks to change view'} {...provided.dragHandleProps}>
 							<DragIndicator size={32} />
@@ -107,7 +107,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 						<TaskContainer title={'Task Name'}>
 							<TaskInput initialValue={task ? task : ''} variant={variant} />
 						</TaskContainer>
-						<TimeContainer title={'Wasted Time on this Task'}>
+						<TimeContainer title={'Wasted Time on this Task'} style={{width: '189px'}}>
 							<p>
 								{waste && !isNaN(waste) && waste > 0 ?
 									formatTimeLeft({

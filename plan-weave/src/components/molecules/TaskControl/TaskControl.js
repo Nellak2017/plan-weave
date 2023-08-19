@@ -41,12 +41,12 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	// Context and Redux Stuff
 	const theme = useContext(ThemeContext)
 	const dispatch = useDispatch()
-	const { taskList, setTaskList, search, setSearch } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
+	const { taskList, setTaskList, search, setSearch, timeRange, setTimeRange, setOwl } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
 
 	// State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
-	const [startTime, setStartTime] = useState(parse(start, 'HH:mm', new Date()))
-	const [endTime, setEndTime] = useState(parse(end, 'HH:mm', new Date()))
+	const [startTime, setStartTime] = useState(!TaskEditorContext._currentValue ? parse(start, 'HH:mm', new Date()) : timeRange.start)
+	const [endTime, setEndTime] = useState(!TaskEditorContext._currentValue ? parse(end, 'HH:mm', new Date()) : timeRange.end)
 	const [overNightMode, setOverNightMode] = useState(overNight) // if true, then end<start means over-night
 
 	// Effects
@@ -65,6 +65,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	}
 	const setOverNight = () => {
 		setOverNightMode(prev => !prev)
+		setOwl(prev => !prev) // for context use
 		if (overNightMode)
 			toast.info('Overnight Mode is off: Tasks must be scheduled between 12 pm and 12 am. End time must be after the start time.', {
 				autoClose: 5000,
@@ -80,7 +81,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 		toast.info('You added a New Default Task')
 		if (taskList) addNewTask({
 			task: '',
-			waste: 0,
+			waste: 1,
 			ttc: 1,
 			eta: '12:00',
 			status: 'incomplete',
@@ -94,89 +95,99 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 		console.log('TODO: Complete Delete Event')
 	}
 
+	// Update start/end time in Context Provided
+	useEffect(() => {
+		setTimeRange({
+			start: startTime,
+			end: endTime
+		})
+	}, [startTime, endTime])
+
 	return (
-		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
-			<TopContainer>
-				<SearchBar
-					tabIndex={1}
-					title={'Search for Tasks'}
-					variant={variant}
-					maxwidth={maxwidthsearch}
-					onChange={value => setSearch(value)}
-					{...rest}
-				/>
-				<p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>
-				<TimePickerContainer onBlur={checkTimeRange}>
-					<TimePickerWrapper
-						tabIndex={2}
-						title={'Enter Start Time'}
+		<>
+			<TaskControlContainer variant={variant} maxwidth={maxwidth}>
+				<TopContainer>
+					<SearchBar
+						tabIndex={1}
+						title={'Search for Tasks'}
 						variant={variant}
-						defaultTime={format(startTime, 'HH:mm')}
-						displayText={clock1Text}
-						verticalOffset={y0}
-						horizontalOffset={x0}
-						controlled
-						time={startTime}
-						onTimeChange={newTime => setStartTime(newTime)}
-					/>
-					<TimePickerWrapper
-						tabIndex={3}
-						title={'Enter End Time'}
-						variant={variant}
-						defaultTime={format(endTime, 'HH:mm')}
-						displayText={clock2Text}
-						verticalOffset={y1}
-						horizontalOffset={x1}
-						controlled
-						time={endTime}
-						onTimeChange={newTime => setEndTime(newTime)}
-					/>
-					<GiOwl
-						tabIndex={4}
-						title={owlToolTip}
-						role="button"
-						style={overNightMode && { color: theme.colors.primary }}
-						onClick={setOverNight}
-						onKeyDown={e => { if (e.key === 'Enter') { setOverNight() } }}
-						size={iconSize} />
-				</TimePickerContainer>
-			</TopContainer>
-			<BottomContainer>
-				<BottomContentContainer>
-					<BiPlusCircle
-						tabIndex={5}
-						title={addToolTip}
-						role="button"
-						onClick={addEvent}
-						onKeyDown={e => { if (e.key === 'Enter') { addEvent() } }}
-						size={iconSize}
-					/>
-					<BiTrash
-						tabIndex={6}
-						title={deleteToolTip}
-						role="button"
-						onClick={deleteEvent}
-						onKeyDown={e => { if (e.key === 'Enter') { deleteEvent() } }}
-						size={iconSize}
-					/>
-					<Separator variant={variant} color={color} />
-				</BottomContentContainer>
-				<BottomContentContainer>
-					<p title={'Time left until End of Task Period'}>{formatTimeLeft({ currentTime, endTime, overNightMode })}</p>
-				</BottomContentContainer>
-				<BottomContentContainer>
-					<Separator variant={variant} color={color} />
-					<DropDownButton
-						tabIndex={7}
-						title={dropDownToolTip}
-						role="button"
-						variant={variant}
-						color={color}
+						maxwidth={maxwidthsearch}
+						onChange={value => setSearch(value)}
 						{...rest}
 					/>
-				</BottomContentContainer>
-			</BottomContainer>
-		</TaskControlContainer>
+					<p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>
+					<TimePickerContainer onBlur={checkTimeRange}>
+						<TimePickerWrapper
+							tabIndex={2}
+							title={'Enter Start Time'}
+							variant={variant}
+							defaultTime={format(startTime, 'HH:mm')}
+							displayText={clock1Text}
+							verticalOffset={y0}
+							horizontalOffset={x0}
+							controlled
+							time={startTime}
+							onTimeChange={newTime => setStartTime(newTime)}
+						/>
+						<TimePickerWrapper
+							tabIndex={3}
+							title={'Enter End Time'}
+							variant={variant}
+							defaultTime={format(endTime, 'HH:mm')}
+							displayText={clock2Text}
+							verticalOffset={y1}
+							horizontalOffset={x1}
+							controlled
+							time={endTime}
+							onTimeChange={newTime => setEndTime(newTime)}
+						/>
+						<GiOwl
+							tabIndex={4}
+							title={owlToolTip}
+							role="button"
+							style={overNightMode && { color: theme.colors.primary }}
+							onClick={setOverNight}
+							onKeyDown={e => { if (e.key === 'Enter') { setOverNight() } }}
+							size={iconSize} />
+					</TimePickerContainer>
+				</TopContainer>
+				<BottomContainer>
+					<BottomContentContainer>
+						<BiPlusCircle
+							tabIndex={5}
+							title={addToolTip}
+							role="button"
+							onClick={addEvent}
+							onKeyDown={e => { if (e.key === 'Enter') { addEvent() } }}
+							size={iconSize}
+						/>
+						<BiTrash
+							tabIndex={6}
+							title={deleteToolTip}
+							role="button"
+							onClick={deleteEvent}
+							onKeyDown={e => { if (e.key === 'Enter') { deleteEvent() } }}
+							size={iconSize}
+						/>
+						<Separator variant={variant} color={color} />
+					</BottomContentContainer>
+					<BottomContentContainer>
+						<p title={'Time left until End of Task Period'}>{formatTimeLeft({ currentTime, endTime, overNightMode })}</p>
+					</BottomContentContainer>
+					<BottomContentContainer>
+						<Separator variant={variant} color={color} />
+						<DropDownButton
+							tabIndex={7}
+							title={dropDownToolTip}
+							role="button"
+							variant={variant}
+							color={color}
+							{...rest}
+						/>
+					</BottomContentContainer>
+				</BottomContainer>
+			</TaskControlContainer>
+		</>
 	)
 }
 

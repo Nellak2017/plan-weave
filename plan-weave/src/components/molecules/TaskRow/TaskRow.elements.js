@@ -18,7 +18,7 @@ export const TaskRowStyled = styled.tr`
   	${getPresetCSS(taskRowPresets, 'variant')};
 	${getPresetCSS(taskRowPresets, 'status')};
 	${getPresetCSS(taskRowPresets, 'color')};
-	${getPresetCSS(taskRowPresets, 'old')}; // intended to gray out old tasks if old prop ='old'
+	${getPresetCSS(taskRowPresets, 'highlight')}; // intended to gray out old tasks if old prop ='old'
 
 	* > svg:hover {
 		cursor: pointer;
@@ -68,6 +68,7 @@ export const TimeContainer = styled.td`
 	display: table-cell;
 	padding: ${props => props.theme.spaces.small};
 	width: 100px;
+	text-align: left;
 	p {
 		font-size: ${props => props.theme.fontSizes.medium};
 	}

@@ -9,25 +9,20 @@ import { THEMES, DEFAULT_SIMPLE_TASKS } from '../../utils/constants'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 
 import useValidateTasks from '../../../hooks/useValidateTasks.js'
-import { isTimestampFromYesterday } from '../../utils/helpers'
+import { isTimestampFromToday, pureTaskAttributeUpdate } from '../../utils/helpers'
 /* 
  TODO: Fix the Full Task Schema (See Full Task TODO)
 
  TODO: Gray out, out of range completed tasks.
- TODO: Disable everything for completed tasks, except the checkbox and dnd and delete button.
- TODO: All Completed tasks must have a checkmark beside them. 
-	   Do this on page load and everytime the checkmarks change.
- TODO: Set the status of a task to completed if checkmark is pressed
  TODO: Extract out validate tasks to it's own function / hook
  TODO: Check if tasks are old every so often using a useEffect hook or something
- TODO: Verify that the Context / Local dual feature actually works!!!!!
  TODO: Add Test Cases for 'isTimestampFromYesterday' function, and JS Docs too
 */
 
 const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const { taskList, setTaskList } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
+	const { taskList, setTaskList, highlights, setHighlights } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
 	const [localTasks, setLocalTasks] = useState(!tasks ? DEFAULT_SIMPLE_TASKS : tasks)
 
 	// Validate tasks and correct invalid ones when the page loads in. DOES NOT EFFECT REDUX STORE, ONLY VIEW OF IT
@@ -41,7 +36,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 		newTaskList.splice(result.destination.index, 0, movedTask)
 		taskList ? setTaskList(newTaskList) : setLocalTasks(newTaskList)
 	}
-
+	
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
 			<TaskTableContainer maxwidth={maxwidth}>
@@ -64,7 +59,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 											timestamp: task.timestamp,
 										}}
 										index={idx}
-										old={isTimestampFromYesterday(new Date(), task.timestamp) ? 'old' : ''}
+										highlight={isTimestampFromToday(new Date(), task.timestamp) ? highlights[idx] : 'old'}
 									/>)
 								)}
 								{!taskList && localTasks.length >= 1 && localTasks?.map((task, idx) => (
@@ -81,7 +76,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 											timestamp: task.timestamp,
 										}}
 										index={idx}
-										old={isTimestampFromYesterday(new Date(), task.timestamp) ? 'old' : ''}
+										highlight={isTimestampFromToday(new Date(), task.timestamp) ? highlights[idx] : 'old'}
 									/>
 								))
 								}

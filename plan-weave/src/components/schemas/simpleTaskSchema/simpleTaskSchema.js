@@ -45,7 +45,7 @@ export const simpleTaskSchema = Yup.object({
 		.default('Example task')
 		.transform((value, originalValue) => {
 			if (originalValue === '' || originalValue === null) {
-				return 'Example task'
+				return ' '
 			}
 			return value
 		}),
@@ -91,7 +91,7 @@ export const simpleTaskSchema = Yup.object({
  */
 export const fillDefaultsForSimpleTask = (obj) => {
 	const objWithDefaults = {
-		task: 'Example task',
+		task: ' ',
 		waste: 1,
 		ttc: 1,
 		eta: '12:00',
