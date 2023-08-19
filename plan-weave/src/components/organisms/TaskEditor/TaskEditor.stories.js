@@ -2,6 +2,7 @@ import TaskEditor from './TaskEditor'
 // redux stuff
 import store from '../../../redux/store'
 import { Provider, useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
 
 export default {
 	title: 'Organisms/TaskEditor',
@@ -23,9 +24,9 @@ const Template = args => {
 }
 
 const options = [
-	{ name: 'name', listener: () => console.log('Option 1 clicked'), algorithm: 'name' },
-	{ name: 'time created', listener: () => console.log('Option 2 clicked'), algorithm: 'timestamp' },
-	{ name: 'default', listener: () => console.log('Option 3 clicked'), algorithm: '' },
+	{ name: 'name', listener: () => toast.info('Name Sorting applied. Tasks now appear alphabetically.'), algorithm: 'name' },
+	{ name: 'time created', listener: () => toast.info('Time Sorting applied. Tasks now appear in chronological order.'), algorithm: 'timestamp' },
+	{ name: 'default', listener: () => toast.info('Default Sorting applied. Tasks now appear as they do in the database.'), algorithm: '' },
 ]
 
 export const Light = Template.bind({})

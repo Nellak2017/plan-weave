@@ -9,6 +9,7 @@ import {
 	highlightDefaults, hoursToMillis
 } from '../../utils/helpers.js'
 import { format, parse, getTime } from 'date-fns'
+import isEqual from 'lodash/isEqual'
 
 /*
 	TODO: Add Schema validation for the input Options for the Drop-down menu
@@ -17,17 +18,16 @@ import { format, parse, getTime } from 'date-fns'
 	TODO: Convert Start/End Time Auto Calculation Feature to Functional version
 	TODO: Test Highlight Defaults
 	TODO: Fix the Bug where the dnd is reset when store is updated and the list is sorted
-	TODO: Fix the display bug where when the checkmark is clicked, it is not updated
-		-> I think the way to do that is to update the task in the taskList from taskRow, while also checking if store len != taskList len
-		   This will fix the bug where dnd doesn't stay put when the row is updated.
+	TODO: Fix the display bug where when the checkmark is clicked, and it resets view
+		-> Use Timestamp swapping technique and keep using store for updates
 	TODO: Make a Completed at Timestamp, to record when it was completed!
 	TODO: Make a Hidden field, to indicate whether the task is hidden or showing. 
 	TODO: Only retrieve non-hidden tasks with selector, and Axios API request later.
 	TODO: Completed tasks should disable all fields and simply display it, also be fixed
-	TODO: When Sorting list with Completed Tasks, the Eta/Waste/TTC Calculations should be impervious to Completed Tasks
 	TODO: When Sorting list, split completed/not completed into 2 lists, and apply sorting algos to both, then combine with completed on top always
-
-*/
+	TODO: Have Gray out tasks check every so often, to deal with the edge case for when it goes out of bounds of start,end and no user inputs
+	TODO: Investigate why ETA Twitches when you update the status fast
+	*/
 
 export const TaskEditorContext = createContext()
 
@@ -51,9 +51,9 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
 		// We want to maintain ordering when the user simply updates a field in the task, so check if len changed!
-		if (tasksFromRedux && tasksFromRedux.length != taskList.length) {
-			setTaskList(!sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](tasksFromRedux))
-		}
+		//if (tasksFromRedux && tasksFromRedux.length != taskList.length) {
+		setTaskList(!sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](tasksFromRedux))
+		//}
 	}, [tasksFromRedux])
 	useEffect(() => {
 		if (tasksFromRedux) setTaskList(old => !sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](old))
@@ -79,7 +79,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// 2. Verify the options via schema, fill with defaults if invalid
 
 	// 3. With validated options list, construct new dropdown options with middleware applied
-	const newDropdownOptions = options.map(option => ({
+	const newDropdownOptions = options.map((option, index) => ({
 		...option,
 		listener: () => {
 			option.listener()
@@ -90,17 +90,22 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// Start/End Time Auto Calculation Feature
 	useEffect(() => {
 		(() => {
-			const newTaskList = taskList
 			let currentTime = getTime(start)
-			for (let i = 0; i < Object.values(taskList).length; i++) {
-				currentTime = currentTime + hoursToMillis(taskList[i] ? taskList[i]?.ttc : 0)
-				if (newTaskList[i].eta) newTaskList[i] = { ...newTaskList[i], eta: format(currentTime, 'HH:mm') }
+			const updatedTaskList = [...taskList].map(task => {
+				if (task.eta) {
+					currentTime += hoursToMillis(task.ttc || 0)
+					return { ...task, eta: format(currentTime, 'HH:mm') }
+				} else { return task }
+			})
+
+			// Without this Guard, it will infinitely loop 
+			if (!isEqual(updatedTaskList, taskList)) {
+				setTaskList(updatedTaskList)
+				setHighlights(highlightDefaults(taskList, new Date(start), new Date(end), owl))
 			}
-			setTaskList(newTaskList)
-			setHighlights(highlightDefaults(taskList, new Date(start), new Date(end), owl))
 		})()
 	}, [taskList, timeRange, owl])
-	
+
 	/*
 	useEffect(() => {
 		// This function has side-effects. It will update the taskList with proper updated times
