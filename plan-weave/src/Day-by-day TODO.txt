@@ -26,9 +26,9 @@ X Schema Validations for Input Options for Dropdown menu
 
 // git push
 8/20/2023
-Add CompletedTimeStamp, Hidden to Schema + Tests
-Hidden Task Feature (If Task has hidden, then it won't be displayed)
-	Later Make axios/API request to not select tasks that are hidden
+X Add CompletedTimeStamp, Hidden to Schema + Tests
+XHidden Task Feature (If Task has hidden, then it won't be displayed)
+	X Later Make axios/API request to not select tasks that are hidden (I USE A SELECTOR FOR THIS PURPOSE)
 	(Don't display hidden tasks, even if accidentally selected)
 Completed Field Disabling
 	All fields are disabled except for completed/incompleted button and delete button

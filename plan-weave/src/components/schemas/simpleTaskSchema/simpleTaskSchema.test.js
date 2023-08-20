@@ -145,6 +145,16 @@ describe('Simple Task Schema', () => {
 			completedTimeStamp: timestamp - 3600, 
 			hidden: 'true', // invalid hidden
 		},
+		{
+			task: 'Another task',
+			waste: 0.5,
+			ttc: 2,
+			eta: '09:15',
+			id: 2,
+			status: TASK_STATUSES.COMPLETED,
+			completedTimeStamp: timestamp - 3600, 
+			hidden: '', // invalid hidden
+		},
 		// Add more invalid test cases as needed
 	]
 

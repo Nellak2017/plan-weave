@@ -61,6 +61,7 @@ export const pureTaskAttributeUpdate = async ({
 		// Case 1: Task is valid, but maybe has missing/extra fields 
 		updatedTask[attribute] = value
 		updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
+		if (!schema.isValidSync(updatedTask)) console.log(updatedTask)
 		validateTransformation(updatedTask)
 
 	} catch (validationError) {
@@ -69,10 +70,11 @@ export const pureTaskAttributeUpdate = async ({
 		
 		// Case 3: Task is invalid but has a valid id
 		// Iterate through fields and apply defaults to invalid ones, or delete it if it isn't in the attribute list
+		updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
 		Object.keys(updatedTask).forEach(field => { // NOTE: I Denested Logic here, if fails, check github commit: 6b26397
 			const fieldExists = schema?.fields[field]
 			const isValid = fieldExists?.isValidSync(updatedTask[field])
-			if (!isValid && fieldExists) updatedTask[field] = fieldExists?.default()
+			if (!isValid && fieldExists) updatedTask[field] = fieldExists?.getDefault()
 			else if (!isValid && !fieldExists) delete updatedTask[field] 
 		})
 
@@ -81,6 +83,7 @@ export const pureTaskAttributeUpdate = async ({
 			updatedTask[attribute] = value
 			updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
 		}
+		if (!schema.isValidSync(updatedTask)) console.log(updatedTask)
 		validateTransformation(updatedTask)
 	}
 	updatedTaskList[index] = updatedTask

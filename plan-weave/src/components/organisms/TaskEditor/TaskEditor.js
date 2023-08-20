@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { selectNonHiddenTasks } from '../../../redux/selectors'
 import { THEMES, SORTING_METHODS, SORTING_METHODS_NAMES, SIMPLE_TASK_HEADERS } from '../../utils/constants'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
@@ -12,8 +13,9 @@ import isEqual from 'lodash/isEqual'
 import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
 
+import useValidateTasks from '../../../hooks/useValidateTasks.js'
+
 /*
-	TODO: Extract the Drop Down logic into custom hook that will return an enhanced options file
 	TODO: Add tests and JSDOCS to searchFilter function in helpers.js 
 	TODO: Convert Start/End Time Auto Calculation Feature to Functional version
 	TODO: Test Highlight Defaults
@@ -29,6 +31,7 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 	TODO: Investigate why ETA Twitches when you update the status fast
 	TODO: Decouple the styling in task row
 	TODO: Move the timeRange up to a prop, and pass down to TaskControl with respect to Context/No Context (flexibility)
+	TODO: Re-assess usage of useValidateTask(s) hooks and validation functions, I sense simplification and inefficiencies
 	*/
 
 export const TaskEditorContext = createContext()
@@ -41,7 +44,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
 
 	// Task Data (Redux), Task View (Context), Searching, Sorting, and Algorithm Change State
-	const tasksFromRedux = useSelector(state => state?.tasks?.tasks)
+	const tasksFromRedux = useValidateTasks({taskList: useSelector(selectNonHiddenTasks)}) // Tasks from redux are validated and filled with defaults
 	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
 	const [taskList, setTaskList] = useState(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
 	const [search, setSearch] = useState('') // value of searchbar, for filtering tasks

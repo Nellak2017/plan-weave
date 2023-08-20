@@ -35,7 +35,7 @@ const timestamp = Timestamp.fromDate(new Date()).seconds
 export const simpleTaskSchema = Yup.object({
 	task: Yup.string()
 		.max(50, 'Task must be at most 50 characters')
-		.default('Example task')
+		.default('')
 		.transform((value, originalValue) => {
 			if (originalValue === '' || originalValue === null) {
 				return ' '
@@ -45,7 +45,7 @@ export const simpleTaskSchema = Yup.object({
 	waste: Yup.number()
 		.nullable(false)
 		//.min(0.01)
-		.default(1)
+		.default(0)
 		.transform((value, originalValue) => {
 			if (originalValue === '' || originalValue === null) {
 				return 0
@@ -73,10 +73,11 @@ export const simpleTaskSchema = Yup.object({
 		}),
 	id: Yup.number().positive('Id must be greater than 0').required('Id is required'),
 	status: Yup.string()
-		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value'),
-	timestamp: Yup.number().positive('Normal Timestamp must be a positive number'),
-	completedTimeStamp: Yup.number().positive('Completed Timestamp must be a positive number'),
-	hidden: Yup.boolean().default(false).transform((value, originalValue) => {
+		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value').default(TASK_STATUSES.INCOMPLETE),
+	timestamp: Yup.number().positive('Normal Timestamp must be a positive number').default(1),
+	completedTimeStamp: Yup.number().positive('Completed Timestamp must be a positive number').default(1),
+	hidden: Yup.boolean().default(false)
+	.transform((value, originalValue) => {
 		if ((originalValue !== false && !originalValue) || (originalValue !== true && originalValue)) return ''
 		else return value
 	}),
