@@ -6,16 +6,6 @@ const timestamp = Timestamp.fromDate(new Date()).seconds
 
 // This schema is for the Simple Task
 
-/* 
-Legend: 
-
-task,
-waste,
-ttc,
-eta,
-id
-*/
-
 /**
  * Schema for a simple task with validation rules.
  * @typedef {Object} SimpleTaskSchema
@@ -25,6 +15,9 @@ id
  * @property {Yup.StringSchema} eta - Validation schema for the estimated time of arrival.
  * @property {Yup.NumberSchema} id - Validation schema for the task ID.
  * @property {Yup.StringSchema} status - Validation schema for the task status.
+ * @property {Yup.NumberSchema} timeStamp - Validation schema for the usual timestamp.
+ * @property {Yup.NumberSchema} completedTimeStamp - Validation schema for the completed timestamp.
+ * @property {Yup.BooleanSchema} hidden - Validation schema for the hidden flag.
  */
 
 /**
@@ -81,7 +74,12 @@ export const simpleTaskSchema = Yup.object({
 	id: Yup.number().positive('Id must be greater than 0').required('Id is required'),
 	status: Yup.string()
 		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value'),
-	timestamp: Yup.number().positive('Timestamp must be a positive number'),
+	timestamp: Yup.number().positive('Normal Timestamp must be a positive number'),
+	completedTimeStamp: Yup.number().positive('Completed Timestamp must be a positive number'),
+	hidden: Yup.boolean().default(false).transform((value, originalValue) => {
+		if ((originalValue !== false && !originalValue) || (originalValue !== true && originalValue)) return ''
+		else return value
+	}),
 }).default({})
 
 // NOTE: Avoid using default id, as it will not be unique
@@ -98,6 +96,8 @@ export const fillDefaultsForSimpleTask = (obj) => {
 		id: 1,
 		status: TASK_STATUSES.INCOMPLETE,
 		timestamp: timestamp.seconds,
+		completedTimeStamp: timestamp.seconds + 1,
+		hidden: false,
 		...obj,
 	}
 

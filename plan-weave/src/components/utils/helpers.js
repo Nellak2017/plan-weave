@@ -64,26 +64,24 @@ export const pureTaskAttributeUpdate = async ({
 		validateTransformation(updatedTask)
 
 	} catch (validationError) {
-		if (!updatedTask.id) {
-			// Case 2: Task is missing an id. Display errors and warnings
-			throw new Error('Id is not defined, so it will lead to unexpected display results. This is likely a database error.')
-		} else {
-			// Case 3: Task is invalid but has a valid id
-			// Iterate through fields and apply defaults to invalid ones, or delete it if it isn't in the attribute list
-			Object.keys(updatedTask).forEach(field => {
-				if (!schema?.fields[field]?.isValidSync(updatedTask[field])) {
-					if (schema?.fields[field]) updatedTask[field] = schema?.fields[field]?.default()
-					else delete updatedTask[field]
-				}
-			})
+		// Case 2: Task is missing an id. Display errors and warnings
+		if (!updatedTask.id) throw new Error('Id is not defined, so it will lead to unexpected display results. This is likely a database error.')
+		
+		// Case 3: Task is invalid but has a valid id
+		// Iterate through fields and apply defaults to invalid ones, or delete it if it isn't in the attribute list
+		Object.keys(updatedTask).forEach(field => { // NOTE: I Denested Logic here, if fails, check github commit: 6b26397
+			const fieldExists = schema?.fields[field]
+			const isValid = fieldExists?.isValidSync(updatedTask[field])
+			if (!isValid && fieldExists) updatedTask[field] = fieldExists?.default()
+			else if (!isValid && !fieldExists) delete updatedTask[field] 
+		})
 
-			// If the entered attribute is valid, then update it
-			if (updatedTask.hasOwnProperty(attribute)) {
-				updatedTask[attribute] = value
-				updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
-			}
-			validateTransformation(updatedTask)
+		// If the entered attribute is valid, then update it
+		if (updatedTask.hasOwnProperty(attribute)) {
+			updatedTask[attribute] = value
+			updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
 		}
+		validateTransformation(updatedTask)
 	}
 	updatedTaskList[index] = updatedTask
 	return updatedTaskList
