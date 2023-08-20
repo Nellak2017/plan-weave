@@ -40,12 +40,10 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 
 	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
 
-	// Task Data (Redux), Task View (Context) State
+	// Task Data (Redux), Task View (Context), Searching, Sorting, and Algorithm Change State
 	const tasksFromRedux = useSelector(state => state?.tasks?.tasks)
-	const [taskList, setTaskList] = useState(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
-
-	// Sorting, Search, and Changing Sorting Method State
 	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
+	const [taskList, setTaskList] = useState(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
 	const [search, setSearch] = useState('') // value of searchbar, for filtering tasks
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
