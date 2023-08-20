@@ -32,6 +32,7 @@ TODO: Add required Redux stuff to stories
 TODO: Test validateTask
 TODO: refactor old prop into highlight prop so that 'old', 'outline' can be added so that 'old'=gray out, 'outline'=white outline
 TODO: Add Schema prop for TaskRow so that it can handle the Full Task
+TODO: Extract the 3 inline styles into some new classes or something, to reduce coupling
 */
 
 function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hours', status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: timestampOuter },
@@ -119,10 +120,10 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 									'0 minutes'}
 							</p>
 						</TimeContainer>
-						<TimeContainer title={'Time To Complete Task'}>
+						<TimeContainer style={{width: '120px'}} title={'Time To Complete Task'}>
 							<HoursInput initialValue={ttc && ttc > .01 ? ttc : 1} variant={variant} placeholder='hours' text='hours' />
 						</TimeContainer>
-						<TimeContainer title={'Estimated Time to Finish Task'}>
+						<TimeContainer style={{width: '40px'}} title={'Estimated Time to Finish Task'}>
 							<p>
 								{eta && /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(eta) ? eta : '00:00'}
 							</p>

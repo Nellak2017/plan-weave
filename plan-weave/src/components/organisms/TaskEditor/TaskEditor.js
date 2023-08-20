@@ -1,18 +1,18 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import { useDispatch, useSelector, Provider } from 'react-redux'
+import { createContext, useState, useEffect } from 'react'
+import { useSelector } from 'react-redux'
 import { THEMES, SORTING_METHODS, SORTING_METHODS_NAMES, SIMPLE_TASK_HEADERS } from '../../utils/constants'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import { StyledTaskEditor } from './TaskEditor.elements'
 import {
-	filterTaskList, pureTaskAttributeUpdate, isTimestampFromToday,
-	highlightDefaults, hoursToMillis
+	filterTaskList, highlightDefaults, hoursToMillis
 } from '../../utils/helpers.js'
 import { format, parse, getTime } from 'date-fns'
 import isEqual from 'lodash/isEqual'
+import PropTypes from 'prop-types'
+import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
 
 /*
-	TODO: Add Schema validation for the input Options for the Drop-down menu
 	TODO: Extract the Drop Down logic into custom hook that will return an enhanced options file
 	TODO: Add tests and JSDOCS to searchFilter function in helpers.js 
 	TODO: Convert Start/End Time Auto Calculation Feature to Functional version
@@ -27,28 +27,35 @@ import isEqual from 'lodash/isEqual'
 	TODO: When Sorting list, split completed/not completed into 2 lists, and apply sorting algos to both, then combine with completed on top always
 	TODO: Have Gray out tasks check every so often, to deal with the edge case for when it goes out of bounds of start,end and no user inputs
 	TODO: Investigate why ETA Twitches when you update the status fast
+	TODO: Decouple the styling in task row
+	TODO: Move the timeRange up to a prop, and pass down to TaskControl with respect to Context/No Context (flexibility)
 	*/
 
 export const TaskEditorContext = createContext()
 
 const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', maxwidth = 818, options }) => {
+	// --- Input Verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (sortingAlgorithm && !Object.keys(SORTING_METHODS_NAMES).includes(sortingAlgorithm)) sortingAlgorithm = 'timestamp'
 
-	// Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context
+	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
+
+	// Task Data (Redux), Task View (Context) State
 	const tasksFromRedux = useSelector(state => state?.tasks?.tasks)
-	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
 	const [taskList, setTaskList] = useState(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
+
+	// Sorting, Search, and Changing Sorting Method State
+	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
 	const [search, setSearch] = useState('') // value of searchbar, for filtering tasks
-	const [timeRange, setTimeRange] = useState({
-		start: parse('10:30', 'HH:mm', new Date()),
-		end: parse('23:30', 'HH:mm', new Date())
-	}) // value of start, end time for tasks to be done today
+	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
+
+	// Auto Calculation State
+	const [timeRange, setTimeRange] = useState({ start: parse('15:00', 'HH:mm', new Date()), end: parse('23:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(false)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
 
-	// Ensure Sorted List when tasks and sorting algo change Feature
+	// --- Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
 		// We want to maintain ordering when the user simply updates a field in the task, so check if len changed!
 		//if (tasksFromRedux && tasksFromRedux.length != taskList.length) {
@@ -59,8 +66,9 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 		if (tasksFromRedux) setTaskList(old => !sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](old))
 	}, [sortingAlgo])
 
-	// Search Filter Feature
+	// --- Search Filter Feature
 	useEffect(() => {
+		// These 2 conditionals let you have proper functioning search feature in all cases
 		if (search?.length > 0) {
 			const temp = SORTING_METHODS[sortingAlgo](tasksFromRedux)
 			setTaskList(filterTaskList({ list: temp, filter: search, attribute: 'task' }))
@@ -70,25 +78,35 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 		}
 	}, [search])
 
-	// TODO: Inject Custom Dropdown options listeners from this component
-
-	// Change Sorting Algorithm Feature
-	// 1. Define the Middleware for Dropdown options, to build on top of original provided
-	const handleSortingAlgoChange = algorithm => { setSortingAlgo(algorithm) }
-
-	// 2. Verify the options via schema, fill with defaults if invalid
-
-	// 3. With validated options list, construct new dropdown options with middleware applied
-	const newDropdownOptions = options.map((option, index) => ({
-		...option,
-		listener: () => {
-			option.listener()
-			handleSortingAlgoChange(option.algorithm)
-		}
-	}))
-
-	// Start/End Time Auto Calculation Feature
+	// --- Change Sorting Algorithm Feature
 	useEffect(() => {
+		// 0. Apply this middleware, (listener in option + setSortingAlgo(...)), to the dropdown options whenever the algorithm changes
+		(async () => {
+			// 1. Verify the options via schema, fill with defaults if invalid
+			const validateAndFillOptions = async options => {
+				const isValid = await taskEditorOptionsSchema.isValid(options)
+				if (!isValid) return options.map(fillWithOptionDefaults)
+				return options
+			}
+
+			// 2. With validated options list, construct new dropdown options with middleware applied
+			const validatedOptions = await validateAndFillOptions(options)
+
+			// 3. Set the newDropdownOptions with the middleware applied
+			setNewDropdownOptions(validatedOptions.map(option => ({
+				...option,
+				listener: () => {
+					option.listener()
+					setSortingAlgo(option.algorithm)
+				}
+			})))
+
+		})()
+	}, [sortingAlgo])
+
+	// --- Start/End Time Auto Calculation Feature
+	useEffect(() => {
+		// Calculate Task List and Highlight list, then set them if you can
 		(() => {
 			let currentTime = getTime(start)
 			const updatedTaskList = [...taskList].map(task => {
@@ -105,48 +123,6 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 			}
 		})()
 	}, [taskList, timeRange, owl])
-
-	/*
-	useEffect(() => {
-		// This function has side-effects. It will update the taskList with proper updated times
-		// It is also an Imperative Version of what could be done functionally 
-		(() => {
-			const hoursToMillis = hours => hours * 60000 * 60
-
-			console.log(new Date(1692390600000))
-			console.log(isTimestampFromToday(new Date(), 1692390600000, 84600))
-			console.log(highlightDefaults(taskList, new Date(getTime(start)), new Date(getTime(end)), false))
-			console.log('')
-
-			// 1. Calculate important variables
-			const initialTimeMillis = getTime(start) // converted to millis passed since 1970
-			const endTimeMillis = owl ? getTime(end) + hoursToMillis(24) : getTime(end)
-			const startOfDayMillis = new Date(initialTimeMillis).setHours(0, 0, 0, 0)
-			const timeFromStartToInit = initialTimeMillis - startOfDayMillis // time between beginning of day and start, millis
-			const secondsElapsedFromEnd = ((endTimeMillis - initialTimeMillis) + timeFromStartToInit) / 1000
-			const newTaskList = taskList
-
-			// 2. The next task will be previous task + ttc of current task
-			let currentTime = initialTimeMillis
-			for (let i = 0; i < Object.values(taskList).length; i++) {
-				currentTime = currentTime + hoursToMillis(taskList[i] ? taskList[i]?.ttc : 0)
-				const loopCurrentTime = currentTime // store a constant reference to currentTime, no more fucky-wucky shit here!
-				
-				if (newTaskList[i].eta) newTaskList[i] = { ...newTaskList[i], eta: format(currentTime, 'HH:mm') }
-
-				// 3. If a task goes beyond end time, then gray it out (using new highlight prop)
-				setHighlights(prevHighlights => {
-					const updatedHighlights = [...prevHighlights] // Create a shallow copy of the array
-					const isInTimeRange = isTimestampFromToday(new Date(initialTimeMillis), loopCurrentTime / 1000, secondsElapsedFromEnd)
-					updatedHighlights[i] = isInTimeRange ? ' ' : 'old'
-					return updatedHighlights
-				})
-			}
-			setTaskList(newTaskList)
-		})()
-	}, [timeRange, owl])
-	*/
-
 
 	return (
 		<TaskEditorContext.Provider value={{
@@ -178,6 +154,14 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 			</StyledTaskEditor>
 		</TaskEditorContext.Provider>
 	)
+}
+
+TaskEditor.propTypes = {
+	options: PropTypes.arrayOf(PropTypes.shape({
+		name: PropTypes.string.isRequired,
+		listener: PropTypes.func.isRequired,
+		algorithm: PropTypes.string.isRequired,
+	})).isRequired
 }
 
 export default TaskEditor

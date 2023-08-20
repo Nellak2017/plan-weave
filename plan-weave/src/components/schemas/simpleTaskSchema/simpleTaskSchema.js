@@ -51,11 +51,11 @@ export const simpleTaskSchema = Yup.object({
 		}),
 	waste: Yup.number()
 		.nullable(false)
-		.min(0.01)
+		//.min(0.01)
 		.default(1)
 		.transform((value, originalValue) => {
 			if (originalValue === '' || originalValue === null) {
-				return 1
+				return 0
 			}
 			return value
 		}),

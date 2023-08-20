@@ -22,7 +22,7 @@ X Start Time, End Time Task Auto Calculations
 
 // git push
 8/19/2023
-Schema Validations for Input Options for Dropdown menu
+X Schema Validations for Input Options for Dropdown menu
 Add CompletedTimeStamp, Hidden to Schema + Tests
 Hidden Task Feature (If Task has hidden, then it won't be displayed)
 	Later Make axios/API request to not select tasks that are hidden

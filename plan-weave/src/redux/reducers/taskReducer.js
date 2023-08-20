@@ -5,6 +5,7 @@ import { Timestamp } from 'firebase/firestore'
 const timestamp = Timestamp.fromDate(new Date()).seconds // used for testing purposes
 
 const initialState = {
+	/*
 	tasks: [
 		{ status: 'completed', task: 'AAA', waste: 2, ttc: null, eta: '15:30', id: 1, timestamp: timestamp },
 		{ status: 'incomplete', task: 'CCC', waste: 1, ttc: 2, eta: '18:30', id: 2, timestamp: timestamp + 1 },
@@ -17,7 +18,18 @@ const initialState = {
 		{ status: 'inconsistent', task: 'BBB', waste: 1, ttc: 2, eta: '01:30', id: 9, timestamp: timestamp + 2 },
 		{ status: 'completed', task: 'old', waste: 1, ttc: 2, eta: '01:30', id: 10, timestamp: timestamp - 86400 },
 	], // Initial state for tasks
-	//tasks: []
+	*/
+	tasks: [
+		{ status: 'incomplete', task: 'Eat Breakfast', waste: 0, ttc: 1, eta: '15:30', id: 1, timestamp: timestamp},
+		{ status: 'incomplete', task: 'PlanWeave * 1 (44-46)', waste: 0, ttc: 2, eta: '18:30', id: 2, timestamp: timestamp - 1 },
+		{ status: 'incomplete', task: 'Gym', waste: 0, ttc: 1.5, eta: '23:30', id: 3, timestamp: timestamp - 2 },
+		{ status: 'incomplete', task: 'Shower +', waste: 0, ttc: .5, eta: '01:30', id: 4, timestamp: timestamp - 3 },
+		{ status: 'incomplete', task: 'Shave', waste: 0, ttc: .25, eta: '01:30', id: 5, timestamp: timestamp - 4 },
+		{ status: 'incomplete', task: 'Break', waste: 0, ttc: 1, eta: '15:30', id: 6, timestamp: timestamp - 5},
+		{ status: 'incomplete', task: 'Meal Prep * 2, dinner = stirfry', waste: 0, ttc: 2, eta: '18:30', id: 7, timestamp: timestamp - 6 },
+		{ status: 'incomplete', task: 'Fold', waste: 0, ttc: .5, eta: '23:30', id: 8, timestamp: timestamp - 7 },
+		{ status: 'incomplete', task: 'PlanWeave * 1 (46-48)', waste: 0, ttc: 2, eta: '01:30', id: 9, timestamp: timestamp - 8},
+	]
 }
 
 // TODO: Test this reducer 

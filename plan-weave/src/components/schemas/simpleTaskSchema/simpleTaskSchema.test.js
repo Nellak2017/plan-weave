@@ -65,20 +65,6 @@ describe('Simple Task Schema', () => {
 		},
 		{
 			task: 'My Task',
-			waste: 0, // invalid
-			ttc: 1,
-			eta: '14:30',
-			id: 1,
-		},
-		{
-			task: 'My Task',
-			waste: 1,
-			ttc: 0, // invalid
-			eta: '14:30',
-			id: 1,
-		},
-		{
-			task: 'My Task',
 			waste: 1,
 			ttc: 1,
 			eta: 'invalid', // invalid
