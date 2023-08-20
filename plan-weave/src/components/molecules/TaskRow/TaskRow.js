@@ -106,9 +106,12 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 							)}
 						</IconContainer>
 						<TaskContainer title={'Task Name'}>
-							<TaskInput initialValue={task ? task : ''} variant={variant} />
+							{status === TASK_STATUSES.COMPLETED ?
+								<p>{task}</p>
+								: <TaskInput initialValue={task ? task : ''} variant={variant} />
+							}
 						</TaskContainer>
-						<TimeContainer title={'Wasted Time on this Task'} style={{width: '189px'}}>
+						<TimeContainer title={'Wasted Time on this Task'} style={{ width: '189px' }}>
 							<p>
 								{waste && !isNaN(waste) && waste > 0 ?
 									formatTimeLeft({
@@ -120,10 +123,20 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 									'0 minutes'}
 							</p>
 						</TimeContainer>
-						<TimeContainer style={{width: '120px'}} title={'Time To Complete Task'}>
-							<HoursInput initialValue={ttc && ttc > .01 ? ttc : 1} variant={variant} placeholder='hours' text='hours' />
+						<TimeContainer style={{ width: '120px' }} title={'Time To Complete Task'}>
+							{status === TASK_STATUSES.COMPLETED ?
+								<pre>{ttc && !isNaN(ttc) && ttc > 0 ?
+									formatTimeLeft({
+										timeDifference: ttc,
+										minuteText: 'minutes',
+										hourText: 'hour',
+										hourText2: 'hours'
+									}) :
+									'0 minutes'}</pre>
+								: <HoursInput initialValue={ttc && ttc > .01 ? ttc : 1} variant={variant} placeholder='hours' text='hours' />
+							}
 						</TimeContainer>
-						<TimeContainer style={{width: '40px'}} title={'Estimated Time to Finish Task'}>
+						<TimeContainer style={{ width: '40px' }} title={'Estimated Time to Finish Task'}>
 							<p>
 								{eta && /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(eta) ? eta : '00:00'}
 							</p>

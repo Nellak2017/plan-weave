@@ -62,6 +62,9 @@ export const TaskContainer = styled.td`
 	display: table-cell;
 	width: 400px;
 	padding: ${props => props.theme.spaces.small};
+	p, pre {
+		font-size: ${props => props.theme.fontSizes.medium};
+	}
 `
 
 export const TimeContainer = styled.td`
@@ -69,7 +72,7 @@ export const TimeContainer = styled.td`
 	padding: ${props => props.theme.spaces.small};
 	width: 100px;
 	text-align: left;
-	p {
+	p, pre {
 		font-size: ${props => props.theme.fontSizes.medium};
 	}
 `
