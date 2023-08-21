@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasks } from '../../../redux/selectors'
-import { THEMES, SORTING_METHODS, SORTING_METHODS_NAMES, SIMPLE_TASK_HEADERS } from '../../utils/constants'
+import { THEMES, SORTING_METHODS, SORTING_METHODS_NAMES, SIMPLE_TASK_HEADERS, TASK_STATUSES } from '../../utils/constants'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import { StyledTaskEditor } from './TaskEditor.elements'
@@ -41,12 +41,21 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (sortingAlgorithm && !Object.keys(SORTING_METHODS_NAMES).includes(sortingAlgorithm)) sortingAlgorithm = 'timestamp'
 
+	// --- Helper functions
+	// Completed On Top Always, while sorted. Transforms reduxList into properly sorted one with completed on top.
+	const completedOnTopSorted = (reduxTasks, tasks) => {
+		if (!reduxTasks) return SORTING_METHODS[sortingAlgo](tasks)
+		const completedTasks = reduxTasks.filter(task => task?.status === TASK_STATUSES.COMPLETED)
+		const remainingTasks = reduxTasks.filter(task => task?.status !== TASK_STATUSES.COMPLETED)
+		return [...SORTING_METHODS[sortingAlgo](completedTasks), ...SORTING_METHODS[sortingAlgo](remainingTasks)]
+	}
+
 	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
 
 	// Task Data (Redux), Task View (Context), Searching, Sorting, and Algorithm Change State
 	const tasksFromRedux = useSelector(selectNonHiddenTasks) // useValidateTasks() causes issues for some reason
 	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
-	const [taskList, setTaskList] = useState(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
+	const [taskList, setTaskList] = useState(completedOnTopSorted(tasksFromRedux, tasks))
 	const [search, setSearch] = useState('') // value of searchbar, for filtering tasks
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
@@ -58,13 +67,10 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 
 	// --- Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
-		// We want to maintain ordering when the user simply updates a field in the task, so check if len changed!
-		//if (tasksFromRedux && tasksFromRedux.length != taskList.length) {
-		setTaskList(!sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](tasksFromRedux))
-		//}
+		setTaskList((!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(tasksFromRedux, tasks))
 	}, [tasksFromRedux])
 	useEffect(() => {
-		if (tasksFromRedux) setTaskList(old => !sortingAlgo ? tasksFromRedux : SORTING_METHODS[sortingAlgo](old))
+		if (tasksFromRedux) setTaskList(old => (!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(old, tasks))
 	}, [sortingAlgo])
 
 	// --- Search Filter Feature

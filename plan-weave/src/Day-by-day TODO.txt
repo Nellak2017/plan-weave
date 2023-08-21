@@ -32,8 +32,8 @@ X Hidden Task Feature (If Task has hidden, then it won't be displayed)
 	(Don't display hidden tasks, even if accidentally selected)
 X Completed Field Disabling
 	X All fields are disabled except for completed/incompleted button and delete button
-Completed Field Separate Sorting
-	Completed Fields should be separated from non-completed and sorting rules applied differently, so that completed appear ontop always
+X Completed Field Separate Sorting
+	X Completed Fields should be separated from non-completed and sorting rules applied differently, so that completed appear ontop always
 
 Drop Down Logic -> Custom Hook
 Tests + JSDOC
