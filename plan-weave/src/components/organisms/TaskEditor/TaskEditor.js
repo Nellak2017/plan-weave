@@ -13,8 +13,6 @@ import isEqual from 'lodash/isEqual'
 import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
 
-import useValidateTasks from '../../../hooks/useValidateTasks.js'
-
 /*
 	TODO: Add tests and JSDOCS to searchFilter function in helpers.js 
 	TODO: Convert Start/End Time Auto Calculation Feature to Functional version
@@ -40,15 +38,6 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// --- Input Verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (sortingAlgorithm && !Object.keys(SORTING_METHODS_NAMES).includes(sortingAlgorithm)) sortingAlgorithm = 'timestamp'
-
-	// --- Helper functions
-	// Completed On Top Always, while sorted. Transforms reduxList into properly sorted one with completed on top.
-	const completedOnTopSorted = (reduxTasks, tasks) => {
-		if (!reduxTasks) return SORTING_METHODS[sortingAlgo](tasks)
-		const completedTasks = reduxTasks.filter(task => task?.status === TASK_STATUSES.COMPLETED)
-		const remainingTasks = reduxTasks.filter(task => task?.status !== TASK_STATUSES.COMPLETED)
-		return [...SORTING_METHODS[sortingAlgo](completedTasks), ...SORTING_METHODS[sortingAlgo](remainingTasks)]
-	}
 
 	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
 
@@ -79,8 +68,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 		if (search?.length > 0) {
 			const temp = SORTING_METHODS[sortingAlgo](tasksFromRedux)
 			setTaskList(filterTaskList({ list: temp, filter: search, attribute: 'task' }))
-		}
-		if (search?.length === 0 && search.trim() === '') {
+		} if (search?.length === 0 && search.trim() === '') {
 			setTaskList(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
 		}
 	}, [search])
@@ -117,10 +105,9 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 		(() => {
 			let currentTime = getTime(start)
 			const updatedTaskList = [...taskList].map(task => {
-				if (task.eta) {
-					currentTime += hoursToMillis(task.ttc || 0)
-					return { ...task, eta: format(currentTime, 'HH:mm') }
-				} else { return task }
+				if (!task.eta) return task
+				currentTime += hoursToMillis(task.ttc || 0)
+				return { ...task, eta: format(currentTime, 'HH:mm') }
 			})
 
 			// Without this Guard, it will infinitely loop 
@@ -130,6 +117,14 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 			}
 		})()
 	}, [taskList, timeRange, owl])
+
+	// --- Completed Tasks On Top Feature
+	function completedOnTopSorted(reduxTasks, tasks) {
+		if (!reduxTasks) return SORTING_METHODS[sortingAlgo](tasks)
+		const completedTasks = reduxTasks.filter(task => task?.status === TASK_STATUSES.COMPLETED)
+		const remainingTasks = reduxTasks.filter(task => task?.status !== TASK_STATUSES.COMPLETED)
+		return [...SORTING_METHODS[sortingAlgo](completedTasks), ...SORTING_METHODS[sortingAlgo](remainingTasks)]
+	}
 
 	return (
 		<TaskEditorContext.Provider value={{

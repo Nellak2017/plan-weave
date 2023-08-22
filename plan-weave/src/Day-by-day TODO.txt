@@ -35,16 +35,22 @@ X Completed Field Disabling
 X Completed Field Separate Sorting
 	X Completed Fields should be separated from non-completed and sorting rules applied differently, so that completed appear ontop always
 
-Drop Down Logic -> Custom Hook
+// git push
+8/21/2023
 Tests + JSDOC
 	isTimestampFromToday
 	validateTask
-		Add schema parameter for other schema type
+		X Add schema parameter for other schema type
+		use Immer
+	pureTaskAttributeUpdate
+		X refactor using validateTask to simplify things
+		use Immer
 	filterTaskList
 	highlightDefaults
 		See if it is worth it to convert step 2 to functional
 	calculateETA (Make this function from start/end time feature in TaskEditor)
 		Maybe modify it to also do Waste Calculations too?
+Use Immer for Mutating State
 
 Timestamp editing feature
 	When DnD, (old index, new index) => swap(task[old index]['timestamp'], task[new index]['timestamp']) 
@@ -55,7 +61,7 @@ Timestamp editing feature
 Waste Calculations
 
 // git push
-8/21/2023
+8/22/2023
 
 Delete Functionality
 	Instead of Deleting from Master Task List, del User View
@@ -79,7 +85,7 @@ Today's Tasks Title
 Sort icons for headers
 
 
-8/21/2023
+8/22/2023
 // git push
 // Authentication
 Add Tests and JSDOCS to marked Helpers
@@ -89,7 +95,7 @@ Implement Auth Page (static)
 	Google Auth
 	Email + Password
 
-8/22/2023
+8/23/2023
 // git push
 // Middleware and Firebase stuff
 
@@ -117,7 +123,7 @@ Update Task API
 	Update Story
 	Dispatch to redux/mock service worker
 
-8/23/2023
+8/24/2023
 // git push
 // Basic Template part 1
 
@@ -130,19 +136,19 @@ Make Basic Template
 	Compose this into Basic Template for App page
 	Make Story for this
 
-8/24/2023
+8/25/2023
 // git push
 // Basic User Profile Page part 1
 
 Make Basic User page (with all user actions too, profile picture on left)
 
-8/24/2023
+8/25/2023
 // git push
 // Basic Home Part part 1
 
 Re-use Task Organizer's homepage, but alter it to fit your application
 
-8/24/2023
+8/25/2023
 // git push
 // Include all this into a basic site version 1
 
@@ -151,7 +157,7 @@ Deploy
 Test Auth
 Test Functionality
 
-8/25/2023 - 8/30/2023
+8/26/2023 - 8/31/2023
 // git push
 // Full Task
 
@@ -182,7 +188,7 @@ Full Task Component
 		Deleting Task -> Delete Task Id, either simply or update DB repr of open spaces on delete
 		Editing/Reading Task -> Don't change Id
 
-8/31/2023 
+9/1/2023 
 // git push
 // Threads Component
 
@@ -193,7 +199,7 @@ Thread Organism
 	+ button at end to add new thread (Maybe, might be weird to implement)
 
 // git push
-9/1/2023
+9/2/2023
 // Efficiency Component part 1
 
 Plot 3rd party
@@ -203,7 +209,7 @@ Make Time Frame Molecule (days, weeks, months, years, etc) (Should we call it ti
 Combine Plot with Time Frame Molecule to make Efficiency Organism
 
 // git push
-9/2/2023
+9/3/2023
 // Efficiency Component part 2
 
 Make Data Structures / Algorithms to Process Raw Data into data points compatible with plot
@@ -212,14 +218,14 @@ Make Data Structures / Algorithms to Process Raw Data into data points compatibl
 	Use Functional Principles to make the Pipeline
 
 // git push
-9/2/2023
+9/3/2023
 // Efficiency Component part 3
 
 Test the Buttons to change the view in the Efficiency Context Provider
 Ensure Component works as intended
 
 // git push
-9/3/2023
+9/4/2023
 // Dependency Graph part 1
 
 Re-use Efficiency Component Display styles to get frame
@@ -231,44 +237,44 @@ Make Ds/Algos to Process Data compatible
 	Use Functional Principles
 
 // git push
-9/4/2023
+9/5/2023
 // Dependency Graph part 2
 
 Test the control panel (Time frame molecule)
 Ensure Component Works as intended
 
 // git push
-9/5/2023
+9/6/2023
 // User profile part 2
 
 Make the User Profile the way you would expect it to be, with lots of user controls, see other sites for inspiration
 
 // git push 
-9/6/2023
+9/7/2023
 // Settings Page
 
 Make the Settings Page how it is supposed to be, test it with the redux/ api stuff too, you know the drill
 
 // git push
-9/7/2023
+9/8/2023
 // Home Page Part 2
 
 Ensure Home page is how you want to to be like!
 
 // git push
-9/7/2023
+9/9/2023
 // Feedback page (minimalist)
 
 Create a simple feedback page with a form for users to fill out describing anything that needs changing or praise
 
 // git push
-9/7/2023
+9/9/2023
 // Media Queries
 
 Go through every component that needs it and make sure that it looks good on all display sizes
 
 // git push
-9/8/2023
+9/9/2023
 // Testing with other users (alpha testing)
 
 use dummy users in firebase to test authentication and to ensure that each user sees only their tasks
@@ -277,14 +283,14 @@ do code optimizations and clean up, ensure that it follows acessibility rules an
 focus on SEO optimizations and Make Header HTML perfect
 
 // git push
-9/9/2023
+9/10/2023
 // Release Site and Test with other real users (beta testing)
 
 Tell your friends you have the first version of the site ready and ask them to visit the site and give feedback
 Compile all feedback and look for patterns
 
 // git push
-9/10/2023
+9/11/2023
 // Add Google Analytics to your page
 
 Add Google Analytics to your page

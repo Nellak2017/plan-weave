@@ -48,43 +48,18 @@ export const pureTaskAttributeUpdate = async ({
 	const updatedTaskList = [...taskList]
 	let updatedTask = { ...updatedTaskList[index] } // Clone the task
 
-	// Function Transformation Helpers
-	const validateTransformation = (task, customMessage = `Entered value is not valid. Value : ${value}. This is likely a programming bug.`) => {
-		if (!schema.isValidSync(task)) throw new Error(customMessage)
-	}
-
 	// Try to update the given task in the list
 	try {
-		// Validate the task and strip unknown fields
-		updatedTask = await schema.validate(updatedTask, { abortEarly: false, stripUnknown: true })
-
-		// Case 1: Task is valid, but maybe has missing/extra fields 
-		updatedTask[attribute] = value
-		updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
-		if (!schema.isValidSync(updatedTask)) console.log(updatedTask)
-		validateTransformation(updatedTask)
-
-	} catch (validationError) {
-		// Case 2: Task is missing an id. Display errors and warnings
-		if (!updatedTask.id) throw new Error('Id is not defined, so it will lead to unexpected display results. This is likely a database error.')
-		
-		// Case 3: Task is invalid but has a valid id
-		// Iterate through fields and apply defaults to invalid ones, or delete it if it isn't in the attribute list
-		updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
-		Object.keys(updatedTask).forEach(field => { // NOTE: I Denested Logic here, if fails, check github commit: 6b26397
-			const fieldExists = schema?.fields[field]
-			const isValid = fieldExists?.isValidSync(updatedTask[field])
-			if (!isValid && fieldExists) updatedTask[field] = fieldExists?.getDefault()
-			else if (!isValid && !fieldExists) delete updatedTask[field] 
-		})
+		// Validate the task by converting task into what is expected by schema, if you can't throw Error
+		updatedTask = validateTask({ task: updatedTask, schema, schemaDefaultFx })
 
 		// If the entered attribute is valid, then update it
 		if (updatedTask.hasOwnProperty(attribute)) {
 			updatedTask[attribute] = value
 			updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
 		}
-		if (!schema.isValidSync(updatedTask)) console.log(updatedTask)
-		validateTransformation(updatedTask)
+	} catch (validationError) {
+		throw new Error(validationError)
 	}
 	updatedTaskList[index] = updatedTask
 	return updatedTaskList
@@ -151,21 +126,47 @@ export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400)
 	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
 }
 
-// Try to validate the task, if it fails then use defaults and warn user
-export const validateTask = task => {
+// Try to validate the task list, if it fails then throw error and warn user 
+// TODO: Write this function
+export const validateTasks = ({ taskList, schema, schemaDefaultFx }) => {
 	try {
-		// validate task using schema
-		const validatedTask = simpleTaskSchema.validateSync(task, {
-			abortEarly: false, // Report all validation errors
-			stripUnknown: true, // Remove unknown fields
-		})
-		// Fill defaults for missing properties in the validated task
-		const modifiedTask = fillDefaultsForSimpleTask(validatedTask)
+
+	} catch (validationError) {
+
+	}
+}
+
+// TODO: Rename this function to be more generic, it will work on Tasks and beyond!
+// TODO: Refactor this to use Immer and fp-ts to make it functional for real (like remove try/catch and use Maybe objects)
+// Try to validate the task, removing extras and filling defaults
+// if it fails then throw error and warn user
+// (task, schema, schemaDefaultFx, customErrorMessage) => (newTask | Throw Error)
+export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
+	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
+
+	const validateTransformation = task => { if (!schema.isValidSync(task)) throw new Error(customErrorMessage) }
+
+	try {
+		// Case 1: If the Task is valid, but missing/extra field, strip and fill defaults. Return list
+		const validatedTask = schema.validateSync(task, { abortEarly: false, stripUnknown: true, })
+		const modifiedTask = schemaDefaultFx(validatedTask)
+		validateTransformation(modifiedTask)
 		return modifiedTask
 	} catch (validationError) {
-		console.error('Task validation error:', validationError)
-		// Fill defaults for missing properties in the validated task
-		return null
+		// Case 2: If the Task is invalid and missing required fields. Display errors and throw Error.
+		if (!schema.requiredKeys().every(key => task.hasOwnProperty(key))) throw new Error(validationError.message)
+
+		// Case 3: If the Task is invalid, but has required fields. Update it and return list.
+		// Iterate through fields and apply defaults to invalid ones, or delete it if it isn't in the attribute list
+		let updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
+		Object.keys(updatedTask).forEach(field => { 
+			const fieldExists = schema?.fields[field]
+			const isValid = fieldExists?.isValidSync(updatedTask[field])
+			if (!isValid && fieldExists) updatedTask[field] = fieldExists?.getDefault()
+			else if (!isValid && !fieldExists) delete updatedTask[field]
+		})
+		validateTransformation(updatedTask)
+		return updatedTask
 	}
 }
 

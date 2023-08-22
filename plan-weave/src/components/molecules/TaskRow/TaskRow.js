@@ -53,7 +53,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 
 	// Update Task in Redux Store if it is invalid only on the first load
 	useEffect(() => {
-		const validTask = validateTask(taskObject)
+		const validTask = validateTask({task: taskObject})
 		if (!isEqual(validTask, taskObject)) updateTask(id, validTask)(dispatch)
 	}, [])
 
@@ -61,7 +61,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	const handleCheckBoxClicked = async () => {
 		if (!isChecked) toast.info('This Task was Completed')
 
-		const validTask = validateTask(taskObject)
+		const validTask = validateTask({task: taskObject})
 		const updatedTask = await pureTaskAttributeUpdate({
 			index: 0,
 			attribute: 'status',

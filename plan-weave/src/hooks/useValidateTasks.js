@@ -22,7 +22,7 @@ const useValidateTasks = ({ taskList, callback = () => { }, schema = simpleTaskS
 			}
 			const updatedTaskList = [...taskList]
 			for (let idx in taskList) {
-				//try {
+				try {
 					const updatedTask = await pureTaskAttributeUpdate({
 						index: idx,
 						attribute: 'id',
@@ -32,7 +32,6 @@ const useValidateTasks = ({ taskList, callback = () => { }, schema = simpleTaskS
 						schemaDefaultFx: fillDefaults,
 					})
 					updatedTaskList[idx] = updatedTask[idx]
-				/*
 				} catch (updateError) {
 					
 					console.error(updateError.message)
@@ -40,7 +39,7 @@ const useValidateTasks = ({ taskList, callback = () => { }, schema = simpleTaskS
 						'Your Tasks are messed up and things might not display right. Check Dev Tools for more info.'
 					)
 				
-				}*/
+				}
 				// Assuming setTaskList is a state update function
 				setTasks(updatedTaskList)
 				callback(updatedTaskList)
