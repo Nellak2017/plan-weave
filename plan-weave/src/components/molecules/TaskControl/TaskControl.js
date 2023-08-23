@@ -54,7 +54,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	useEffect(() => {
 		const intervalId = setInterval(() => { setCurrentTime(new Date()) }, 1000)
 		return () => { clearInterval(intervalId) }
-	}, []) // update time every 1 second
+	}, [currentTime]) // update time every 1 second
 
 	// Clock helpers (with side-effects)
 	const checkTimeRange = () => {

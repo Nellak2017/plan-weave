@@ -33,6 +33,7 @@ TODO: Test validateTask
 TODO: refactor old prop into highlight prop so that 'old', 'outline' can be added so that 'old'=gray out, 'outline'=white outline
 TODO: Add Schema prop for TaskRow so that it can handle the Full Task
 TODO: Extract the 3 inline styles into some new classes or something, to reduce coupling
+TODO: When API is set up, set invalid id to be the latest id in the database, to avoid ugly errors 
 */
 
 function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hours', status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: timestampOuter },
@@ -44,8 +45,8 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (!maxwidth || isNaN(maxwidth) || maxwidth <= 0) maxwidth = 818
-	if (id === undefined || id === null || isNaN(id) || id < 0) console.error(`Id is not a valid number, id = ${id}`)
 	if (index === undefined || index === null || isNaN(index) || index < 0) console.error(`index is not a valid number in row = ${id}, index = ${index}`)
+	if (id === undefined || id === null || isNaN(id) || id < 0) console.error(`Id is not a valid number for task index = ${index}, id = ${id}`)
 
 	// Redux + Checkmark state (change locally because it is faster)
 	const dispatch = useDispatch()
@@ -53,8 +54,13 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 
 	// Update Task in Redux Store if it is invalid only on the first load
 	useEffect(() => {
-		const validTask = validateTask({task: taskObject})
-		if (!isEqual(validTask, taskObject)) updateTask(id, validTask)(dispatch)
+		try {
+			const validTask = validateTask({task: taskObject})
+			if (!isEqual(validTask, taskObject)) updateTask(id, validTask)(dispatch)
+		} catch (invalidTask) {
+			console.error(invalidTask.message)
+			toast.error('Your Tasks are messed up and might not display right, it is likely a database issue.')
+		}
 	}, [])
 
 	// Handlers

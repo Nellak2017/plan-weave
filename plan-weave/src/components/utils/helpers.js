@@ -18,7 +18,7 @@ import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY } from './constants'
  * @throws {TypeError} If any argument is undefined or invalid.
  * @throws {Error} If attribute is not valid, task id is missing, or duplicate ids exist.
  */
-export const pureTaskAttributeUpdate = async ({
+export const pureTaskAttributeUpdate = ({
 	index,
 	attribute,
 	value,
@@ -117,34 +117,46 @@ export const formatTimeLeft = ({
 	return formatTime(calculateTimeDifference({ endTime, currentTime, timeDifference, overNightMode }))
 }
 
-// today is a Date, timestamp is a number of seconds from 1970
-// returns true if timestamp is from today, false otherwise
+/**
+ * Checks if a timestamp is from today.
+ * 
+ * @param {Date} today - The current date.
+ * @param {number} timestamp - The timestamp to check (in seconds from 1970).
+ * @param {number} [secondsFromStart=86400] - The number of seconds in a day (default is 86400 seconds).
+ * @returns {boolean} - True if the timestamp is from today, false otherwise.
+ */
 export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400) => {
 	// Seconds since start of today
 	const startOfTodaySeconds = today.setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
 	// start of Today in seconds <= timestamp < start of Today in seconds + seconds in a day
-	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
-}
-
-// Try to validate the task list, if it fails then throw error and warn user 
-// TODO: Write this function
-export const validateTasks = ({ taskList, schema, schemaDefaultFx }) => {
-	try {
-
-	} catch (validationError) {
-
-	}
+	return (startOfTodaySeconds <= timestamp) && (timestamp < (startOfTodaySeconds + secondsFromStart))
 }
 
 // TODO: Rename this function to be more generic, it will work on Tasks and beyond!
-// TODO: Refactor this to use Immer and fp-ts to make it functional for real (like remove try/catch and use Maybe objects)
-// Try to validate the task, removing extras and filling defaults
-// if it fails then throw error and warn user
-// (task, schema, schemaDefaultFx, customErrorMessage) => (newTask | Throw Error)
+// TODO: Refactor this to use Immer and Rambda/Folktale to make it functional for real (like remove try/catch and use Maybe objects)
+/**
+ * Try to validate the task, removing extras and filling defaults
+ * If validation fails, throw an error and warn the user
+ * 
+ * @param {Object} options - Options for validating the task.
+ * @param {Object} options.task - The task to be validated.
+ * @param {Object} [options.schema=simpleTaskSchema] - The schema to validate against.
+ * @param {Function} [options.schemaDefaultFx=fillDefaultsForSimpleTask] - Function to fill default values.
+ * @param {string} [options.customErrorMessage] - Custom error message.
+ * @returns {Object|Error} - The validated and modified task, or an error if validation fails.
+ */
 export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
 	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
 
 	const validateTransformation = task => { if (!schema.isValidSync(task)) throw new Error(customErrorMessage) }
+
+	const isRequired = field => { return schema.describe().fields[field] ? !schema?.describe()?.fields[field]?.optional : false }
+
+	const requiredFields = () => {
+		return Object.keys(schema.describe().fields)
+			.map(field => isRequired(field) ? field : null)
+			.filter(field => field !== null)
+	}
 
 	try {
 		// Case 1: If the Task is valid, but missing/extra field, strip and fill defaults. Return list
@@ -154,12 +166,12 @@ export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx 
 		return modifiedTask
 	} catch (validationError) {
 		// Case 2: If the Task is invalid and missing required fields. Display errors and throw Error.
-		if (!schema.requiredKeys().every(key => task.hasOwnProperty(key))) throw new Error(validationError.message)
+		if (!requiredFields().every(field => schema?.fields[field]?.isValidSync(task[field]))) throw new Error(validationError.message)
 
 		// Case 3: If the Task is invalid, but has required fields. Update it and return list.
 		// Iterate through fields and apply defaults to invalid ones, or delete it if it isn't in the attribute list
-		let updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
-		Object.keys(updatedTask).forEach(field => { 
+		let updatedTask = schemaDefaultFx(task) // fill defaults if there is other undefined attributes too
+		Object.keys(updatedTask).forEach(field => {
 			const fieldExists = schema?.fields[field]
 			const isValid = fieldExists?.isValidSync(updatedTask[field])
 			if (!isValid && fieldExists) updatedTask[field] = fieldExists?.getDefault()
@@ -171,13 +183,29 @@ export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx 
 }
 
 // Search Filter Function
+/**
+ * Filters a list of items based on a given attribute and filter string.
+ * 
+ * @param {Object} options - Options for filtering.
+ * @param {string} options.filter - The filter string to apply.
+ * @param {Array} options.list - The list of items to filter.
+ * @param {string} options.attribute - The attribute to filter by.
+ * @returns {Array} - The filtered list.
+ */
 export const filterTaskList = ({ filter, list, attribute }) => {
 	if (!filter || !attribute) return list
 	return list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
 }
 
-// input: taskList, start (Date), end (Date)
-// output: list of highlights that are based on start, end times
+/**
+ * Generates a list of highlights based on task list and time range.
+ * 
+ * @param {Array} taskList - The list of tasks.
+ * @param {Date} start - The start time.
+ * @param {Date} end - The end time.
+ * @param {boolean} [owl=false] - Whether to include the next day.
+ * @returns {Array} - The list of highlights.
+ */
 export const highlightDefaults = (taskList, start, end, owl = false) => {
 	// 1. Get all ttc from the task list, store in another list (TTCList)
 	const TTCList = taskList.map(obj => obj['ttc'])
@@ -197,4 +225,10 @@ export const highlightDefaults = (taskList, start, end, owl = false) => {
 	return timeStampList.map(timestamp => isTimestampFromToday(new Date(start), timestamp / 1000, secondsElapsedFromEnd) ? ' ' : 'old')
 }
 
+/**
+ * Converts hours to milliseconds.
+ * 
+ * @param {number} hours - The number of hours to convert.
+ * @returns {number} - The equivalent milliseconds.
+ */
 export const hoursToMillis = hours => hours * 60000 * 60

@@ -38,17 +38,23 @@ X Completed Field Separate Sorting
 // git push
 8/21/2023
 Tests + JSDOC
-	isTimestampFromToday
+	X isTimestampFromToday
+		X Tests
 	validateTask
 		X Add schema parameter for other schema type
+		Tests
 		use Immer
 	pureTaskAttributeUpdate
 		X refactor using validateTask to simplify things
+		Tests
 		use Immer
 	filterTaskList
+		Tests
 	highlightDefaults
+		Tests
 		See if it is worth it to convert step 2 to functional
 	calculateETA (Make this function from start/end time feature in TaskEditor)
+		Tests
 		Maybe modify it to also do Waste Calculations too?
 Use Immer for Mutating State
 

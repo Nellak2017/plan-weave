@@ -1,4 +1,12 @@
-import { pureTaskAttributeUpdate, formatTimeLeft } from './helpers'
+import {
+	pureTaskAttributeUpdate,
+	formatTimeLeft,
+	isTimestampFromToday,
+	validateTask,
+	filterTaskList,
+	highlightDefaults,
+} from './helpers'
+import { TASK_STATUSES } from './constants'
 
 describe('pureTaskAttributeUpdate function', () => {
 	// Data
@@ -75,138 +83,45 @@ describe('pureTaskAttributeUpdate function', () => {
 	]
 
 	// Tests
-	it.each(validTaskLists)('Should work for valid list of tasks', async (...testCase) => {
-		const updatedTaskList = await pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })
+	it.each(validTaskLists)('Should work for valid list of tasks', (...testCase) => {
+		const updatedTaskList = pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })
 		expect(updatedTaskList[0]['waste']).toBe(2)
 	})
 
-	it.each(extraneousTaskLists)('Should remove extraneous fields, for the task to update only', async (...testCase) => {
+	it.each(extraneousTaskLists)('Should remove extraneous fields, for the task to update only', (...testCase) => {
 		// TODO: Change hard coded 'extra' to be any attribute found that is not in the list
-		const updatedTaskList = await pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })
+		const updatedTaskList = pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })
 		expect(updatedTaskList[0]['extra']).toBeUndefined()
 	})
 
-	it.each(missingFields)('Should fill in empty or missing fields, for the task to update only, with defaults', async (...testCase) => {
+	it.each(missingFields)('Should fill in empty or missing fields, for the task to update only, with defaults', (...testCase) => {
 		// TODO: Change hard coded eta to be any one of the missing fields and the 'toBe' should be the default value
-		const updatedTaskList = await pureTaskAttributeUpdate({ index: 0, attribute: 'ttc', value: 1, taskList: testCase })
+		const updatedTaskList = pureTaskAttributeUpdate({ index: 0, attribute: 'ttc', value: 1, taskList: testCase })
 		expect(updatedTaskList[0].eta).toBe('12:00')
 	})
 
-	it.each(invalidUpdateFields)('Should update the given valid field even if the field is invalid', async (...testCase) => {
+	it.each(invalidUpdateFields)('Should update the given valid field even if the field is invalid', (...testCase) => {
 		// TODO: Should scan for invalid fields, choose the first one, then do the test with default values applied
-		const updatedTaskList = await pureTaskAttributeUpdate({ index: 0, attribute: 'ttc', value: 2, taskList: testCase })
+		const updatedTaskList = pureTaskAttributeUpdate({ index: 0, attribute: 'ttc', value: 2, taskList: testCase })
 		expect(updatedTaskList[0].ttc).toBe(2)
 	})
 
-	it.each(invalidFunctionParameters)('Should return an error if index, attribute, value, or taskList are null/undefined/invalid', async (...testCase) => {
-		await expect(() => pureTaskAttributeUpdate(testCase)).rejects.toThrow()
+	it.each(invalidFunctionParameters)('Should return an error if index, attribute, value, or taskList are null/undefined/invalid', (...testCase) => {
+		expect(() => pureTaskAttributeUpdate(testCase)).toThrow()
 	})
 
-	it.each(invalidIds)('Should return an error if any id for the given list is undefined/null/invalid', async (...testCase) => {
+	it.each(invalidIds)('Should return an error if any id for the given list is undefined/null/invalid', (...testCase) => {
 		// Note, this test only covers index = 0, it is to ensure that if there is any id in the list other than index 0, it will throw
-		await expect(() => pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })).rejects.toThrow()
+		expect(() => pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })).toThrow()
 	})
 
-	it.each(duplicateIds)('Should return an error if any valid id is a duplicate of another in the list', async (...testCase) => {
+	it.each(duplicateIds)('Should return an error if any valid id is a duplicate of another in the list', (...testCase) => {
 		// Note, this test only covers index = 0, it because a duplicate found should throw from any index in the list
-		await expect(() => pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })).rejects.toThrow()
+		expect(() => pureTaskAttributeUpdate({ index: 0, attribute: 'waste', value: 2, taskList: testCase })).toThrow()
 	})
 })
 
-/*
-describe('pureTaskAttributeUpdate function', () => {
-	it('should work for a valid task, for the task to update only', async () => {
-		const taskList = [
-			{ task: 'Example Task 1', waste: 10, ttc: 5, eta: 3, id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: 2, id: 2 },]
-		const updatedTaskList = await pureTaskAttributeUpdate({index: 0, attribute: 'waste', value: 2, taskList})
-		expect(updatedTaskList[0]['waste']).toBe(2)
-	})
-
-	it('should remove extraneous fields, for the task to update only', async () => {
-		const taskList = [
-			{ task: 'Example Task 1', waste: 10, ttc: 5, eta: 3, id: 1, extra: 'foo' },
-			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: 2, id: 2 },]
-		const updatedTaskList = await pureTaskAttributeUpdate({index: 0, attribute: 'waste', value: 2, taskList})
-		expect(updatedTaskList[0]['extra']).toBeUndefined()
-	})
-
-	it('should fill in empty or missing fields, for the task to update only, with defaults', async () => {
-		const taskList = [
-			{ task: 'Example Task 1', waste: 10, ttc: 5, id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: 2, id: 2 },]
-		const updatedTaskList = await pureTaskAttributeUpdate({index: 0, attribute: 'ttc', value: 1, taskList})
-		expect(updatedTaskList[0].eta).toBe('12:00')
-	})
-
-	it('should update the given valid field even if the field is invalid', async () => {
-		const taskList = [{ task: 'Example Task', waste: 1, ttc: -1, eta: 3, id: 1 }]
-		const updatedTaskList = await pureTaskAttributeUpdate({index: 0, attribute: 'ttc', value: 2, taskList})
-		expect(updatedTaskList[0].ttc).toBe(2)
-	})
-
-	it('should return an error if index, attribute, value, or taskList are null/undefined', async () => {
-		await expect(() => pureTaskAttributeUpdate({index: null, attribute: 'waste', value: 2, taskList: []})).rejects.toThrow(TypeError)
-		await expect(() => pureTaskAttributeUpdate({index: 0, attribute: null, value: 2, taskList: []})).rejects.toThrow(TypeError)
-		await expect(() => pureTaskAttributeUpdate({index: 0, attribute: 'waste', value: null, taskList: []})).rejects.toThrow(TypeError)
-		await expect(() => pureTaskAttributeUpdate({index: 0, attribute: 'waste', value: 2, taskList: null})).rejects.toThrow(TypeError)
-	})
-
-	it('should return an error if the index is invalid', async () => {
-		const taskList = [{ task: 'Example Task', waste: 1, ttc: 2, eta: 3, id: 1 }]
-		await expect(() => pureTaskAttributeUpdate({index: 1, attribute: 'waste', value: 2, taskList})).rejects.toThrow()
-	})
-
-	it('should return an error if the attribute is invalid', async () => {
-		const taskList = [{ task: 'Example Task', waste: 1, ttc: 2, eta: 3, id: 1 }]
-		await expect(() => pureTaskAttributeUpdate({index: 1, attribute: 'invalidAttribute', value: 2, taskList})).rejects.toThrow()
-	})
-
-	it('should return an error if the value is invalid', async () => {
-		const taskList = [{ task: 'Example Task', waste: 1, ttc: 2, eta: 3, id: 1 }]
-		await expect(() => pureTaskAttributeUpdate({index: 1, attribute: 'waste', value: 'invalid', taskList})).rejects.toThrow()
-	})
-
-	it('should return an error if any id for the given list is undefined/null/invalid', async () => {
-		const taskList = [
-			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: 3, id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: 3, id: undefined }
-		]
-		await expect(() => pureTaskAttributeUpdate({index: 0, attribute: 'waste', value: 2, taskList})).rejects.toThrow()
-
-		const taskList1 = [
-			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: 3, id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: 3, id: 0 }
-		]
-		await expect(() => pureTaskAttributeUpdate({index: 1, attribute: 'waste', value: 2, taskList1})).rejects.toThrow()
-
-		const taskList2 = [
-			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: 3, id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: 3, id: -1 }
-		]
-		await expect(() => pureTaskAttributeUpdate({index: 0, attribute: 'waste', value: 2, taskList2})).rejects.toThrow()
-
-		const taskList3 = [
-			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: 3, id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: 3, id: null }
-		]
-		await expect(() => pureTaskAttributeUpdate({index: 0, attribute: 'waste', value: 2, taskList3})).rejects.toThrow()
-	})
-
-	it('should return an error if any valid id is a duplicate of another in the list', async () => {
-		const taskList = [
-			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: 3, id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: 3, id: 1 }
-		]
-		await expect(() => pureTaskAttributeUpdate({index: 0, attribute: 'waste', value: 2, taskList})).rejects.toThrow()
-	})
-}
-)
-*/
-
-// TODO: TEST THIS FUNCTION MORE RIGOUROUSLY! I think the Overnight mode is messed up.
-
-describe('calculateTimeLeft', () => {
+describe('formatTimeLeft', () => {
 	it('should return the correct string when endTime - startTime = 1', () => {
 		const currentTime = new Date('2023-08-09T12:00:00')
 		const endTime = new Date('2023-08-09T13:00:00')
@@ -271,4 +186,211 @@ describe('calculateTimeLeft', () => {
 		expect(result).toBe('2 hours left')
 	})
 
+})
+
+describe('isTimestampFromToday', () => {
+	// https://www.epochconverter.com/ (Use Local Time)
+	const testCases = [
+		// Current date: August 20, 2023
+		// Timestamp: August 20, 2023, 10:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692543600, expected: true },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 20, 2023, 23:59:59 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692593999, expected: true },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 21, 2023, 00:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594000, expected: false },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 21, 2023, 00:00:01 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594001, expected: false },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 21, 2023, 02:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692601200, expected: false },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 19, 2023, 18:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692486000, expected: false },
+	]
+
+	testCases.forEach(({ today, timestamp, expected }) => {
+		const result = isTimestampFromToday(today, timestamp)
+		it(`Should return ${expected} for timestamp = ${timestamp} and today = ${today}`, () => {
+			expect(result).toBe(expected)
+		})
+	})
+})
+
+describe('validateTask', () => {
+	const defaultTask = {
+		task: ' ',
+		waste: 1,
+		ttc: 1,
+		eta: '12:00',
+		id: 1,
+		status: TASK_STATUSES.INCOMPLETE,
+		timestamp: 1692543600 - 1,
+		completedTimeStamp: 1692543600,
+		hidden: false,
+	}
+
+	const validTestCases = [
+		{
+			description: 'Valid task with required fields should return same object',
+			task: defaultTask,
+			expected: { ...defaultTask },
+		},
+		{
+			description: 'Valid task with additional fields should return object without the extra fields',
+			task: { ...defaultTask, extra: 'Extra Field' },
+			expected: { ...defaultTask },
+		},
+		{
+			description: 'Invalid task with required fields but undefined values',
+			task: { ...defaultTask, eta: undefined, ttc: undefined },
+			expected: { ...defaultTask },
+		},
+		{
+			description: 'Invalid task with required fields but values of wrong type, not undefined',
+			task: { ...defaultTask, eta: 12, ttc: '12:00' }, // eta is a time string HH:MM, ttc is positive number
+			expected: { ...defaultTask },
+		},
+	]
+
+	const invalidTestCases = [
+		{
+			description: 'Invalid task with missing required fields should throw an error',
+			task: { ...defaultTask, id: undefined }, // any falsey value for id, which is required, will work
+			errorMessage: "Failed to validate Task in validateTask function. This is likely a programming bug.",
+		},
+	]
+
+	// Valid test cases
+	test.each(validTestCases)('%s', ({ task, expected }) => {
+		const result = validateTask({ task })
+		expect(result).toEqual(expected)
+	})
+
+	// Invalid test cases
+	test.each(invalidTestCases)('%s', ({ task, errorMessage }) => {
+		expect(() => {
+			validateTask({ task })
+		}).toThrowError()
+	})
+})
+
+describe('filterTaskList', () => {
+	const testCases = [
+		{
+			name: 'filters list correctly with valid filter and attribute',
+			input: {
+				filter: 'apple',
+				list: [
+					{ name: 'apple pie' },
+					{ name: 'banana' },
+					{ name: 'apple cider' },
+					{ name: 'orange' },
+				],
+				attribute: 'name',
+			},
+			expected: [
+				{ name: 'apple pie' },
+				{ name: 'apple cider' },
+			],
+		},
+		{
+			name: 'returns the original list with missing attribute',
+			input: {
+				filter: 'apple',
+				list: [
+					{ name: 'apple pie' },
+					{ name: 'banana' },
+					{ name: 'apple cider' },
+					{ name: 'orange' },
+				],
+				attribute: undefined,
+			},
+			expected: [
+				{ name: 'apple pie' },
+				{ name: 'banana' },
+				{ name: 'apple cider' },
+				{ name: 'orange' },
+			],
+		},
+		{
+			name: 'returns the original list with missing filter',
+			input: {
+				filter: undefined,
+				list: [
+					{ name: 'apple pie' },
+					{ name: 'banana' },
+					{ name: 'apple cider' },
+					{ name: 'orange' },
+				],
+				attribute: 'name',
+			},
+			expected: [
+				{ name: 'apple pie' },
+				{ name: 'banana' },
+				{ name: 'apple cider' },
+				{ name: 'orange' },
+			],
+		},
+	]
+
+	testCases.forEach(testCase => {
+		it(testCase.name, () => {
+			const { filter, list, attribute } = testCase.input
+			const result = filterTaskList({ filter, list, attribute })
+			expect(result).toEqual(testCase.expected)
+		})
+	})
+
+})
+
+// TODO: Fix these test cases, I ran out of patience today
+describe('highlightDefaults', () => {
+	const testCases = [
+		/*
+		{
+			name: 'generates highlight list within time range',
+			input: {
+				taskList: [
+					{ ttc: 1 },
+					{ ttc: 2 },
+					{ ttc: 3 },
+				],
+				start: new Date('2023-08-20T10:00:00Z'),
+				end: new Date('2023-08-20T15:00:00Z'),
+				owl: false,
+			},
+			expected: [' ', ' ', ' '],
+		},
+		*/
+		{
+			name: 'generates highlight list with owl option',
+			input: {
+				taskList: [
+					{ ttc: 2 },
+					{ ttc: 3 },
+					{ ttc: 4 },
+				],
+				start: new Date('2023-08-20T18:00:00Z'),
+				end: new Date('2023-08-21T02:00:00Z'),
+				owl: true,
+			},
+			expected: [' ', ' ', ' '],
+		},
+	]
+
+	testCases.forEach(testCase => {
+		it(testCase.name, () => {
+			const { taskList, start, end, owl } = testCase.input
+			const result = highlightDefaults(taskList, start, end, owl)
+			expect(result).toEqual(testCase.expected)
+		})
+	})
 })

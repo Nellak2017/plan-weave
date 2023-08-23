@@ -11,8 +11,9 @@ import { simpleTaskSchema, fillDefaultsForSimpleTask } from '../components/schem
 // TODO: This may be inefficient, analyze for efficiency later
 const useValidateTasks = ({ taskList, callback = () => { }, schema = simpleTaskSchema, fillDefaults = fillDefaultsForSimpleTask }) => {
 	const [tasks, setTasks] = useState(taskList)
+	const [invalidMessage, setInvalidMessage] = useState('')
 	useEffect(() => {
-		const validateTasks = async () => {
+		(() => {
 			if (!taskList) {
 				console.error('There seems to be no taskList defined')
 				toast.error(
@@ -23,7 +24,7 @@ const useValidateTasks = ({ taskList, callback = () => { }, schema = simpleTaskS
 			const updatedTaskList = [...taskList]
 			for (let idx in taskList) {
 				try {
-					const updatedTask = await pureTaskAttributeUpdate({
+					const updatedTask = pureTaskAttributeUpdate({
 						index: idx,
 						attribute: 'id',
 						value: taskList[idx]['id'],
@@ -33,20 +34,21 @@ const useValidateTasks = ({ taskList, callback = () => { }, schema = simpleTaskS
 					})
 					updatedTaskList[idx] = updatedTask[idx]
 				} catch (updateError) {
-					
-					console.error(updateError.message)
-					toast.error(
-						'Your Tasks are messed up and things might not display right. Check Dev Tools for more info.'
-					)
-				
+					console.log(updateError.message)
+					setInvalidMessage(updateError.message)
 				}
 				// Assuming setTaskList is a state update function
 				setTasks(updatedTaskList)
 				callback(updatedTaskList)
 			}
-		}
-		validateTasks()
+		})()
 	}, [])
+	if (invalidMessage !== '') {
+		console.error(invalidMessage)
+		toast.error(
+			'Your Tasks are messed up and things might not display right. Check Dev Tools for more info.'
+		)
+	}
 	return tasks
 }
 
