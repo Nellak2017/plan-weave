@@ -8,7 +8,8 @@ import { simpleTaskSchema, fillDefaultsForSimpleTask } from '../components/schem
  * @param {Array} taskList - The list of tasks to validate.
  * @returns {void}
  */
-// TODO: This may be inefficient, analyze for efficiency later
+// O(m * (m + n)), m = len of list of tasks, n = max fields in task
+// ~ O(m^2 + mn) ~ O(p^2) Quadratic time complexity
 const useValidateTasks = ({ taskList, callback = () => { }, schema = simpleTaskSchema, fillDefaults = fillDefaultsForSimpleTask }) => {
 	const [tasks, setTasks] = useState(taskList)
 	const [invalidMessage, setInvalidMessage] = useState('')

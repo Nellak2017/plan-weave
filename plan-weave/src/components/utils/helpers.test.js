@@ -199,9 +199,14 @@ describe('isTimestampFromToday', () => {
 		// Timestamp: August 20, 2023, 23:59:59 (in seconds)
 		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692593999, expected: true },
 
+		// Current date: August 23, 2023 00:00:00
+		// Timestamp: Wednesday, August 23, 2023 23:45:00 === 1692852300 seconds
+		// secondsElapsed: 85500 ==> 23:45
+		{ today: new Date(2023, 7, 23, 0, 0, 0, 0), timestamp: 1692852300, expected: true, elapsed: 85500 }, // I am inclusive in start/end acceptance
+
 		// Current date: August 20, 2023
 		// Timestamp: August 21, 2023, 00:00:00 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594000, expected: false },
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594000, expected: true }, // I am inclusive in start/end acceptance
 
 		// Current date: August 20, 2023
 		// Timestamp: August 21, 2023, 00:00:01 (in seconds)
@@ -216,8 +221,8 @@ describe('isTimestampFromToday', () => {
 		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692486000, expected: false },
 	]
 
-	testCases.forEach(({ today, timestamp, expected }) => {
-		const result = isTimestampFromToday(today, timestamp)
+	testCases.forEach(({ today, timestamp, expected, elapsed = 60 * 60 * 24 }) => {
+		const result = isTimestampFromToday(today, timestamp, elapsed)
 		it(`Should return ${expected} for timestamp = ${timestamp} and today = ${today}`, () => {
 			expect(result).toBe(expected)
 		})
@@ -351,38 +356,101 @@ describe('filterTaskList', () => {
 
 })
 
-// TODO: Fix these test cases, I ran out of patience today
 describe('highlightDefaults', () => {
 	const testCases = [
-		/*
 		{
-			name: 'generates highlight list within time range',
+			name: 'generates empty highlight list when all tasks within time range and no owl',
 			input: {
 				taskList: [
 					{ ttc: 1 },
 					{ ttc: 2 },
 					{ ttc: 3 },
+					// these tasks will be in range
 				],
-				start: new Date('2023-08-20T10:00:00Z'),
-				end: new Date('2023-08-20T15:00:00Z'),
+				start: new Date('2023-08-20T10:00:00'), // 10:00
+				end: new Date('2023-08-20T16:00:00'), // 16:00
 				owl: false,
 			},
 			expected: [' ', ' ', ' '],
 		},
-		*/
 		{
-			name: 'generates highlight list with owl option',
+			name: 'generates empty highlight list, except the last is old, when all tasks within time range except last, and no owl',
+			input: {
+				taskList: [
+					{ ttc: 1 },
+					{ ttc: 2 },
+					{ ttc: 3 },
+					{ ttc: 3 }, // this task will be out of range
+				],
+				start: new Date('2023-08-20T10:00:00'), // 10:00
+				end: new Date('2023-08-20T16:00:00'), // 16:00
+				owl: false,
+			},
+			expected: [' ', ' ', ' ', 'old'],
+		},
+		{
+			name: 'generates empty highlight list with owl option, and all tasks before next day',
 			input: {
 				taskList: [
 					{ ttc: 2 },
 					{ ttc: 3 },
 					{ ttc: 4 },
+					// all tasks in range
 				],
-				start: new Date('2023-08-20T18:00:00Z'),
-				end: new Date('2023-08-21T02:00:00Z'),
+				start: new Date('2023-08-20T18:00:00'),
+				end: new Date('2023-08-21T03:00:00'),
 				owl: true,
 			},
 			expected: [' ', ' ', ' '],
+		},
+		{
+			name: 'generates empty highlight list, except last is old, with owl option, and all tasks before next day, except last',
+			input: {
+				taskList: [
+					{ ttc: 2 },
+					{ ttc: 3 },
+					{ ttc: 4 },
+					{ ttc: 2 },
+				],
+				start: new Date('2023-08-20T18:00:00'),
+				end: new Date('2023-08-20T03:00:00'),
+				owl: true,
+			},
+			expected: [' ', ' ', ' ', 'old'],
+		},
+		{
+			name: 'When ttc is bad, it will not affect the total (bad counts for 0 ttc)',
+			input: {
+				taskList: [
+					{ ttc: 2 },
+					{ ttc: 3 },
+					{ ttc: 4 },
+					{ BAD: 2 }, // should not affect anything from here on, until it is valid
+					{ ttc: undefined },
+					{ ttc: 1 }, // should be valid so it is old
+				],
+				start: new Date('2023-08-20T18:00:00'),
+				end: new Date('2023-08-20T03:00:00'),
+				owl: true,
+			},
+			expected: [' ', ' ', ' ', ' ', ' ', 'old'],
+		},
+		{
+			name: 'When ttc is bad, it will not affect the total, even out of order',
+			input: {
+				taskList: [
+					{ ttc: undefined },
+					{ ttc: 2 },
+					{ ttc: 3 },
+					{ ttc: 4 },
+					{ BAD: 2 },
+					{ ttc: 1 }, // old here
+				],
+				start: new Date('2023-08-20T18:00:00'),
+				end: new Date('2023-08-20T03:00:00'),
+				owl: true,
+			},
+			expected: [' ', ' ', ' ', ' ', ' ', 'old'],
 		},
 	]
 
@@ -390,6 +458,7 @@ describe('highlightDefaults', () => {
 		it(testCase.name, () => {
 			const { taskList, start, end, owl } = testCase.input
 			const result = highlightDefaults(taskList, start, end, owl)
+			if (testCase.name === 'When ttc is bad, it will make it old, even out of order') console.log(result)
 			expect(result).toEqual(testCase.expected)
 		})
 	})

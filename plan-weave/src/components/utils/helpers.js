@@ -129,7 +129,7 @@ export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400)
 	// Seconds since start of today
 	const startOfTodaySeconds = today.setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
 	// start of Today in seconds <= timestamp < start of Today in seconds + seconds in a day
-	return (startOfTodaySeconds <= timestamp) && (timestamp < (startOfTodaySeconds + secondsFromStart))
+	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
 }
 
 // TODO: Rename this function to be more generic, it will work on Tasks and beyond!
@@ -197,6 +197,8 @@ export const filterTaskList = ({ filter, list, attribute }) => {
 	return list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
 }
 
+// TODO: Modify this function to check if it is from Today if not owl (if not then old), if
+//		 owl then if from today or tomorrow before the end then good otherwise old
 /**
  * Generates a list of highlights based on task list and time range.
  * 
@@ -208,20 +210,20 @@ export const filterTaskList = ({ filter, list, attribute }) => {
  */
 export const highlightDefaults = (taskList, start, end, owl = false) => {
 	// 1. Get all ttc from the task list, store in another list (TTCList)
-	const TTCList = taskList.map(obj => obj['ttc'])
+	const TTCList = taskList.map(obj => obj['ttc'] ?? 0) // if ttc is not defined it will be 0 so it doesn't affect outcome
 
 	// 2. Loop through TTCList, 1st value = start + ttc, nth value after is prev + ttc
 	let currTime = start.getTime()
 	const timeStampList = TTCList.map(ttc => {
-		currTime += hoursToMillis(ttc)
+		currTime += ttc ? hoursToMillis(ttc) : 0
 		return currTime
 	})
+
 	// 3. return this highlight list
 	const endTimeMillis = owl ? end.getTime() + hoursToMillis(24) : end.getTime()
 	const initialTimeMillis = start.getTime()
 	const startOfDayMillis = new Date(initialTimeMillis).setHours(0, 0, 0, 0)
 	const secondsElapsedFromEnd = ((endTimeMillis - initialTimeMillis) + initialTimeMillis - startOfDayMillis) / 1000
-
 	return timeStampList.map(timestamp => isTimestampFromToday(new Date(start), timestamp / 1000, secondsElapsedFromEnd) ? ' ' : 'old')
 }
 

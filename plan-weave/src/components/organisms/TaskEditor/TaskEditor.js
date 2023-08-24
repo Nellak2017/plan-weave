@@ -49,7 +49,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState({ start: parse('15:00', 'HH:mm', new Date()), end: parse('23:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
+	const [timeRange, setTimeRange] = useState({ start: parse('17:00', 'HH:mm', new Date()), end: parse('23:45', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(false)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
@@ -100,23 +100,40 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	}, [sortingAlgo])
 
 	// --- Start/End Time Auto Calculation Feature
+
+	// TODO: Extract this function to helpers to be Tested and Documented
+	// Implicit args = start (seconds), taskList (list of tasks), getTime (function), hoursToMillis (function), format (function)
+	// returns list of Tasks (with updated eta values)
+	const updateTaskList = () => {
+		let currentTime = getTime(start)
+		const updatedTaskList = [...taskList].map(task => {
+			if (!task.eta) return task
+			currentTime += hoursToMillis(task.ttc || 0)
+			return { ...task, eta: format(currentTime, 'HH:mm') }
+		})
+		return updatedTaskList
+	}
+
 	useEffect(() => {
 		// Calculate Task List and Highlight list, then set them if you can
 		(() => {
-			let currentTime = getTime(start)
-			const updatedTaskList = [...taskList].map(task => {
-				if (!task.eta) return task
-				currentTime += hoursToMillis(task.ttc || 0)
-				return { ...task, eta: format(currentTime, 'HH:mm') }
-			})
-
+			const updatedTaskList = updateTaskList()
 			// Without this Guard, it will infinitely loop 
 			if (!isEqual(updatedTaskList, taskList)) {
 				setTaskList(updatedTaskList)
-				setHighlights(highlightDefaults(taskList, new Date(start), new Date(end), owl))
+				setHighlights(highlightDefaults(updatedTaskList, new Date(start), new Date(end), owl)) // should we use updatedTaskList?
 			}
 		})()
-	}, [taskList, timeRange, owl])
+	}, [taskList])
+
+	useEffect(() => {
+		(() => {
+			const updatedTaskList = updateTaskList()
+			// should not infinitely loop because start, end, owl change only by user
+			setTaskList(updatedTaskList)
+			setHighlights(highlightDefaults(updatedTaskList, new Date(start), new Date(end), owl))
+		})()
+	}, [timeRange, owl])
 
 	// --- Completed Tasks On Top Feature
 	function completedOnTopSorted(reduxTasks, tasks) {

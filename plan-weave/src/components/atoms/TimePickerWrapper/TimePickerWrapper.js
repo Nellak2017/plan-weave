@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   ClockStyled,
   TimePickerWrapperStyled,
@@ -10,11 +10,10 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { format, parse } from 'date-fns'
 import { AiOutlineClockCircle } from 'react-icons/ai'
-import { THEMES } from '../../utils/constants'
-
+import { THEMES, CLOCK_DEBOUNCE } from '../../utils/constants'
+import { debounce } from 'lodash'
 /*
   TODO: Possibly refactor this with XState FSM library if the code becomes unmanageable
-  TODO: Clean up comments about Controlled Components once you undestand the concept
 */
 
 function TimePickerWrapper({
@@ -31,22 +30,29 @@ function TimePickerWrapper({
   onKeyDown, // used for using enter key to press on icon
   title // used to tell the user what clicking the icon will do whenever they hover over it (tool tip)
 }) {
+  // --- Verify Input
   if (variant && !THEMES.includes(variant)) variant = 'dark'
+  
+  // --- State for component
   const [time, setTime] = useState(parse(defaultTime, 'HH:mm', new Date()))
   const [showClock, setShowClock] = useState(false)
   const [view, setView] = useState('hours')
   const [buttonClicked, setButtonClicked] = useState(false)
 
-  // Code For Controlled Component
+  // --- Code For Controlled Component Feature
   useEffect(() => {
     if (!controlled) setTime(parse(defaultTime, 'HH:mm', new Date()))
   }, [controlled, defaultTime]) // Update internal time state if not controlled
   const currentTime = controlled ? controlledTime : time // Use controlledTime if controlled by the parent
-  // End of Code for Controlled Component
 
+  // --- Debouncing the Clock Feature
+  useEffect(() => { return () => { debouncedChangeHandler.cancel() }}, [debouncedChangeHandler])
+  const debouncedChangeHandler = useMemo( () => debounce(newTime => onTimeChange(newTime), CLOCK_DEBOUNCE), [])
+
+  // --- Clock FSM (implemented without State machines) Feature
   const handleTimeChange = newTime => {
     setTime(newTime)
-    onTimeChange && onTimeChange(newTime); // Pass the updated time back to the parent component
+    onTimeChange && debouncedChangeHandler(newTime); // Pass the updated time back to the parent component
   }
   const toggleClock = () => {
     setButtonClicked(true); setShowClock(!showClock); setView('hours'); //setTime(time) 
@@ -66,8 +72,8 @@ function TimePickerWrapper({
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <TimePickerWrapperStyled variant={variant} >
         <Display><p>{displayText}</p><p>{ampm ? format(currentTime, 'hh:mm a') : format(currentTime, 'HH:mm')}</p></Display>
-        <ClockIconWrapper role="button" onMouseDown={toggleClock} onKeyDown={(e) => {if(e.key==='Enter'){toggleClock()}}}>
-          <AiOutlineClockCircle tabIndex={tabIndex} size={32} title={title}/>
+        <ClockIconWrapper role="button" onMouseDown={toggleClock} onKeyDown={(e) => { if (e.key === 'Enter') { toggleClock() } }}>
+          <AiOutlineClockCircle tabIndex={tabIndex} size={32} title={title} />
         </ClockIconWrapper>
         <TimeClockWrapper
           $showclock={showClock}

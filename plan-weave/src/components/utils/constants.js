@@ -51,3 +51,5 @@ export const DEFAULT_TASK_CONTROL_TOOL_TIPS = {
 	owlToolTip: 'Toggle Overnight Mode', addToolTip: 'Add a New Task',
 	deleteToolTip: 'Delete selected', dropDownToolTip: 'Select Sorting Method'
 }
+
+export const CLOCK_DEBOUNCE = 20 // measured in ms

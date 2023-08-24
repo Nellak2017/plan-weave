@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useMemo } from 'react'
 import SearchBar from '../../atoms/SearchBar/SearchBar.js'
 import DropDownButton from '../../atoms/DropDownButton/DropDownButton'
 import {
