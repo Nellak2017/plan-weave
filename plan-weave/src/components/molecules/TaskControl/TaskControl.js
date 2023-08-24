@@ -41,13 +41,13 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	// Context and Redux Stuff
 	const theme = useContext(ThemeContext)
 	const dispatch = useDispatch()
-	const { taskList, setTaskList, search, setSearch, timeRange, setTimeRange, setOwl } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
+	const { taskList, setTaskList, search, setSearch, timeRange, setTimeRange, owl, setOwl } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
 
 	// State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
 	const [startTime, setStartTime] = useState(!TaskEditorContext._currentValue ? parse(start, 'HH:mm', new Date()) : timeRange.start)
 	const [endTime, setEndTime] = useState(!TaskEditorContext._currentValue ? parse(end, 'HH:mm', new Date()) : timeRange.end)
-	const [overNightMode, setOverNightMode] = useState(overNight) // if true, then end<start means over-night
+	const [overNightMode, setOverNightMode] = useState(owl === undefined || owl === null ? overNight : owl) // if true, then end<start means over-night
 
 	// Effects
 	useEffect(() => { checkTimeRange() }, [overNightMode])

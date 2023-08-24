@@ -40,27 +40,26 @@ X Completed Field Separate Sorting
 Tests + JSDOC
 	X isTimestampFromToday
 		X Tests
-// git push
-8/22/2023
-	X validateTask
-		X Add schema parameter for other schema type
-		X Tests
-	X pureTaskAttributeUpdate
-		X refactor using validateTask to simplify things
-		X Tests
-	X filterTaskList
-		X Tests
-// git push
-8/23/2023
-	X fix Start/End Time Auto Calculation to change on start/end/owl change
-	X debounce Clock
-	X highlightDefaults
-		X Tests 
-
-// git push
-8/24/2023
-	updateTaskList
-		Tests
+	// git push
+	8/22/2023
+		X validateTask
+			X Add schema parameter for other schema type
+			X Tests
+		X pureTaskAttributeUpdate
+			X refactor using validateTask to simplify things
+			X Tests
+		X filterTaskList
+			X Tests
+	// git push
+	8/23/2023
+		X fix Start/End Time Auto Calculation to change on start/end/owl change
+		X debounce Clock
+		X highlightDefaults
+			X Tests 
+	// git push
+	8/24/2023
+		X updateTaskList
+			X Tests
 
 Timestamp editing feature
 	When DnD, (old index, new index) => swap(task[old index]['timestamp'], task[new index]['timestamp']) 

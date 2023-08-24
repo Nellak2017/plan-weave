@@ -5,6 +5,7 @@ import {
 	validateTask,
 	filterTaskList,
 	highlightDefaults,
+	updateTaskList,
 } from './helpers'
 import { TASK_STATUSES } from './constants'
 
@@ -458,7 +459,251 @@ describe('highlightDefaults', () => {
 		it(testCase.name, () => {
 			const { taskList, start, end, owl } = testCase.input
 			const result = highlightDefaults(taskList, start, end, owl)
-			if (testCase.name === 'When ttc is bad, it will make it old, even out of order') console.log(result)
+			expect(result).toEqual(testCase.expected)
+		})
+	})
+})
+
+describe('updateTaskList', () => {
+	// Test data
+	const testCases = [
+		{
+			name: 'Should work on valid task list and valid start time',
+			input: {
+				taskList: [
+					{
+						"task": "Caffiene",
+						"waste": 0,
+						"ttc": 0.5,
+						"eta": "01:30",
+						"id": 4,
+						"status": "waiting",
+						"timestamp": 1692913917,
+						"completedTimeStamp": 1,
+						"hidden": false
+					},
+					{
+						"task": "Plan Weave (54-56) / 400",
+						"waste": 0,
+						"ttc": 2,
+						"eta": "15:30",
+						"id": 1,
+						"status": "incomplete",
+						"timestamp": 1692913916,
+						"completedTimeStamp": 1,
+						"hidden": false
+					},
+					{
+						"task": "Gym",
+						"waste": 0,
+						"ttc": 1.5,
+						"eta": "18:30",
+						"id": 2,
+						"status": "incomplete",
+						"timestamp": 1692913915,
+						"completedTimeStamp": 1,
+						"hidden": false
+					},
+					{
+						"task": "Shower -",
+						"waste": 0,
+						"ttc": 0.5,
+						"eta": "01:30",
+						"id": 3,
+						"status": "incomplete",
+						"timestamp": 1692913914,
+						"completedTimeStamp": 1,
+						"hidden": false
+					},
+					{
+						"task": "Meal Prep",
+						"waste": 0,
+						"ttc": 1,
+						"eta": "01:30",
+						"id": 5,
+						"status": "incomplete",
+						"timestamp": 1692913912,
+						"completedTimeStamp": 1,
+						"hidden": false
+					},
+					{
+						"task": "Ethics",
+						"waste": 0,
+						"ttc": 2,
+						"eta": "23:30",
+						"id": 11,
+						"status": "incomplete",
+						"timestamp": 1692913911,
+						"completedTimeStamp": 1,
+						"hidden": false
+					},
+					{
+						"task": "Machine Learning - A1",
+						"waste": 0,
+						"ttc": 1,
+						"eta": "18:30",
+						"id": 8,
+						"status": "incomplete",
+						"timestamp": 1692913910,
+						"completedTimeStamp": 1,
+						"hidden": false
+					},
+					{
+						"task": "Cyber Security: Ch 1-3, Rev. Linux",
+						"waste": 0,
+						"ttc": 1.5,
+						"eta": "15:30",
+						"id": 6,
+						"status": "incomplete",
+						"timestamp": 1692913909,
+						"completedTimeStamp": 1,
+						"hidden": false
+					},
+					{
+						"task": "Break",
+						"waste": 0,
+						"ttc": 0.75,
+						"eta": "18:30",
+						"id": 9,
+						"status": "incomplete",
+						"timestamp": 1692913909,
+						"completedTimeStamp": 1,
+						"hidden": false
+					},
+					{
+						"task": "Spanish",
+						"waste": 0,
+						"ttc": 0.5,
+						"eta": "23:30",
+						"id": 10,
+						"status": "incomplete",
+						"timestamp": 1692913908,
+						"completedTimeStamp": 1,
+						"hidden": false
+					}
+				], // Real Set of Tasks from Aug 24 2023
+				start: new Date(1692913500000) // Aug 24 2023, 16:45:00
+			},
+			expected: [
+				{
+					"task": "Caffiene",
+					"waste": 0,
+					"ttc": 0.5,
+					"eta": "17:15",
+					"id": 4,
+					"status": "waiting",
+					"timestamp": 1692913917,
+					"completedTimeStamp": 1,
+					"hidden": false
+				},
+				{
+					"task": "Plan Weave (54-56) / 400",
+					"waste": 0,
+					"ttc": 2,
+					"eta": "19:15",
+					"id": 1,
+					"status": "incomplete",
+					"timestamp": 1692913916,
+					"completedTimeStamp": 1,
+					"hidden": false
+				},
+				{
+					"task": "Gym",
+					"waste": 0,
+					"ttc": 1.5,
+					"eta": "20:45",
+					"id": 2,
+					"status": "incomplete",
+					"timestamp": 1692913915,
+					"completedTimeStamp": 1,
+					"hidden": false
+				},
+				{
+					"task": "Shower -",
+					"waste": 0,
+					"ttc": 0.5,
+					"eta": "21:15",
+					"id": 3,
+					"status": "incomplete",
+					"timestamp": 1692913914,
+					"completedTimeStamp": 1,
+					"hidden": false
+				},
+				{
+					"task": "Meal Prep",
+					"waste": 0,
+					"ttc": 1,
+					"eta": "22:15",
+					"id": 5,
+					"status": "incomplete",
+					"timestamp": 1692913912,
+					"completedTimeStamp": 1,
+					"hidden": false
+				},
+				{
+					"task": "Ethics",
+					"waste": 0,
+					"ttc": 2,
+					"eta": "00:15",
+					"id": 11,
+					"status": "incomplete",
+					"timestamp": 1692913911,
+					"completedTimeStamp": 1,
+					"hidden": false
+				},
+				{
+					"task": "Machine Learning - A1",
+					"waste": 0,
+					"ttc": 1,
+					"eta": "01:15",
+					"id": 8,
+					"status": "incomplete",
+					"timestamp": 1692913910,
+					"completedTimeStamp": 1,
+					"hidden": false
+				},
+				{
+					"task": "Cyber Security: Ch 1-3, Rev. Linux",
+					"waste": 0,
+					"ttc": 1.5,
+					"eta": "02:45",
+					"id": 6,
+					"status": "incomplete",
+					"timestamp": 1692913909,
+					"completedTimeStamp": 1,
+					"hidden": false
+				},
+				{
+					"task": "Break",
+					"waste": 0,
+					"ttc": 0.75,
+					"eta": "03:30",
+					"id": 9,
+					"status": "incomplete",
+					"timestamp": 1692913909,
+					"completedTimeStamp": 1,
+					"hidden": false
+				},
+				{
+					"task": "Spanish",
+					"waste": 0,
+					"ttc": 0.5,
+					"eta": "04:00",
+					"id": 10,
+					"status": "incomplete",
+					"timestamp": 1692913908,
+					"completedTimeStamp": 1,
+					"hidden": false
+				}
+			] // All the Etas are updated to reflect the new etas based on ttc data
+		},
+	]
+
+	// Test loop
+	testCases.forEach(testCase => {
+		it(testCase.name, () => {
+			const { taskList, start } = testCase.input
+			const result = updateTaskList({ start, taskList })
 			expect(result).toEqual(testCase.expected)
 		})
 	})

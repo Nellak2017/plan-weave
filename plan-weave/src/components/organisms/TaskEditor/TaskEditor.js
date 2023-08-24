@@ -6,7 +6,7 @@ import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import { StyledTaskEditor } from './TaskEditor.elements'
 import {
-	filterTaskList, highlightDefaults, hoursToMillis
+	filterTaskList, highlightDefaults, updateTaskList
 } from '../../utils/helpers.js'
 import { format, parse, getTime } from 'date-fns'
 import isEqual from 'lodash/isEqual'
@@ -49,9 +49,9 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState({ start: parse('17:00', 'HH:mm', new Date()), end: parse('23:45', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
+	const [timeRange, setTimeRange] = useState({ start: parse('16:45', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
-	const [owl, setOwl] = useState(false)
+	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
 
 	// --- Ensure Sorted List when tasks and sorting algo change Feature
@@ -100,24 +100,11 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	}, [sortingAlgo])
 
 	// --- Start/End Time Auto Calculation Feature
-
-	// TODO: Extract this function to helpers to be Tested and Documented
-	// Implicit args = start (seconds), taskList (list of tasks), getTime (function), hoursToMillis (function), format (function)
-	// returns list of Tasks (with updated eta values)
-	const updateTaskList = () => {
-		let currentTime = getTime(start)
-		const updatedTaskList = [...taskList].map(task => {
-			if (!task.eta) return task
-			currentTime += hoursToMillis(task.ttc || 0)
-			return { ...task, eta: format(currentTime, 'HH:mm') }
-		})
-		return updatedTaskList
-	}
-
 	useEffect(() => {
 		// Calculate Task List and Highlight list, then set them if you can
 		(() => {
-			const updatedTaskList = updateTaskList()
+			const updatedTaskList = updateTaskList({start, taskList})
+			console.log(updatedTaskList)
 			// Without this Guard, it will infinitely loop 
 			if (!isEqual(updatedTaskList, taskList)) {
 				setTaskList(updatedTaskList)
@@ -128,7 +115,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 
 	useEffect(() => {
 		(() => {
-			const updatedTaskList = updateTaskList()
+			const updatedTaskList = updateTaskList({start, taskList})
 			// should not infinitely loop because start, end, owl change only by user
 			setTaskList(updatedTaskList)
 			setHighlights(highlightDefaults(updatedTaskList, new Date(start), new Date(end), owl))

@@ -1,5 +1,5 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
-import { getTime } from 'date-fns'
+import { getTime, format } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY } from './constants'
 
 // This file contains many helpers used through out the application
@@ -234,3 +234,25 @@ export const highlightDefaults = (taskList, start, end, owl = false) => {
  * @returns {number} - The equivalent milliseconds.
  */
 export const hoursToMillis = hours => hours * 60000 * 60
+
+
+/**
+ * Updates the ETA values for a list of tasks based on the provided start time and task information.
+ *
+ * @param {Object} options - The options for updating the task list.
+ * @param {Date} options.start - The start time in Date object.
+ * @param {Array<Object>} options.taskList - The list of tasks to update.
+ * @param {Function} [options.getTime] - The function to get the current time. Default is the system time.
+ * @param {Function} [options.hoursToMillis] - The function to convert hours to milliseconds. Default is provided function.
+ * @param {Function} [options.format] - The function to format time. Default is provided function.
+ * @returns {Array<Object>} The list of tasks with updated ETA values.
+ */
+export const updateTaskList = ({ start, taskList, getTheTime = getTime, hoursConverter = hoursToMillis, formatter = format }) => {
+	let currentTime = getTheTime(start)
+	const updatedTaskList = [...taskList].map(task => {
+		if (!task.eta) return task
+		currentTime += hoursConverter(task.ttc || 0)
+		return { ...task, eta: formatter(currentTime, 'HH:mm') }
+	})
+	return updatedTaskList
+}
