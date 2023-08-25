@@ -10,6 +10,8 @@ import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 
 import useValidateTasks from '../../../hooks/useValidateTasks.js'
 import { isTimestampFromToday, pureTaskAttributeUpdate } from '../../utils/helpers'
+
+import { pipe, prop } from 'ramda'
 /* 
  TODO: Fix the Full Task Schema (See Full Task TODO)
 
@@ -29,32 +31,23 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 	useValidateTasks({ taskList, callback: setTaskList })
 
 	// Modded to include the local tasks
-	// --- Includes the Timestamp Swapping Feature (Functional way, no splice side-effects) (View Only, no store updates)
+	// --- Includes the Task Swapping Feature, keeping timestamps constant (View Only, no store updates)
 	const onDragEnd = result => {
 		if (!result.destination) return // Drag was canceled or dropped outside the list
 
-		const newTaskList = Array.from(taskList ? taskList : localTasks)
-
-		// Timestamp swapping logic
-		
-		const sourceIndex = result.source.index
-		const destinationIndex = result.destination.index
-
-		const sourceTask = newTaskList[sourceIndex]
-		const destinationTask = newTaskList[destinationIndex]
-
-		const newSourceTask = {...sourceTask, timestamp: destinationTask.timestamp}
-		const newDestinationTask = {...destinationTask, timestamp: sourceTask.timestamp}
-
-		// Usual DnD logic, using new..Task for source and destination instead
-		
-		// Construct the new array with the swapped tasks
-		const ret = newTaskList.map((task, index) => {
-			if (index === destinationIndex) return newSourceTask
-			if (index === sourceIndex) return newDestinationTask
-			return task
-		})
-
+		const shuffleTasks = (ordering, source = result.source.index, destination = result.destination.index, field = 'timestamp') => {
+			/*
+				1. Move the task to the new location, shifting everything else around it to acommodate
+				2. For each task in this new order, use the original timestamp order to assign the new timestamps, then return this
+			*/
+			const originalTimestampOrder = ordering.map(task => task[field])
+			return pipe(
+				ordering => ordering.filter((_, index) => index !== source),
+				remainingTasks => [...remainingTasks.slice(0, destination), ordering[source], ...remainingTasks.slice(destination)],
+				shuffledTasks => shuffledTasks.map((task, index) => ({ ...task, timestamp: originalTimestampOrder[index] }))
+			)(ordering)
+		}
+		const ret = shuffleTasks(taskList ? taskList : localTasks)
 		taskList ? setTaskList(ret) : setLocalTasks(ret)
 	}
 

@@ -55,7 +55,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	// Update Task in Redux Store if it is invalid only on the first load
 	useEffect(() => {
 		try {
-			const validTask = validateTask({task: taskObject})
+			const validTask = validateTask({ task: taskObject })
 			if (!isEqual(validTask, taskObject)) updateTask(id, validTask)(dispatch)
 		} catch (invalidTask) {
 			console.error(invalidTask.message)
@@ -67,7 +67,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	const handleCheckBoxClicked = async () => {
 		if (!isChecked) toast.info('This Task was Completed')
 
-		const validTask = validateTask({task: taskObject})
+		const validTask = validateTask({ task: taskObject })
 		const updatedTask = await pureTaskAttributeUpdate({
 			index: 0,
 			attribute: 'status',
@@ -83,76 +83,96 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 		toast.info('This Task was deleted')
 	}
 
+	const taskRowChildren = ({ provided }) => (
+		<>
+			<IconContainer title={'Drag-n-Drop tasks to change view'} {...provided?.dragHandleProps ?? ''}>
+				<DragIndicator size={32} />
+			</IconContainer>
+			<IconContainer title={isChecked ? 'Mark Incomplete' : 'Mark Complete'}>
+				{isChecked ? (
+					<MdOutlineCheckBox size={32} onClick={handleCheckBoxClicked} />
+				) : (
+					<MdOutlineCheckBoxOutlineBlank size={32} onClick={handleCheckBoxClicked} />
+				)}
+			</IconContainer>
+			<TaskContainer title={'Task Name'}>
+				{status === TASK_STATUSES.COMPLETED ?
+					<p>{task}</p>
+					: <TaskInput initialValue={task ? task : ''} variant={variant} />
+				}
+			</TaskContainer>
+			<TimeContainer title={'Wasted Time on this Task'} style={{ width: '189px' }}>
+				<p>
+					{waste && !isNaN(waste) && waste > 0 ?
+						formatTimeLeft({
+							timeDifference: waste,
+							minuteText: 'minutes',
+							hourText: 'hour',
+							hourText2: 'hours'
+						}) :
+						'0 minutes'}
+				</p>
+			</TimeContainer>
+			<TimeContainer style={{ width: '120px' }} title={'Time To Complete Task'}>
+				{status === TASK_STATUSES.COMPLETED ?
+					<pre>{ttc && !isNaN(ttc) && ttc > 0 ?
+						formatTimeLeft({
+							timeDifference: ttc,
+							minuteText: 'minutes',
+							hourText: 'hour',
+							hourText2: 'hours'
+						}) :
+						'0 minutes'}</pre>
+					: <HoursInput initialValue={ttc && ttc > .01 ? ttc : 1} variant={variant} placeholder='hours' text='hours' />
+				}
+			</TimeContainer>
+			<TimeContainer style={{ width: '40px' }} title={'Estimated Time to Finish Task'}>
+				<p>
+					{eta && /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(eta) ? eta : '00:00'}
+				</p>
+			</TimeContainer>
+			<IconContainer>
+				<BiTrash title={'Delete this task'} onClick={handleDeleteTask} size={32} />
+			</IconContainer>
+		</>
+	)
+
 	return (
 		<>
-			<Draggable draggableId={`task-${id}`} index={index}>
-				{provided => (
+			{status === TASK_STATUSES.COMPLETED ?
+				(
 					<TaskRowStyled
 						variant={variant}
 						status={status}
-						ref={provided.innerRef}
-						{...provided.draggableProps}
-						style={{
-							...provided.draggableProps.style,
-							// Apply custom styles when dragging
-							boxShadow: provided.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none',
-							// Add any other styles you want to maintain during dragging
-						}}
 						maxwidth={maxwidth}
 						highlight={highlight}
 					>
-						<IconContainer title={'Drag-n-Drop tasks to change view'} {...provided.dragHandleProps}>
-							<DragIndicator size={32} />
-						</IconContainer>
-						<IconContainer title={isChecked ? 'Mark Incomplete' : 'Mark Complete'}>
-							{isChecked ? (
-								<MdOutlineCheckBox size={32} onClick={handleCheckBoxClicked} />
-							) : (
-								<MdOutlineCheckBoxOutlineBlank size={32} onClick={handleCheckBoxClicked} />
-							)}
-						</IconContainer>
-						<TaskContainer title={'Task Name'}>
-							{status === TASK_STATUSES.COMPLETED ?
-								<p>{task}</p>
-								: <TaskInput initialValue={task ? task : ''} variant={variant} />
-							}
-						</TaskContainer>
-						<TimeContainer title={'Wasted Time on this Task'} style={{ width: '189px' }}>
-							<p>
-								{waste && !isNaN(waste) && waste > 0 ?
-									formatTimeLeft({
-										timeDifference: waste,
-										minuteText: 'minutes',
-										hourText: 'hour',
-										hourText2: 'hours'
-									}) :
-									'0 minutes'}
-							</p>
-						</TimeContainer>
-						<TimeContainer style={{ width: '120px' }} title={'Time To Complete Task'}>
-							{status === TASK_STATUSES.COMPLETED ?
-								<pre>{ttc && !isNaN(ttc) && ttc > 0 ?
-									formatTimeLeft({
-										timeDifference: ttc,
-										minuteText: 'minutes',
-										hourText: 'hour',
-										hourText2: 'hours'
-									}) :
-									'0 minutes'}</pre>
-								: <HoursInput initialValue={ttc && ttc > .01 ? ttc : 1} variant={variant} placeholder='hours' text='hours' />
-							}
-						</TimeContainer>
-						<TimeContainer style={{ width: '40px' }} title={'Estimated Time to Finish Task'}>
-							<p>
-								{eta && /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(eta) ? eta : '00:00'}
-							</p>
-						</TimeContainer>
-						<IconContainer>
-							<BiTrash title={'Delete this task'} onClick={handleDeleteTask} size={32} />
-						</IconContainer>
+						{taskRowChildren({provided : undefined})}
 					</TaskRowStyled>
-				)}
-			</Draggable>
+				)
+				: (
+					<Draggable draggableId={`task-${id}`} index={index}>
+						{provided => (
+							<TaskRowStyled
+								variant={variant}
+								status={status}
+								ref={provided.innerRef}
+								{...provided.draggableProps}
+								style={{
+									...provided.draggableProps.style,
+									// Apply custom styles when dragging
+									boxShadow: provided.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none',
+									// Add any other styles you want to maintain during dragging
+								}}
+								maxwidth={maxwidth}
+								highlight={highlight}
+							>
+								{taskRowChildren({ provided })}
+							</TaskRowStyled>
+						)}
+					</Draggable>
+				)
+			}
 		</>
 	)
 }

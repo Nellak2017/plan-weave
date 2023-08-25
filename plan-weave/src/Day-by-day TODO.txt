@@ -64,8 +64,8 @@ X Tests + JSDOC
 Timestamp editing feature
 	X When DnD, (old index, new index) => swap(task[old index]['timestamp'], task[new index]['timestamp']) 
 	X Basically swap the old task position's timestamp with the new one to preserve numerical stability
-	Should not affect Completed tasks (otherwise it would mess up ordering in view)
-		disable dnd for completed tasks
+	X Should not affect Completed tasks (otherwise it would mess up ordering in view)
+		X disable dnd for completed tasks
 
 Waste Calculations
 
