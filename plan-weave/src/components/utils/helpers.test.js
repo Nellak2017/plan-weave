@@ -5,7 +5,7 @@ import {
 	validateTask,
 	filterTaskList,
 	highlightDefaults,
-	updateTaskList,
+	updateTaskListEta,
 } from './helpers'
 import { TASK_STATUSES } from './constants'
 
@@ -464,7 +464,7 @@ describe('highlightDefaults', () => {
 	})
 })
 
-describe('updateTaskList', () => {
+describe('updateTaskListEta', () => {
 	// Test data
 	const testCases = [
 		{
@@ -703,7 +703,7 @@ describe('updateTaskList', () => {
 	testCases.forEach(testCase => {
 		it(testCase.name, () => {
 			const { taskList, start } = testCase.input
-			const result = updateTaskList({ start, taskList })
+			const result = updateTaskListEta({ start, taskList })
 			expect(result).toEqual(testCase.expected)
 		})
 	})

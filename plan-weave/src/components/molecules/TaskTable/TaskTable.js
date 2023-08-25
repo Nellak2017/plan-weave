@@ -26,17 +26,38 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 	const [localTasks, setLocalTasks] = useState(!tasks ? DEFAULT_SIMPLE_TASKS : tasks)
 
 	// Validate tasks and correct invalid ones when the page loads in. DOES NOT EFFECT REDUX STORE, ONLY VIEW OF IT
-	useValidateTasks({taskList, callback:setTaskList})
+	useValidateTasks({ taskList, callback: setTaskList })
 
 	// Modded to include the local tasks
+	// --- Includes the Timestamp Swapping Feature (Functional way, no splice side-effects) (View Only, no store updates)
 	const onDragEnd = result => {
 		if (!result.destination) return // Drag was canceled or dropped outside the list
+
 		const newTaskList = Array.from(taskList ? taskList : localTasks)
-		const [movedTask] = newTaskList.splice(result.source.index, 1)
-		newTaskList.splice(result.destination.index, 0, movedTask)
-		taskList ? setTaskList(newTaskList) : setLocalTasks(newTaskList)
+
+		// Timestamp swapping logic
+		
+		const sourceIndex = result.source.index
+		const destinationIndex = result.destination.index
+
+		const sourceTask = newTaskList[sourceIndex]
+		const destinationTask = newTaskList[destinationIndex]
+
+		const newSourceTask = {...sourceTask, timestamp: destinationTask.timestamp}
+		const newDestinationTask = {...destinationTask, timestamp: sourceTask.timestamp}
+
+		// Usual DnD logic, using new..Task for source and destination instead
+		
+		// Construct the new array with the swapped tasks
+		const ret = newTaskList.map((task, index) => {
+			if (index === destinationIndex) return newSourceTask
+			if (index === sourceIndex) return newDestinationTask
+			return task
+		})
+
+		taskList ? setTaskList(ret) : setLocalTasks(ret)
 	}
-	
+
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
 			<TaskTableContainer maxwidth={maxwidth}>

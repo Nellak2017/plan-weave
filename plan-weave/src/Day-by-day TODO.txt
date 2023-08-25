@@ -37,7 +37,7 @@ X Completed Field Separate Sorting
 
 // git push
 8/21/2023
-Tests + JSDOC
+X Tests + JSDOC
 	X isTimestampFromToday
 		X Tests
 	// git push
@@ -62,10 +62,10 @@ Tests + JSDOC
 			X Tests
 
 Timestamp editing feature
-	When DnD, (old index, new index) => swap(task[old index]['timestamp'], task[new index]['timestamp']) 
-	Basically swap the old task position's timestamp with the new one to preserve numerical stability
-	Should not effect Old tasks (otherwise it would mess up analytics)
-		Disable dnd for old tasks and completed tasks
+	X When DnD, (old index, new index) => swap(task[old index]['timestamp'], task[new index]['timestamp']) 
+	X Basically swap the old task position's timestamp with the new one to preserve numerical stability
+	Should not affect Completed tasks (otherwise it would mess up ordering in view)
+		disable dnd for completed tasks
 
 Waste Calculations
 

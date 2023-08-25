@@ -247,7 +247,7 @@ export const hoursToMillis = hours => hours * 60000 * 60
  * @param {Function} [options.format] - The function to format time. Default is provided function.
  * @returns {Array<Object>} The list of tasks with updated ETA values.
  */
-export const updateTaskList = ({ start, taskList, getTheTime = getTime, hoursConverter = hoursToMillis, formatter = format }) => {
+export const updateTaskListEta = ({ start, taskList, getTheTime = getTime, hoursConverter = hoursToMillis, formatter = format }) => {
 	let currentTime = getTheTime(start)
 	const updatedTaskList = [...taskList].map(task => {
 		if (!task.eta) return task

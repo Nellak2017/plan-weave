@@ -6,7 +6,7 @@ import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import { StyledTaskEditor } from './TaskEditor.elements'
 import {
-	filterTaskList, highlightDefaults, updateTaskList
+	filterTaskList, highlightDefaults, updateTaskListEta
 } from '../../utils/helpers.js'
 import { format, parse, getTime } from 'date-fns'
 import isEqual from 'lodash/isEqual'
@@ -14,9 +14,7 @@ import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
 
 /*
-	TODO: Add tests and JSDOCS to searchFilter function in helpers.js 
 	TODO: Convert Start/End Time Auto Calculation Feature to Functional version
-	TODO: Test Highlight Defaults
 	TODO: Fix the Bug where the dnd is reset when store is updated and the list is sorted
 	TODO: Fix the display bug where when the checkmark is clicked, and it resets view
 		-> Use Timestamp swapping technique and keep using store for updates
@@ -103,8 +101,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	useEffect(() => {
 		// Calculate Task List and Highlight list, then set them if you can
 		(() => {
-			const updatedTaskList = updateTaskList({start, taskList})
-			console.log(updatedTaskList)
+			const updatedTaskList = updateTaskListEta({ start, taskList })
 			// Without this Guard, it will infinitely loop 
 			if (!isEqual(updatedTaskList, taskList)) {
 				setTaskList(updatedTaskList)
@@ -115,7 +112,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 
 	useEffect(() => {
 		(() => {
-			const updatedTaskList = updateTaskList({start, taskList})
+			const updatedTaskList = updateTaskListEta({ start, taskList })
 			// should not infinitely loop because start, end, owl change only by user
 			setTaskList(updatedTaskList)
 			setHighlights(highlightDefaults(updatedTaskList, new Date(start), new Date(end), owl))
