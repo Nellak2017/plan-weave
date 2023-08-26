@@ -20,11 +20,11 @@ const initialState = {
 	], // Initial state for tasks
 	*/
 	tasks: [
-		{ status: 'incomplete', task: 'Plan Weave (58-60) / 400', waste: 0, ttc: 2, eta: '15:30', id: 1, timestamp: timestamp},
+		{ status: 'incomplete', task: 'Plan Weave (60-62) / 400', waste: 0, ttc: 2, eta: '15:30', id: 1, timestamp: timestamp},
 		{ status: 'incomplete', task: 'Gym', waste: 0, ttc: 1, eta: '18:30', id: 2, timestamp: timestamp - 1 },
 		{ status: 'incomplete', task: 'Shower -', waste: 0, ttc: .5, eta: '01:30', id: 3, timestamp: timestamp - 2 },
-		{ status: 'incomplete', task: 'Meal Prep', waste: 0, ttc: 1, eta: '01:30', id: 5, timestamp: timestamp - 4 },
-		{ status: 'incomplete', task: 'Spanish - Quiz', waste: 0, ttc: .75, eta: '23:30', id: 10, timestamp: timestamp - 5 },
+		{ status: 'incomplete', task: 'Meal Prep - Stir Fry', waste: 0, ttc: 1, eta: '01:30', id: 5, timestamp: timestamp - 4 },
+		{ status: 'incomplete', task: 'Spanish - CH P, HW, Duo ', waste: 0, ttc: 1.75, eta: '23:30', id: 10, timestamp: timestamp - 5 },
 		{ status: 'incomplete', task: 'Machine Learning - A1, A2', waste: 0, ttc: 1.5, eta: '18:30', id: 8, timestamp: timestamp - 6 },
 		{ status: 'incomplete', task: 'Ethics', waste: 0, ttc: 2, eta: '23:30', id: 11, timestamp: timestamp - 7 },
 		{ status: 'incomplete', task: 'Cyber Security: Lecture, Ch 1-3, Rev. Linux', waste: 0, ttc: 2, eta: '15:30', id: 6, timestamp: timestamp - 8 },

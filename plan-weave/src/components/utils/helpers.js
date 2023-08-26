@@ -275,12 +275,10 @@ time = Date, current time
 returns Array of Tasks, updated with new waste, ttc, other
 */
 
+// TODO: Simplify the logic and make it more elegant once all test cases passing and functionality is good
 // It is possible you may need to have the previous taskList as well so that you can see diffs?
 // Or maybe you can use a boolean object to see what is being updated
-export const calculateWaste = ({ start, taskList, time = new Date() }) => {
-	// 1. In a list of tasks, the first task that is incomplete will have a waste = time - eta.
-	const firstIncompleteIndex = taskList.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
-
+export const calculateWaste = ({ start, taskList, time = new Date(), indexUpdated = -1 }) => {
 	// Converts taskList Etas into Dates that can be manipulated (Except for Completed tasks)
 	const etaToDates = (taskList, start) => {
 		// Add completed tasks to the new etaToDates for the non-completed tasks
@@ -311,23 +309,45 @@ export const calculateWaste = ({ start, taskList, time = new Date() }) => {
 		})
 	}
 
-	// Updates the first task, as per requirement 1.
-	const newTaskListFirst = etaToStrings(etaToDates(taskList, start).map((task, index) => {
-		if (index === firstIncompleteIndex && task.status !== TASK_STATUSES.COMPLETED) {
-			return {
-				...task,
-				waste: millisToHours(time.getTime() - task.eta.getTime())
-			}
-		}
-		return task
-	}), start)
+	const firstIncompleteIndex = taskList.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
+	const manipulatedDates = etaToDates(taskList, start)
 
-
+	// 1. In a list of tasks, the first task that is incomplete will have a waste = time - eta.
 	// 2. In a list of tasks, the complete tasks will initialize with their established waste values.
+	if (indexUpdated === -1) {
+		// Updates the first task, as per requirement 1. and 2.
+		const newTaskListFirst = etaToStrings(etaToDates(taskList, start).map((task, index) => {
+			if (index === firstIncompleteIndex && task.status !== TASK_STATUSES.COMPLETED) {
+				return {
+					...task,
+					waste: millisToHours(time.getTime() - task.eta.getTime())
+				}
+			}
+			return task
+		}), start)
 
+		return newTaskListFirst
+	}
+	if (indexUpdated >= 0) {
+		// 3. When a Task Goes from Incomplete to Completed, it will stop calculating waste values. The waste = time - eta, then ttc is altered.
+		const isCompletedTaskUpdating = manipulatedDates[indexUpdated]['status'] === TASK_STATUSES.COMPLETED // true if Completed, false otherwise
+		if (isCompletedTaskUpdating) { // Did it go from incomplete to completed?
+			/*
+				1. update completedTimeStamp to be time, which in this case is 18:30 timestamp
+				2. calculate waste = time - Date(eta)
+				3. update the next tasks to have correct eta and waste values
+			*/
+			const newTaskList = manipulatedDates.map((task, index) => {
+				const completedTimeStamp = time.getTime() / 1000
+				const waste = millisToHours(time.getTime() - task.eta.getTime())
+				if (index === indexUpdated) return { ...task, waste, completedTimeStamp }
+				return task
+			})
+			// TODO: Update the next tasks to have correct eta and waste values
+		} else {
 
-
-	return newTaskListFirst
+		}
+	}
 }
 
 
