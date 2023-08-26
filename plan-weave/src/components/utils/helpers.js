@@ -1,6 +1,6 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
 import { getTime, format } from 'date-fns'
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY } from './constants'
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
 
 // This file contains many helpers used through out the application
 
@@ -235,6 +235,13 @@ export const highlightDefaults = (taskList, start, end, owl = false) => {
  */
 export const hoursToMillis = hours => hours * 60000 * 60
 
+/**
+ * Converts milliseconds to hours.
+ * 
+ * @param {number} milliseconds - The number of hours to convert.
+ * @returns {number} - The equivalent milliseconds.
+ */
+export const millisToHours = milliseconds => (milliseconds / 60000) / 60
 
 /**
  * Updates the ETA values for a list of tasks based on the provided start time and task information.
@@ -247,6 +254,7 @@ export const hoursToMillis = hours => hours * 60000 * 60
  * @param {Function} [options.format] - The function to format time. Default is provided function.
  * @returns {Array<Object>} The list of tasks with updated ETA values.
  */
+// TODO: Refactor this to use Reduce instead of imperative loop
 export const updateTaskListEta = ({ start, taskList, getTheTime = getTime, hoursConverter = hoursToMillis, formatter = format }) => {
 	let currentTime = getTheTime(start)
 	const updatedTaskList = [...taskList].map(task => {
@@ -256,3 +264,82 @@ export const updateTaskListEta = ({ start, taskList, getTheTime = getTime, hours
 	})
 	return updatedTaskList
 }
+
+/*
+Waste Feature Calculations
+
+start = Date, start of task interval (we get it from time picker)
+taskList = Array of Tasks
+time = Date, current time
+
+returns Array of Tasks, updated with new waste, ttc, other
+*/
+
+// It is possible you may need to have the previous taskList as well so that you can see diffs?
+// Or maybe you can use a boolean object to see what is being updated
+export const calculateWaste = ({ start, taskList, time = new Date() }) => {
+	// 1. In a list of tasks, the first task that is incomplete will have a waste = time - eta.
+	const firstIncompleteIndex = taskList.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
+
+	// Converts taskList Etas into Dates that can be manipulated (Except for Completed tasks)
+	const etaToDates = (taskList, start) => {
+		// Add completed tasks to the new etaToDates for the non-completed tasks
+		// This way completed tasks has no effect on eta or other calcs and they retain their original values
+		return taskList.slice(0, firstIncompleteIndex).concat(
+			taskList.slice(firstIncompleteIndex).reduce((acc, task, index) => {
+				const prevEta = index === 0 ? start : acc[index - 1].eta
+				const increment = hoursToMillis(task.ttc)
+				const newEta = new Date(prevEta.getTime() + increment)
+
+				return [
+					...acc,
+					{
+						...task,
+						eta: newEta
+					}
+				]
+			}, []))
+	}
+
+	// Converts taskList Eta Dates back into strings (Except for Completed tasks)
+	const etaToStrings = (taskList, start) => {
+		return taskList.map(task => {
+			return {
+				...task,
+				eta: task.status !== TASK_STATUSES.COMPLETED ? format(task.eta, "HH:mm") : task.eta
+			}
+		})
+	}
+
+	// Updates the first task, as per requirement 1.
+	const newTaskListFirst = etaToStrings(etaToDates(taskList, start).map((task, index) => {
+		if (index === firstIncompleteIndex && task.status !== TASK_STATUSES.COMPLETED) {
+			return {
+				...task,
+				waste: millisToHours(time.getTime() - task.eta.getTime())
+			}
+		}
+		return task
+	}), start)
+
+
+	// 2. In a list of tasks, the complete tasks will initialize with their established waste values.
+
+
+
+	return newTaskListFirst
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

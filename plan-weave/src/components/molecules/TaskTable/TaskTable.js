@@ -36,10 +36,6 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 		if (!result.destination) return // Drag was canceled or dropped outside the list
 
 		const shuffleTasks = (ordering, source = result.source.index, destination = result.destination.index, field = 'timestamp') => {
-			/*
-				1. Move the task to the new location, shifting everything else around it to acommodate
-				2. For each task in this new order, use the original timestamp order to assign the new timestamps, then return this
-			*/
 			const originalTimestampOrder = ordering.map(task => task[field])
 			return pipe(
 				ordering => ordering.filter((_, index) => index !== source),
