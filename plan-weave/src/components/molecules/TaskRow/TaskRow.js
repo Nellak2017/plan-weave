@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import {
 	TaskRowStyled,
 	DragIndicator,
@@ -21,6 +21,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
 import { useDispatch } from 'react-redux'
 import { pureTaskAttributeUpdate, validateTask } from '../../utils/helpers'
+import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 
 import isEqual from 'lodash/isEqual'
 
@@ -39,8 +40,9 @@ TODO: When API is set up, set invalid id to be the latest id in the database, to
 function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hours', status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: timestampOuter },
 	variant = 'dark', maxwidth = 818, index, highlight = 'no' }) {
 
-	// destructure taskObject
+	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
+	const { setIndexChanged } = useContext(TaskEditorContext)
 
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -76,6 +78,8 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 		})
 		setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
 		updateTask(id, updatedTask[0])(dispatch)
+
+		setIndexChanged(index) // This is to tell the context the index of the task being changed, so auto calculations can work properly
 	}
 
 	const handleDeleteTask = () => {
@@ -147,7 +151,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 						maxwidth={maxwidth}
 						highlight={highlight}
 					>
-						{taskRowChildren({provided : undefined})}
+						{taskRowChildren({ provided: undefined })}
 					</TaskRowStyled>
 				)
 				: (

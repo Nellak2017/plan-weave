@@ -6,7 +6,7 @@ import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import { StyledTaskEditor } from './TaskEditor.elements'
 import {
-	filterTaskList, highlightDefaults, updateTaskListEta
+	filterTaskList, highlightDefaults, calculateEta, calculateWaste, validateTasks, hoursToMillis
 } from '../../utils/helpers.js'
 import { format, parse, getTime } from 'date-fns'
 import isEqual from 'lodash/isEqual'
@@ -42,7 +42,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// Task Data (Redux), Task View (Context), Searching, Sorting, and Algorithm Change State
 	const tasksFromRedux = useSelector(selectNonHiddenTasks) // useValidateTasks() causes issues for some reason
 	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
-	const [taskList, setTaskList] = useState(completedOnTopSorted(tasksFromRedux, tasks))
+	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks) }))
 	const [search, setSearch] = useState('') // value of searchbar, for filtering tasks
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
@@ -51,6 +51,9 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
+	const [indexChanged, setIndexChanged] = useState(-1) // Unfortunately, I see no other way to do this than this global variable
+
+	const [test, setTest] = useState(0)
 
 	// --- Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
@@ -97,30 +100,48 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 		})()
 	}, [sortingAlgo])
 
-	// --- Start/End Time Auto Calculation Feature
+	// --- ETA + Waste Auto Calculation Feature
 	useEffect(() => {
 		// Calculate Task List and Highlight list, then set them if you can
-		(() => {
-			const updatedTaskList = updateTaskListEta({ start, taskList })
+
+		if (indexChanged >= 0) {
+			const updatedTaskListEta = calculateEta({ start, taskList })
+			const updatedTaskList = calculateWaste({ start, taskList: updatedTaskListEta, time: new Date(), indexUpdated: indexChanged })
+			const updatedEtasAgain = calculateEta({ start, taskList: updatedTaskList})
+
+			setTaskList(updatedEtasAgain)
+			setHighlights(highlightDefaults(updatedEtasAgain, new Date(start), new Date(end), owl)) // should we use updatedTaskList?
+		}
+		const interval = setInterval(() => {
+
+			const temp = Array.from(taskList)
+			const updatedTaskListEta = calculateEta({ start, taskList })
+			const updatedTaskList = calculateWaste({ start, taskList: updatedTaskListEta, time: new Date(), indexUpdated: indexChanged })
+			const updatedEtasAgain = calculateEta({ start, taskList: updatedTaskList})
 			// Without this Guard, it will infinitely loop 
-			if (!isEqual(updatedTaskList, taskList)) {
-				setTaskList(updatedTaskList)
-				setHighlights(highlightDefaults(updatedTaskList, new Date(start), new Date(end), owl)) // should we use updatedTaskList?
+			if (!isEqual(updatedEtasAgain, temp)) {
+				setTaskList(updatedEtasAgain)
+				setHighlights(highlightDefaults(updatedEtasAgain, new Date(start), new Date(end), owl)) // should we use updatedTaskList?
 			}
-		})()
+		}, 1000)
+
+
+		// Clean-up step: set indexChanged to -1
+		return () => {
+			if (interval) clearInterval(interval)
+			setIndexChanged(-1)
+		}
 	}, [taskList])
 
 	useEffect(() => {
 		(() => {
-			const updatedTaskList = updateTaskListEta({ start, taskList })
+			const updatedTaskListEta = calculateEta({ start, taskList })
+			const updatedTaskList = calculateWaste({ start, taskList: updatedTaskListEta, time: new Date(), indexUpdated: indexChanged })
 			// should not infinitely loop because start, end, owl change only by user
 			setTaskList(updatedTaskList)
 			setHighlights(highlightDefaults(updatedTaskList, new Date(start), new Date(end), owl))
 		})()
 	}, [timeRange, owl])
-
-	// --- Waste Calculation Feature
-	
 
 	// --- Completed Tasks On Top Feature
 	function completedOnTopSorted(reduxTasks, tasks) {
@@ -133,8 +154,9 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	return (
 		<TaskEditorContext.Provider value={{
 			taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
-			highlights, setHighlights, owl, setOwl
+			highlights, setHighlights, owl, setOwl, indexChanged, setIndexChanged
 		}}>
+			<p>Test {test}</p>
 			<button onClick={() => {
 				console.log(sortingAlgo)
 			}}>Show Sorting Algo</button>

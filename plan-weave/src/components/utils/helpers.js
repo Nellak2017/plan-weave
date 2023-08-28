@@ -132,8 +132,13 @@ export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400)
 	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
 }
 
+export const validateTasks = ({ taskList, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
+	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
+		return taskList?.map(task => validateTask({task, schema, schemaDefaultFx, customErrorMessage}))
+}
+
 // TODO: Rename this function to be more generic, it will work on Tasks and beyond!
-// TODO: Refactor this to use Immer and Rambda/Folktale to make it functional for real (like remove try/catch and use Maybe objects)
+// TODO: Refactor this with railway oriented design so that it always returns Object, with error parameter
 /**
  * Try to validate the task, removing extras and filling defaults
  * If validation fails, throw an error and warn the user
@@ -245,8 +250,8 @@ export const millisToHours = milliseconds => (milliseconds / 60000) / 60
 
 // Converts all Eta strings to dates from Today for simplified processing. Do not use for tasks from tomorrow or yesterday and beyond.
 export const etaToDates = (taskList, time) => {
-	return taskList.map(task => {
-		const [hours, minutes] = task.eta.split(':')
+	return taskList?.map(task => {
+		const [hours, minutes] = task?.eta.split(':')
 		return { ...task, eta: new Date(time.getFullYear(), time.getMonth(), time.getDate(), hours, minutes) }
 	})
 }
@@ -266,7 +271,7 @@ export const etaToStrings = taskList => { return taskList.map(task => { return {
  * @returns {Array<Object>} The list of tasks with updated ETA values.
  */
 // TODO: Refactor this to use Reduce instead of imperative loop
-export const updateTaskListEta = ({ start, taskList, getTheTime = getTime, hoursConverter = hoursToMillis, formatter = format }) => {
+export const calculateEta = ({ start, taskList, getTheTime = getTime, hoursConverter = hoursToMillis, formatter = format }) => {
 	let currentTime = getTheTime(start)
 	const updatedTaskList = [...taskList].map(task => {
 		if (!task.eta) return task
@@ -287,18 +292,18 @@ returns Array of Tasks, updated with new waste and ttc (only update those)
 */
 export const calculateWaste = ({ start, taskList, time = new Date(), indexUpdated = -1 }) => {
 	const wasteCalculationNormal = (tasks = etaToDates(taskList, time), currentTime = time) => {
-		const firstIncompleteIndex = tasks.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
-		return etaToStrings(tasks.map((task, index) => (index === firstIncompleteIndex) ? { ...task, waste: millisToHours(currentTime.getTime() - task.eta.getTime()) } : task))
+		const firstIncompleteIndex = tasks?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
+		return etaToStrings(tasks?.map((task, index) => (index === firstIncompleteIndex) ? { ...task, waste: millisToHours(currentTime.getTime() - task.eta.getTime()) } : task))
 	}
 
 	const wasteCalculationUpdating = (tasks = etaToDates(taskList, time), currentTime = time) => {
 		const { eta } = tasks[indexUpdated]
 		const updatedTask = { ...tasks[indexUpdated], waste: millisToHours(currentTime.getTime() - eta.getTime()), ttc: Math.max(millisToHours(currentTime.getTime() - start.getTime()), 0.01), completedTimeStamp: currentTime.getTime() / 1000 } // use proper units to do the arithmetic
-		return etaToStrings(tasks.map((task, index) => index === indexUpdated ? updatedTask : task))
+		return etaToStrings(tasks?.map((task, index) => index === indexUpdated ? updatedTask : task))
 	}
 
-	if (indexUpdated === -1) return wasteCalculationNormal() 
-	else if (indexUpdated >= 0 && taskList[indexUpdated]['status'] === TASK_STATUSES.COMPLETED) return wasteCalculationNormal(etaToDates(wasteCalculationUpdating(), time)) 
+	if (indexUpdated === -1) return wasteCalculationNormal()
+	else if (indexUpdated >= 0 && taskList[indexUpdated]['status'] === TASK_STATUSES.COMPLETED) return wasteCalculationNormal(etaToDates(wasteCalculationUpdating(), time))
 	return wasteCalculationNormal()
 }
 

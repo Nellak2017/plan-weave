@@ -5,7 +5,7 @@ import {
 	validateTask,
 	filterTaskList,
 	highlightDefaults,
-	updateTaskListEta,
+	calculateEta,
 	calculateWaste
 } from './helpers'
 import { TASK_STATUSES } from './constants'
@@ -465,7 +465,7 @@ describe('highlightDefaults', () => {
 	})
 })
 
-describe('updateTaskListEta', () => {
+describe('calculateEta', () => {
 	// Test data
 	const testCases = [
 		{
@@ -704,7 +704,7 @@ describe('updateTaskListEta', () => {
 	testCases.forEach(testCase => {
 		it(testCase.name, () => {
 			const { taskList, start } = testCase.input
-			const result = updateTaskListEta({ start, taskList })
+			const result = calculateEta({ start, taskList })
 			expect(result).toEqual(testCase.expected)
 		})
 	})
