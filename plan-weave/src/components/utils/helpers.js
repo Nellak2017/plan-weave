@@ -215,18 +215,17 @@ export const filterTaskList = ({ filter, list, attribute }) => {
  * @returns {Array} - The list of highlights.
  */
 export const highlightDefaults = (taskList, start, end, owl = false) => {
-	// 1. Get all ttc from the task list, store in another list (TTCList)
-	const TTCList = taskList.map(obj => obj['ttc'] ?? 0) // if ttc is not defined it will be 0 so it doesn't affect outcome
-
-	// 2. Loop through TTCList, 1st value = start + ttc, nth value after is prev + ttc	
-	const timeStampList = TTCList.reduce((acc, ttc, index) => [...acc.slice(index !== 0 ? 0 : 1), acc[acc.length - 1] + (ttc ? hoursToMillis(ttc) : 0)], [start.getTime()])
-
-	// 3. return this highlight list
 	const endTimeMillis = owl ? end.getTime() + hoursToMillis(24) : end.getTime()
 	const initialTimeMillis = start.getTime()
 	const startOfDayMillis = new Date(initialTimeMillis).setHours(0, 0, 0, 0)
 	const secondsElapsedFromEnd = ((endTimeMillis - initialTimeMillis) + initialTimeMillis - startOfDayMillis) / 1000
-	return timeStampList.map(timestamp => isTimestampFromToday(new Date(start), timestamp / 1000, secondsElapsedFromEnd) ? ' ' : 'old')
+	
+	return pipe(
+		() => taskList,
+		taskList => taskList.map(obj => obj['ttc'] ?? 0),
+		TTCList => TTCList.reduce((acc, ttc, index) => [...acc.slice(index !== 0 ? 0 : 1), acc[acc.length - 1] + (ttc ? hoursToMillis(ttc) : 0)], [start.getTime()]),
+		timeStampList => timeStampList.map(timestamp => isTimestampFromToday(new Date(start), timestamp / 1000, secondsElapsedFromEnd) ? ' ' : 'old')
+	)()
 }
 
 /**
