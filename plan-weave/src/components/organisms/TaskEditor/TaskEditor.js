@@ -12,6 +12,7 @@ import { format, parse, getTime } from 'date-fns'
 import isEqual from 'lodash/isEqual'
 import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
+import { pipe } from 'ramda'
 
 /*
 	TODO: Convert Start/End Time Auto Calculation Feature to Functional version
@@ -40,8 +41,6 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
 
 	// Task Data (Redux), Task View (Context), Searching, Sorting, and Algorithm Change State
-	const fullRedux = useSelector(state => state?.tasks?.tasks) // Delete this, it is just for testing purposes
-
 	const tasksFromRedux = useSelector(selectNonHiddenTasks) // useValidateTasks() causes issues for some reason
 	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
 	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks) }))
@@ -54,8 +53,6 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
 	const [indexChanged, setIndexChanged] = useState(-1) // Unfortunately, I see no other way to do this than this global variable
-
-	const [test, setTest] = useState(0)
 
 	// --- Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
@@ -106,24 +103,24 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	useEffect(() => {
 		// Calculate Task List and Highlight list, then set them if you can
 
-		if (indexChanged >= 0) {
-			const updatedTaskListEta = calculateEta({ start, taskList })
-			const updatedTaskList = calculateWaste({ start, taskList: updatedTaskListEta, time: new Date(), indexUpdated: indexChanged })
-			const updatedEtasAgain = calculateEta({ start, taskList: updatedTaskList})
+		const updateTasks = pipe(
+			() => calculateEta({ start, taskList }),
+			updatedTaskListEta => calculateWaste({ start, taskList: updatedTaskListEta, time: new Date(), indexUpdated: indexChanged }),
+			updatedTaskList => calculateEta({ start, taskList: updatedTaskList }),
+		)
 
-			setTaskList(updatedEtasAgain)
-			setHighlights(highlightDefaults(updatedEtasAgain, new Date(start), new Date(end), owl)) // should we use updatedTaskList?
+		if (indexChanged >= 0) {
+			const updated = updateTasks()
+			setTaskList(updated)
+			setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl)) // should we use updatedTaskList?
 		}
 		const interval = setInterval(() => {
-
 			const temp = Array.from(taskList)
-			const updatedTaskListEta = calculateEta({ start, taskList })
-			const updatedTaskList = calculateWaste({ start, taskList: updatedTaskListEta, time: new Date(), indexUpdated: indexChanged })
-			const updatedEtasAgain = calculateEta({ start, taskList: updatedTaskList})
+			const updated = updateTasks()
 			// Without this Guard, it will infinitely loop 
-			if (!isEqual(updatedEtasAgain, temp)) {
-				setTaskList(updatedEtasAgain)
-				setHighlights(highlightDefaults(updatedEtasAgain, new Date(start), new Date(end), owl)) // should we use updatedTaskList?
+			if (!isEqual(updated, temp)) {
+				setTaskList(updated)
+				setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl)) // should we use updatedTaskList?
 			}
 		}, 1000)
 
@@ -158,7 +155,6 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 			taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
 			highlights, setHighlights, owl, setOwl, indexChanged, setIndexChanged
 		}}>
-			<p>Test {test}</p>
 			<button onClick={() => {
 				console.log(sortingAlgo)
 			}}>Show Sorting Algo</button>
@@ -168,9 +164,6 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 			<button onClick={() => {
 				console.log(tasksFromRedux)
 			}}>Show Redux Store</button>
-			<button onClick={() => {
-				console.log(fullRedux)
-			}}>Show Full Redux Store</button>
 			<button onClick={() => console.log(highlights)}>Show Highlights</button>
 			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 				<TaskControl

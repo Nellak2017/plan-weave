@@ -11,7 +11,7 @@ import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 import useValidateTasks from '../../../hooks/useValidateTasks.js'
 import { isTimestampFromToday, pureTaskAttributeUpdate } from '../../utils/helpers'
 
-import { pipe, prop } from 'ramda'
+import { pipe } from 'ramda'
 /* 
  TODO: Fix the Full Task Schema (See Full Task TODO)
 
