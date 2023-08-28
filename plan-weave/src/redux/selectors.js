@@ -4,8 +4,5 @@ import { createSelector } from 'reselect' // This would be used to memoize easil
 // Task Selectors
 export const selectNonHiddenTasks = createSelector(
 	[state => state?.tasks?.tasks],
-	allTasks => {
-		if (!allTasks) return []
-		return allTasks.filter(task => task.hidden !== true)
-	}
+	allTasks => { return !allTasks ? [] : allTasks.filter(task => task?.hidden !== true) }
 )

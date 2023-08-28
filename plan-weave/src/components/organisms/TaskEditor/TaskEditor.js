@@ -40,6 +40,8 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
 
 	// Task Data (Redux), Task View (Context), Searching, Sorting, and Algorithm Change State
+	const fullRedux = useSelector(state => state?.tasks?.tasks) // Delete this, it is just for testing purposes
+
 	const tasksFromRedux = useSelector(selectNonHiddenTasks) // useValidateTasks() causes issues for some reason
 	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
 	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks) }))
@@ -166,6 +168,9 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 			<button onClick={() => {
 				console.log(tasksFromRedux)
 			}}>Show Redux Store</button>
+			<button onClick={() => {
+				console.log(fullRedux)
+			}}>Show Full Redux Store</button>
 			<button onClick={() => console.log(highlights)}>Show Highlights</button>
 			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 				<TaskControl

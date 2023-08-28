@@ -105,16 +105,29 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 					: <TaskInput initialValue={task ? task : ''} variant={variant} />
 				}
 			</TaskContainer>
-			<TimeContainer title={'Wasted Time on this Task'} style={{ width: '189px' }}>
+			<TimeContainer title={'Wasted Time on this Task'} style={{ width: '200px' }}>
 				<p>
-					{waste && !isNaN(waste) && waste > 0 ?
-						formatTimeLeft({
-							timeDifference: waste,
-							minuteText: 'minutes',
-							hourText: 'hour',
-							hourText2: 'hours'
-						}) :
-						'0 minutes'}
+					{(() => {
+						// This function displays the waste for the positive, 0, and negative cases
+						if (waste && !isNaN(waste) && waste > 0) {
+							return formatTimeLeft({
+								timeDifference: waste,
+								minuteText: 'minutes',
+								hourText: 'hour',
+								hourText2: 'hours'
+							})
+						} else if (waste && !isNaN(waste) && waste < 0) {
+							return `-${formatTimeLeft({
+								timeDifference: -waste,
+								minuteText: 'minutes',
+								hourText: 'hour',
+								hourText2: 'hours'
+							})}`
+						} else {
+							return '0 minutes'
+						}
+					})()
+					}
 				</p>
 			</TimeContainer>
 			<TimeContainer style={{ width: '120px' }} title={'Time To Complete Task'}>
