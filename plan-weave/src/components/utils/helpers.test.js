@@ -752,12 +752,13 @@ describe('calculateWaste', () => {
 		{
 			name: 'When a Task Goes from Incomplete to Completed, it will stop calculating waste values. The waste = completedTimestamp - eta, then ttc is altered.',
 			input: {
+				// NOTE: Eta for Completed must be accurate coming in, or the waste calculation will fail
 				taskList: [
 					{ status: 'completed', task: 'Plan Weave (56-58) / 400', waste: 0, ttc: 2, eta: '15:30', id: 1, timestamp: 1 }, // Not touched
 					{ status: 'completed', task: 'Plan Weave (58-60) / 400', waste: 0, ttc: 2, eta: '15:30', id: 2, timestamp: 2 }, // Not touched
-					{ status: 'completed', task: 'Gym', waste: 0, ttc: 1, eta: '17:01', id: 3, timestamp: 3, completedTimeStamp: 3 }, // Completed Task that was previously incomplete
-					{ status: 'incomplete', task: 'Shower -', waste: 0, ttc: .5, eta: '01:30', id: 4, timestamp: 4 },
-					{ status: 'incomplete', task: 'Sleep', waste: 0, ttc: .5, eta: '01:30', id: 5, timestamp: 5 },
+					{ status: 'completed', task: 'Gym', waste: 0, ttc: 1, eta: '17:00', id: 3, timestamp: 3, completedTimeStamp: 3 }, // Completed Task that was previously incomplete
+					{ status: 'incomplete', task: 'Shower -', waste: 0, ttc: .5, eta: '01:31', id: 4, timestamp: 4 }, // 17:30 -> 17:30 + 1.5 = 19:00
+					{ status: 'incomplete', task: 'Sleep', waste: 0, ttc: .5, eta: '01:30', id: 5, timestamp: 5 }, // 18:00
 				],
 				// Since the Eta for the Gym will be calculated to be 5 PM, And it will be completed at 6:30 pm, then the waste = 1.5 hours, ttc is updated to be 2.5.
 				time: new Date(1693006200000), // Friday, August 25, 2023 6:30:00 PM GMT-05:00
@@ -771,16 +772,47 @@ describe('calculateWaste', () => {
 			expected: [
 				{ status: 'completed', task: 'Plan Weave (56-58) / 400', waste: 0, ttc: 2, eta: '15:30', id: 1, timestamp: 1 }, // Not touched
 				{ status: 'completed', task: 'Plan Weave (58-60) / 400', waste: 0, ttc: 2, eta: '15:30', id: 2, timestamp: 2 }, // Not touched
-				{ status: 'completed', task: 'Gym', waste: 1.5, ttc: 2.5, eta: '18:30', id: 3, timestamp: 3, completedTimeStamp: 3 + (2.5 * 60000 * 60) }, // Completed Task that was previously incomplete
+				{ status: 'completed', task: 'Gym', waste: 1.5, ttc: 2.5, eta: '18:30', id: 3, timestamp: 3, completedTimeStamp: 1693006200000 / 1000 }, // Completed Task that was previously incomplete
 				{ status: 'incomplete', task: 'Shower -', waste: -.5, ttc: .5, eta: '19:00', id: 4, timestamp: 4 }, // negative bc we are working on it
 				{ status: 'incomplete', task: 'Sleep', waste: 0, ttc: .5, eta: '19:30', id: 5, timestamp: 5 },
 			],
-		}
+		},
+		{
+			name: 'When a Task Goes from Completed to Incomplete, it will resume calculating waste values from where it left off. waste = time - eta. (Does not effect other waste values)',
+			input: {
+				taskList: [
+					// 16:00 = start
+					// 16:00 + 1.5 = 17:30 --> 0th task
+					// 17:30 + 2.0 = 19:30 --> 1st task
+					// 19:30 + 1.0 = 20:30 --> 2nd task
+					// 20:30 + 0.5 = 21:00 --> 3rd task
+
+					// acc = 0
+					// acc = 1.5
+					// acc = 3.5
+					// acc = 4.5
+					// acc = 5.0
+
+					{ status: 'incomplete', task: 'Plan Weave (56-58) / 400', waste: -.5, ttc: 2, eta: '18:00', id: 1, timestamp: 1 }, // completed (.5h early) -> incomplete
+					{ status: 'incomplete', task: 'Plan Weave (58-60) / 400', waste: -1.5, ttc: 2, eta: '19:30', id: 2, timestamp: 2 }, // waste = -1.5 coming in because task 0 was modded
+					{ status: 'incomplete', task: 'Gym', waste: 0, ttc: 1, eta: '18:30', id: 3, timestamp: 3 }, // 20:30 
+					{ status: 'incomplete', task: 'Shower -', waste: 0, ttc: .5, eta: '01:30', id: 4, timestamp: 4 }, // 21:00
+				],
+				time: new Date(1693006200000), // Friday, August 25, 2023 6:30:00 PM GMT-05:00
+				indexUpdated: 0 // The first Plan Weave task is being completed
+			},
+			expected: [
+				{ status: 'incomplete', task: 'Plan Weave (56-58) / 400', waste: .5, ttc: 2, eta: '18:00', id: 1, timestamp: 1 }, // completed -> incomplete
+				{ status: 'incomplete', task: 'Plan Weave (58-60) / 400', waste: -1.5, ttc: 2, eta: '19:30', id: 2, timestamp: 2 },
+				{ status: 'incomplete', task: 'Gym', waste: 0, ttc: 1, eta: '20:30', id: 3, timestamp: 3 }, // 20:30 
+				{ status: 'incomplete', task: 'Shower -', waste: 0, ttc: .5, eta: '21:00', id: 4, timestamp: 4 }, // 21:00
+			],
+		},
 	]
 
 	testCases.forEach(testCase => {
 		const { taskList, time } = testCase.input
-		if (testCase.input.indexUpdated) {
+		if (testCase.input.indexUpdated >= 0) {
 			const { indexUpdated } = testCase.input
 			it(testCase.name, () => {
 				expect(calculateWaste({ start, taskList, time, indexUpdated })).toEqual(testCase.expected)

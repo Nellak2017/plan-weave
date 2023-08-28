@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/router'
 import { signInWithEmail } from '../../firebase/firebase_auth.js'
-import { InfinitySpin } from  'react-loader-spinner'
+import { InfinitySpin } from 'react-loader-spinner'
 
 function Login() {
 	const router = useRouter()
@@ -10,13 +10,15 @@ function Login() {
 	const [error, setError] = useState(null)
 	const [loading, setLoading] = useState(false)
 
-	const handleEmailChange = (e) => setEmail(e.target.value)
+	const handleHomePage = () => {
+		router.push('/')
+	}
+	const handleEmailChange = e => setEmail(e.target.value)
+	const handlePasswordChange = e => setPassword(e.target.value)
 
-	const handlePasswordChange = (e) => setPassword(e.target.value)
-
-	const handleLogin = async (e) => {
+	const handleLogin = async e => {
 		e.preventDefault()
-		setLoading(true) 
+		setLoading(true)
 		try {
 			const user = await signInWithEmail(email, password)
 			router.push('/plan-weave')
@@ -39,6 +41,7 @@ function Login() {
 
 	return (
 		<div>
+			<button onClick={handleHomePage}>Home</button>
 			<h2>Login</h2>
 			<form onSubmit={handleLogin}>
 				<div>
