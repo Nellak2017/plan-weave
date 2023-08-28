@@ -70,12 +70,14 @@ Timestamp editing feature
 // git push
 8/25/2023 - 8/26/2023
 
+X Delete Functionality
+	X Instead of Deleting from Master Task List, del User View
+
 Waste Calculations
 
 Update Tasks
 	When User Changes task field and clicks off, it will update the task in the db
-Delete Functionality
-	Instead of Deleting from Master Task List, del User View
+
 Delete Tasks Multiple Select
 	Change Old prop to "highlight" : (old,selected)
 	Test The Selecting thing

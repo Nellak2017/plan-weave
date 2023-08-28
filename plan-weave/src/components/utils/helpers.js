@@ -1,6 +1,7 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
 import { getTime, format } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
+import { pipe } from 'ramda'
 
 // This file contains many helpers used through out the application
 
@@ -217,12 +218,8 @@ export const highlightDefaults = (taskList, start, end, owl = false) => {
 	// 1. Get all ttc from the task list, store in another list (TTCList)
 	const TTCList = taskList.map(obj => obj['ttc'] ?? 0) // if ttc is not defined it will be 0 so it doesn't affect outcome
 
-	// 2. Loop through TTCList, 1st value = start + ttc, nth value after is prev + ttc
-	let currTime = start.getTime()
-	const timeStampList = TTCList.map(ttc => {
-		currTime += ttc ? hoursToMillis(ttc) : 0
-		return currTime
-	})
+	// 2. Loop through TTCList, 1st value = start + ttc, nth value after is prev + ttc	
+	const timeStampList = TTCList.reduce((acc, ttc, index) => [...acc.slice(index !== 0 ? 0 : 1), acc[acc.length - 1] + (ttc ? hoursToMillis(ttc) : 0)], [start.getTime()])
 
 	// 3. return this highlight list
 	const endTimeMillis = owl ? end.getTime() + hoursToMillis(24) : end.getTime()
