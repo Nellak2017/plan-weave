@@ -92,27 +92,24 @@ export const formatTimeLeft = ({
 	const calculateTimeDifference = ({ endTime, currentTime = new Date(), timeDifference = 0, overNightMode = false }) => {
 		if (timeDifference > 0) return timeDifference * MILLISECONDS_PER_HOUR // Convert hours to milliseconds
 
-		const currentTimeValue = currentTime.getTime()
 		const adjustedEndTimeValue = overNightMode
 			? getTime(new Date(endTime)) + MILLISECONDS_PER_DAY // Add one day's worth of milliseconds
 			: getTime(endTime)
 
-		return Math.max(0, adjustedEndTimeValue - currentTimeValue)
+		return Math.max(0, adjustedEndTimeValue - currentTime.getTime())
 	}
 
 	// Returns proper format of time, given the time and other relevant information
-	const formatTime = (timeMillis) => {
+	const formatTime = timeMillis => {
 		const totalHours = timeMillis / MILLISECONDS_PER_HOUR
 		const timeLeftInHours = Math.floor(totalHours)
 		const timeLeftInMinutes = Math.floor((totalHours - timeLeftInHours) * 60)
 
-		if (timeLeftInHours > 0) {
-			return timeLeftInMinutes > 0
+		return timeLeftInHours > 0
+			? (timeLeftInMinutes > 0
 				? `${timeLeftInHours} ${hourText}${timeLeftInHours > 1 ? 's' : ''} ${timeLeftInMinutes} ${minuteText}`
-				: `${timeLeftInHours} ${hourText2}`
-		} else {
-			return `${timeLeftInMinutes} ${minuteText}`
-		}
+				: `${timeLeftInHours} ${hourText2}`)
+			: `${timeLeftInMinutes} ${minuteText}`
 	}
 
 	return formatTime(calculateTimeDifference({ endTime, currentTime, timeDifference, overNightMode }))
@@ -135,7 +132,7 @@ export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400)
 
 export const validateTasks = ({ taskList, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
 	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
-		return taskList?.map(task => validateTask({task, schema, schemaDefaultFx, customErrorMessage}))
+	return taskList?.map(task => validateTask({ task, schema, schemaDefaultFx, customErrorMessage }))
 }
 
 // TODO: Rename this function to be more generic, it will work on Tasks and beyond!
@@ -199,8 +196,7 @@ export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx 
  * @returns {Array} - The filtered list.
  */
 export const filterTaskList = ({ filter, list, attribute }) => {
-	if (!filter || !attribute) return list
-	return list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
+	return (!filter || !attribute) ? list : list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
 }
 
 // TODO: Modify this function to check if it is from Today if not owl (if not then old), if
@@ -219,7 +215,7 @@ export const highlightDefaults = (taskList, start, end, owl = false) => {
 	const initialTimeMillis = start.getTime()
 	const startOfDayMillis = new Date(initialTimeMillis).setHours(0, 0, 0, 0)
 	const secondsElapsedFromEnd = ((endTimeMillis - initialTimeMillis) + initialTimeMillis - startOfDayMillis) / 1000
-	
+
 	return pipe(
 		() => taskList,
 		taskList => taskList.map(obj => obj['ttc'] ?? 0),
@@ -274,6 +270,16 @@ export const calculateEta = ({ start, taskList, getTheTime = getTime, hoursConve
 		currentTime += hoursConverter(task.ttc || 0)
 		return { ...task, eta: formatter(currentTime, 'HH:mm') }
 	})
+
+	/*
+	const updatedTaskList = [...taskList].reduce((acc, task, index) => {
+		return [
+			acc[0] + hoursConverter(task.ttc || 0),
+			[...acc[1], task.eta ? { ...task, eta: formatter(currentTime, 'HH:mm') } : task]
+		]
+	  }, [getTheTime(start), []])[1]
+	*/
+
 	return updatedTaskList
 }
 
@@ -289,30 +295,24 @@ returns Array of Tasks, updated with new waste and ttc (only update those)
 export const calculateWaste = ({ start, taskList, time = new Date(), indexUpdated = -1 }) => {
 	const wasteCalculationNormal = (tasks = etaToDates(taskList, time), currentTime = time) => {
 		const firstIncompleteIndex = tasks?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
-		return etaToStrings(tasks?.map((task, index) => (index === firstIncompleteIndex) ? { ...task, waste: millisToHours(currentTime.getTime() - task.eta.getTime()) } : task))
+		return etaToStrings(tasks?.map((task, index) => (index === firstIncompleteIndex)
+			? { ...task, waste: millisToHours(currentTime.getTime() - task.eta.getTime()) }
+			: task))
 	}
 
 	const wasteCalculationUpdating = (tasks = etaToDates(taskList, time), currentTime = time) => {
 		const { eta } = tasks[indexUpdated]
-		const updatedTask = { ...tasks[indexUpdated], waste: millisToHours(currentTime.getTime() - eta.getTime()), ttc: Math.max(millisToHours(currentTime.getTime() - start.getTime()), 0.01), completedTimeStamp: currentTime.getTime() / 1000 } // use proper units to do the arithmetic
+		const time = currentTime.getTime() // current time in millis
+		const updatedTask = {
+			...tasks[indexUpdated],
+			waste: millisToHours(time - eta.getTime()),
+			ttc: Math.max(millisToHours(time - start.getTime()), 0.01),
+			completedTimeStamp: time / 1000 // current time in seconds
+		}
 		return etaToStrings(tasks?.map((task, index) => index === indexUpdated ? updatedTask : task))
 	}
 
-	if (indexUpdated === -1) return wasteCalculationNormal()
-	else if (indexUpdated >= 0 && taskList[indexUpdated]['status'] === TASK_STATUSES.COMPLETED) return wasteCalculationNormal(etaToDates(wasteCalculationUpdating(), time))
-	return wasteCalculationNormal()
+	return indexUpdated >= 0 && taskList[indexUpdated]['status'] === TASK_STATUSES.COMPLETED
+		? wasteCalculationNormal(etaToDates(wasteCalculationUpdating(), time))
+		: wasteCalculationNormal()
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
