@@ -139,7 +139,7 @@ if (indexUpdated >= 0){
 	2a. waste for each task is this:
 		- if the task is complete and the one to be updated, then waste = time - eta // use the old eta, not the new one
 		- if the task is not complete and not the one to be updated
-			- if it is the first one not complete, then waste = time - eta
+			- if it is the first one not complete, then waste = time - eta // use the new eta, not the old one
 			- otherwise it is 0
 
 	2c. eta for each task is this:
@@ -157,7 +157,17 @@ if (indexUpdated >= 0){
 
 	after all this, the task must be submitted to the redux store
 
+---- simplest enumeration of states
 
+1. Initialized Tasks.
+	incomplete tasks: {...task, waste: firstIncomplete ? time - eta : 0, eta: acc + ttc, acc starts at start or prev completedTimestamp}
+	completed tasks: {...task}
+
+2. Completed Tasks.
+	incomplete tasks: {...task, waste: firstIncomplete ? time - eta : 0, eta: acc + ttc, acc starts at start or prev completedTimestamp}
+	completed tasks: {...task, waste: notUpdating ? time - eta : waste, eta: completedTimestamp to 'HH:mm'}
+
+3. Other Tasks = Initialized Tasks.
 
 ---- Combinatorical way of listing all possible interactions (write test cases for each numbered case)
 

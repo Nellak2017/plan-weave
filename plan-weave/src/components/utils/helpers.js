@@ -1,5 +1,6 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
 import { getTime, format } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
 import { pipe } from 'ramda'
 
@@ -249,7 +250,14 @@ export const etaToDates = (taskList, time) => {
 }
 
 // Converts taskList Eta Dates back into strings (Except for Completed tasks)
-export const etaToStrings = taskList => { return taskList.map(task => { return { ...task, eta: format(task.eta, "HH:mm") } }) }
+/*
+export const etaToStrings = (taskList, timezone = Intl.DateTimeFormat().resolvedOptions().timeZone) => { 
+	return taskList.map(task => { return { ...task, eta: formatInTimeZone(task.eta, timezone, "HH:mm") } }) 
+}
+*/
+export const etaToStrings = (taskList) => {
+	return taskList.map(task => { return { ...task, eta: format(task.eta, "HH:mm") } })
+}
 
 /**
  * Updates the ETA values for a list of tasks based on the provided start time and task information.
@@ -292,27 +300,42 @@ time = Date, current time
 
 returns Array of Tasks, updated with new waste and ttc (only update those)
 */
+// TODO: Be sure to handle cases involving invalid lists, in other words, do basic input validation on entry
+// TODO: Pipe this
 export const calculateWaste = ({ start, taskList, time = new Date(), indexUpdated = -1 }) => {
-	const firstIncompleteIndex = tasks?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
+	const add = (start, hours) => { return new Date(start.getTime() + hoursToMillis(hours)) } // (Date: start, hours: hours) -> Date(start + hours)
+	const subtract = (time, eta) => { return millisToHours(time.getTime() - eta.getTime()) } // (Date: time, Date: eta) -> time - eta (hours)
+	const etaList = (taskList, start = 0) => {
+		return taskList.reduce((acc, task, index) => {
+			const prev = parseFloat(acc[acc.length - 1])
+			return [...acc.slice(index === 0 ? 1 : 0), prev + parseFloat(task.ttc)]
+		}, [start])
+	} // Example: ([{ttc: 1}, {ttc: 2}, {ttc: 1}], start = 0) -> [1, 3, 4]
 
-	// TODO: calculate the eta addition values based on start or last completedTimestamp
-	// Ex: [1, 1+1.5, 1+1.5+.5, ...rest of task ttc values added to initial value] // initial value was given by completedTimestamp or start
-	// Note: len of the list will be as long as Incomplete tasks
-	// This will be used like this: [1, 1+1.5, 1+1.5+.5, ...] -> eta values => [11:00, 12:30, 13:00, ...] // start = 10:00 , alternatively completedTimestamp = 10:00
+	const firstIncompleteIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
+	const etas = etaList(taskList.slice(firstIncompleteIndex)) // etas calculated only for the incomplete tasks
 
-	const Normal = (tasks = etaToDates(taskList, time), currentTime = time) => {
+	const normal = (tasks = etaToDates(taskList, time), currentTime = time) => {
 		/*
 		const firstIncompleteIndex = tasks?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
 		return etaToStrings(tasks?.map((task, index) => (index === firstIncompleteIndex)
 			? { ...task, waste: millisToHours(currentTime.getTime() - task.eta.getTime()) }
 			: task))
 		*/
+		const lastCompletedTimestamp = tasks[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completedTimestamp to millis
+		const startTime = firstIncompleteIndex === 0 || !lastCompletedTimestamp || isNaN(lastCompletedTimestamp) ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
+
 		// incomplete tasks: {...task, waste: firstIncomplete ? time - eta : 0, eta: acc + ttc, acc starts at start or prev completedTimestamp}
 		// completed tasks: {...task}
-
+		const ret = tasks.map((task, index) => {
+			const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : new Date(currentTime) // index - firstIncomplete shifts accordingly
+			const waste = index === firstIncompleteIndex ? subtract(currentTime, eta) : 0 // we must use the updated eta value
+			return task.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta }
+		})
+		return etaToStrings(ret)
 	}
 
-	const Updating = (tasks = etaToDates(taskList, time), currentTime = time) => {
+	const updating = (tasks = etaToDates(taskList, time), currentTime = time) => {
 		/*
 		const { eta } = tasks[indexUpdated]
 		const time = currentTime.getTime() // current time in millis
@@ -326,9 +349,22 @@ export const calculateWaste = ({ start, taskList, time = new Date(), indexUpdate
 		*/
 		// incomplete tasks: {...task, waste: firstIncomplete ? time - eta : 0, eta: acc + ttc, acc starts at start or prev completedTimestamp}
 		// completed tasks: {...task, waste: notUpdating ? time - eta : waste, eta: completedTimestamp to 'HH:mm'}
+		const ret = tasks.map((task, index) => {
+			if (task?.status === TASK_STATUSES.COMPLETED) {
+				const waste = subtract(currentTime, task.eta)
+				const [eta, completedTimeStamp] = [currentTime, currentTime.getTime() / 1000]
+				return index === indexUpdated ? { ...task, waste, eta, completedTimeStamp } : { ...task }
+			}
+			const startTime = firstIncompleteIndex === 0 ? start : new Date(currentTime.getTime()) // startTime is a Date 
+
+			const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : new Date(currentTime)
+			const waste = index === firstIncompleteIndex ? subtract(currentTime, eta) : 0
+			return { ...task, waste, eta }
+		})
+		return etaToStrings(ret)
 	}
 
 	return indexUpdated >= 0 && taskList[indexUpdated]['status'] === TASK_STATUSES.COMPLETED
-		? Normal(etaToDates(Updating(), time))
-		: Normal()
+		? normal(etaToDates(updating(), time))
+		: normal()
 }
