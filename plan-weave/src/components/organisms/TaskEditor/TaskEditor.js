@@ -29,6 +29,8 @@ import { pipe } from 'ramda'
 	TODO: Decouple the styling in task row
 	TODO: Move the timeRange up to a prop, and pass down to TaskControl with respect to Context/No Context (flexibility)
 	TODO: Re-assess usage of useValidateTask(s) hooks and validation functions, I sense simplification and inefficiencies
+
+	TODO: Fix the waste/eta resetting when you delete tasks
 	*/
 
 export const TaskEditorContext = createContext()
@@ -48,7 +50,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState({ start: parse('11:00', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
+	const [timeRange, setTimeRange] = useState({ start: parse('14:50', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
@@ -112,7 +114,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 		if (indexChanged >= 0) {
 			const updated = updateTasks()
 			setTaskList(updated)
-			setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl)) // should we use updatedTaskList?
+			setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
 		}
 		const interval = setInterval(() => {
 			const temp = Array.from(taskList)
@@ -120,7 +122,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 			// Without this Guard, it will infinitely loop 
 			if (!isEqual(updated, temp)) {
 				setTaskList(updated)
-				setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl)) // should we use updatedTaskList?
+				setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl)) 
 			}
 		}, 1000)
 

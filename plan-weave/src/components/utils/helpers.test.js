@@ -710,10 +710,44 @@ describe('calculateEta', () => {
 	})
 })
 
-// Note: We have only tested 1 of 5 known cases. This function will be extensive
-describe('calculateWaste', () => {
-	const start = new Date(1692997200000) // Friday, August 25, 2023 4:00:00 PM GMT-05:00
+/*
+1. The initial state of the tasks should have all tasks with proper calculated eta from the taskList view.
+	1a. waste for each task is this: (Calculate waste for non-complete only)
+		- if the task is the first incomplete task then it will be time - eta // use the updated eta value, not the old one
+		- otherwise if it is not complete it is 0
+	1c. eta for each task is this: (Calculate eta for non-complete only) // calculate eta first for use in waste calculation
+		- if a task is not complete, the task will have eta = acc + ttc , where acc starts at start or (last completedTasks' completedTimestamp) and goes up with each ttc value
 
+2. When a user completes a task, the waste, ttc, and eta are recalculated, and submitted to the redux store.
+	2a. waste for each task is this:
+		- if the task is complete and the one to be updated, then waste = time - eta // use the old eta, not the new one
+		- if the task is not complete and not the one to be updated
+			- if it is the first one not complete, then waste = time - eta // use the new eta, not the old one
+			- otherwise it is 0
+
+	2c. eta for each task is this:
+		- if the task is complete then eta = completedTimestamp  // use the value that was computed using the initialize method
+		- if the task is not complete and not the one to be updated
+			- if it is the first one not complete, then eta = time + ttc
+			- otherwise it is eta = acc + ttc , where you update the sum in the acc for each task (using reduce)
+	2d. completedTimestamp is this:
+		- it is time
+
+	after all this, the task must be submitted to the redux store
+
+3. When a user incompletes a task, the waste, ttc, and eta are recalculated, and submitted to the redux store.
+	Initialize(taskList)
+
+	after all this, the task must be submitted to the redux store
+*/
+
+// TODO: Add test cases that cover over-night tasks, just in case there is bugs with that
+describe('calculateWaste', () => {
+	const start = new Date(1692975600000) // Friday, August 25, 2023 10:00:00 AM GMT-05:00
+	const completedTime = new Date(1692977400000) // Friday, August 25, 2023 10:30:00 AM GMT-05:00
+	const completedTime2 = new Date(1692981000000) // Friday, August 25, 2023 11:30:00 AM GMT-05:00 DST
+
+	/*
 	const testCases = [
 		{
 			name: 'In a list of tasks, the first task that is incomplete will have a waste = time - eta.',
@@ -805,5 +839,106 @@ describe('calculateWaste', () => {
 		}
 
 	})
+	*/
 
+	// Test cases covering what happens whenever we don't want any tasks updated and just want them initialized
+	const initialTestCases = [
+		{
+			name: 'Given a list of tasks, The first incomplete task in the list has: waste = time - eta. eta is the updated eta, not old eta',
+			input: {
+				taskList: [
+					{ status: 'incomplete', task: 'Task 1', waste: 0, ttc: 1, eta: '09:00', id: 1, timestamp: 1 }, // incomplete tasks are not guaranteed to have correct eta/waste
+					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: '19:00', id: 2, timestamp: 2 },
+					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '19:30', id: 3, timestamp: 3 },
+				],
+				time: completedTime // Friday, August 25, 2023 10:30:00 AM GMT-05:00
+			},
+			expected: [
+				{ status: 'incomplete', task: 'Task 1', waste: -.5, ttc: 1, eta: '11:00', id: 1, timestamp: 1 }, // eta = 10+1=11. Waste = time - eta(new) --> Waste = 10.5 - 11 == -.5
+				{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: '11:30', id: 2, timestamp: 2 }, // eta = 11+.5=11.5
+				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '13:00', id: 3, timestamp: 3 }, // eta = 12+1.5=13
+			],
+		},
+		{
+			name: 'Given a list of tasks, The tasks completed will not be touched, but the others will have the usual waste and eta calculations applied',
+			input: {
+				taskList: [
+					{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: '10:30', id: 1, timestamp: 1, completedTimeStamp: completedTime }, // completed tasks are guaranteed to have correct eta/waste
+					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: '19:00', id: 2, timestamp: 2 }, // incomplete tasks can have wrong eta/waste
+					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '19:30', id: 3, timestamp: 3 },
+				],
+				time: completedTime // Friday, August 25, 2023 10:30:00 AM GMT-05:00
+			},
+			expected: [
+				{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: '10:30', id: 1, timestamp: 1, completedTimeStamp: completedTime }, // Completed tasks are not touched
+				{ status: 'incomplete', task: 'Task 2', waste: -.5, ttc: .5, eta: '11:00', id: 2, timestamp: 2 }, // eta = 10.5+.5=11; waste should be 0
+				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '12:30', id: 3, timestamp: 3 }, // eta = 11+1.5=12.5; waste should be 0
+			],
+		}
+	]
+
+	// Test cases covering what happens whenever we want a task in the list to be completed
+	const completedTestCases = [
+		{
+			name: 'Given a list of tasks, if the task is completed and the one being updated, then waste = time - eta (old), eta,completedTimestamp = time',
+			input: {
+				taskList: [
+					{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: '11:00', id: 1, timestamp: 1 }, // note this is the old eta
+					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: '19:00', id: 2, timestamp: 2 }, // incomplete tasks can have wrong eta/waste
+					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '19:30', id: 3, timestamp: 3 },
+				],
+				time: completedTime, // Friday, August 25, 2023 10:30:00 AM GMT-05:00
+				indexUpdated: 0 // The task 1 is being updated from incomplete to completed
+			},
+			expected: [
+				{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: '10:30', id: 1, timestamp: 1, completedTimeStamp: completedTime }, // Completed tasks are not touched
+				{ status: 'incomplete', task: 'Task 2', waste: -.5, ttc: .5, eta: '11:00', id: 2, timestamp: 2 }, // waste should be calculated as normal, time - eta (new), eta should be updated
+				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '12:30', id: 3, timestamp: 3 }, // waste should be 0, eta should be updated
+			],
+		},
+		{
+			name: 'Given a list of tasks, if the task is completed and NOT the one being updated, then it is untouched',
+			input: {
+				taskList: [
+					{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: '10:30', id: 1, timestamp: 1, completedTimeStamp: completedTime }, // note this is the unaffected completed task
+					{ status: 'completed', task: 'Task 2', waste: .5, ttc: .5, eta: '11:00', id: 2, timestamp: 2 }, // This is the task being updated
+					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '19:30', id: 3, timestamp: 3 }, // incomplete tasks can have wrong eta/waste
+				],
+				time: completedTime2, // Friday, August 25, 2023 11:30:00 AM GMT-05:00 DST
+				indexUpdated: 1
+			},
+			expected: [
+				{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: '10:30', id: 1, timestamp: 1, completedTimeStamp: completedTime }, // Completed tasks are not touched
+				{ status: 'completed', task: 'Task 2', waste: .5, ttc: .5, eta: '11:30', id: 2, timestamp: 2, completedTimeStamp: completedTime2 }, // waste should be calculated as normal, time - eta (new), eta should be updated
+				{ status: 'incomplete', task: 'Task 3', waste: -1.5, ttc: 1.5, eta: '13:00', id: 3, timestamp: 3 }, // waste should be time-eta(new), eta should be updated
+			],
+		}
+	]
+
+	// Test cases covering what happens whenever we want a task in the list to be un-completed
+	const uncompletedTestCases = [
+		// Un-completing a task is equivalent to initializing a task
+		...initialTestCases
+	]
+
+	initialTestCases.forEach(testCase => {
+		const { taskList, time } = testCase.input
+		it(testCase.name, () => {
+			expect(calculateWaste({ start, taskList, time })).toEqual(testCase.expected)
+		})
+	})
+
+	completedTestCases.forEach(testCase => {
+		const { taskList, time, indexUpdated } = testCase.input
+		it(testCase.name, () => {
+			expect(calculateWaste({ start, taskList, time, indexUpdated })).toEqual(testCase.expected)
+		})
+	})
+
+	uncompletedTestCases.forEach(testCase => {
+		const { taskList, time } = testCase.input
+		it(testCase.name, () => {
+			expect(calculateWaste({ start, taskList, time })).toEqual(testCase.expected)
+		})
+	})
 })

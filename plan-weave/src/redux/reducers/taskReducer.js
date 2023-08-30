@@ -32,7 +32,7 @@ const initialState = {
 	*/
 	tasks: [
 		{ status: 'incomplete', task: 'Breakfast', ttc: 1, id: 1, timestamp: timestamp },
-		{ status: 'incomplete', task: 'Plan Weave (66-68)', ttc: 2, id: 2, timestamp: timestamp - 1 },
+		{ status: 'incomplete', task: 'Plan Weave (68-70)', ttc: .5, id: 2, timestamp: timestamp - 1 },
 		{ status: 'incomplete', task: 'Gym', ttc: 1.5, id: 3, timestamp: timestamp - 2 },
 		{ status: 'incomplete', task: 'Shower +', ttc: .5, id: 4, timestamp: timestamp - 3 },
 		{ status: 'incomplete', task: 'Parking Spot, APT', ttc: .75, id: 5, timestamp: timestamp - 4 },
