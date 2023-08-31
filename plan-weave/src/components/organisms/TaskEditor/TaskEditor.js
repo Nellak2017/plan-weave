@@ -50,7 +50,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState({ start: parse('12:50', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
+	const [timeRange, setTimeRange] = useState({ start: parse('14:00', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
@@ -104,41 +104,30 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// --- ETA + Waste Auto Calculation Feature
 	useEffect(() => {
 		// Calculate Task List and Highlight list, then set them if you can
-
-		/*
-		const updateTasks = pipe(
-			() => calculateEta({ start, taskList }),
-			updatedTaskListEta => calculateWaste({ start, taskList: updatedTaskListEta, time: new Date(), indexUpdated: indexChanged }),
-			updatedTaskList => calculateEta({ start, taskList: updatedTaskList }),
-		)
-		*/
-		if (indexChanged >= 0) {
-			const t = new Date()
-			const updated = calculateWaste({ start, taskList, time: t, indexUpdated: indexChanged })
-			console.log(`start: ${start}\ntime: ${t}\nindexUpdated: ${indexChanged}`)
-			console.log(taskList)
-			console.log(updated)
-			setTaskList(updated)
-			setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
-		}
-		/*
 		const interval = setInterval(() => {
 			const temp = Array.from(taskList)
-			const updated = calculateWaste({ start, taskList:temp, time: new Date(), indexUpdated: indexChanged })
+			const updated = calculateWaste({ start, taskList: temp, time: new Date() })
 			// Without this Guard, it will infinitely loop 
 			if (!isEqual(updated, temp)) {
 				setTaskList(updated)
 				setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
 			}
-		}, 1000)
-		*/
+		}, 1000*1000)
 
 		// Clean-up step: set indexChanged to -1
 		return () => {
-			//if (interval) clearInterval(interval)
+			if (interval) clearInterval(interval)
 			setIndexChanged(-1)
 		}
 	}, [taskList])
+
+	useEffect(() => {
+		const updated = tasksFromRedux && tasksFromRedux?.every(task => task?.eta) ? calculateWaste({ start, taskList: tasksFromRedux, time: new Date() }) : null
+		if (updated) {
+			setTaskList(updated)
+			setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
+		}
+	}, [tasksFromRedux])
 
 	useEffect(() => {
 		(() => {

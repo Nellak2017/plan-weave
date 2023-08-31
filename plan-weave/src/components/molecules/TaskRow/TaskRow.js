@@ -14,7 +14,7 @@ import {
 } from 'react-icons/md'
 import { BiTrash } from 'react-icons/bi'
 import { Draggable } from 'react-beautiful-dnd'
-import { formatTimeLeft } from '../../utils/helpers.js'
+import { formatTimeLeft, millisToHours, hoursToMillis } from '../../utils/helpers.js'
 import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -22,6 +22,7 @@ import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
 import { useDispatch } from 'react-redux'
 import { pureTaskAttributeUpdate, validateTask } from '../../utils/helpers'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
+import { parse, format } from 'date-fns'
 
 import isEqual from 'lodash/isEqual'
 
@@ -38,7 +39,7 @@ TODO: When API is set up, set invalid id to be the latest id in the database, to
 */
 
 function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hours', status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: timestampOuter },
-	variant = 'dark', maxwidth = 818, index, highlight = 'no' }) {
+	variant = 'dark', maxwidth = 818, index, highlight = 'no', lastCompletedTask }) {
 
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
@@ -54,6 +55,11 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	const dispatch = useDispatch()
 	const [isChecked, setIsChecked] = useState(status.toLowerCase().trim() === TASK_STATUSES.COMPLETED)
 
+	// TODO: Refactor this into something better like formik
+	// Local State of the form so that it may be updated into the redux store
+	const [localTask, setLocalTask] = useState(task)
+	const [localTtc, setLocalTtc] = useState(ttc)
+
 	// Update Task in Redux Store if it is invalid only on the first load
 	useEffect(() => {
 		try {
@@ -66,18 +72,41 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	}, [])
 
 	// Handlers
+	// TODO: Ensure all fields are updated when this checkbox is clicked
 	const handleCheckBoxClicked = async () => {
 		if (!isChecked) toast.info('This Task was Completed')
 
 		const validTask = validateTask({ task: taskObject })
-		const updatedTask = await pureTaskAttributeUpdate({
+		/*
+		const updatedTask = pureTaskAttributeUpdate({
 			index: 0,
 			attribute: 'status',
 			value: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
 			taskList: [validTask]
 		})
+		*/
+		// TODO: Change task, ttc, eta to be the values in the actual inputs
+		const currentTime = new Date()
+		const newEta = isChecked ? eta : format(currentTime, "HH:mm")
+
+		// To calculate waste, you need to get the last completed task if there is one and then big = last completed eta + this ttc; waste = big - currentTime
+		// if it is the first completed, then waste = millisToHours((currentTime.getTime() - parse(eta, 'HH:mm', currentTime).getTime()))
+		const newWaste = !lastCompletedTask //|| (lastCompletedTask && !lastCompletedTask?.eta)
+			? millisToHours((currentTime.getTime() - parse(eta, 'HH:mm', currentTime).getTime())) // if lastCompletedTask is falsey
+			: millisToHours(currentTime.getTime() - (parse(lastCompletedTask.eta, 'HH:mm', currentTime).getTime() + hoursToMillis(localTtc))) // if lastCompletedTask is not null or undefined / falsey 
+
+		const updatedTask = {
+			...validTask,
+			task: localTask,
+			status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
+			waste: newWaste,
+			ttc: localTtc,
+			eta: newEta,
+			completedTimeStamp: currentTime.getTime() / 1000 // epoch in seconds, NOT millis
+		}
 		setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
-		updateTask(id, updatedTask[0])(dispatch)
+		//updateTask(id, updatedTask[0])(dispatch)
+		updateTask(id, updatedTask)(dispatch)
 
 		setIndexChanged(index) // This is to tell the context the index of the task being changed, so auto calculations can work properly
 	}
@@ -102,7 +131,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 			<TaskContainer title={'Task Name'}>
 				{status === TASK_STATUSES.COMPLETED ?
 					<p>{task}</p>
-					: <TaskInput initialValue={task ? task : ''} variant={variant} />
+					: <TaskInput onChange={e => setLocalTask(e.target.value)} value={localTask} variant={variant} />
 				}
 			</TaskContainer>
 			<TimeContainer title={'Wasted Time on this Task'} style={{ width: '200px' }}>
@@ -140,7 +169,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 							hourText2: 'hours'
 						}) :
 						'0 minutes'}</pre>
-					: <HoursInput initialValue={ttc && ttc > .01 ? ttc : 1} variant={variant} placeholder='hours' text='hours' />
+					: <HoursInput onChange={e => setLocalTtc(e.target.value)} value={localTtc} initialValue={ttc && ttc > .01 ? ttc : 1} variant={variant} placeholder='hours' text='hours' />
 				}
 			</TimeContainer>
 			<TimeContainer style={{ width: '40px' }} title={'Estimated Time to Finish Task'}>

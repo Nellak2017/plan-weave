@@ -211,6 +211,7 @@ export const filterTaskList = ({ filter, list, attribute }) => {
  * @returns {Array} - The list of highlights.
  */
 // TODO: This function relies on ttc to figure out what to highlight, maybe it is possible that we should refactor to use eta instead?
+// TODO: DEBUG THIS SHIT
 export const highlightDefaults = (taskList, start, end, owl = false) => {
 	const endTimeMillis = owl ? end.getTime() + hoursToMillis(24) : end.getTime()
 	const initialTimeMillis = start.getTime()
@@ -226,6 +227,7 @@ export const highlightDefaults = (taskList, start, end, owl = false) => {
 		timeStampList => timeStampList.map(timestamp => isTimestampFromToday(new Date(start), timestamp / 1000, secondsElapsedFromEnd) ? ' ' : 'old')
 	)()
 	*/
+	
 	// new way using eta list to figure it out
 	// 0. Calculate Variables
 	const hoursInDay = millisToHours(endTimeMillis - start.getTime()) // end - start time in hours
@@ -233,27 +235,33 @@ export const highlightDefaults = (taskList, start, end, owl = false) => {
 	// 1. Grab ETA list
 	const etas = taskList.map(task => task.eta)
 	// 2. Using the ETA list, we convert it to the associated Date
-	const dates = etas.map(eta => parse(eta, "HH:mm", new Date()))
+	const dates = etas.map(eta => parse(eta, "HH:mm", new Date(startOfDayMillis)))
 	// 3. Using the Dates, they will all be from the same day, so we must convert it to the corrected Dates
-	// to do this, we reduce the newDates list to a sum. When the sum turns to new day, we must set the date to be + 1
 	const properDates = dates.reduce((acc, date, index) => {
 		const prev = acc[0]
 		const prevDate = acc[1][acc[1].length - 1]
 
-		const diff = millisToHours(date.getTime() - prevDate.getTime()) // importantly can be negative!
-		const otherDiff = millisToHours(date.getTime() - prevDate.getTime() + hoursToMillis(24))
+		const diff = date && typeof date === 'string' ? millisToHours(date.getTime() - prevDate.getTime()) : 0 // importantly can be negative!
+		const otherDiff = date && typeof date === 'string' ? millisToHours(date.getTime() - prevDate.getTime() + hoursToMillis(24)) : 0
 		const sum = parseFloat(prev) + parseFloat(Math.abs(diff > 0 ? diff : otherDiff)) 
 
-		//console.log(`date: ${date}\nstart: ${start}\nHour Diff (date-start): ${Math.abs(diff > 0 ? diff : otherDiff)}\nSum: ${sum}`)
-		const next = hoursInDay > sum ? date : new Date(date.getTime() + hoursToMillis(24))
+		const next = !date || isNaN(date)
+		? prevDate
+		: (date.getTime() - start.getTime() > 0 ? date : new Date(date.getTime() + hoursToMillis(24)))
+
 		return [sum, [...acc[1], next]] // next is supposed to be a list of dates
-	}, [0, [new Date(start)]])[1].slice(1)
+	}, [0, [new Date(start.getTime())]])[1].slice(1)
+
+	console.log(properDates.map(date => format(date, "HH:mm").concat(" , ").concat(date.getDate())))
 
 	// 4. Using proper dates, we can return the list of highlights!
-	return properDates.map((properDate) => {
+	return properDates.map((properDate, index) => {
 		// if start.getTime() < properDate.getTime() < endDate.getTime(), then it is '' else it is old
-		return (start.getTime() < properDate.getTime()) && (properDate.getTime() < endDate.getTime()) ? '' : 'old'
+		const ret = (start.getTime() <= properDate.getTime()) && (properDate.getTime() <= endDate.getTime())
+		//if (index === properDates.length - 1) console.log(`properDate: ${properDate}\nstart: ${start}\nend: ${endDate}\nproperDate in (start,end) : ${ret}`)
+		return ret ? ' ' : 'old'
 	})
+
 }
 
 /**
@@ -333,7 +341,8 @@ returns Array of Tasks, updated with new waste and ttc (only update those)
 */
 // TODO: Be sure to handle cases involving invalid lists, in other words, do basic input validation on entry
 // TODO: Pipe this
-export const calculateWaste = ({ start, taskList, time = new Date(), indexUpdated = -1 }) => {
+// TODO: ETA should match waste when the task is loaded normally. In other words, if waste is -.5 then eta should reflect that
+export const calculateWaste = ({ start, taskList, time = new Date() }) => {
 	const add = (start, hours) => { return new Date(start.getTime() + hoursToMillis(hours)) } // (Date: start, hours: hours) -> Date(start + hours)
 	const subtract = (time, eta) => { return millisToHours(time.getTime() - eta.getTime()) } // (Date: time, Date: eta) -> time - eta (hours)
 	const etaList = (taskList, start = 0) => {
@@ -353,28 +362,5 @@ export const calculateWaste = ({ start, taskList, time = new Date(), indexUpdate
 		}))
 	}
 
-	const updating = (tasks = etaToDates(taskList, time), currentTime = time) => {
-		console.log('updating')
-		return etaToStrings(tasks.map((task, index) => {
-			if (task?.status === TASK_STATUSES.COMPLETED) {
-				const waste = subtract(currentTime, task.eta)
-				const [eta, completedTimeStamp] = [currentTime, currentTime.getTime() / 1000]
-				//return index === indexUpdated ? { ...task, waste, eta, completedTimeStamp } : { ...task }
-				return index === firstIncompleteIndex - 1 ? { ...task, waste, eta, completedTimeStamp } : { ...task }
-			}
-			const startTime = firstIncompleteIndex === 0 ? start : new Date(currentTime.getTime()) // startTime is a Date 
-			const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : new Date(currentTime)
-			const waste = index === firstIncompleteIndex ? subtract(currentTime, eta) : 0
-			return { ...task, waste, eta }
-		}))
-	}
-
-	/*
-	return indexUpdated >= 0 && taskList[indexUpdated]['status'] === TASK_STATUSES.COMPLETED
-		? updating()
-		: normal()
-	*/
-	return indexUpdated >= 0 //&& taskList[firstIncompleteIndex - 1]['status'] === TASK_STATUSES.COMPLETED
-		? updating()
-		: normal()
+	return normal()
 }

@@ -4,7 +4,7 @@ import TaskRow from '../TaskRow/TaskRow'
 import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import 'react-toastify/dist/ReactToastify.css'
-import { THEMES, DEFAULT_SIMPLE_TASKS } from '../../utils/constants'
+import { THEMES, DEFAULT_SIMPLE_TASKS, TASK_STATUSES } from '../../utils/constants'
 
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 
@@ -26,6 +26,9 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 
 	const { taskList, setTaskList, highlights, setHighlights } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
 	const [localTasks, setLocalTasks] = useState(!tasks ? DEFAULT_SIMPLE_TASKS : tasks)
+
+	const lastCompletedIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1
+	const lastCompleted = lastCompletedIndex >= 0 ? taskList[lastCompletedIndex] : null // gives last completed task
 
 	// Validate tasks and correct invalid ones when the page loads in. DOES NOT EFFECT REDUX STORE, ONLY VIEW OF IT
 	useValidateTasks({ taskList, callback: setTaskList })
@@ -70,6 +73,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 										}}
 										index={idx}
 										highlight={isTimestampFromToday(new Date(), task.timestamp) ? highlights[idx] : 'old'}
+										lastCompletedTask={lastCompleted}
 									/>)
 								)}
 								{!taskList && localTasks.length >= 1 && localTasks?.map((task, idx) => (
@@ -87,6 +91,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 										}}
 										index={idx}
 										highlight={isTimestampFromToday(new Date(), task.timestamp) ? highlights[idx] : 'old'}
+										lastCompletedTask={lastCompleted}
 									/>
 								))
 								}
