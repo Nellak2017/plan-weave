@@ -5,11 +5,9 @@ import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import 'react-toastify/dist/ReactToastify.css'
 import { THEMES, DEFAULT_SIMPLE_TASKS, TASK_STATUSES } from '../../utils/constants'
-
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
-
 import useValidateTasks from '../../../hooks/useValidateTasks.js'
-import { isTimestampFromToday, pureTaskAttributeUpdate } from '../../utils/helpers'
+import { isTimestampFromToday } from '../../utils/helpers'
 
 import { pipe } from 'ramda'
 /* 

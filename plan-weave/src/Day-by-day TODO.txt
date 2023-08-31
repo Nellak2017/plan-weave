@@ -73,7 +73,7 @@ Timestamp editing feature
 X Delete Functionality
 	X Instead of Deleting from Master Task List, del User View
 
-Waste Calculations
+X Waste Calculations
 
 Update Tasks
 	When User Changes task field and clicks off, it will update the task in the db

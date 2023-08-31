@@ -32,16 +32,16 @@ const initialState = {
 	*/
 	tasks: [
 		//{ status: 'incomplete', task: 'Breakfast', ttc: 1, id: 1, timestamp: timestamp },
-		{ status: 'incomplete', task: 'Plan Weave (70-70.5)', ttc: .5, id: 2, timestamp: timestamp - 1 },
-		{ status: 'incomplete', task: 'Cyber Security - Ch 1-3, Linux review', ttc: 3, id: 3, timestamp: timestamp - 2 },
-		{ status: 'incomplete', task: 'Break', ttc: .75, id: 4, timestamp: timestamp - 3 },
-		{ status: 'incomplete', task: 'Spanish - Ch P, Study, Duo', ttc: 1.5, id: 5, timestamp: timestamp - 4 },
-		{ status: 'incomplete', task: 'Gym', ttc: 1.5, id: 6, timestamp: timestamp - 5 },
-		{ status: 'incomplete', task: 'Shower +', ttc: .5, id: 7, timestamp: timestamp - 6 },
-		{ status: 'incomplete', task: 'Plan Weave (70.5-72)', ttc: 1.5, id: 8, timestamp: timestamp - 8 },
-		{ status: 'incomplete', task: 'Break', ttc: .75, id: 9, timestamp: timestamp - 9 },
-		{ status: 'incomplete', task: 'Machine Learning - Study', ttc: 1, id: 11, timestamp: timestamp - 10 },
-		{ status: 'incomplete', task: 'SE 2 - Study', ttc: 1, id: 12, timestamp: timestamp - 11 },
+		{ status: 'incomplete', task: 'Plan Weave (70-70.5)', ttc: .5, id: 1, timestamp: timestamp - 1 },
+		{ status: 'incomplete', task: 'Cyber Security - Ch 1-3, Linux review', ttc: 3, id: 2, timestamp: timestamp - 2 },
+		{ status: 'incomplete', task: 'Break', ttc: .75, id: 3, timestamp: timestamp - 3 },
+		{ status: 'incomplete', task: 'Spanish - Ch P, Study, Duo', ttc: 1.5, id: 4, timestamp: timestamp - 4 },
+		{ status: 'incomplete', task: 'Gym', ttc: 1.5, id: 5, timestamp: timestamp - 5 },
+		{ status: 'incomplete', task: 'Shower +', ttc: .5, id: 6, timestamp: timestamp - 6 },
+		{ status: 'incomplete', task: 'Plan Weave (70.5-72)', ttc: 1.5, id: 7, timestamp: timestamp - 8 },
+		{ status: 'incomplete', task: 'Break', ttc: .75, id: 8, timestamp: timestamp - 9 },
+		{ status: 'incomplete', task: 'Machine Learning - Study', ttc: 1, id: 9, timestamp: timestamp - 10 },
+		{ status: 'incomplete', task: 'SE 2 - Study', ttc: 1, id: 10, timestamp: timestamp - 11 },
 	]
 }
 

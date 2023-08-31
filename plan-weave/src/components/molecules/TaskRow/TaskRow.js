@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect } from 'react'
 import {
 	TaskRowStyled,
 	DragIndicator,
@@ -20,8 +20,7 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
 import { useDispatch } from 'react-redux'
-import { pureTaskAttributeUpdate, validateTask } from '../../utils/helpers'
-import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
+import { validateTask } from '../../utils/helpers'
 import { parse, format } from 'date-fns'
 
 import isEqual from 'lodash/isEqual'
@@ -43,7 +42,6 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
-	const { setIndexChanged } = useContext(TaskEditorContext)
 
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -72,43 +70,23 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	}, [])
 
 	// Handlers
-	// TODO: Ensure all fields are updated when this checkbox is clicked
-	const handleCheckBoxClicked = async () => {
+	const handleCheckBoxClicked = () => {
 		if (!isChecked) toast.info('This Task was Completed')
-
-		const validTask = validateTask({ task: taskObject })
-		/*
-		const updatedTask = pureTaskAttributeUpdate({
-			index: 0,
-			attribute: 'status',
-			value: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
-			taskList: [validTask]
-		})
-		*/
-		// TODO: Change task, ttc, eta to be the values in the actual inputs
 		const currentTime = new Date()
-		const newEta = isChecked ? eta : format(currentTime, "HH:mm")
-
-		// To calculate waste, you need to get the last completed task if there is one and then big = last completed eta + this ttc; waste = big - currentTime
-		// if it is the first completed, then waste = millisToHours((currentTime.getTime() - parse(eta, 'HH:mm', currentTime).getTime()))
-		const newWaste = !lastCompletedTask //|| (lastCompletedTask && !lastCompletedTask?.eta)
+		const newWaste = !lastCompletedTask || (lastCompletedTask && !lastCompletedTask?.eta)
 			? millisToHours((currentTime.getTime() - parse(eta, 'HH:mm', currentTime).getTime())) // if lastCompletedTask is falsey
 			: millisToHours(currentTime.getTime() - (parse(lastCompletedTask.eta, 'HH:mm', currentTime).getTime() + hoursToMillis(localTtc))) // if lastCompletedTask is not null or undefined / falsey 
-
 		const updatedTask = {
-			...validTask,
-			task: localTask,
+			...validateTask({ task: taskObject }),
 			status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
+			task: localTask,
 			waste: newWaste,
 			ttc: localTtc,
-			eta: newEta,
+			eta: isChecked ? eta : format(currentTime, "HH:mm"),
 			completedTimeStamp: currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 		}
 		setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
-		//updateTask(id, updatedTask[0])(dispatch)
 		updateTask(id, updatedTask)(dispatch)
-
-		setIndexChanged(index) // This is to tell the context the index of the task being changed, so auto calculations can work properly
 	}
 
 	const handleDeleteTask = () => {

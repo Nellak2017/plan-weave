@@ -54,7 +54,6 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
-	const [indexChanged, setIndexChanged] = useState(-1) // Unfortunately, I see no other way to do this than this global variable
 
 	// --- Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
@@ -102,41 +101,14 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	}, [sortingAlgo])
 
 	// --- ETA + Waste Auto Calculation Feature
-	useEffect(() => {
-		// Calculate Task List and Highlight list, then set them if you can
-		const interval = setInterval(() => {
-			const temp = Array.from(taskList)
-			const updated = calculateWaste({ start, taskList: temp, time: new Date() })
-			// Without this Guard, it will infinitely loop 
-			if (!isEqual(updated, temp)) {
-				setTaskList(updated)
-				setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
-			}
-		}, 1000*1000)
-
-		// Clean-up step: set indexChanged to -1
-		return () => {
-			if (interval) clearInterval(interval)
-			setIndexChanged(-1)
-		}
-	}, [taskList])
-
-	useEffect(() => {
-		const updated = tasksFromRedux && tasksFromRedux?.every(task => task?.eta) ? calculateWaste({ start, taskList: tasksFromRedux, time: new Date() }) : null
-		if (updated) {
-			setTaskList(updated)
-			setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
-		}
-	}, [tasksFromRedux])
-
-	useEffect(() => {
-		(() => {
-			const updatedTaskList = calculateWaste({ start, taskList, time: new Date(), indexUpdated: indexChanged })
-			// should not infinitely loop because start, end, owl change only by user
-			setTaskList(updatedTaskList)
-			setHighlights(highlightDefaults(updatedTaskList, new Date(start), new Date(end), owl))
-		})()
-	}, [timeRange, owl])
+	const update = (timeChanged = false) => {
+		const updated = calculateWaste({ start, taskList, time: new Date() })
+		if (!timeChanged && taskList[taskList.length - 1].eta === updated[updated.length - 1].eta &&
+			taskList[taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)].waste !== 0) {return}
+		setTaskList(updated); setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
+	}
+	useEffect(() => update(), [taskList, tasksFromRedux])
+	useEffect(() => update(true), [timeRange, owl])
 
 	// --- Completed Tasks On Top Feature
 	function completedOnTopSorted(reduxTasks, tasks) {
@@ -149,7 +121,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	return (
 		<TaskEditorContext.Provider value={{
 			taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
-			highlights, setHighlights, owl, setOwl, indexChanged, setIndexChanged
+			highlights, setHighlights, owl, setOwl
 		}}>
 			<button onClick={() => {
 				console.log(sortingAlgo)
