@@ -94,6 +94,11 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 		toast.info('This Task was deleted')
 	}
 
+	const handleUpdateTask = () => {
+		toast.info('This Task was Updated')
+		updateTask(id, { ...taskObject, task: localTask, ttc: localTtc })(dispatch)
+	}
+
 	const taskRowChildren = ({ provided }) => (
 		<>
 			<IconContainer title={'Drag-n-Drop tasks to change view'} {...provided?.dragHandleProps ?? ''}>
@@ -147,7 +152,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 							hourText2: 'hours'
 						}) :
 						'0 minutes'}</pre>
-					: <HoursInput onChange={e => setLocalTtc(e.target.value)} value={localTtc} initialValue={ttc && ttc > .01 ? ttc : 1} variant={variant} placeholder='hours' text='hours' />
+					: <HoursInput onValueChange={value => setLocalTtc(value)} value={localTtc} initialValue={localTtc && localTtc > .01 ? localTtc : 1} variant={variant} placeholder='hours' text='hours' />
 				}
 			</TimeContainer>
 			<TimeContainer style={{ width: '40px' }} title={'Estimated Time to Finish Task'}>
@@ -170,6 +175,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 						status={status}
 						maxwidth={maxwidth}
 						highlight={highlight}
+						onBlur={handleUpdateTask}
 					>
 						{taskRowChildren({ provided: undefined })}
 					</TaskRowStyled>
@@ -190,6 +196,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 								}}
 								maxwidth={maxwidth}
 								highlight={highlight}
+								onBlur={handleUpdateTask}
 							>
 								{taskRowChildren({ provided })}
 							</TaskRowStyled>

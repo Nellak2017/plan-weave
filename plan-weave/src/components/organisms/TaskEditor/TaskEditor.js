@@ -102,7 +102,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 
 	// --- ETA + Waste Auto Calculation Feature
 	const update = (timeChanged = false) => {
-		const updated = calculateWaste({ start, taskList, time: new Date() })
+		const updated = calculateWaste({ start, taskList:taskList, time: new Date() })
 		if (!timeChanged && taskList[taskList.length - 1].eta === updated[updated.length - 1].eta &&
 			taskList[taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)].waste !== 0) {return}
 		setTaskList(updated); setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))

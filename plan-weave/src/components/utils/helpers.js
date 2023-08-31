@@ -253,7 +253,7 @@ export const millisToHours = milliseconds => (milliseconds / 60000) / 60
 // Converts all Eta strings to dates from Today for simplified processing. Do not use for tasks from tomorrow or yesterday and beyond.
 export const etaToDates = (taskList, time) => {
 	return taskList?.map(task => {
-		const [hours, minutes] = task?.eta.split(':')
+		const [hours, minutes] = task?.eta?.split(':')
 		return { ...task, eta: new Date(time.getFullYear(), time.getMonth(), time.getDate(), hours, minutes) }
 	})
 }
@@ -263,6 +263,7 @@ export const etaToStrings = taskList => taskList.map(task => { return { ...task,
 
 // TODO: Add JSDOCS
 export const calculateWaste = ({ start, taskList, time = new Date() }) => {
+	if (!taskList) return []
 	return ((tasks = etaToDates(taskList, time), currentTime = time) => {
 		const add = (start, hours) => { return new Date(start.getTime() + hoursToMillis(hours)) } // (Date: start, hours: hours) -> Date(start + hours)
 		const subtract = (time, eta) => { return millisToHours(time.getTime() - eta.getTime()) } // (Date: time, Date: eta) -> time - eta (hours)

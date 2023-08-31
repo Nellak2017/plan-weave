@@ -4,11 +4,17 @@ import {
 import { useState } from 'react'
 import { THEMES } from '../../utils/constants'
 
-const HoursInput = ({ placeholder = '0', text, variant, maxwidth = 61, color, initialValue }) => {
+const HoursInput = ({ placeholder = '0', text, variant, maxwidth = 61, color, initialValue, onValueChange }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const [value, setValue] = useState(initialValue)
-	const handleChange = e => setValue(e.target.value)
+	const handleChange = e => {
+		const newValue = e.target.value
+		setValue(newValue)
+		if (onValueChange) {
+			onValueChange(newValue) // Pass the new value to the parent component
+		}
+	}
 	const handleBlur = () => {
 		let sanitizedValue = Math.max(0, Math.min(24, parseFloat(value) || 0))
 		sanitizedValue = isNaN(sanitizedValue) ? '' : sanitizedValue.toFixed(1)

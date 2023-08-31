@@ -75,7 +75,7 @@ X Delete Functionality
 
 X Waste Calculations
 
-Update Tasks
+X Update Tasks
 	When User Changes task field and clicks off, it will update the task in the db
 
 Delete Tasks Multiple Select
