@@ -745,9 +745,13 @@ describe('calculateEta', () => {
 describe('calculateWaste', () => {
 	const start = new Date(1692975600000) // Friday, August 25, 2023 10:00:00 AM GMT-05:00
 	const completedTime = new Date(1692977400000) // Friday, August 25, 2023 10:30:00 AM GMT-05:00 	
-	const completedTimeSeconds = completedTime.getTime()/1000 
+	const completedTimeSeconds = completedTime.getTime() / 1000
 	const completedTime2 = new Date(1692981000000) // Friday, August 25, 2023 11:30:00 AM GMT-05:00 DST 
-	const completedTime2Seconds = completedTime2.getTime()/1000 
+	const completedTime2Seconds = completedTime2.getTime() / 1000
+
+	const uiStart = new Date('Wed Aug 30 2023 12:50:00 GMT-0500 (Central Daylight Time)') // For the first known bug from UI testing
+	const uiTime = new Date('Wed Aug 30 2023 18:34:04 GMT-0500 (Central Daylight Time)') // For the first known bug from UI testing
+	const uiTimeSeconds = uiTime.getTime() / 1000
 
 	// Test cases covering what happens whenever we don't want any tasks updated and just want them initialized
 	const initialTestCases = [
@@ -820,13 +824,34 @@ describe('calculateWaste', () => {
 				{ status: 'completed', task: 'Task 2', waste: .5, ttc: .5, eta: '11:30', id: 2, timestamp: 2, completedTimeStamp: completedTime2Seconds }, // waste should be calculated as normal, time - eta (new), eta should be updated
 				{ status: 'incomplete', task: 'Task 3', waste: -1.5, ttc: 1.5, eta: '13:00', id: 3, timestamp: 3 }, // waste should be time-eta(new), eta should be updated
 			],
-		}
+		},
 	]
 
 	// Test cases covering what happens whenever we want a task in the list to be un-completed
 	const uncompletedTestCases = [
 		// Un-completing a task is equivalent to initializing a task
-		...initialTestCases
+		...initialTestCases,
+		// This test case was found by using it in the UI
+		// TODO: write test case
+		/*
+		{
+			name: 'If there is 2 completed tasks and the rest incomplete, then uncompleting the last one will result in expected list (not 470398 hours 58 minutes)',
+			input: {
+				taskList: [
+					{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: '10:30', id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // note this is the unaffected completed task
+					{ status: 'completed', task: 'Task 2', waste: .5, ttc: .5, eta: '11:00', id: 2, timestamp: 2 }, // This is the task being updated
+					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '19:30', id: 3, timestamp: 3 }, // incomplete tasks can have wrong eta/waste
+				],
+				time: uiTime, // Wed Aug 30 2023 18:34:04 GMT-0500 (Central Daylight Time)
+				indexUpdated: 1
+			},
+			expected: [
+				{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: '10:30', id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // Completed tasks are not touched
+				{ status: 'completed', task: 'Task 2', waste: .5, ttc: .5, eta: '11:30', id: 2, timestamp: 2, completedTimeStamp: completedTime2Seconds }, // waste should be calculated as normal, time - eta (new), eta should be updated
+				{ status: 'incomplete', task: 'Task 3', waste: -1.5, ttc: 1.5, eta: '13:00', id: 3, timestamp: 3 }, // waste should be time-eta(new), eta should be updated
+			],
+		}
+		*/
 	]
 
 	initialTestCases.forEach(testCase => {

@@ -105,39 +105,45 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	useEffect(() => {
 		// Calculate Task List and Highlight list, then set them if you can
 
+		/*
 		const updateTasks = pipe(
 			() => calculateEta({ start, taskList }),
 			updatedTaskListEta => calculateWaste({ start, taskList: updatedTaskListEta, time: new Date(), indexUpdated: indexChanged }),
 			updatedTaskList => calculateEta({ start, taskList: updatedTaskList }),
 		)
-
+		*/
 		if (indexChanged >= 0) {
-			const updated = updateTasks()
+			const t = new Date()
+			const updated = calculateWaste({ start, taskList, time: t, indexUpdated: indexChanged })
+			console.log(`start: ${start}\ntime: ${t}\nindexUpdated: ${indexChanged}`)
+			console.log(taskList)
+			console.log(updated)
 			setTaskList(updated)
 			setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
 		}
+		/*
 		const interval = setInterval(() => {
 			const temp = Array.from(taskList)
-			const updated = updateTasks()
+			const updated = calculateWaste({ start, taskList:temp, time: new Date(), indexUpdated: indexChanged })
 			// Without this Guard, it will infinitely loop 
 			if (!isEqual(updated, temp)) {
 				setTaskList(updated)
-				setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl)) 
+				setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
 			}
 		}, 1000)
-
+		*/
 
 		// Clean-up step: set indexChanged to -1
 		return () => {
-			if (interval) clearInterval(interval)
+			//if (interval) clearInterval(interval)
 			setIndexChanged(-1)
 		}
 	}, [taskList])
 
 	useEffect(() => {
 		(() => {
-			const updatedTaskListEta = calculateEta({ start, taskList })
-			const updatedTaskList = calculateWaste({ start, taskList: updatedTaskListEta, time: new Date(), indexUpdated: indexChanged })
+			//const updatedTaskListEta = calculateEta({ start, taskList })
+			const updatedTaskList = calculateWaste({ start, taskList, time: new Date(), indexUpdated: indexChanged })
 			// should not infinitely loop because start, end, owl change only by user
 			setTaskList(updatedTaskList)
 			setHighlights(highlightDefaults(updatedTaskList, new Date(start), new Date(end), owl))
