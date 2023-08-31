@@ -289,46 +289,8 @@ export const etaToDates = (taskList, time) => {
 }
 
 // Converts taskList Eta Dates back into strings (Except for Completed tasks)
-/*
-export const etaToStrings = (taskList, timezone = Intl.DateTimeFormat().resolvedOptions().timeZone) => { 
-	return taskList.map(task => { return { ...task, eta: formatInTimeZone(task.eta, timezone, "HH:mm") } }) 
-}
-*/
-export const etaToStrings = (taskList) => {
-	return taskList.map(task => { return { ...task, eta: format(task.eta, "HH:mm") } })
-}
+export const etaToStrings = taskList => taskList.map(task => { return { ...task, eta: format(task.eta, "HH:mm") } })
 
-/**
- * Updates the ETA values for a list of tasks based on the provided start time and task information.
- *
- * @param {Object} options - The options for updating the task list.
- * @param {Date} options.start - The start time in Date object.
- * @param {Array<Object>} options.taskList - The list of tasks to update.
- * @param {Function} [options.getTime] - The function to get the current time. Default is the system time.
- * @param {Function} [options.hoursToMillis] - The function to convert hours to milliseconds. Default is provided function.
- * @param {Function} [options.format] - The function to format time. Default is provided function.
- * @returns {Array<Object>} The list of tasks with updated ETA values.
- */
-// TODO: Refactor this to use Reduce instead of imperative loop
-export const calculateEta = ({ start, taskList, getTheTime = getTime, hoursConverter = hoursToMillis, formatter = format }) => {
-	let currentTime = getTheTime(start)
-	const updatedTaskList = [...taskList].map(task => {
-		if (!task.eta) return task
-		currentTime += hoursConverter(task.ttc || 0)
-		return { ...task, eta: formatter(currentTime, 'HH:mm') }
-	})
-
-	/*
-	const updatedTaskList = [...taskList].reduce((acc, task, index) => {
-		return [
-			acc[0] + hoursConverter(task.ttc || 0),
-			[...acc[1], task.eta ? { ...task, eta: formatter(currentTime, 'HH:mm') } : task]
-		]
-	  }, [getTheTime(start), []])[1]
-	*/
-
-	return updatedTaskList
-}
 
 /*
 Waste Feature Calculations

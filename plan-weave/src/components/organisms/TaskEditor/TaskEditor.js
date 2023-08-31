@@ -6,9 +6,9 @@ import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import { StyledTaskEditor } from './TaskEditor.elements'
 import {
-	filterTaskList, highlightDefaults, calculateEta, calculateWaste, validateTasks, hoursToMillis
+	filterTaskList, highlightDefaults, calculateWaste, validateTasks
 } from '../../utils/helpers.js'
-import { format, parse, getTime } from 'date-fns'
+import { parse } from 'date-fns'
 import isEqual from 'lodash/isEqual'
 import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
@@ -131,7 +131,6 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 
 	useEffect(() => {
 		(() => {
-			//const updatedTaskListEta = calculateEta({ start, taskList })
 			const updatedTaskList = calculateWaste({ start, taskList, time: new Date(), indexUpdated: indexChanged })
 			// should not infinitely loop because start, end, owl change only by user
 			setTaskList(updatedTaskList)
