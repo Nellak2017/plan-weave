@@ -76,7 +76,7 @@ X Delete Functionality
 X Waste Calculations
 
 X Update Tasks
-	When User Changes task field and clicks off, it will update the task in the db
+	X When User Changes task field and clicks off, it will update the task in the db
 
 Delete Tasks Multiple Select
 	Change Old prop to "highlight" : (old,selected)

@@ -6,13 +6,12 @@ import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import { StyledTaskEditor } from './TaskEditor.elements'
 import {
-	filterTaskList, highlightDefaults, calculateWaste, validateTasks
+	filterTaskList, highlightDefaults, calculateWaste, validateTasks, millisToHours
 } from '../../utils/helpers.js'
 import { parse } from 'date-fns'
-import isEqual from 'lodash/isEqual'
 import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
-import { pipe } from 'ramda'
+import isEqual from 'lodash/isEqual'
 
 /*
 	TODO: Convert Start/End Time Auto Calculation Feature to Functional version
@@ -35,6 +34,7 @@ import { pipe } from 'ramda'
 
 export const TaskEditorContext = createContext()
 
+// TODO: It doesn't update the waste every minute, add a logical check to test for this
 const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', maxwidth = 818, options }) => {
 	// --- Input Verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -50,10 +50,11 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState({ start: parse('14:00', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
+	const [timeRange, setTimeRange] = useState({ start: parse('13:15', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
+	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
 
 	// --- Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
@@ -101,14 +102,19 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	}, [sortingAlgo])
 
 	// --- ETA + Waste Auto Calculation Feature
-	const update = (timeChanged = false) => {
-		const updated = calculateWaste({ start, taskList:taskList, time: new Date() })
-		if (!timeChanged && taskList[taskList.length - 1].eta === updated[updated.length - 1].eta &&
-			taskList[taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)].waste !== 0) {return}
+	const update = () => {
+		const updated = calculateWaste({ start, taskList, time: new Date() })
 		setTaskList(updated); setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
 	}
-	useEffect(() => update(), [taskList, tasksFromRedux])
-	useEffect(() => update(true), [timeRange, owl])
+	useEffect(() => update(), [timeRange, owl])
+	useEffect(() => {
+		if (taskUpdated) {clearInterval(interval);update()}
+		const interval = setInterval(() => update(), 500)
+		return () => {
+			if (interval) clearInterval(interval)
+			setTaskUpdated(false)
+		}
+	}, [taskList]) // this is needed to update waste every second, unfortunately
 
 	// --- Completed Tasks On Top Feature
 	function completedOnTopSorted(reduxTasks, tasks) {
@@ -121,7 +127,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	return (
 		<TaskEditorContext.Provider value={{
 			taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
-			highlights, setHighlights, owl, setOwl
+			highlights, setHighlights, owl, setOwl, taskUpdated, setTaskUpdated
 		}}>
 			<button onClick={() => {
 				console.log(sortingAlgo)

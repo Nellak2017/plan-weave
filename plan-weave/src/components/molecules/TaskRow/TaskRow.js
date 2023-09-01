@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import {
 	TaskRowStyled,
 	DragIndicator,
@@ -22,6 +22,7 @@ import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
 import { useDispatch } from 'react-redux'
 import { validateTask } from '../../utils/helpers'
 import { parse, format } from 'date-fns'
+import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 
 import isEqual from 'lodash/isEqual'
 
@@ -42,6 +43,8 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
+
+	const { setTaskUpdated } = useContext(TaskEditorContext) // used to help the waste feature. Ugly but it works
 
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -87,6 +90,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 		}
 		setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
 		updateTask(id, updatedTask)(dispatch)
+		setTaskUpdated(true)
 	}
 
 	const handleDeleteTask = () => {
@@ -99,6 +103,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 		updateTask(id, { ...taskObject, task: localTask, ttc: localTtc })(dispatch)
 	}
 
+	// Task View Logic (Simple, Full) (Just Simple for now)
 	const taskRowChildren = ({ provided }) => (
 		<>
 			<IconContainer title={'Drag-n-Drop tasks to change view'} {...provided?.dragHandleProps ?? ''}>
