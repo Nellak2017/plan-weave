@@ -18,9 +18,10 @@ import 'react-toastify/dist/ReactToastify.css'
 import { ThemeContext } from 'styled-components' // needed for theme object
 import { formatTimeLeft } from '../../utils/helpers.js'
 import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS } from '../../utils/constants.js'
+import Button from '../../atoms/Button/Button.js'
 
 import { useDispatch } from 'react-redux'
-import { addNewTask } from '../../../redux/thunks/taskThunks.js'
+import { addNewTask, removeTasks } from '../../../redux/thunks/taskThunks.js'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 /* 
 TODO: 
@@ -41,14 +42,16 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	// Context and Redux Stuff
 	const theme = useContext(ThemeContext)
 	const dispatch = useDispatch()
-	const { taskList, setTaskList, search, setSearch, timeRange, setTimeRange, owl, setOwl,
-		isHighlighting, setIsHighlighting } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
+	const { taskList, setSearch, timeRange, setTimeRange, owl, setOwl,
+		isHighlighting, setIsHighlighting, selectedTasks, setSelectedTasks } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
 
 	// State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
 	const [startTime, setStartTime] = useState(!TaskEditorContext._currentValue ? parse(start, 'HH:mm', new Date()) : timeRange.start)
 	const [endTime, setEndTime] = useState(!TaskEditorContext._currentValue ? parse(end, 'HH:mm', new Date()) : timeRange.end)
 	const [overNightMode, setOverNightMode] = useState(owl === undefined || owl === null ? overNight : owl) // if true, then end<start means over-night
+
+	const [isDeleteClicked, setIsDeleteClicked] = useState(false) // used to track if delete has been presed once or not (HOF didn't work)
 
 	// Effects
 	useEffect(() => { checkTimeRange() }, [overNightMode])
@@ -91,9 +94,56 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 		})(dispatch)
 		console.log('You added a New Default Task')
 	}
+	
 	const deleteEvent = () => {
-		toast.info('You may now select multiple tasks to delete at once! Click again to toggle.')
-		if (setIsHighlighting) setIsHighlighting(old => !old)
+		if (!isHighlighting) {
+			setIsDeleteClicked(false)
+			toast.info('You may now select multiple tasks to delete at once! Click again to toggle.')
+		}
+		if (setIsHighlighting) {
+			if (setSelectedTasks) setSelectedTasks(taskList.map(() => false))
+			setIsHighlighting(old => !old)
+		}
+	}
+
+	const deleteMultipleEvent = () => {
+		const tasksAreSelected = selectedTasks.some(task => task === true) // if there is atleast 1 task selected then true
+		if (tasksAreSelected && !isDeleteClicked) {
+			setIsDeleteClicked(true) // This is to prevent the user from spamming the delete buttom multiple times
+			toast.warning(({ closeToast }) => (
+				<div>
+					<p style={{ color: 'black' }}>Warning, you are deleting multiple tasks. Are you sure?</p>
+					<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-evenly' }}>
+						<Button variant={'delete'} onClick={() => {
+							const selectedIds = selectedTasks
+								.map((selected, index) =>
+									selected
+										? taskList[index]?.id // it should have id, but ? to be safe
+										: selected)
+								.filter(selected => typeof selected !== 'boolean')
+							removeTasks(selectedIds)(dispatch)
+							setIsHighlighting(false)
+							closeToast()
+						}}>
+							Yes
+						</Button>
+						<Button variant={'newTask'} onClick={() => {
+							setIsDeleteClicked(false)
+							closeToast()
+						}}>
+							No
+						</Button>
+					</div>
+				</div>
+			),
+				{
+					position: toast.POSITION.TOP_CENTER,
+					autoClose: false, // Don't auto-close the toast
+					closeOnClick: false, // Keep the toast open on click
+					closeButton: false, // Don't show a close button
+					draggable: false, // Prevent dragging to close
+				})
+		}
 	}
 
 	// Update start/end time in Context Provided
@@ -171,6 +221,18 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 							onKeyDown={e => { if (e.key === 'Enter') { deleteEvent() } }}
 							size={iconSize}
 						/>
+						{isHighlighting &&
+							<Button
+								tabIndex={7}
+								variant={'delete'}
+								title={'Delete Selected Tasks'}
+								role="button"
+								onClick={deleteMultipleEvent}
+								onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent } }}
+							>
+								Delete
+							</Button>
+						}
 						<Separator variant={variant} color={color} />
 					</BottomContentContainer>
 					<BottomContentContainer>
@@ -179,7 +241,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 					<BottomContentContainer>
 						<Separator variant={variant} color={color} />
 						<DropDownButton
-							tabIndex={7}
+							tabIndex={8}
 							title={dropDownToolTip}
 							role="button"
 							variant={variant}

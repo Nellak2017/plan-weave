@@ -20,18 +20,18 @@ const initialState = {
 	], // Initial state for tasks
 	*/
 	tasks: [
-		{ status: 'incomplete', task: 'Bills', ttc: .5, id: 1, timestamp: timestamp },
-		{ status: 'incomplete', task: 'Inventory', ttc: .25, id: 2, timestamp: timestamp - 1 },
-		{ status: 'incomplete', task: 'Breakfast (Chic-fil-a)', ttc: .75, id: 3, timestamp: timestamp - 2 },
-		{ status: 'incomplete', task: 'Groceries + Headset', ttc: 1.25, id: 4, timestamp: timestamp - 3 },
-		{ status: 'incomplete', task: 'Plan Weave (72-72.5)', ttc: .5, id: 5, timestamp: timestamp - 4 },
-		{ status: 'incomplete', task: 'Spanish (1/2) - Ch, Audio', ttc: 1.5, id: 6, timestamp: timestamp - 5 },
-		{ status: 'incomplete', task: 'Break', ttc: .5, id: 7, timestamp: timestamp - 6 },
-		{ status: 'incomplete', task: 'Spanish (2/2) - Flash,Duo', ttc: 1.5, id: 8, timestamp: timestamp - 8 },
-		{ status: 'incomplete', task: 'Break', ttc: .75, id: 9, timestamp: timestamp - 9 },
-		{ status: 'incomplete', task: 'Ethics Lib (1/3) - pre', ttc: 1, id: 10, timestamp: timestamp - 10 },
-		{ status: 'incomplete', task: 'A3 ML', ttc: 1, id: 11, timestamp: timestamp - 11 },
-		{ status: 'incomplete', task: 'A1 SE', ttc: 1.5, id: 12, timestamp: timestamp - 12 },
+		//{ status: 'incomplete', task: 'Plan Weave (72-74)', ttc: 2, id: 1, timestamp: timestamp },
+		{ status: 'incomplete', task: 'Gym', ttc: 1.25, id: 2, timestamp: timestamp - 1 },
+		{ status: 'incomplete', task: 'Shower+', ttc: .5, id: 3, timestamp: timestamp - 2 },
+		{ status: 'incomplete', task: 'Lunch', ttc: 1, id: 4, timestamp: timestamp - 3 },
+		{ status: 'incomplete', task: 'Meal Prep * 2', ttc: 1.5, id: 5, timestamp: timestamp - 4 },
+		{ status: 'incomplete', task: 'Spanish (Ch P, QA, Flash)', ttc: 2, id: 6, timestamp: timestamp - 5 },
+		{ status: 'incomplete', task: 'Break', ttc: .75, id: 7, timestamp: timestamp - 6 },
+		{ status: 'incomplete', task: 'A3 ML', ttc: 1.5, id: 8, timestamp: timestamp - 8 },
+		{ status: 'incomplete', task: 'A1 SE', ttc: .75, id: 9, timestamp: timestamp - 9 },
+		{ status: 'incomplete', task: 'Driving', ttc: 1, id: 10, timestamp: timestamp - 10 },
+		{ status: 'incomplete', task: 'Clean', ttc: .75, id: 11, timestamp: timestamp - 11 },
+		{ status: 'incomplete', task: 'COD', ttc: 1.5, id: 12, timestamp: timestamp - 12 },
 	]
 }
 
@@ -47,6 +47,10 @@ const taskSlice = createSlice({
 			//state.tasks = state?.tasks?.filter(task => task?.id !== action?.payload) // Remove a task by ID
 			state.tasks = state?.tasks?.map(task => task?.id && task?.id === action.payload ? {...task, hidden: true} : task)
 		},
+		deleteTasks: (state, action) => {
+			const idsToDelete = action.payload
+			state.tasks = state?.tasks?.map(task => task?.id && idsToDelete.includes(task?.id) ? {...task, hidden: true} : task)
+		},
 		editTask: (state, action) => {
 			const { id, updatedTask } = action?.payload
 			const taskIndex = state?.tasks?.findIndex(task => task?.id === id)
@@ -57,5 +61,5 @@ const taskSlice = createSlice({
 	},
 })
 
-export const { addTask, deleteTask, editTask } = taskSlice.actions
+export const { addTask, deleteTask, deleteTasks, editTask } = taskSlice.actions
 export default taskSlice.reducer

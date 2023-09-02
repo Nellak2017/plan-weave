@@ -18,7 +18,7 @@ import { formatTimeLeft, millisToHours, hoursToMillis } from '../../utils/helper
 import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
+import { removeTask, updateTask, removeTasks } from '../../../redux/thunks/taskThunks.js'
 import { useDispatch } from 'react-redux'
 import { validateTask } from '../../utils/helpers'
 import { parse, format } from 'date-fns'
@@ -44,7 +44,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
 
-	const { setTaskUpdated, selectedTasks,setSelectedTasks, isHighlighting } = !TaskEditorContext._currentValue ? { 1: () => console.log("hey") } : useContext(TaskEditorContext)  // used to help the waste feature. Ugly but it works
+	const { setTaskUpdated, selectedTasks, setSelectedTasks, isHighlighting } = !TaskEditorContext._currentValue ? { 1: () => console.log("hey") } : useContext(TaskEditorContext)  // used to help the waste feature. Ugly but it works
 
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -61,16 +61,6 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	const [localTask, setLocalTask] = useState(task)
 	const [localTtc, setLocalTtc] = useState(ttc)
 
-	// Local State for the Multiple Delete Feature
-	const [localHighlight, setLocalHighlight] = useState('')
-	useEffect(() => {
-		//const newLocalHighlight = isHighlighting ? (isChecked ? 'selected' : ' ') : localHighlight
-		//setLocalHighlight(newLocalHighlight)
-	}, [isHighlighting, isChecked])
-
-
-	//console.log(newLocalHighlight)
-
 	// Update Task in Redux Store if it is invalid only on the first load
 	useEffect(() => {
 		try {
@@ -82,29 +72,31 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 		}
 	}, [])
 
+	useEffect(() => {
+		if (!isHighlighting) {
+			setIsChecked(status === TASK_STATUSES.COMPLETED)
+			return
+		}
+		// If we start up the highlight multiple feature, we need to have no checks initially, even if it is completed
+		setIsChecked(false)
+	}, [isHighlighting]) // Should run when the highlighting stops to reset the checkmarks to what they should be
+
 	// Handlers
 	const handleCheckBoxClicked = () => {
 		// Change the Checkmark first before all so we don't forget!
 		setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
 
 		// Multiple Deletion feature
-
-		// TODO: Change the index thing to Id, so that you can simply call a new Redux delete event for multiple id
-		// TODO: Make a Redux delete event for multiple ids
 		if (isHighlighting) {
-			const newLocalHighlight = isHighlighting ? (!isChecked ? 'selected' : ' ') : localHighlight
-			console.log(newLocalHighlight)
-			setLocalHighlight(newLocalHighlight)
 			setSelectedTasks(old => {
 				const updatedSelection = [...old]
 				updatedSelection[index] = !updatedSelection[index]
 				return updatedSelection
 			}) // we need to update what task is to be deleted in the context list
-			console.log(selectedTasks)
 			return // So that the task is NOT updated
 		}
 		if (!isChecked) toast.info('This Task was Completed')
-		
+
 		// Waste Feature 
 		const currentTime = new Date()
 		const newWaste = !lastCompletedTask || (lastCompletedTask && !lastCompletedTask?.eta)
@@ -141,11 +133,10 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 				<DragIndicator size={32} />
 			</IconContainer>
 			<IconContainer title={isChecked ? 'Mark Incomplete' : 'Mark Complete'}>
-				{isChecked ? (
-					<MdOutlineCheckBox size={32} onClick={handleCheckBoxClicked} />
-				) : (
-					<MdOutlineCheckBoxOutlineBlank size={32} onClick={handleCheckBoxClicked} />
-				)}
+				{isChecked
+					? (<MdOutlineCheckBox size={32} onClick={handleCheckBoxClicked} />)
+					: (<MdOutlineCheckBoxOutlineBlank size={32} onClick={handleCheckBoxClicked} />)
+				}
 			</IconContainer>
 			<TaskContainer title={'Task Name'}>
 				{status === TASK_STATUSES.COMPLETED ?
@@ -204,13 +195,13 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 
 	return (
 		<>
-			{status === TASK_STATUSES.COMPLETED ?
+			{status === TASK_STATUSES.COMPLETED || isHighlighting ?
 				(
 					<TaskRowStyled
 						variant={variant}
 						status={status}
 						maxwidth={maxwidth}
-						highlight={localHighlight}
+						highlight={isHighlighting ? (isChecked ? 'selected' : ' ') : highlight}
 						onBlur={handleUpdateTask}
 					>
 						{taskRowChildren({ provided: undefined })}
@@ -231,7 +222,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 									// Add any other styles you want to maintain during dragging
 								}}
 								maxwidth={maxwidth}
-								highlight={localHighlight}
+								highlight={isHighlighting ? (isChecked ? 'selected' : ' ') : highlight}
 								onBlur={handleUpdateTask}
 							>
 								{taskRowChildren({ provided })}
