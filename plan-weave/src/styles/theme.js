@@ -991,7 +991,10 @@ export const taskRowPresets = {
             pointer-events: none; /* Make the overlay non-interactive */
         }
       }
-      `
+      `,
+    selected: css`
+      outline: 1px solid ${props => props.theme.colors.lightNeutralLight};
+  `
   },
   color: colorPreset
 }

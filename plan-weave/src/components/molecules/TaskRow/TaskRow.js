@@ -44,7 +44,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
 
-	const { setTaskUpdated } = useContext(TaskEditorContext) // used to help the waste feature. Ugly but it works
+	const { setTaskUpdated, selectedTasks,setSelectedTasks, isHighlighting } = !TaskEditorContext._currentValue ? { 1: () => console.log("hey") } : useContext(TaskEditorContext)  // used to help the waste feature. Ugly but it works
 
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -61,6 +61,16 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	const [localTask, setLocalTask] = useState(task)
 	const [localTtc, setLocalTtc] = useState(ttc)
 
+	// Local State for the Multiple Delete Feature
+	const [localHighlight, setLocalHighlight] = useState('')
+	useEffect(() => {
+		//const newLocalHighlight = isHighlighting ? (isChecked ? 'selected' : ' ') : localHighlight
+		//setLocalHighlight(newLocalHighlight)
+	}, [isHighlighting, isChecked])
+
+
+	//console.log(newLocalHighlight)
+
 	// Update Task in Redux Store if it is invalid only on the first load
 	useEffect(() => {
 		try {
@@ -74,7 +84,28 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 
 	// Handlers
 	const handleCheckBoxClicked = () => {
+		// Change the Checkmark first before all so we don't forget!
+		setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
+
+		// Multiple Deletion feature
+
+		// TODO: Change the index thing to Id, so that you can simply call a new Redux delete event for multiple id
+		// TODO: Make a Redux delete event for multiple ids
+		if (isHighlighting) {
+			const newLocalHighlight = isHighlighting ? (!isChecked ? 'selected' : ' ') : localHighlight
+			console.log(newLocalHighlight)
+			setLocalHighlight(newLocalHighlight)
+			setSelectedTasks(old => {
+				const updatedSelection = [...old]
+				updatedSelection[index] = !updatedSelection[index]
+				return updatedSelection
+			}) // we need to update what task is to be deleted in the context list
+			console.log(selectedTasks)
+			return // So that the task is NOT updated
+		}
 		if (!isChecked) toast.info('This Task was Completed')
+		
+		// Waste Feature 
 		const currentTime = new Date()
 		const newWaste = !lastCompletedTask || (lastCompletedTask && !lastCompletedTask?.eta)
 			? millisToHours((currentTime.getTime() - parse(eta, 'HH:mm', currentTime).getTime())) // if lastCompletedTask is falsey
@@ -88,9 +119,9 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 			eta: isChecked ? eta : format(currentTime, "HH:mm"),
 			completedTimeStamp: currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 		}
-		setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
+		// Usual API+View Update 
 		updateTask(id, updatedTask)(dispatch)
-		setTaskUpdated(true)
+		if (TaskEditorContext._currentValue) setTaskUpdated(true)
 	}
 
 	const handleDeleteTask = () => {
@@ -179,7 +210,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 						variant={variant}
 						status={status}
 						maxwidth={maxwidth}
-						highlight={highlight}
+						highlight={localHighlight}
 						onBlur={handleUpdateTask}
 					>
 						{taskRowChildren({ provided: undefined })}
@@ -200,7 +231,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 									// Add any other styles you want to maintain during dragging
 								}}
 								maxwidth={maxwidth}
-								highlight={highlight}
+								highlight={localHighlight}
 								onBlur={handleUpdateTask}
 							>
 								{taskRowChildren({ provided })}

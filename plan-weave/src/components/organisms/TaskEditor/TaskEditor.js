@@ -11,7 +11,6 @@ import {
 import { parse } from 'date-fns'
 import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
-import isEqual from 'lodash/isEqual'
 
 /*
 	TODO: Convert Start/End Time Auto Calculation Feature to Functional version
@@ -29,7 +28,6 @@ import isEqual from 'lodash/isEqual'
 	TODO: Move the timeRange up to a prop, and pass down to TaskControl with respect to Context/No Context (flexibility)
 	TODO: Re-assess usage of useValidateTask(s) hooks and validation functions, I sense simplification and inefficiencies
 
-	TODO: Fix the waste/eta resetting when you delete tasks
 	*/
 
 export const TaskEditorContext = createContext()
@@ -55,6 +53,10 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
 	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
+
+	// State for multiple delete feature
+	const [selectedTasks, setSelectedTasks] = useState(taskList.map(() => false)) // initializes with false list for each task
+	const [isHighlighting, setIsHighlighting] = useState(false) // Are we using the multiple delete feature?
 
 	// --- Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
@@ -108,7 +110,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	}
 	useEffect(() => update(), [timeRange, owl])
 	useEffect(() => {
-		if (taskUpdated) {clearInterval(interval);update()}
+		if (taskUpdated) update()
 		const interval = setInterval(() => update(), 500)
 		return () => {
 			if (interval) clearInterval(interval)
@@ -127,7 +129,8 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	return (
 		<TaskEditorContext.Provider value={{
 			taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
-			highlights, setHighlights, owl, setOwl, taskUpdated, setTaskUpdated
+			highlights, setHighlights, owl, setOwl, taskUpdated, setTaskUpdated,
+			selectedTasks, setSelectedTasks, isHighlighting, setIsHighlighting
 		}}>
 			<button onClick={() => {
 				console.log(sortingAlgo)

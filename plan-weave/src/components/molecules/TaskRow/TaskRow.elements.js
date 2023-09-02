@@ -24,7 +24,6 @@ export const TaskRowStyled = styled.tr`
 		cursor: pointer;
 		color: ${props => props.theme.colors.primary};
 	}
-
 `
 
 export const DragIndicator = styled(MdDragIndicator)`
@@ -33,29 +32,6 @@ export const DragIndicator = styled(MdDragIndicator)`
 		color: ${props => props.theme.colors.primary};
 	}
 `
-/*
-export const CheckBoxEmptyStyled = styled(MdOutlineCheckBoxOutlineBlank)`
-	&:hover {
-		cursor: pointer;
-		color: ${props => props.theme.colors.primary};
-	}
-`
-
-export const CheckBoxStyled = styled(MdOutlineCheckBox)`
-	&:hover {
-		cursor: pointer;
-		color: ${props => props.theme.colors.primary};
-	}
-`
-
-export const EllipsesStyled = styled(AiOutlineEllipsis)`
-	&:hover {
-		cursor: pointer;
-		color: ${props => props.theme.colors.primary};
-	}
-`
-*/
-
 // Containers
 
 export const TaskContainer = styled.td`

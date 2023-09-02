@@ -29,7 +29,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 	const lastCompleted = lastCompletedIndex >= 0 ? taskList[lastCompletedIndex] : null // gives last completed task
 
 	// Validate tasks and correct invalid ones when the page loads in. DOES NOT EFFECT REDUX STORE, ONLY VIEW OF IT
-	useValidateTasks({ taskList, callback: setTaskList })
+	useValidateTasks({ taskList: (taskList ? taskList : tasks), callback: (setTaskList ? setTaskList : () => console.error('setTaskList not defined')) })
 
 	// Modded to include the local tasks
 	// --- Includes the Task Swapping Feature, keeping timestamps constant (View Only, no store updates)

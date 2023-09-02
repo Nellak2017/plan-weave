@@ -10,6 +10,7 @@ export default {
 	component: TaskRow,
 	argTypes: {
 		variant: { control: 'text' },
+		highlight: { control: 'text'},
 	},
 }
 
@@ -38,6 +39,7 @@ const Template = args =>
 		</table>
 	</DragDropContext>
 
+// Using dummy context, it may not correctly update or be interactive.
 export const Light = TemplateWithProvider.bind({})
 Light.args = {
 	variant: 'light',
@@ -49,5 +51,6 @@ export const Dark = TemplateWithProvider.bind({})
 Dark.args = {
 	variant: 'dark',
 	waste: '1 hour',
-	taskObject: DEFAULT_SIMPLE_TASKS[1]
+	taskObject: DEFAULT_SIMPLE_TASKS[1],
+	highlight: 'selected'
 }

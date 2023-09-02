@@ -41,7 +41,8 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	// Context and Redux Stuff
 	const theme = useContext(ThemeContext)
 	const dispatch = useDispatch()
-	const { taskList, setTaskList, search, setSearch, timeRange, setTimeRange, owl, setOwl } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
+	const { taskList, setTaskList, search, setSearch, timeRange, setTimeRange, owl, setOwl,
+		isHighlighting, setIsHighlighting } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
 
 	// State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
@@ -65,7 +66,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	}
 	const setOverNight = () => {
 		setOverNightMode(prev => !prev)
-		setOwl(prev => !prev) // for context use
+		if (setOwl) setOwl(prev => !prev) // for context use
 		if (overNightMode)
 			toast.info('Overnight Mode is off: Tasks must be scheduled between 12 pm and 12 am. End time must be after the start time.', {
 				autoClose: 5000,
@@ -91,13 +92,13 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 		console.log('You added a New Default Task')
 	}
 	const deleteEvent = () => {
-		toast.info('TODO: Complete Delete Event')
-		console.log('TODO: Complete Delete Event')
+		toast.info('You may now select multiple tasks to delete at once! Click again to toggle.')
+		if (setIsHighlighting) setIsHighlighting(old => !old)
 	}
 
 	// Update start/end time in Context Provided
 	useEffect(() => {
-		setTimeRange({
+		if (setTimeRange) setTimeRange({
 			start: startTime,
 			end: endTime
 		})
@@ -112,7 +113,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 						title={'Search for Tasks'}
 						variant={variant}
 						maxwidth={maxwidthsearch}
-						onChange={value => setSearch(value)}
+						onChange={value => setSearch && setSearch(value)}
 						{...rest}
 					/>
 					<p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>
@@ -165,6 +166,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 							tabIndex={6}
 							title={deleteToolTip}
 							role="button"
+							style={isHighlighting && { color: theme.colors.primary }}
 							onClick={deleteEvent}
 							onKeyDown={e => { if (e.key === 'Enter') { deleteEvent() } }}
 							size={iconSize}
