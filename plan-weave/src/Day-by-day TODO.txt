@@ -79,7 +79,7 @@ X Update Tasks
 	X When User Changes task field and clicks off, it will update the task in the db
 
 9/2/2023
-Delete Tasks Multiple Select
+X Delete Tasks Multiple Select
 	X Change Old prop to "highlight" : (old,selected)
 	X Test The Selecting thing
 	X Batch Delete Multiple Tasks

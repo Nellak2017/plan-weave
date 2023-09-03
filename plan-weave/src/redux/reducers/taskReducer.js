@@ -20,18 +20,23 @@ const initialState = {
 	], // Initial state for tasks
 	*/
 	tasks: [
-		//{ status: 'incomplete', task: 'Plan Weave (72-74)', ttc: 2, id: 1, timestamp: timestamp },
-		{ status: 'incomplete', task: 'Gym', ttc: 1.25, id: 2, timestamp: timestamp - 1 },
-		{ status: 'incomplete', task: 'Shower+', ttc: .5, id: 3, timestamp: timestamp - 2 },
-		{ status: 'incomplete', task: 'Lunch', ttc: 1, id: 4, timestamp: timestamp - 3 },
-		{ status: 'incomplete', task: 'Meal Prep * 2', ttc: 1.5, id: 5, timestamp: timestamp - 4 },
-		{ status: 'incomplete', task: 'Spanish (Ch P, QA, Flash)', ttc: 2, id: 6, timestamp: timestamp - 5 },
-		{ status: 'incomplete', task: 'Break', ttc: .75, id: 7, timestamp: timestamp - 6 },
-		{ status: 'incomplete', task: 'A3 ML', ttc: 1.5, id: 8, timestamp: timestamp - 8 },
-		{ status: 'incomplete', task: 'A1 SE', ttc: .75, id: 9, timestamp: timestamp - 9 },
-		{ status: 'incomplete', task: 'Driving', ttc: 1, id: 10, timestamp: timestamp - 10 },
-		{ status: 'incomplete', task: 'Clean', ttc: .75, id: 11, timestamp: timestamp - 11 },
-		{ status: 'incomplete', task: 'COD', ttc: 1.5, id: 12, timestamp: timestamp - 12 },
+		{ status: 'incomplete', task: 'Sleep In', ttc: .5, id: 1, timestamp: timestamp }, // waste = 2 hours 7 minutes
+		{ status: 'incomplete', task: 'Breakfast', ttc: .75, id: 2, timestamp: timestamp - 1 }, // waste = 42 minutes
+		{ status: 'incomplete', task: 'Plan Weave (74-74.5)- Pagination Atom', ttc: .5, id: 3, timestamp: timestamp - 2 },
+		{ status: 'incomplete', task: 'Gym', ttc: 1.25, id: 4, timestamp: timestamp - 3 },
+		{ status: 'incomplete', task: 'Shower +', ttc: .5, id: 5, timestamp: timestamp - 4 },
+		{ status: 'incomplete', task: 'Meal Prep * 2', ttc: 1, id: 6, timestamp: timestamp - 5 },
+		{ status: 'incomplete', task: 'Clean', ttc: .75, id: 7, timestamp: timestamp - 6 },
+		//{ status: 'incomplete', task: 'Break', ttc: .75, id: 8, timestamp: timestamp - 8 },
+		{ status: 'incomplete', task: 'Lunch', ttc: .75, id: 9, timestamp: timestamp - 9 },
+		{ status: 'incomplete', task: 'Spanish (1/3)', ttc: 1.5, id: 10, timestamp: timestamp - 10 },
+		{ status: 'incomplete', task: 'A3 ML', ttc: 1.5, id: 11, timestamp: timestamp - 11 },
+		{ status: 'incomplete', task: 'Break', ttc: .75, id: 12, timestamp: timestamp - 12 },
+		{ status: 'incomplete', task: 'A1 SE', ttc: 1.5, id: 13, timestamp: timestamp - 13 },
+		{ status: 'incomplete', task: 'Break', ttc: .75, id: 14, timestamp: timestamp - 14 },
+		{ status: 'incomplete', task: 'Ethics Lib (1/3)', ttc: 1, id: 15, timestamp: timestamp - 15 },
+		{ status: 'incomplete', task: 'Driving', ttc: 1, id: 16, timestamp: timestamp - 16 },
+		{ status: 'incomplete', task: 'Break', ttc: 1.5, id: 17, timestamp: timestamp - 17 },
 	]
 }
 

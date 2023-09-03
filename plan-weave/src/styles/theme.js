@@ -854,6 +854,16 @@ export const tableHeaderPresets = {
   color: colorPreset
 }
 
+export const numberPickerPresets = {
+  variant: {
+    light: css`
+    `,
+    dark: css`
+    `,
+  },
+  color: colorPreset
+}
+
 // ------
 // --- Molecules ---
 
