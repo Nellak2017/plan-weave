@@ -38,6 +38,7 @@ export const TaskEditorContext = createContext()
 
 // TODO: When sort by timestamp, ensure the completed tasks are sorted by ETA so that order is Correctly maintained!
 // TODO: Extract out the Pagination thing into a molecule
+// TODO: Figure out how to reset the minutes left every day. Maybe add a Recycle task button?
 const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', maxwidth = 818, options }) => {
 	// --- Input Verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -53,7 +54,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState({ start: parse('09:30', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
+	const [timeRange, setTimeRange] = useState({ start: parse('10:30', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList

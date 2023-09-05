@@ -5,7 +5,7 @@ import {
 	StyledNumberPicker
 } from './NumberPicker.elements'
 
-function NumberPicker({ variant = 'dark', defaultNumber = 10, options = [10], text = 'Items per page' }) {
+function NumberPicker({ variant = 'dark', defaultNumber = 10, options = [10], text = 'Tasks per page' }) {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const [number, setNumber] = useState(defaultNumber)
