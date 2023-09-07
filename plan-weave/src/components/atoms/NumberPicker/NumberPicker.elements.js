@@ -2,14 +2,21 @@ import styled from "styled-components"
 import { space, layout, typography } from 'styled-system'
 import { getPresetCSS, numberPickerPresets } from '../../../styles/theme.js'
 
-export const DropdownWrapper = styled.div`
-	position: relative;
-  	display: inline-block;
+export const PickerContainer = styled.section`
+	display: flex; 
+	column-gap: 10px; 
+	align-items: center;
+
 	${space} 
     ${layout}
     ${typography}
 	${getPresetCSS(numberPickerPresets, 'variant')}
 	${getPresetCSS(numberPickerPresets, 'color')}
+`
+
+export const DropdownWrapper = styled.div`
+	position: relative;
+  	display: inline-block;
 `
 
 export const StyledNumberPicker = styled.select`

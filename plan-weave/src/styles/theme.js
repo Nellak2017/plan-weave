@@ -857,8 +857,14 @@ export const tableHeaderPresets = {
 export const numberPickerPresets = {
   variant: {
     light: css`
+      p {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
     `,
     dark: css`
+     p {
+        color: ${props => props.theme.colors.lightNeutralLight};
+     }
     `,
   },
   color: colorPreset
@@ -1024,6 +1030,18 @@ export const taskTablePresets = {
         p, svg {
           color: ${props => props.theme.colors.lightNeutralLight};
         }
+    `
+  },
+  color: colorPreset
+}
+
+export const paginationPresets = {
+  variant: {
+    light: css`
+      background-color: ${props => props.theme.colors.lightNeutralLight};
+    `,
+    dark: css`
+      background-color: ${props => props.theme.colors.darkNeutralDark};
     `
   },
   color: colorPreset

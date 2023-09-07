@@ -1,19 +1,25 @@
 import { useState } from 'react'
 import { THEMES } from '../../utils/constants'
 import {
+	PickerContainer,
 	DropdownWrapper,
 	StyledNumberPicker
 } from './NumberPicker.elements'
 
-function NumberPicker({ variant = 'dark', defaultNumber = 10, options = [10], text = 'Tasks per page' }) {
+function NumberPicker({ variant = 'dark', defaultNumber = 10, options = [10], text = 'Tasks per page', onValueChange }) {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const [number, setNumber] = useState(defaultNumber)
-	const handleNumberChange = e => setNumber(e.target.value)
+	const handleNumberChange = e => {
+		setNumber(e.target.value)
+		if (onValueChange) {
+			onValueChange(e.target.value)
+		}
+	}
 
 	return (
 		<>
-			<section style={{display:'flex', columnGap:'10px', alignItems: 'center'}}>
+			<PickerContainer variant={variant}>
 				{text && <p>{text}</p>}
 				<DropdownWrapper>
 					<StyledNumberPicker onChange={handleNumberChange} value={number}>
@@ -22,7 +28,7 @@ function NumberPicker({ variant = 'dark', defaultNumber = 10, options = [10], te
 						))}
 					</StyledNumberPicker>
 				</DropdownWrapper>
-			</section>
+			</PickerContainer>
 		</>
 	)
 }

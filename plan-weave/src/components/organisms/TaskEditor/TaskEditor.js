@@ -12,9 +12,7 @@ import { parse } from 'date-fns'
 import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
 
-import NumberPicker from '../../atoms/NumberPicker/NumberPicker'
-import NextButton from '../../atoms/NextButton/NextButton'
-import HoursInput from '../../atoms/HoursInput/HoursInput'
+import Pagination from '../../molecules/Pagination/Pagination'
 
 /*
 	TODO: Convert Start/End Time Auto Calculation Feature to Functional version
@@ -54,7 +52,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState({ start: parse('15:40', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
+	const [timeRange, setTimeRange] = useState({ start: parse('14:10', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
@@ -160,12 +158,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 					headerLabels={SIMPLE_TASK_HEADERS}
 					maxwidth={maxwidth}
 				/>
-				<div style={{display:'flex', justifyContent:'center'}}>
-					<NextButton variant={'left'}/>
-					<HoursInput placeholder={'1'} text={'of num'} maxwidth={50} initialValue={1} step={1} min={1} max={24} integer={true}/>
-					<NextButton variant={'right'}/>
-					<NumberPicker />
-				</div>
+				<Pagination variant={variant}/>
 			</StyledTaskEditor>
 		</TaskEditorContext.Provider>
 	)
