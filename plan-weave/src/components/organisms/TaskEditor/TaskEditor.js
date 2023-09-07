@@ -54,7 +54,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState({ start: parse('10:30', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
+	const [timeRange, setTimeRange] = useState({ start: parse('15:40', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
 	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
