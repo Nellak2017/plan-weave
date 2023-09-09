@@ -10,21 +10,27 @@ import NumberPicker from '../../atoms/NumberPicker/NumberPicker'
 // TODO: Pass the state of this component to parent
 // TODO: Add logic to allow this component to possibly be controlled by parent (maybe)
 // TODO: Review styles and add Size support for sub-components (see style todos in the relevant components)
+// TODO: Add support for changing the max whenever the tasks per page changes (for all combos of total and max defined/undefined cases)
 function Pagination({ variant = 'dark',
-	min = 1,
-	max = 24,
-	hoursText = 'of num',
+	min = 1, 
+	max, // optional, if not defined, then we calc with total
+	hoursText, // optional, if defined it overrides the default of ${num} text
 	defaultNumber = 10,
 	options = [10, 20],
 	pickerText = 'Tasks per page',
-	maxWidth,
+	maxWidth, // optional
 	size = 'l',
+	total = 9, // optional, if defined then we use this to find the max
 	onPageChange,
 	onTasksPerPageChange
 }) {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	if (!total && !max) max = 24 
+	if (total && !max) max = Math.ceil(total / (defaultNumber ? defaultNumber : 10))
 
-	const [tasksPerPage, setTasksPerPage] = useState(options && options[0] ? options[0] : 0)
+	// define local max here
+
+	const [tasksPerPage, setTasksPerPage] = useState(defaultNumber ? defaultNumber : 0)
 	const handleTasksPerPage = e => setTasksPerPage(e)
 
 	const [pageNumber, setPageNumber] = useState(min && typeof min === 'number' ? min : 1)
@@ -40,7 +46,7 @@ function Pagination({ variant = 'dark',
 				<HoursInput
 					variant={variant}
 					placeholder={1}
-					text={hoursText}
+					text={hoursText ? hoursText : ` of ${max}`}
 					maxwidth={35}
 					initialValue={1}
 					controlledValue={pageNumber}

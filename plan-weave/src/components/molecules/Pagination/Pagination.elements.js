@@ -26,6 +26,11 @@ export const PaginationContainer = styled.div`
 		-moz-appearance: textfield;
 	}
 
+	// Style to center the number in the input
+	input {
+		text-align: center;
+	}
+
 	${space} 
     ${layout}
     ${typography}
