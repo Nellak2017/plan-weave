@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, useMemo, useEffect } from 'react'
 import TableHeader from '../../atoms/TableHeader/TableHeader'
 import TaskRow from '../TaskRow/TaskRow'
 import { TaskTableContainer } from './TaskTable.elements'
@@ -18,15 +18,28 @@ import { pipe } from 'ramda'
  TODO: Check if tasks are old every so often using a useEffect hook or something
  TODO: Add Test Cases for 'isTimestampFromYesterday' function, and JS Docs too
 */
-
+// TODO: Remove the .slice(startRange, endRange) and tasksPerPage, page in Production
 const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const { taskList, setTaskList, highlights, setHighlights } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
+	const { taskList, setTaskList, highlights, setHighlights, tasksPerPage, page } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
 	const [localTasks, setLocalTasks] = useState(!tasks ? DEFAULT_SIMPLE_TASKS : tasks)
 
 	const lastCompletedIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1
 	const lastCompleted = lastCompletedIndex >= 0 ? taskList[lastCompletedIndex] : null // gives last completed task
+
+	// --- Temporary Pagination Feature
+	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page))
+	const [paginatedTaskList, setPaginatedTaskList] = useState(taskList.slice(startRange, endRange))
+	function calculateRange(tasksPerPage, page) {
+		// find the start, end indices given tasksPerPage and page number
+		// For development use only, in prod, I will use Firebase query to solve this more elegantly
+		if (Math.floor(tasksPerPage) !== tasksPerPage || Math.floor(page) !== page) return [0, undefined]
+		return [(page - 1) * tasksPerPage + 1, page * tasksPerPage]
+	}
+	useEffect(() => {
+		setPaginatedTaskList(taskList.slice(startRange, endRange))
+	}, [tasksPerPage, page])
 
 	// Validate tasks and correct invalid ones when the page loads in. DOES NOT EFFECT REDUX STORE, ONLY VIEW OF IT
 	useValidateTasks({ taskList: (taskList ? taskList : tasks), callback: (setTaskList ? setTaskList : () => console.error('setTaskList not defined')) })
@@ -56,7 +69,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 					<Droppable droppableId="taskTable" type="TASK">
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
-								{taskList && taskList?.length >= 1 && taskList?.map((task, idx) => (
+								{taskList && taskList?.length >= 1 && paginatedTaskList?.map((task, idx) => (
 									<TaskRow
 										key={`task-${task.id}`}
 										variant={variant}
@@ -74,7 +87,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 										lastCompletedTask={lastCompleted}
 									/>)
 								)}
-								{!taskList && localTasks.length >= 1 && localTasks?.map((task, idx) => (
+								{!taskList && localTasks.length >= 1 && paginatedTaskList?.map((task, idx) => (
 									<TaskRow
 										key={`task-${task.id}`}
 										variant={variant}

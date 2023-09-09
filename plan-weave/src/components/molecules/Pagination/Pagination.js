@@ -12,7 +12,7 @@ import NumberPicker from '../../atoms/NumberPicker/NumberPicker'
 // TODO: Review styles and add Size support for sub-components (see style todos in the relevant components)
 // TODO: Add support for changing the max whenever the tasks per page changes (for all combos of total and max defined/undefined cases)
 function Pagination({ variant = 'dark',
-	min = 1, 
+	min = 1,
 	max, // optional, if not defined, then we calc with total
 	hoursText, // optional, if defined it overrides the default of ${num} text
 	defaultNumber = 10,
@@ -24,25 +24,49 @@ function Pagination({ variant = 'dark',
 	onPageChange,
 	onTasksPerPageChange
 }) {
+	// --- Input verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
-	if (!total && !max) max = 24 
+	if (!total && !max) max = 24
 	if (total && !max) max = Math.ceil(total / (defaultNumber ? defaultNumber : 10))
 
+	// --- State
 	// define local max here
-
 	const [tasksPerPage, setTasksPerPage] = useState(defaultNumber ? defaultNumber : 0)
-	const handleTasksPerPage = e => setTasksPerPage(e)
-
 	const [pageNumber, setPageNumber] = useState(min && typeof min === 'number' ? min : 1)
-	const handlePageNumber = e => setPageNumber(parseInt(e))
 
-	const handleNextPage = () => setPageNumber(old => parseInt((old + 1)) <= parseInt(max) ? parseInt(old + 1) : parseInt(old))
-	const handlePreviousPage = () => setPageNumber(old => parseInt((old - 1)) >= parseInt(min) ? parseInt(old - 1) : parseInt(old))
+
+	// --- Handlers
+	const handleTasksPerPage = e => {
+		const newValue = parseInt(e)
+		setTasksPerPage(newValue)
+		if (onTasksPerPageChange) {
+			onTasksPerPageChange(newValue)
+		} // Notify parent component about tasks per page change
+	}
+
+	const handlePageNumber = e => {
+		const newValue = parseInt(e)
+		setPageNumber(newValue)
+		if (onPageChange) {
+			onPageChange(newValue)
+		} // Notify parent component about page number change
+	}
+
+	const handleNextPage = () => {
+		const newPageNum = parseInt((pageNumber + 1)) <= parseInt(max) ? parseInt(pageNumber + 1) : parseInt(pageNumber)
+		setPageNumber(newPageNum)
+		if (onPageChange) onPageChange(newPageNum)
+	}
+	const handlePreviousPage = () => {
+		const newPageNum = parseInt((pageNumber - 1)) >= parseInt(min) ? parseInt(pageNumber - 1) : parseInt(pageNumber)
+		setPageNumber(newPageNum)
+		if (onPageChange) onPageChange(newPageNum)
+	}
 
 	return (
 		<PaginationContainer variant={variant} maxWidth={maxWidth}>
 			<PageChooserContainer>
-				<NextButton variant={'left'} onClick={handlePreviousPage} size={size}/>
+				<NextButton variant={'left'} onClick={handlePreviousPage} size={size} />
 				<HoursInput
 					variant={variant}
 					placeholder={1}
@@ -56,7 +80,7 @@ function Pagination({ variant = 'dark',
 					integer={true}
 					onValueChange={handlePageNumber}
 				/>
-				<NextButton variant={'right'} onClick={handleNextPage} size={size}/>
+				<NextButton variant={'right'} onClick={handleNextPage} size={size} />
 			</PageChooserContainer>
 			<NumberPicker
 				variant={variant}
@@ -64,7 +88,7 @@ function Pagination({ variant = 'dark',
 				options={options}
 				pickerText={pickerText}
 				onValueChange={handleTasksPerPage}
-	
+
 			/>
 		</PaginationContainer>
 	)

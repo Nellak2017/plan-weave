@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react'
+import { createContext, useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasks } from '../../../redux/selectors'
 import { THEMES, SORTING_METHODS, SORTING_METHODS_NAMES, SIMPLE_TASK_HEADERS, TASK_STATUSES } from '../../utils/constants'
@@ -37,12 +37,18 @@ export const TaskEditorContext = createContext()
 // TODO: When sort by timestamp, ensure the completed tasks are sorted by ETA so that order is Correctly maintained!
 // TODO: Extract out the Pagination thing into a molecule
 // TODO: Figure out how to reset the minutes left every day. Maybe add a Recycle task button?
+// TODO: Fix the pagination highlight bug. Maybe add a highlight field to the tasks?
 const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', maxwidth = 818, options }) => {
 	// --- Input Verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (sortingAlgorithm && !Object.keys(SORTING_METHODS_NAMES).includes(sortingAlgorithm)) sortingAlgorithm = 'timestamp'
 
 	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
+
+	// State for the Pagination feature
+	// TODO: This implementation is inefficient, it selects ALL tasks from the store then filters.
+	const [tasksPerPage, setTasksPerPage] = useState(10) // 10 is a placeholder, use a prop or something for actual default
+	const [page, setPage] = useState(1) // default page, 1 is a placeholder, use a prop or something for actual default
 
 	// Task Data (Redux), Task View (Context), Searching, Sorting, and Algorithm Change State
 	const tasksFromRedux = useSelector(selectNonHiddenTasks) // useValidateTasks() causes issues for some reason
@@ -61,6 +67,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// State for multiple delete feature
 	const [selectedTasks, setSelectedTasks] = useState(taskList.map(() => false)) // initializes with false list for each task
 	const [isHighlighting, setIsHighlighting] = useState(false) // Are we using the multiple delete feature?
+
 
 	// --- Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
@@ -134,7 +141,8 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 		<TaskEditorContext.Provider value={{
 			taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
 			highlights, setHighlights, owl, setOwl, taskUpdated, setTaskUpdated,
-			selectedTasks, setSelectedTasks, isHighlighting, setIsHighlighting
+			selectedTasks, setSelectedTasks, isHighlighting, setIsHighlighting,
+			tasksPerPage, page
 		}}>
 			<button onClick={() => {
 				console.log(sortingAlgo)
@@ -146,6 +154,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 				console.log(tasksFromRedux)
 			}}>Show Redux Store</button>
 			<button onClick={() => console.log(highlights)}>Show Highlights</button>
+			<button onClick={() => {console.log(`page: ${page}, tasks per page: ${tasksPerPage}\nstartRange = ${startRange}, endRange = ${endRange}`)}}>Show Page Number</button>
 			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 				<TaskControl
 					variant={variant}
@@ -158,7 +167,12 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 					headerLabels={SIMPLE_TASK_HEADERS}
 					maxwidth={maxwidth}
 				/>
-				<Pagination variant={variant}/>
+				<Pagination
+					variant={variant}
+					total={tasksFromRedux?.length}
+					onTasksPerPageChange={setTasksPerPage}
+					onPageChange={setPage}
+				/>
 			</StyledTaskEditor>
 		</TaskEditorContext.Provider>
 	)
