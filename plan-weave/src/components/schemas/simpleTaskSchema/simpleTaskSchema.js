@@ -4,6 +4,8 @@ import { Timestamp } from 'firebase/firestore'
 
 const timestamp = Timestamp.fromDate(new Date()).seconds
 
+const twelve = new Date(new Date().setHours(12, 0, 0, 0))
+
 // This schema is for the Simple Task
 
 /**
@@ -62,6 +64,7 @@ export const simpleTaskSchema = Yup.object({
 			}
 			return value
 		}),
+	/*
 	eta: Yup.string()
 		.matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid HH:MM format')
 		.default('12:00')
@@ -71,16 +74,21 @@ export const simpleTaskSchema = Yup.object({
 			}
 			return value
 		}),
+	*/
+	eta: Yup.date()
+		.typeError('Eta must be a Date object')
+		.default(twelve)
+		.transform((value, originalValue) => !originalValue ? twelve : value),
 	id: Yup.number().positive('Id must be greater than 0').required('Id is required'),
 	status: Yup.string()
 		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value').default(TASK_STATUSES.INCOMPLETE),
 	timestamp: Yup.number().positive('Normal Timestamp must be a positive number').default(1),
 	completedTimeStamp: Yup.number().positive('Completed Timestamp must be a positive number').default(1),
 	hidden: Yup.boolean().default(false)
-	.transform((value, originalValue) => {
-		if ((originalValue !== false && !originalValue) || (originalValue !== true && originalValue)) return ''
-		else return value
-	}),
+		.transform((value, originalValue) => {
+			if ((originalValue !== false && !originalValue) || (originalValue !== true && originalValue)) return ''
+			else return value
+		}),
 }).default({})
 
 // NOTE: Avoid using default id, as it will not be unique
@@ -93,7 +101,7 @@ export const fillDefaultsForSimpleTask = (obj) => {
 		task: ' ',
 		waste: 1,
 		ttc: 1,
-		eta: '12:00',
+		eta: twelve,
 		id: 1,
 		status: TASK_STATUSES.INCOMPLETE,
 		timestamp: timestamp.seconds,

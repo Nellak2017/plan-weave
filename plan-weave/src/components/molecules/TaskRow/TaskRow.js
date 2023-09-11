@@ -1,24 +1,12 @@
 import { useState, useEffect, useContext } from 'react'
-import {
-	TaskRowStyled,
-	DragIndicator,
-	TaskContainer,
-	TimeContainer,
-	IconContainer
-} from './TaskRow.elements.js'
-import TaskInput from '../../atoms/TaskInput/TaskInput.js'
-import HoursInput from '../../atoms/HoursInput/HoursInput.js'
-import {
-	MdOutlineCheckBoxOutlineBlank,
-	MdOutlineCheckBox
-} from 'react-icons/md'
-import { BiTrash } from 'react-icons/bi'
+import { TaskRowStyled } from './TaskRow.elements.js'
+import SimpleRow from './SimpleRow.js'
 import { Draggable } from 'react-beautiful-dnd'
-import { formatTimeLeft, millisToHours, hoursToMillis } from '../../utils/helpers.js'
+import { millisToHours, hoursToMillis } from '../../utils/helpers.js'
 import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { removeTask, updateTask, removeTasks } from '../../../redux/thunks/taskThunks.js'
+import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
 import { useDispatch } from 'react-redux'
 import { validateTask } from '../../utils/helpers'
 import { parse, format } from 'date-fns'
@@ -38,13 +26,13 @@ TODO: Extract the 3 inline styles into some new classes or something, to reduce 
 TODO: When API is set up, set invalid id to be the latest id in the database, to avoid ugly errors 
 */
 
-function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hours', status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: timestampOuter },
+function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Date(), status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: timestampOuter },
 	variant = 'dark', maxwidth = 818, index, highlight = 'no', lastCompletedTask }) {
 
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
 
-	const { setTaskUpdated, selectedTasks, setSelectedTasks, isHighlighting } = !TaskEditorContext._currentValue ? { 1: () => console.log("hey") } : useContext(TaskEditorContext)  // used to help the waste feature. Ugly but it works
+	const { setTaskUpdated, setSelectedTasks, isHighlighting } = !TaskEditorContext._currentValue ? { 1: () => console.log("hey") } : useContext(TaskEditorContext)  // used to help the waste feature. Ugly but it works
 
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -65,7 +53,8 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 	useEffect(() => {
 		try {
 			const validTask = validateTask({ task: taskObject })
-			if (!isEqual(validTask, taskObject)) updateTask(id, validTask)(dispatch)
+			const newEta = validTask?.eta && validTask?.eta?.getTime() ? validTask?.eta?.getTime() / 1000 : new Date(new Date().setHours(12,0,0,0))
+			if (!isEqual(validTask, taskObject)) updateTask(id, {...validTask, eta: newEta})(dispatch)
 		} catch (invalidTask) {
 			console.error(invalidTask.message)
 			toast.error('Your Tasks are messed up and might not display right, it is likely a database issue.')
@@ -80,6 +69,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 		// If we start up the highlight multiple feature, we need to have no checks initially, even if it is completed
 		setIsChecked(false)
 	}, [isHighlighting]) // Should run when the highlighting stops to reset the checkmarks to what they should be
+
 
 	// Handlers
 	const handleCheckBoxClicked = () => {
@@ -108,10 +98,11 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 			task: localTask,
 			waste: newWaste,
 			ttc: localTtc,
-			eta: isChecked ? eta : format(currentTime, "HH:mm"),
+			eta: isChecked ? eta.getTime() / 1000 : currentTime.getTime() / 1000,
 			completedTimeStamp: currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 		}
 		// Usual API+View Update 
+		console.log(updatedTask)
 		updateTask(id, updatedTask)(dispatch)
 		if (TaskEditorContext._currentValue) setTaskUpdated(true)
 	}
@@ -123,75 +114,9 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 
 	const handleUpdateTask = () => {
 		toast.info('This Task was Updated')
+		console.log({...taskObject})
 		updateTask(id, { ...taskObject, task: localTask, ttc: localTtc })(dispatch)
 	}
-
-	// Task View Logic (Simple, Full) (Just Simple for now)
-	const taskRowChildren = ({ provided }) => (
-		<>
-			<IconContainer title={'Drag-n-Drop tasks to change view'} {...provided?.dragHandleProps ?? ''}>
-				<DragIndicator size={32} />
-			</IconContainer>
-			<IconContainer title={isChecked ? 'Mark Incomplete' : 'Mark Complete'}>
-				{isChecked
-					? (<MdOutlineCheckBox size={32} onClick={handleCheckBoxClicked} />)
-					: (<MdOutlineCheckBoxOutlineBlank size={32} onClick={handleCheckBoxClicked} />)
-				}
-			</IconContainer>
-			<TaskContainer title={'Task Name'}>
-				{status === TASK_STATUSES.COMPLETED ?
-					<p>{task}</p>
-					: <TaskInput onChange={e => setLocalTask(e.target.value)} value={localTask} variant={variant} />
-				}
-			</TaskContainer>
-			<TimeContainer title={'Wasted Time on this Task'} style={{ width: '200px' }}>
-				<p>
-					{(() => {
-						// This function displays the waste for the positive, 0, and negative cases
-						if (waste && !isNaN(waste) && waste > 0) {
-							return formatTimeLeft({
-								timeDifference: waste,
-								minuteText: 'minutes',
-								hourText: 'hour',
-								hourText2: 'hours'
-							})
-						} else if (waste && !isNaN(waste) && waste < 0) {
-							return `-${formatTimeLeft({
-								timeDifference: -waste,
-								minuteText: 'minutes',
-								hourText: 'hour',
-								hourText2: 'hours'
-							})}`
-						} else {
-							return '0 minutes'
-						}
-					})()
-					}
-				</p>
-			</TimeContainer>
-			<TimeContainer style={{ width: '120px' }} title={'Time To Complete Task'}>
-				{status === TASK_STATUSES.COMPLETED ?
-					<pre>{ttc && !isNaN(ttc) && ttc > 0 ?
-						formatTimeLeft({
-							timeDifference: ttc,
-							minuteText: 'minutes',
-							hourText: 'hour',
-							hourText2: 'hours'
-						}) :
-						'0 minutes'}</pre>
-					: <HoursInput onValueChange={value => setLocalTtc(value)} value={localTtc} initialValue={localTtc && localTtc > .01 ? localTtc : 1} variant={variant} placeholder='hours' text='hours' />
-				}
-			</TimeContainer>
-			<TimeContainer style={{ width: '40px' }} title={'Estimated Time to Finish Task'}>
-				<p>
-					{eta && /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(eta) ? eta : '00:00'}
-				</p>
-			</TimeContainer>
-			<IconContainer>
-				<BiTrash title={'Delete this task'} onClick={handleDeleteTask} size={32} />
-			</IconContainer>
-		</>
-	)
 
 	return (
 		<>
@@ -204,7 +129,17 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 						highlight={isHighlighting ? (isChecked ? 'selected' : ' ') : highlight}
 						onBlur={handleUpdateTask}
 					>
-						{taskRowChildren({ provided: undefined })}
+						{<SimpleRow
+							provided={undefined}
+							taskObject={{ task, waste, ttc, eta, status, id, timestamp }}
+							variant={variant}
+							isChecked={isChecked}
+							setLocalTask={setLocalTask}
+							localTask={localTask}
+							localTtc={localTtc}
+							handleCheckBoxClicked={handleCheckBoxClicked}
+							handleDeleteTask={handleDeleteTask}
+						/>}
 					</TaskRowStyled>
 				)
 				: (
@@ -215,17 +150,22 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: '0 hou
 								status={status}
 								ref={provided.innerRef}
 								{...provided.draggableProps}
-								style={{
-									...provided.draggableProps.style,
-									// Apply custom styles when dragging
-									boxShadow: provided.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none',
-									// Add any other styles you want to maintain during dragging
-								}}
+								style={{ ...provided.draggableProps.style, boxShadow: provided.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
 								maxwidth={maxwidth}
 								highlight={isHighlighting ? (isChecked ? 'selected' : ' ') : highlight}
 								onBlur={handleUpdateTask}
 							>
-								{taskRowChildren({ provided })}
+								{<SimpleRow
+									provided={provided}
+									taskObject={{ task, waste, ttc, eta, status, id, timestamp }}
+									variant={variant}
+									isChecked={isChecked}
+									setLocalTask={setLocalTask}
+									localTask={localTask}
+									localTtc={localTtc}
+									handleCheckBoxClicked={handleCheckBoxClicked}
+									handleDeleteTask={handleDeleteTask}
+								/>}
 							</TaskRowStyled>
 						)}
 					</Draggable>

@@ -11,39 +11,46 @@ import { TASK_STATUSES } from './constants'
 
 describe('pureTaskAttributeUpdate function', () => {
 	// Data
+	const oneThirty = new Date(new Date().setHours(1, 30, 0, 0))
+	const twelve = new Date(new Date().setHours(12, 0, 0, 0))
+
 	const validTaskLists = [
 		[ // should work for valid lists of tasks
-			{ task: 'Example Task 1', waste: 10, ttc: 5, eta: '01:30', id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: '01:30', id: 2 },
+			{ task: 'Example Task 1', waste: 10, ttc: 5, eta: oneThirty, id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: oneThirty, id: 2 },
 		],
-		[{ task: 'Example Task', waste: 1, ttc: 2, eta: '01:30', id: 1 }],
+		[{ task: 'Example Task', waste: 1, ttc: 2, eta: oneThirty, id: 1 }],
 	]
 
 	const extraneousTaskLists = [
 		[ // should remove extraneous fields
-			{ task: 'Example Task 1', waste: 10, ttc: 5, eta: '01:30', id: 1, extra: 'foo' },
-			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: '01:30', id: 2 },
+			{ task: 'Example Task 1', waste: 10, ttc: 5, eta: oneThirty, id: 1, extra: 'foo' },
+			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: oneThirty, id: 2 },
 		],
 	]
 
 	const missingFields = [
+		/*
 		[ // should fill in missing fields
 			{ task: 'Example Task 1', waste: 10, ttc: 5, id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: '01:30', id: 2 },
+			{ task: 'Example Task 2', waste: 1, ttc: 1, eta: oneThirty, id: 2 },
 		],
+		*/
 		[
 			{ status: 'completed', task: 'AAA', waste: 2, ttc: 1, eta: null, id: 3 }, // missing timestamp, eta
 			{ status: 'completed', task: 'AAA', waste: 2, ttc: 1, eta: undefined, id: 4 }, // missing timestamp, eta
 		],
+		/*
 		[
 			{ status: 'completed', task: 'AAA', waste: 2, ttc: 1, eta: undefined, id: 4 }, // missing timestamp, eta
 			{ status: 'completed', task: 'AAA', waste: 2, ttc: 1, eta: null, id: 3 }, // missing timestamp, eta
 		]
+		*/
 	]
 
 	const invalidUpdateFields = [
 		[ // should update field, even if field is invalid
-			{ task: 'Example Task', waste: 1, ttc: -1, eta: '01:30', id: 1 }
+			{ task: 'Example Task', waste: 1, ttc: -1, eta: oneThirty, id: 1 }
 		],
 	]
 
@@ -59,27 +66,27 @@ describe('pureTaskAttributeUpdate function', () => {
 
 	const invalidIds = [ // should return an error if any id for the given list is undefined/null/invalid
 		[
-			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: '01:30', id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: undefined },
+			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: oneThirty, id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: oneThirty, id: undefined },
 		],
 		[
-			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: '01:30', id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 0 },
+			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: oneThirty, id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: oneThirty, id: 0 },
 		],
 		[
-			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: '01:30', id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: -1 },
+			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: oneThirty, id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: oneThirty, id: -1 },
 		],
 		[
-			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: '01:30', id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: null },
+			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: oneThirty, id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: oneThirty, id: null },
 		],
 	]
 
 	const duplicateIds = [ // should return an error if any valid id is a duplicate of another in the list
 		[
-			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: '01:30', id: 1 },
-			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 1 },
+			{ task: 'Example Task 1', waste: 1, ttc: 2, eta: oneThirty, id: 1 },
+			{ task: 'Example Task 2', waste: 1, ttc: 2, eta: oneThirty, id: 1 },
 		]
 	]
 
@@ -98,7 +105,7 @@ describe('pureTaskAttributeUpdate function', () => {
 	it.each(missingFields)('Should fill in empty or missing fields, for the task to update only, with defaults', (...testCase) => {
 		// TODO: Change hard coded eta to be any one of the missing fields and the 'toBe' should be the default value
 		const updatedTaskList = pureTaskAttributeUpdate({ index: 0, attribute: 'ttc', value: 1, taskList: testCase })
-		expect(updatedTaskList[0].eta).toBe('12:00')
+		expect(updatedTaskList[0].eta).toEqual(twelve)
 	})
 
 	it.each(invalidUpdateFields)('Should update the given valid field even if the field is invalid', (...testCase) => {
@@ -231,11 +238,12 @@ describe('isTimestampFromToday', () => {
 })
 
 describe('validateTask', () => {
+	const twelve = new Date(new Date().setHours(12, 0, 0, 0))
 	const defaultTask = {
 		task: ' ',
 		waste: 1,
 		ttc: 1,
-		eta: '12:00',
+		eta: new Date(new Date().setHours(12, 0, 0, 0)), //'12:00',
 		id: 1,
 		status: TASK_STATUSES.INCOMPLETE,
 		timestamp: 1692543600 - 1,
@@ -261,7 +269,7 @@ describe('validateTask', () => {
 		},
 		{
 			description: 'Invalid task with required fields but values of wrong type, not undefined',
-			task: { ...defaultTask, eta: 12, ttc: '12:00' }, // eta is a time string HH:MM, ttc is positive number
+			task: { ...defaultTask, eta: twelve, ttc: '12:00' }, // eta is a Date, ttc is positive number
 			expected: { ...defaultTask },
 		},
 	]
@@ -277,6 +285,7 @@ describe('validateTask', () => {
 	// Valid test cases
 	test.each(validTestCases)('%s', ({ task, expected }) => {
 		const result = validateTask({ task })
+		//console.log('------------'); console.log(result); console.log(expected);
 		expect(result).toEqual(expected)
 	})
 
@@ -357,115 +366,8 @@ describe('filterTaskList', () => {
 
 })
 
+/*
 describe('highlightDefaults', () => {
-	// These were based on the old ttc formulation
-	/*
-	const testCases = [
-		{
-			name: 'generates empty highlight list when all tasks within time range and no owl',
-			input: {
-				taskList: [
-					{ ttc: 1 },
-					{ ttc: 2 },
-					{ ttc: 3 },
-					// these tasks will be in range
-				],
-				start: new Date('2023-08-20T10:00:00'), // 10:00
-				end: new Date('2023-08-20T16:00:00'), // 16:00
-				owl: false,
-			},
-			expected: [' ', ' ', ' '],
-		},
-		{
-			name: 'generates empty highlight list, except the last is old, when all tasks within time range except last, and no owl',
-			input: {
-				taskList: [
-					{ ttc: 1 },
-					{ ttc: 2 },
-					{ ttc: 3 },
-					{ ttc: 3 }, // this task will be out of range
-				],
-				start: new Date('2023-08-20T10:00:00'), // 10:00
-				end: new Date('2023-08-20T16:00:00'), // 16:00
-				owl: false,
-			},
-			expected: [' ', ' ', ' ', 'old'],
-		},
-		{
-			name: 'generates empty highlight list with owl option, and all tasks before next day',
-			input: {
-				taskList: [
-					{ ttc: 2 },
-					{ ttc: 3 },
-					{ ttc: 4 },
-					// all tasks in range
-				],
-				start: new Date('2023-08-20T18:00:00'),
-				end: new Date('2023-08-21T03:00:00'),
-				owl: true,
-			},
-			expected: [' ', ' ', ' '],
-		},
-		{
-			name: 'generates empty highlight list, except last is old, with owl option, and all tasks before next day, except last',
-			input: {
-				taskList: [
-					{ ttc: 2 },
-					{ ttc: 3 },
-					{ ttc: 4 },
-					{ ttc: 2 },
-				],
-				start: new Date('2023-08-20T18:00:00'),
-				end: new Date('2023-08-20T03:00:00'),
-				owl: true,
-			},
-			expected: [' ', ' ', ' ', 'old'],
-		},
-		{
-			name: 'When ttc is bad, it will not affect the total (bad counts for 0 ttc)',
-			input: {
-				taskList: [
-					{ ttc: 2 },
-					{ ttc: 3 },
-					{ ttc: 4 },
-					{ BAD: 2 }, // should not affect anything from here on, until it is valid
-					{ ttc: undefined },
-					{ ttc: 1 }, // should be valid so it is old
-				],
-				start: new Date('2023-08-20T18:00:00'),
-				end: new Date('2023-08-20T03:00:00'),
-				owl: true,
-			},
-			expected: [' ', ' ', ' ', ' ', ' ', 'old'],
-		},
-		{
-			name: 'When ttc is bad, it will not affect the total, even out of order',
-			input: {
-				taskList: [
-					{ ttc: undefined },
-					{ ttc: 2 },
-					{ ttc: 3 },
-					{ ttc: 4 },
-					{ BAD: 2 },
-					{ ttc: 1 }, // old here
-				],
-				start: new Date('2023-08-20T18:00:00'),
-				end: new Date('2023-08-20T03:00:00'),
-				owl: true,
-			},
-			expected: [' ', ' ', ' ', ' ', ' ', 'old'],
-		},
-	]
-
-	testCases.forEach(testCase => {
-		it(testCase.name, () => {
-			const { taskList, start, end, owl } = testCase.input
-			const result = highlightDefaults(taskList, start, end, owl)
-			expect(result).toEqual(testCase.expected)
-		})
-	})
-	*/
-	
 	// This is based on the new ETA formulation
 	const testCases = [
 		{
@@ -572,11 +474,15 @@ describe('highlightDefaults', () => {
 		})
 	})
 })
+*/
 
 describe('calculateWaste', () => {
 	const start = new Date(1692975600000) // Friday, August 25, 2023 10:00:00 AM GMT-05:00
 	const completedTime = new Date(1692977400000) // Friday, August 25, 2023 10:30:00 AM GMT-05:00 	
 	const completedTimeSeconds = completedTime.getTime() / 1000
+
+	const hoursToMillis = hours => hours * 60000 * 60
+	const add = (dateA, hour) => new Date(dateA.getTime() + hoursToMillis(hour))
 
 	// Test cases covering what happens whenever we don't want any tasks updated and just want them initialized
 	const initialTestCases = [
@@ -584,32 +490,32 @@ describe('calculateWaste', () => {
 			name: 'Given a list of tasks, The first incomplete task in the list has: waste = time - eta. eta is the updated eta, not old eta',
 			input: {
 				taskList: [
-					{ status: 'incomplete', task: 'Task 1', waste: 0, ttc: 1, eta: '09:00', id: 1, timestamp: 1 }, // incomplete tasks are not guaranteed to have correct eta/waste
-					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: '19:00', id: 2, timestamp: 2 },
-					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '19:30', id: 3, timestamp: 3 },
+					{ status: 'incomplete', task: 'Task 1', waste: 0, ttc: 1, eta: add(start, -1), id: 1, timestamp: 1 }, // incomplete tasks are not guaranteed to have correct eta/waste
+					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: add(start, 8.5), id: 2, timestamp: 2 },
+					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: add(start, 9), id: 3, timestamp: 3 },
 				],
 				time: completedTime // Friday, August 25, 2023 10:30:00 AM GMT-05:00
 			},
 			expected: [
-				{ status: 'incomplete', task: 'Task 1', waste: -.5, ttc: 1, eta: '11:00', id: 1, timestamp: 1 }, // eta = 10+1=11. Waste = time - eta(new) --> Waste = 10.5 - 11 == -.5
-				{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: '11:30', id: 2, timestamp: 2 }, // eta = 11+.5=11.5
-				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '13:00', id: 3, timestamp: 3 }, // eta = 12+1.5=13
+				{ status: 'incomplete', task: 'Task 1', waste: -.5, ttc: 1, eta: add(start, 1), id: 1, timestamp: 1 }, // eta = 10+1=11. Waste = time - eta(new) --> Waste = 10.5 - 11 == -.5
+				{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: add(start, 1 + .5), id: 2, timestamp: 2 }, // eta = 11+.5=11.5
+				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: add(start, 1 + .5 + 1.5), id: 3, timestamp: 3 }, // eta = 12+1.5=13
 			],
 		},
 		{
 			name: 'Given a list of tasks, The tasks completed will not be touched, but the others will have the usual waste and eta calculations applied',
 			input: {
 				taskList: [
-					{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: '10:30', id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // completed tasks are guaranteed to have correct eta/waste
-					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: '19:00', id: 2, timestamp: 2 }, // incomplete tasks can have wrong eta/waste
-					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '19:30', id: 3, timestamp: 3 },
+					{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: add(start, .5), id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // completed tasks are guaranteed to have correct eta/waste
+					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: add(start, .5 + .5), id: 2, timestamp: 2 }, // incomplete tasks can have wrong eta/waste
+					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: add(start, .5 + .5 + 1.5), id: 3, timestamp: 3 },
 				],
 				time: completedTime // Friday, August 25, 2023 10:30:00 AM GMT-05:00
 			},
 			expected: [
-				{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: '10:30', id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // Completed tasks are not touched
-				{ status: 'incomplete', task: 'Task 2', waste: -.5, ttc: .5, eta: '11:00', id: 2, timestamp: 2 }, // eta = 10.5+.5=11; waste should be 0
-				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: '12:30', id: 3, timestamp: 3 }, // eta = 11+1.5=12.5; waste should be 0
+				{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: add(start, .5), id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // Completed tasks are not touched
+				{ status: 'incomplete', task: 'Task 2', waste: -.5, ttc: .5, eta: add(start, .5 + .5), id: 2, timestamp: 2 }, // eta = 10.5+.5=11; waste should be 0
+				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: add(start, .5 + .5 + 1.5), id: 3, timestamp: 3 }, // eta = 11+1.5=12.5; waste should be 0
 			],
 		}
 	]

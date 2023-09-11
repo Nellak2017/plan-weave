@@ -58,10 +58,10 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState({ start: parse('18:00', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
+	const [timeRange, setTimeRange] = useState({ start: parse('16:40', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
-	const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
+	//const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
 	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
 
 	// State for multiple delete feature
@@ -80,12 +80,9 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// --- Search Filter Feature
 	useEffect(() => {
 		// These 2 conditionals let you have proper functioning search feature in all cases
-		if (search?.length > 0) {
-			const temp = SORTING_METHODS[sortingAlgo](tasksFromRedux)
-			setTaskList(filterTaskList({ list: temp, filter: search, attribute: 'task' }))
-		} if (search?.length === 0 && search.trim() === '') {
-			setTaskList(tasksFromRedux ? SORTING_METHODS[sortingAlgo](tasksFromRedux) : tasks)
-		}
+		const temp = SORTING_METHODS[sortingAlgo](tasksFromRedux)
+		if (search?.length > 0) setTaskList(filterTaskList({ list: temp, filter: search, attribute: 'task' }))
+		if (search?.length === 0 && search.trim() === '') setTaskList(tasksFromRedux ? temp : tasks)
 	}, [search])
 
 	// --- Change Sorting Algorithm Feature
@@ -117,16 +114,13 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// --- ETA + Waste Auto Calculation Feature
 	const update = () => {
 		const updated = calculateWaste({ start, taskList, time: new Date() })
-		setTaskList(updated); setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
+		setTaskList(updated); //setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
 	}
 	useEffect(() => update(), [timeRange, owl])
 	useEffect(() => {
-		if (taskUpdated) update()
+		if (taskUpdated) { update() }
 		const interval = setInterval(() => update(), 500)
-		return () => {
-			if (interval) clearInterval(interval)
-			setTaskUpdated(false)
-		}
+		return () => { if (interval) clearInterval(interval); setTaskUpdated(false) }
 	}, [taskList]) // this is needed to update waste every second, unfortunately
 
 	// --- Completed Tasks On Top Feature
@@ -140,7 +134,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	return (
 		<TaskEditorContext.Provider value={{
 			taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
-			highlights, setHighlights, owl, setOwl, taskUpdated, setTaskUpdated,
+			owl, setOwl, taskUpdated, setTaskUpdated,
 			selectedTasks, setSelectedTasks, isHighlighting, setIsHighlighting,
 			tasksPerPage, page
 		}}>
@@ -153,8 +147,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 			<button onClick={() => {
 				console.log(tasksFromRedux)
 			}}>Show Redux Store</button>
-			<button onClick={() => console.log(highlights)}>Show Highlights</button>
-			<button onClick={() => {console.log(`page: ${page}, tasks per page: ${tasksPerPage}\nstartRange = ${startRange}, endRange = ${endRange}`)}}>Show Page Number</button>
+			<button onClick={() => { console.log(`page: ${page}, tasks per page: ${tasksPerPage}\nstartRange = ${startRange}, endRange = ${endRange}`) }}>Show Page Number</button>
 			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 				<TaskControl
 					variant={variant}

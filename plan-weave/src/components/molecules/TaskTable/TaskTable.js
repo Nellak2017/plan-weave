@@ -22,27 +22,21 @@ import { pipe } from 'ramda'
 const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const { taskList, setTaskList, highlights, setHighlights, tasksPerPage, page } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
+	const { taskList, setTaskList, tasksPerPage, page } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
 	const [localTasks, setLocalTasks] = useState(!tasks ? DEFAULT_SIMPLE_TASKS : tasks)
 
 	const lastCompletedIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1
 	const lastCompleted = lastCompletedIndex >= 0 ? taskList[lastCompletedIndex] : null // gives last completed task
 
+	// Validate tasks and correct invalid ones when the page loads in. DOES NOT EFFECT REDUX STORE, ONLY VIEW OF IT
+	useValidateTasks({ taskList: (taskList ? taskList : tasks), callback: (setTaskList ? setTaskList : () => console.error('setTaskList not defined')) })
+
 	// --- Temporary Pagination Feature
 	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page))
-	const [paginatedTaskList, setPaginatedTaskList] = useState(taskList.slice(startRange, endRange))
 	function calculateRange(tasksPerPage, page) {
-		// find the start, end indices given tasksPerPage and page number
-		// For development use only, in prod, I will use Firebase query to solve this more elegantly
 		if (Math.floor(tasksPerPage) !== tasksPerPage || Math.floor(page) !== page) return [0, undefined]
 		return [(page - 1) * tasksPerPage + 1, page * tasksPerPage]
 	}
-	useEffect(() => {
-		setPaginatedTaskList(taskList.slice(startRange, endRange))
-	}, [tasksPerPage, page])
-
-	// Validate tasks and correct invalid ones when the page loads in. DOES NOT EFFECT REDUX STORE, ONLY VIEW OF IT
-	useValidateTasks({ taskList: (taskList ? taskList : tasks), callback: (setTaskList ? setTaskList : () => console.error('setTaskList not defined')) })
 
 	// Modded to include the local tasks
 	// --- Includes the Task Swapping Feature, keeping timestamps constant (View Only, no store updates)
@@ -61,6 +55,32 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 		taskList ? setTaskList(ret) : setLocalTasks(ret)
 	}
 
+	// --- Extracted view logic
+	const todoList = (taskList, startRange, endRange, lastCompleted) => {
+		if (!taskList) return []
+		// startRange, endRange is for pagination capabilities
+		return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
+			const epochETA = task?.eta instanceof Date && task?.eta?.getTime() / 1000
+			const highlightOld = epochETA && isTimestampFromToday(new Date(), epochETA) ? ' ' : 'old'
+			return <TaskRow
+				key={`task-${task.id}`}
+				variant={variant}
+				taskObject={{
+					task: task.task,
+					waste: task.waste,
+					ttc: task.ttc,
+					eta: task.eta,
+					id: task.id,
+					status: task.status,
+					timestamp: task.timestamp,
+				}}
+				index={idx}
+				highlight={highlightOld}
+				lastCompletedTask={lastCompleted}
+			/>
+		})
+	}
+
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
 			<TaskTableContainer maxwidth={maxwidth}>
@@ -69,43 +89,9 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 					<Droppable droppableId="taskTable" type="TASK">
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
-								{taskList && taskList?.length >= 1 && paginatedTaskList?.map((task, idx) => (
-									<TaskRow
-										key={`task-${task.id}`}
-										variant={variant}
-										taskObject={{
-											task: task.task,
-											waste: task.waste,
-											ttc: task.ttc,
-											eta: task.eta,
-											id: task.id,
-											status: task.status,
-											timestamp: task.timestamp,
-										}}
-										index={idx}
-										highlight={isTimestampFromToday(new Date(), task.timestamp) ? highlights[idx] : 'old'}
-										lastCompletedTask={lastCompleted}
-									/>)
-								)}
-								{!taskList && localTasks.length >= 1 && paginatedTaskList?.map((task, idx) => (
-									<TaskRow
-										key={`task-${task.id}`}
-										variant={variant}
-										taskObject={{
-											task: task.task,
-											waste: task.waste,
-											ttc: task.ttc,
-											eta: task.eta,
-											id: task.id,
-											status: task.status,
-											timestamp: task.timestamp,
-										}}
-										index={idx}
-										highlight={isTimestampFromToday(new Date(), task.timestamp) ? highlights[idx] : 'old'}
-										lastCompletedTask={lastCompleted}
-									/>
-								))
-								}
+								{taskList && taskList?.length >= 1
+									? todoList(taskList, startRange, endRange, lastCompleted)
+									: todoList(localTasks, startRange, endRange, lastCompleted)}
 								{provided.placeholder}
 							</tbody>
 						)}

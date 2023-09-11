@@ -151,15 +151,11 @@ export const validateTasks = ({ taskList, schema = simpleTaskSchema, schemaDefau
 export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
 	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
 
-	const validateTransformation = task => { if (!schema.isValidSync(task)) throw new Error(customErrorMessage) }
-
-	const isRequired = field => { return schema.describe().fields[field] ? !schema?.describe()?.fields[field]?.optional : false }
-
-	const requiredFields = () => {
-		return Object.keys(schema.describe().fields)
-			.map(field => isRequired(field) ? field : null)
-			.filter(field => field !== null)
-	}
+	const validateTransformation = task => { if (!schema.isValidSync(task, { strict: true})) throw new Error(customErrorMessage + ` task : ${JSON.stringify(task)}`) }
+	const isRequired = field => schema.describe().fields[field] ? !schema?.describe()?.fields[field]?.optional : false
+	const requiredFields = () => Object.keys(schema.describe().fields)
+		.map(field => isRequired(field) ? field : null)
+		.filter(field => field !== null)
 
 	try {
 		// Case 1: If the Task is valid, but missing/extra field, strip and fill defaults. Return list
@@ -196,9 +192,10 @@ export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx 
  * @returns {Array} - The filtered list.
  */
 export const filterTaskList = ({ filter, list, attribute }) => {
-	return (!filter || !attribute) ? list : list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
+	return (!filter || !attribute)
+		? list
+		: list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
 }
-
 /**
  * Generates a list of highlights based on task list and time range.
  * 
@@ -208,6 +205,7 @@ export const filterTaskList = ({ filter, list, attribute }) => {
  * @param {boolean} [owl=false] - Whether to include the next day.
  * @returns {Array} - The list of highlights.
  */
+/*
 export const highlightDefaults = (taskList, start, end, owl = false) => {
 
 	const startOfDayMillis = new Date(start.getTime()).setHours(0, 0, 0, 0)
@@ -233,6 +231,7 @@ export const highlightDefaults = (taskList, start, end, owl = false) => {
 		properDates => properDates.map(properDate => start.getTime() <= properDate.getTime() && properDate.getTime() <= endDate.getTime() ? ' ' : 'old')
 	)(taskList)
 }
+*/
 
 /**
  * Converts hours to milliseconds.
@@ -250,20 +249,39 @@ export const hoursToMillis = hours => hours * 60000 * 60
  */
 export const millisToHours = milliseconds => (milliseconds / 60000) / 60
 
+export const dateToEpoch = date => (date.getTime()) / 1000
+
+/*
 // Converts all Eta strings to dates from Today for simplified processing. Do not use for tasks from tomorrow or yesterday and beyond.
 export const etaToDates = (taskList, time) => {
 	return taskList?.map(task => {
-		const [hours, minutes] = task?.eta?.split(':')
-		return { ...task, eta: new Date(time.getFullYear(), time.getMonth(), time.getDate(), hours, minutes) }
+			const [hours, minutes] = task?.eta ? task?.eta?.split(':') : [12,0]
+			return { ...task, eta: new Date(time.getFullYear(), time.getMonth(), time.getDate(), hours, minutes) }
 	})
 }
 
 // Converts taskList Eta Dates back into strings (Except for Completed tasks)
 export const etaToStrings = taskList => taskList.map(task => { return { ...task, eta: format(task.eta, "HH:mm") } })
+*/
 
 // TODO: Add JSDOCS
 export const calculateWaste = ({ start, taskList, time = new Date() }) => {
 	if (!taskList) return []
+	return ((tasks = taskList, currentTime = time) => {
+		const add = (start, hours) => new Date(start.getTime() + hoursToMillis(hours)) // (Date: start, hours: hours) -> Date(start + hours)
+		const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
+		const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) => [...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task.ttc)], [start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
+		const firstIncompleteIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
+		const etas = etaList(taskList.slice(firstIncompleteIndex)) // etas calculated only for the incomplete tasks
+		const lastCompletedTimestamp = tasks[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completedTimestamp to millis
+		const startTime = firstIncompleteIndex === 0 || !lastCompletedTimestamp || isNaN(lastCompletedTimestamp) ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
+		return tasks.map((task, index) => {
+			const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : new Date(currentTime) // index - firstIncomplete shifts accordingly
+			const waste = index === firstIncompleteIndex ? subtract(currentTime, eta) : 0 // we must use the updated eta value
+			return task.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta }
+		})
+	})()
+	/*
 	return ((tasks = etaToDates(taskList, time), currentTime = time) => {
 		const add = (start, hours) => { return new Date(start.getTime() + hoursToMillis(hours)) } // (Date: start, hours: hours) -> Date(start + hours)
 		const subtract = (time, eta) => { return millisToHours(time.getTime() - eta.getTime()) } // (Date: time, Date: eta) -> time - eta (hours)
@@ -278,4 +296,5 @@ export const calculateWaste = ({ start, taskList, time = new Date() }) => {
 			return task.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta }
 		}))
 	})()
+	*/
 }
