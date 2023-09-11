@@ -32,11 +32,8 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 	useValidateTasks({ taskList: (taskList ? taskList : tasks), callback: (setTaskList ? setTaskList : () => console.error('setTaskList not defined')) })
 
 	// --- Temporary Pagination Feature
+	const calculateRange = (tasksPerPage, page) => (Math.floor(tasksPerPage) !== tasksPerPage || Math.floor(page) !== page) ? [0, undefined] : [(page - 1) * tasksPerPage + 1, page * tasksPerPage]
 	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page))
-	function calculateRange(tasksPerPage, page) {
-		if (Math.floor(tasksPerPage) !== tasksPerPage || Math.floor(page) !== page) return [0, undefined]
-		return [(page - 1) * tasksPerPage + 1, page * tasksPerPage]
-	}
 
 	// Modded to include the local tasks
 	// --- Includes the Task Swapping Feature, keeping timestamps constant (View Only, no store updates)
@@ -60,7 +57,12 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 		if (!taskList) return []
 		// startRange, endRange is for pagination capabilities
 		return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
-			const epochETA = task?.eta instanceof Date && task?.eta?.getTime() / 1000
+			const epochETA = task?.eta instanceof Date
+				? task?.eta?.getTime() / 1000 
+				: typeof task?.eta === 'number'
+					? task?.eta
+					: new Date().getTime() / 1000
+
 			const highlightOld = epochETA && isTimestampFromToday(new Date(), epochETA) ? ' ' : 'old'
 			return <TaskRow
 				key={`task-${task.id}`}

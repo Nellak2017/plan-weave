@@ -78,7 +78,9 @@ const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, loc
 				<p>
 					{eta && eta instanceof Date
 						? format(eta, "HH:mm")
-						: '00:00'
+						: typeof eta === 'number' // assuming epoch 
+							? format(new Date(eta * 1000), "HH:mm")
+							: '00:00'
 					}
 				</p>
 			</TimeContainer>

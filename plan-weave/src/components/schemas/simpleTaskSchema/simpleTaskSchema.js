@@ -78,7 +78,11 @@ export const simpleTaskSchema = Yup.object({
 	eta: Yup.date()
 		.typeError('Eta must be a Date object')
 		.default(twelve)
-		.transform((value, originalValue) => !originalValue ? twelve : value),
+		.transform((value, originalValue) => {
+			if (!originalValue) return twelve 
+			else if (typeof originalValue === 'number') return new Date(value * 1000) // transform epoch to date  
+			return value
+		}),
 	id: Yup.number().positive('Id must be greater than 0').required('Id is required'),
 	status: Yup.string()
 		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value').default(TASK_STATUSES.INCOMPLETE),

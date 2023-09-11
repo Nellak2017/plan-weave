@@ -1,7 +1,6 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
-import { parse, getTime, format } from 'date-fns'
+import { getTime } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
-import { pipe } from 'ramda'
 
 // This file contains many helpers used through out the application
 
@@ -196,42 +195,6 @@ export const filterTaskList = ({ filter, list, attribute }) => {
 		? list
 		: list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
 }
-/**
- * Generates a list of highlights based on task list and time range.
- * 
- * @param {Array} taskList - The list of tasks.
- * @param {Date} start - The start time.
- * @param {Date} end - The end time.
- * @param {boolean} [owl=false] - Whether to include the next day.
- * @returns {Array} - The list of highlights.
- */
-/*
-export const highlightDefaults = (taskList, start, end, owl = false) => {
-
-	const startOfDayMillis = new Date(start.getTime()).setHours(0, 0, 0, 0)
-	const endDate = new Date(owl ? end.getTime() + hoursToMillis(24) : end.getTime()) // End Time with proper date
-	
-	return pipe(
-		taskList => taskList.map(task => task.eta),
-		etas => etas.map(eta => parse(eta, 'HH:mm', new Date(startOfDayMillis))),
-		dates => dates.reduce((acc, date) => {
-			const prevSum = acc[0]
-			const prevDate = acc[1][acc[1].length - 1]
-	
-			const diff = date && typeof date === 'string' ? millisToHours(date.getTime() - prevDate.getTime()) : 0
-			const otherDiff = date && typeof date === 'string' ? millisToHours(date.getTime() - prevDate.getTime() + hoursToMillis(24)) : 0
-			const sum = parseFloat(prevSum) + parseFloat(Math.abs(diff > 0 ? diff : otherDiff))
-	
-			const next = !date || isNaN(date)
-				? prevDate
-				: (date.getTime() - start.getTime() > 0 ? date : new Date(date.getTime() + hoursToMillis(24)))
-	
-			return [sum, [...acc[1], next]]
-		}, [0, [new Date(start.getTime())]])[1].slice(1),
-		properDates => properDates.map(properDate => start.getTime() <= properDate.getTime() && properDate.getTime() <= endDate.getTime() ? ' ' : 'old')
-	)(taskList)
-}
-*/
 
 /**
  * Converts hours to milliseconds.
@@ -248,21 +211,6 @@ export const hoursToMillis = hours => hours * 60000 * 60
  * @returns {number} - The equivalent milliseconds.
  */
 export const millisToHours = milliseconds => (milliseconds / 60000) / 60
-
-export const dateToEpoch = date => (date.getTime()) / 1000
-
-/*
-// Converts all Eta strings to dates from Today for simplified processing. Do not use for tasks from tomorrow or yesterday and beyond.
-export const etaToDates = (taskList, time) => {
-	return taskList?.map(task => {
-			const [hours, minutes] = task?.eta ? task?.eta?.split(':') : [12,0]
-			return { ...task, eta: new Date(time.getFullYear(), time.getMonth(), time.getDate(), hours, minutes) }
-	})
-}
-
-// Converts taskList Eta Dates back into strings (Except for Completed tasks)
-export const etaToStrings = taskList => taskList.map(task => { return { ...task, eta: format(task.eta, "HH:mm") } })
-*/
 
 // TODO: Add JSDOCS
 export const calculateWaste = ({ start, taskList, time = new Date() }) => {

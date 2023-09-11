@@ -61,13 +61,11 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	const [timeRange, setTimeRange] = useState({ start: parse('16:40', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
-	//const [highlights, setHighlights] = useState(highlightDefaults(taskList, start, end, owl)) // fill w/ default highlights based on taskList
 	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
 
 	// State for multiple delete feature
 	const [selectedTasks, setSelectedTasks] = useState(taskList.map(() => false)) // initializes with false list for each task
 	const [isHighlighting, setIsHighlighting] = useState(false) // Are we using the multiple delete feature?
-
 
 	// --- Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
@@ -112,10 +110,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	}, [sortingAlgo])
 
 	// --- ETA + Waste Auto Calculation Feature
-	const update = () => {
-		const updated = calculateWaste({ start, taskList, time: new Date() })
-		setTaskList(updated); //setHighlights(highlightDefaults(updated, new Date(start), new Date(end), owl))
-	}
+	const update = () => setTaskList(calculateWaste({ start, taskList, time: new Date() }))
 	useEffect(() => update(), [timeRange, owl])
 	useEffect(() => {
 		if (taskUpdated) { update() }
