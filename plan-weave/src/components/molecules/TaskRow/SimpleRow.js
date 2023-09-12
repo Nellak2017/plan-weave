@@ -76,7 +76,7 @@ const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, loc
 			</TimeContainer>
 			<TimeContainer style={{ width: '40px' }} title={'Estimated Time to Finish Task'}>
 				<p>
-					{eta && eta instanceof Date
+					{eta && eta instanceof Date && !isNaN(eta.getTime())
 						? format(eta, "HH:mm")
 						: typeof eta === 'number' // assuming epoch 
 							? format(new Date(eta * 1000), "HH:mm")

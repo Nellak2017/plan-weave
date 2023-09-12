@@ -75,12 +75,9 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 		if (tasksFromRedux) setTaskList(old => (!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(old, tasks))
 	}, [sortingAlgo])
 
-	// --- Search Filter Feature
+	// --- Search Filter Feature (It modifies task list, causing waste update. If you want constant waste implement in TaskTable)
 	useEffect(() => {
-		// These 2 conditionals let you have proper functioning search feature in all cases
-		const temp = SORTING_METHODS[sortingAlgo](tasksFromRedux)
-		if (search?.length > 0) setTaskList(filterTaskList({ list: temp, filter: search, attribute: 'task' }))
-		if (search?.length === 0 && search.trim() === '') setTaskList(tasksFromRedux ? temp : tasks)
+		if (search === search.trimRight()) setTaskList(filterTaskList({ list: SORTING_METHODS[sortingAlgo](tasksFromRedux), filter: search.trim(), attribute: 'task' }))
 	}, [search])
 
 	// --- Change Sorting Algorithm Feature
@@ -114,7 +111,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	useEffect(() => update(), [timeRange, owl])
 	useEffect(() => {
 		if (taskUpdated) { update() }
-		const interval = setInterval(() => update(), 500)
+		const interval = setInterval(() => { if (!taskUpdated) update() }, 500)
 		return () => { if (interval) clearInterval(interval); setTaskUpdated(false) }
 	}, [taskList]) // this is needed to update waste every second, unfortunately
 
@@ -157,7 +154,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 				/>
 				<Pagination
 					variant={variant}
-					total={tasksFromRedux?.length}
+					total={taskList?.length}
 					onTasksPerPageChange={setTasksPerPage}
 					onPageChange={setPage}
 				/>

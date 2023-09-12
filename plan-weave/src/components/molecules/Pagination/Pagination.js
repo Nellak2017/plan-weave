@@ -26,7 +26,7 @@ function Pagination({ variant = 'dark',
 }) {
 	// --- Input verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
-	if (!total && !max) max = 24
+	if (!total && !max) max = 1
 	if (total && !max) max = Math.ceil(total / (defaultNumber ? defaultNumber : 10))
 
 	// --- State

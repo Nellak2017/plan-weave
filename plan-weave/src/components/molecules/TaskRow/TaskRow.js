@@ -54,7 +54,8 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 		try {
 			const validTask = validateTask({ task: taskObject })
 			const newEta = validTask?.eta && validTask?.eta?.getTime() ? validTask?.eta?.getTime() / 1000 : new Date(new Date().setHours(12, 0, 0, 0))
-			if (!isEqual(validTask, taskObject)) updateTask(id, { ...validTask, eta: newEta })(dispatch)
+			//if (!isEqual(validTask, taskObject)) updateTask(id, { ...validTask, eta: newEta })(dispatch)
+			// the above if statement caused unexpected side-effects. It has been quarantined
 		} catch (invalidTask) {
 			console.error(invalidTask.message)
 			toast.error('Your Tasks are messed up and might not display right, it is likely a database issue.')
@@ -89,11 +90,6 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 
 		// Waste Feature 
 		const currentTime = new Date()
-		/*
-		const newWaste = !lastCompletedTask || (lastCompletedTask && !lastCompletedTask?.eta)
-			? millisToHours((currentTime.getTime() - parse(eta, 'HH:mm', currentTime).getTime())) // if lastCompletedTask is falsey
-			: millisToHours(currentTime.getTime() - (parse(lastCompletedTask.eta, 'HH:mm', currentTime).getTime() + hoursToMillis(localTtc))) // if lastCompletedTask is not null or undefined / falsey 
-		*/
 
 		// TODO: Debug this Waste calculation. It is giving .75 waste when 3 hours 51 minutes is true waste for first task
 		const cond1 = !lastCompletedTask || (lastCompletedTask && !lastCompletedTask?.eta) && eta instanceof Date
@@ -128,6 +124,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 			completedTimeStamp: currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 		}
 		// Usual API+View Update 
+		console.log('handleCheckBoxClicked')
 		updateTask(id, updatedTask)(dispatch)
 		if (TaskEditorContext._currentValue) setTaskUpdated(true)
 	}

@@ -4,5 +4,14 @@ import { createSelector } from 'reselect' // This would be used to memoize easil
 // Task Selectors
 export const selectNonHiddenTasks = createSelector(
 	[state => state?.tasks?.tasks],
-	allTasks => { return !allTasks ? [] : allTasks.filter(task => task?.hidden !== true) }
+	allTasks => {
+		return !allTasks
+			? []
+			: allTasks
+				.filter(task => task?.hidden !== true)
+				.map(task => ({
+					...task,
+					eta: new Date(task?.eta ? task?.eta * 1000 : new Date().getTime()), // convert epoch to Date if you can, else just use current time
+				}))
+	}
 )

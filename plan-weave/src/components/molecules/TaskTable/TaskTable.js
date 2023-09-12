@@ -23,7 +23,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const { taskList, setTaskList, tasksPerPage, page } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
-	const [localTasks, setLocalTasks] = useState(!tasks ? DEFAULT_SIMPLE_TASKS : tasks)
+	const [localTasks, setLocalTasks] = useState(tasks)
 
 	const lastCompletedIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1
 	const lastCompleted = lastCompletedIndex >= 0 ? taskList[lastCompletedIndex] : null // gives last completed task
