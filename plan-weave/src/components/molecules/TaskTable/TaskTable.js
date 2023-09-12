@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import { THEMES, DEFAULT_SIMPLE_TASKS, TASK_STATUSES } from '../../utils/constants'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 import useValidateTasks from '../../../hooks/useValidateTasks.js'
-import { isTimestampFromToday } from '../../utils/helpers'
+import { isTimestampFromToday, filterTaskList } from '../../utils/helpers'
 
 import { pipe } from 'ramda'
 /* 
@@ -22,7 +22,7 @@ import { pipe } from 'ramda'
 const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const { taskList, setTaskList, tasksPerPage, page } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
+	const { taskList, setTaskList, tasksPerPage, page, search } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
 	const [localTasks, setLocalTasks] = useState(tasks)
 
 	const lastCompletedIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1
@@ -33,7 +33,14 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 
 	// --- Temporary Pagination Feature
 	const calculateRange = (tasksPerPage, page) => (Math.floor(tasksPerPage) !== tasksPerPage || Math.floor(page) !== page) ? [0, undefined] : [(page - 1) * tasksPerPage + 1, page * tasksPerPage]
-	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page))
+	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page), [tasksPerPage, page])
+
+	// --- Search Feature (pure version where eta and waste are constants)
+	const filteredTasks = useMemo(() => {
+		return (search === search.trimRight())
+			? filterTaskList({ list: taskList, filter: search.trim(), attribute: 'task' })
+			: taskList
+	}, [taskList, search])
 
 	// Modded to include the local tasks
 	// --- Includes the Task Swapping Feature, keeping timestamps constant (View Only, no store updates)
@@ -58,7 +65,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 		// startRange, endRange is for pagination capabilities
 		return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
 			const epochETA = task?.eta instanceof Date
-				? task?.eta?.getTime() / 1000 
+				? task?.eta?.getTime() / 1000
 				: typeof task?.eta === 'number'
 					? task?.eta
 					: new Date().getTime() / 1000
@@ -92,7 +99,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
 								{taskList && taskList?.length >= 1
-									? todoList(taskList, startRange, endRange, lastCompleted)
+									? todoList(filteredTasks, startRange, endRange, lastCompleted)
 									: todoList(localTasks, startRange, endRange, lastCompleted)}
 								{provided.placeholder}
 							</tbody>

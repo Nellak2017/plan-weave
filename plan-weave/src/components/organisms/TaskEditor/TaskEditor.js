@@ -75,11 +75,6 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 		if (tasksFromRedux) setTaskList(old => (!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(old, tasks))
 	}, [sortingAlgo])
 
-	// --- Search Filter Feature (It modifies task list, causing waste update. If you want constant waste implement in TaskTable)
-	useEffect(() => {
-		if (search === search.trimRight()) setTaskList(filterTaskList({ list: SORTING_METHODS[sortingAlgo](tasksFromRedux), filter: search.trim(), attribute: 'task' }))
-	}, [search])
-
 	// --- Change Sorting Algorithm Feature
 	useEffect(() => {
 		// 0. Apply this middleware, (listener in option + setSortingAlgo(...)), to the dropdown options whenever the algorithm changes
