@@ -38,6 +38,8 @@ export const TaskEditorContext = createContext()
 // TODO: Extract out the Pagination thing into a molecule
 // TODO: Figure out how to reset the minutes left every day. Maybe add a Recycle task button?
 // TODO: Fix the pagination highlight bug. Maybe add a highlight field to the tasks?
+
+// TODO: Fix the Next Day highlight bug. Since we use dates to highlight, the 'isNextDay' function doesn't work as expected when next day, look at this
 const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', maxwidth = 818, options }) => {
 	// --- Input Verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
