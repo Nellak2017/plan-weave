@@ -92,7 +92,7 @@ pagination
 	Update TaskEditor to Show nth Range of [a, a+Z] items per page
 		Current Page useState
 		Sorting applies to Range selected only (because it is changing view not data)
-Today's Tasks Title
+X Today's Tasks Title
 
 Sort icons for headers
 

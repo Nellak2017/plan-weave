@@ -1,27 +1,19 @@
 import { createContext, useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasks } from '../../../redux/selectors'
-import { THEMES, SORTING_METHODS, SORTING_METHODS_NAMES, SIMPLE_TASK_HEADERS, TASK_STATUSES } from '../../utils/constants'
+import { THEMES, SORTING_METHODS_NAMES, SORTING_METHODS, SIMPLE_TASK_HEADERS } from '../../utils/constants'
+import { calculateWaste, validateTasks, transform, isInt, completedOnTopSorted } from '../../utils/helpers.js'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
+import Pagination from '../../molecules/Pagination/Pagination'
 import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
-import {
-	calculateWaste, validateTasks, transform, transformAll, isInt
-} from '../../utils/helpers.js'
 import { parse } from 'date-fns'
 import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
-import Pagination from '../../molecules/Pagination/Pagination'
 
 /*
 	Easy: 	
-		X TODO: Decouple the styling in task row
-		X TODO: Move the timeRange up to a prop, and pass down to TaskControl with respect to Context/No Context (flexibility)
-		X TODO: Re-assess usage of useValidateTask(s) hooks and validation functions, I sense simplification and inefficiencies
-		X TODO: Update the ETA Sorting method so it uses dates instead of string parsing
-		X TODO: Refactor the form in task row to be like formik (maybe)
-		X TODO: Reset the dnd list when sorting algorithm changes
-		X TODO: Today's Tasks Header
+		TODO: Add Test coverage to new helpers
 
 	Medium:
 		TODO: Figure out how to reset the minutes left every day. Maybe add a Recycle task button?
@@ -32,6 +24,9 @@ import Pagination from '../../molecules/Pagination/Pagination'
 		TODO: Refresh Tasks Button
 		TODO: Sort icons
 		TODO: Refactor the form in task row to be like formik (When you make Full Task)
+		TODO: The x in the (n of x page) display doesn't update
+		TODO: Finish up the Pagination component
+		TODO: Refactor all functions to make use of Railway oriented design (for example the Maybe monad). Look at the validation helper
 
 	Hard: 
 		TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
@@ -70,7 +65,7 @@ const TaskEditor = ({
 	const tasksFromRedux = useSelector(selectNonHiddenTasks) // useValidateTasks() causes issues for some reason
 	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
 	const [dnd, setDnd] = useState(tasksFromRedux.map((_, i) => i)) // list that tells mapping of task list. ex: [1,3,2] - taskList:[a,b,c] -> [a,c,b] 
-	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks) }))
+	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks, start) }))
 	const [search, setSearch] = useState('') // value of searchbar, for filtering tasks
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
@@ -80,10 +75,14 @@ const TaskEditor = ({
 
 	// --- Ensure Sorted List when tasks and sorting algo change Feature
 	useEffect(() => {
-		setTaskList((!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(tasksFromRedux, tasks))
+		setTaskList((!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(tasksFromRedux, tasks, start))
 	}, [tasksFromRedux])
 	useEffect(() => {
-		if (tasksFromRedux) setTaskList(old => (!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(old, tasks))
+		if (tasksFromRedux) setTaskList(old => (!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(old, tasks, start, [
+			SORTING_METHODS[sortingAlgo], 
+			t => transform(t, tasksFromRedux.map((_,i) => i)), 
+			t => calculateWaste({ start, taskList: t, time: new Date() })
+		]))
 		setDnd(tasksFromRedux.map((_, i) => i)) // reset dnd whenever sorting algorithm changes
 	}, [sortingAlgo])
 
@@ -121,19 +120,6 @@ const TaskEditor = ({
 		const interval = setInterval(() => { if (!taskUpdated) update() }, 500)
 		return () => { if (interval) clearInterval(interval); setTaskUpdated(false) }
 	}, [taskList]) // this is needed to update waste every second, unfortunately
-
-	// --- Completed Tasks On Top Feature
-	function completedOnTopSorted(reduxTasks, tasks, transforms = [SORTING_METHODS[sortingAlgo], t => transform(t, dnd), t => calculateWaste({ start, taskList: t, time: new Date() })]) {
-		// transforms is a list of transformation functions, tasks => ordering of tasks
-		if (!reduxTasks) tasks && tasks.length > 0 ? transformAll(tasks, transforms) : []
-
-		const completedTasks = reduxTasks.filter(task => task?.status === TASK_STATUSES.COMPLETED)
-		const remainingTasks = reduxTasks.filter(task => task?.status !== TASK_STATUSES.COMPLETED)
-		const completedTransformed = completedTasks.length > 0 ? transformAll(completedTasks, transforms) : []
-		const incompleteTransformed = remainingTasks.length > 0 ? transformAll(remainingTasks, transforms) : []
-
-		return [...completedTransformed, ...incompleteTransformed]
-	}
 
 	return (
 		<TaskEditorContext.Provider value={{

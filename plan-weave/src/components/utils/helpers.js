@@ -1,69 +1,8 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
 import { getTime } from 'date-fns'
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, SORTING_METHODS, SORTING_METHODS_NAMES } from './constants'
 
 // This file contains many helpers used through out the application
-
-/**
- * Update an attribute of a task in a list of tasks in a pure way.
- *
- * @param {Object} options - Options object containing parameters.
- * @param {number} options.index - Index of the task to update.
- * @param {string} options.attribute - Attribute to update.
- * @param {*} options.value - New value for the attribute.
- * @param {Array} options.taskList - List of tasks to update.
- * @param {Object} [options.schema=simpleTaskSchema] - Validation schema.
- * @param {Function} [options.schemaDefaultFx=fillDefaultsForSimpleTask] - Default filling function.
- * @returns {Array} Updated list of tasks.
- * @throws {TypeError} If any argument is undefined or invalid.
- * @throws {Error} If attribute is not valid, task id is missing, or duplicate ids exist.
- */
-export const pureTaskAttributeUpdate = ({
-	index,
-	attribute,
-	value,
-	taskList,
-	schema = simpleTaskSchema,
-	schemaDefaultFx = fillDefaultsForSimpleTask
-}) => {
-	// Verify Inputs
-	// ---
-	if (isNaN(index) || index < 0 || index === null || index > taskList?.length || attribute === undefined || !attribute || !value || taskList === undefined || !schema || !schemaDefaultFx)
-		throw new TypeError(
-			`Atleast one of the arguments in pureTaskAttributeUpdate is undefined
-				index : ${index}
-				attribute : ${attribute}
-				value : ${value}
-				taskList : ${taskList}
-				schema : ${schema}
-				defaultFill : ${schemaDefaultFx}
-				`)
-	if (!taskList[index].hasOwnProperty(attribute)) throw new Error(`Entered Attribute is invalid. Attribute : ${attribute}. This is likely a programming bug.`)
-	if (taskList.some(task => !task.id || task.id <= 0 || isNaN(task.id))) throw new TypeError('Atleast one id is undefined/null/invalid in your task list. This is likely a database error.')
-	if (taskList.some((task, index) => taskList.findIndex(t => t.id === task.id) !== index)) throw new Error('Your Task list has multiple duplicate id values. This is likely a database error.')
-
-	// Perform Function Transformation
-	// ---
-
-	const updatedTaskList = [...taskList]
-	let updatedTask = { ...updatedTaskList[index] } // Clone the task
-
-	// Try to update the given task in the list
-	try {
-		// Validate the task by converting task into what is expected by schema, if you can't throw Error
-		updatedTask = validateTask({ task: updatedTask, schema, schemaDefaultFx })
-
-		// If the entered attribute is valid, then update it
-		if (updatedTask.hasOwnProperty(attribute)) {
-			updatedTask[attribute] = value
-			updatedTask = schemaDefaultFx(updatedTask) // fill defaults if there is other undefined attributes too
-		}
-	} catch (validationError) {
-		throw new Error(validationError)
-	}
-	updatedTaskList[index] = updatedTask
-	return updatedTaskList
-}
 
 /**
  * Format time left for tasks in a pure way.
@@ -123,9 +62,7 @@ export const formatTimeLeft = ({
  * @returns {boolean} - True if the timestamp is from today, false otherwise.
  */
 export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400) => {
-	// Seconds since start of today
 	const startOfTodaySeconds = today.setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
-	// start of Today in seconds <= timestamp < start of Today in seconds + seconds in a day
 	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
 }
 
@@ -134,8 +71,6 @@ export const validateTasks = ({ taskList, schema = simpleTaskSchema, schemaDefau
 	return taskList?.map(task => validateTask({ task, schema, schemaDefaultFx, customErrorMessage }))
 }
 
-// TODO: Rename this function to be more generic, it will work on Tasks and beyond!
-// TODO: Refactor this with railway oriented design so that it always returns Object, with error parameter
 /**
  * Try to validate the task, removing extras and filling defaults
  * If validation fails, throw an error and warn the user
@@ -212,11 +147,18 @@ export const hoursToMillis = hours => hours * 60000 * 60
  */
 export const millisToHours = milliseconds => (milliseconds / 60000) / 60
 
-// TODO: Add JSDOCS
+/**
+ * Calculates and updates task waste and estimated time of arrival (ETA).
+ *
+ * @param {Object} options - Options for waste calculation.
+ * @param {Date} options.start - The start time for waste calculation.
+ * @param {Object[]} options.taskList - The list of tasks to calculate waste for.
+ * @param {Date} [options.time=new Date()] - The current time (optional).
+ * @returns {Object[]} The list of tasks with updated waste and ETA values.
+ */
 export const calculateWaste = ({ start, taskList, time = new Date() }) => {
-	if (!taskList) return
-	if (taskList.some(task => !task)) {
-		console.error('Task list has undefined values', taskList)
+	if (!taskList || taskList.some(task => !task)) {
+		console.error('Task list is undefined or has undefined values', taskList)
 		return
 	}
 
@@ -302,3 +244,30 @@ export const ordinalSet = (dnd) => {
 	 return dnd.map(num => mapping[num])
 }
 
+/**
+ * Sorts tasks with completed tasks on top and applies transformation functions.
+ *
+ * @param {Object[]} reduxTasks - The list of tasks from Redux.
+ * @param {Object[]} tasks - The list of tasks to be sorted.
+ * @param {Date} start - The start time for calculating waste.
+ * @param {Function[]} transforms - A list of transformation functions to apply (optional).
+ * @returns {Object[]} The sorted and transformed list of tasks.
+ */
+export const completedOnTopSorted = (reduxTasks, tasks, start, transforms) => {
+	// transforms is a list of transformation functions, tasks => ordering of tasks
+	if (!transforms) {
+		transforms = [
+			SORTING_METHODS[SORTING_METHODS_NAMES.TIMESTAMP], 
+			t => transform(t, reduxTasks.map((_,i) => i)), 
+			t => calculateWaste({ start, taskList: t, time: new Date() })
+		]
+	}
+	if (!reduxTasks) tasks && tasks.length > 0 ? transformAll(tasks, transforms) : []
+
+	const completedTasks = reduxTasks.filter(task => task?.status === TASK_STATUSES.COMPLETED)
+	const remainingTasks = reduxTasks.filter(task => task?.status !== TASK_STATUSES.COMPLETED)
+	const completedTransformed = completedTasks.length > 0 ? transformAll(completedTasks, transforms) : []
+	const incompleteTransformed = remainingTasks.length > 0 ? transformAll(remainingTasks, transforms) : []
+
+	return [...completedTransformed, ...incompleteTransformed]
+}
