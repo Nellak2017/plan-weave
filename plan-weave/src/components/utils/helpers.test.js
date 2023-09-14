@@ -4,8 +4,8 @@ import {
 	isTimestampFromToday,
 	validateTask,
 	filterTaskList,
-	highlightDefaults,
-	calculateWaste
+	calculateWaste,
+	rearrangeDnD,
 } from './helpers'
 import { TASK_STATUSES } from './constants'
 
@@ -285,7 +285,7 @@ describe('validateTask', () => {
 	// Valid test cases
 	test.each(validTestCases)('%s', ({ task, expected }) => {
 		const result = validateTask({ task })
-		//console.log('------------'); console.log(result); console.log(expected);
+		//console.log('------------') console.log(result) console.log(expected)
 		expect(result).toEqual(expected)
 	})
 
@@ -366,116 +366,6 @@ describe('filterTaskList', () => {
 
 })
 
-/*
-describe('highlightDefaults', () => {
-	// This is based on the new ETA formulation
-	const testCases = [
-		{
-			name: 'generates empty highlight list when all tasks within time range and no owl',
-			input: {
-				taskList: [
-					{ eta: '11:00' },
-					{ eta: '13:00' },
-					{ eta: '16:00' },
-					// these tasks will be in range
-				],
-				start: new Date('2023-08-20T10:00:00'), // 10:00
-				end: new Date('2023-08-20T16:00:00'), // 16:00
-				owl: false,
-			},
-			expected: [' ', ' ', ' '],
-		},
-		{
-			name: 'generates empty highlight list, except the last is old, when all tasks within time range except last, and no owl',
-			input: {
-				taskList: [
-					{ eta: '11:00' },
-					{ eta: '13:00' },
-					{ eta: '16:00' },
-					{ eta: '19:00' }, // this task will be out of range
-				],
-				start: new Date('2023-08-20T10:00:00'), // 10:00
-				end: new Date('2023-08-20T16:00:00'), // 16:00
-				owl: false,
-			},
-			expected: [' ', ' ', ' ', 'old'],
-		},
-		{
-			name: 'generates empty highlight list with owl option, and all tasks before next day',
-			input: {
-				taskList: [
-					{ eta: '20:00' },
-					{ eta: '23:00' },
-					{ eta: '03:00' },
-					// all tasks in range
-				],
-				start: new Date('2023-08-20T18:00:00'), // 18:00
-				end: new Date('2023-08-21T03:00:00'), // 03:00 next day
-				owl: true,
-			},
-			expected: [' ', ' ', ' '],
-		},
-		{
-			name: 'generates empty highlight list, except last is old, with owl option, and all tasks before next day, except last',
-			input: {
-				taskList: [
-					{ eta: '20:00' },
-					{ eta: '23:00' },
-					{ eta: '03:00' },
-					{ eta: '05:00' },
-				],
-				start: new Date('2023-08-20T18:00:00'), // 18:00
-				end: new Date('2023-08-20T03:00:00'), // 03:00 next day
-				owl: true,
-			},
-			expected: [' ', ' ', ' ', 'old'],
-		},
-		{
-			name: 'When eta is bad, it will not affect the total (eta counts for 0 ttc)',
-			input: {
-				taskList: [
-					{ eta: '20:00' },
-					{ eta: '23:00' },
-					{ eta: '03:00' },
-					{ BAD: 2 }, // should not affect anything from here on, until it is valid
-					{ eta: undefined },
-					{ eta: '04:00' }, // should be valid so it is old
-				],
-				start: new Date('2023-08-20T18:00:00'), // 18:00
-				end: new Date('2023-08-20T03:00:00'), // 03:00 next day
-				owl: true,
-			},
-			expected: [' ', ' ', ' ', ' ', ' ', 'old'],
-		},
-		{
-			name: 'When ttc is bad, it will not affect the total, even out of order',
-			input: {
-				taskList: [
-					{ eta: undefined },
-					{ eta: '20:00' },
-					{ eta: '23:00' },
-					{ eta: '03:00' },
-					{ BAD: 2 },
-					{ eta: '04:00' }, // old here
-				],
-				start: new Date('2023-08-20T18:00:00'), // 18:00
-				end: new Date('2023-08-20T03:00:00'), // 03:00 next day
-				owl: true,
-			},
-			expected: [' ', ' ', ' ', ' ', ' ', 'old'],
-		},
-	]
-
-	testCases.forEach(testCase => {
-		it(testCase.name, () => {
-			const { taskList, start, end, owl } = testCase.input
-			const result = highlightDefaults(taskList, start, end, owl)
-			expect(result).toEqual(testCase.expected)
-		})
-	})
-})
-*/
-
 describe('calculateWaste', () => {
 	const start = new Date(1692975600000) // Friday, August 25, 2023 10:00:00 AM GMT-05:00
 	const completedTime = new Date(1692977400000) // Friday, August 25, 2023 10:30:00 AM GMT-05:00 	
@@ -514,8 +404,8 @@ describe('calculateWaste', () => {
 			},
 			expected: [
 				{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: add(start, .5), id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // Completed tasks are not touched
-				{ status: 'incomplete', task: 'Task 2', waste: -.5, ttc: .5, eta: add(start, .5 + .5), id: 2, timestamp: 2 }, // eta = 10.5+.5=11; waste should be 0
-				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: add(start, .5 + .5 + 1.5), id: 3, timestamp: 3 }, // eta = 11+1.5=12.5; waste should be 0
+				{ status: 'incomplete', task: 'Task 2', waste: -.5, ttc: .5, eta: add(start, .5 + .5), id: 2, timestamp: 2 }, // eta = 10.5+.5=11 waste should be 0
+				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: add(start, .5 + .5 + 1.5), id: 3, timestamp: 3 }, // eta = 11+1.5=12.5 waste should be 0
 			],
 		}
 	]
@@ -529,4 +419,18 @@ describe('calculateWaste', () => {
 		})
 	})
 
+})
+
+describe('rearrangeDnD', () => {
+	const initialDnD = [1, 2, 3, 4]
+	const destinations = [0, 1, 2, 3]
+
+	destinations.forEach(destination => {
+		it(`moves 4 to index ${destination}`, () => {
+			const result = rearrangeDnD(initialDnD, 3, destination)
+			const expected = [...initialDnD] // Copy the initial DnD array
+			expected.splice(destination, 0, expected.splice(3, 1)[0]) // Perform the same rearrangement as the function
+			expect(result).toEqual(expected)
+		})
+	})
 })

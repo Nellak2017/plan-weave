@@ -52,7 +52,6 @@ const taskSlice = createSlice({
 			state.tasks?.push(action.payload) // Add a new task to the state
 		},
 		deleteTask: (state, action) => {
-			//state.tasks = state?.tasks?.filter(task => task?.id !== action?.payload) // Remove a task by ID
 			state.tasks = state?.tasks?.map(task => task?.id && task?.id === action.payload ? {...task, hidden: true} : task)
 		},
 		deleteTasks: (state, action) => {

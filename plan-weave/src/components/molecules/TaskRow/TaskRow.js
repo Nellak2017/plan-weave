@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react'
 import { TaskRowStyled } from './TaskRow.elements.js'
 import SimpleRow from './SimpleRow.js'
 import { Draggable } from 'react-beautiful-dnd'
-import { millisToHours, hoursToMillis } from '../../utils/helpers.js'
+import { millisToHours, hoursToMillis, ordinalSet } from '../../utils/helpers.js'
 import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -31,8 +31,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
-
-	const { setTaskUpdated, setSelectedTasks, isHighlighting } = !TaskEditorContext._currentValue ? { 1: () => console.log("hey") } : useContext(TaskEditorContext)  // used to help the waste feature. Ugly but it works
+	const { setTaskUpdated, setSelectedTasks, isHighlighting, dnd, setDnd } = !TaskEditorContext._currentValue ? { 1: () => console.log("hey") } : useContext(TaskEditorContext)  // used to help the waste feature. Ugly but it works
 
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -44,23 +43,9 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 	const dispatch = useDispatch()
 	const [isChecked, setIsChecked] = useState(status.toLowerCase().trim() === TASK_STATUSES.COMPLETED)
 
-	// TODO: Refactor this into something better like formik
 	// Local State of the form so that it may be updated into the redux store
 	const [localTask, setLocalTask] = useState(task)
 	const [localTtc, setLocalTtc] = useState(ttc)
-
-	// Update Task in Redux Store if it is invalid only on the first load
-	useEffect(() => {
-		try {
-			const validTask = validateTask({ task: taskObject })
-			const newEta = validTask?.eta && validTask?.eta?.getTime() ? validTask?.eta?.getTime() / 1000 : new Date(new Date().setHours(12, 0, 0, 0))
-			//if (!isEqual(validTask, taskObject)) updateTask(id, { ...validTask, eta: newEta })(dispatch)
-			// the above if statement caused unexpected side-effects. It has been quarantined
-		} catch (invalidTask) {
-			console.error(invalidTask.message)
-			toast.error('Your Tasks are messed up and might not display right, it is likely a database issue.')
-		}
-	}, [])
 
 	useEffect(() => {
 		if (!isHighlighting) {
@@ -71,6 +56,13 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 		setIsChecked(false)
 	}, [isHighlighting]) // Should run when the highlighting stops to reset the checkmarks to what they should be
 
+
+	// Helpers
+	const deleteDnDEvent = (dnd, index) => {
+		if (!dnd || typeof index !== 'number') return TypeError(`Entered dnd, index in deleteDnDEvent is invalid.\ndnd : ${dnd}\nindex : ${index}`)
+		if (index > dnd.length) index = dnd.length - 1
+		return ordinalSet(dnd.filter((_, i) => i !== index))
+	}
 
 	// Handlers
 	const handleCheckBoxClicked = () => {
@@ -86,34 +78,12 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 			}) // we need to update what task is to be deleted in the context list
 			return // So that the task is NOT updated
 		}
+
 		if (!isChecked) toast.info('This Task was Completed')
 
 		// Waste Feature 
 		const currentTime = new Date()
-
-		// TODO: Debug this Waste calculation. It is giving .75 waste when 3 hours 51 minutes is true waste for first task
-		const cond1 = !lastCompletedTask || (lastCompletedTask && !lastCompletedTask?.eta) && eta instanceof Date
-		const cond2 = typeof lastCompletedTask?.eta === 'number'
-
-		const newWaste = cond1
-			? millisToHours(currentTime.getTime() - eta.getTime())
-			: cond2
-				? millisToHours(currentTime.getTime() - (lastCompletedTask.eta * 1000) + hoursToMillis(localTtc)) // assuming it is epoch
-				: millisToHours(currentTime.getTime() - lastCompletedTask.eta.getTime() + hoursToMillis(localTtc)) // assuming date
-
-		console.log(cond1)
-		console.log(cond2)
-		console.log(newWaste)
-		
-		if (cond2) {
-			const epoch = millisToHours(currentTime.getTime() - (lastCompletedTask.eta * 1000) + hoursToMillis(localTtc))
-			console.log('---')
-			console.log(`currentTime.getTime() : ${currentTime.getTime()}`)
-			console.log(`lastCompletedTask.eta * 1000 : ${lastCompletedTask.eta * 1000}`)
-			console.log(`localTtc : ${localTtc}`)
-			console.log(`epoch : ${epoch}`)
-		}
-
+		const newWaste = millisToHours(currentTime.getTime() - eta.getTime())
 		const updatedTask = {
 			...validateTask({ task: taskObject }),
 			status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
@@ -123,15 +93,21 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 			eta: isChecked && eta && eta instanceof Date ? eta.getTime() / 1000 : currentTime.getTime() / 1000,
 			completedTimeStamp: currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 		}
+
 		// Usual API+View Update 
-		console.log('handleCheckBoxClicked')
 		updateTask(id, updatedTask)(dispatch)
 		if (TaskEditorContext._currentValue) setTaskUpdated(true)
 	}
 
 	const handleDeleteTask = () => {
-		removeTask(id)(dispatch)
-		toast.info('This Task was deleted')
+		try {
+			setDnd(deleteDnDEvent(dnd, index))
+			removeTask(id)(dispatch)
+			toast.info('This Task was deleted')
+		} catch (e) {
+			console.error(e)
+			toast.error('The Task failed to be deleted')
+		}
 	}
 
 	const handleUpdateTask = () => {
@@ -143,6 +119,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 			ttc: localTtc
 		})(dispatch)
 	}
+
 
 	return (
 		<>

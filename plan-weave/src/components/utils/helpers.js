@@ -150,7 +150,7 @@ export const validateTasks = ({ taskList, schema = simpleTaskSchema, schemaDefau
 export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
 	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
 
-	const validateTransformation = task => { if (!schema.isValidSync(task, { strict: true})) throw new Error(customErrorMessage + ` task : ${JSON.stringify(task)}`) }
+	const validateTransformation = task => { if (!schema.isValidSync(task, { strict: true })) throw new Error(customErrorMessage + ` task : ${JSON.stringify(task)}`) }
 	const isRequired = field => schema.describe().fields[field] ? !schema?.describe()?.fields[field]?.optional : false
 	const requiredFields = () => Object.keys(schema.describe().fields)
 		.map(field => isRequired(field) ? field : null)
@@ -214,35 +214,91 @@ export const millisToHours = milliseconds => (milliseconds / 60000) / 60
 
 // TODO: Add JSDOCS
 export const calculateWaste = ({ start, taskList, time = new Date() }) => {
-	if (!taskList) return []
+	if (!taskList) return
+	if (taskList.some(task => !task)) {
+		console.error('Task list has undefined values', taskList)
+		return
+	}
+
 	return ((tasks = taskList, currentTime = time) => {
 		const add = (start, hours) => new Date(start.getTime() + hoursToMillis(hours)) // (Date: start, hours: hours) -> Date(start + hours)
 		const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
-		const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) => [...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task.ttc)], [start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
-		const firstIncompleteIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
+		const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) => [...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)], [start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
+		const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
 		const etas = etaList(taskList.slice(firstIncompleteIndex)) // etas calculated only for the incomplete tasks
 		const lastCompletedTimestamp = tasks[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completedTimestamp to millis
 		const startTime = firstIncompleteIndex === 0 || !lastCompletedTimestamp || isNaN(lastCompletedTimestamp) ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
 		return tasks.map((task, index) => {
 			const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : new Date(currentTime) // index - firstIncomplete shifts accordingly
 			const waste = index === firstIncompleteIndex ? subtract(currentTime, eta) : 0 // we must use the updated eta value
-			return task.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta }
+			return task?.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta }
 		})
 	})()
-	/*
-	return ((tasks = etaToDates(taskList, time), currentTime = time) => {
-		const add = (start, hours) => { return new Date(start.getTime() + hoursToMillis(hours)) } // (Date: start, hours: hours) -> Date(start + hours)
-		const subtract = (time, eta) => { return millisToHours(time.getTime() - eta.getTime()) } // (Date: time, Date: eta) -> time - eta (hours)
-		const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) => [...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task.ttc)], [start])
-		const firstIncompleteIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
-		const etas = etaList(taskList.slice(firstIncompleteIndex)) // etas calculated only for the incomplete tasks
-		const lastCompletedTimestamp = tasks[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completedTimestamp to millis
-		const startTime = firstIncompleteIndex === 0 || !lastCompletedTimestamp || isNaN(lastCompletedTimestamp) ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
-		return etaToStrings(tasks.map((task, index) => {
-			const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : new Date(currentTime) // index - firstIncomplete shifts accordingly
-			const waste = index === firstIncompleteIndex ? subtract(currentTime, eta) : 0 // we must use the updated eta value
-			return task.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta }
-		}))
-	})()
-	*/
 }
+
+/**
+ * Checks if a value is an integer.
+ *
+ * @param {number} number - The value to be checked.
+ * @returns {boolean} Returns `true` if the value is an integer, `false` otherwise.
+ */
+export const isInt = number => ((!!number || number === 0) && typeof number === 'number' && Math.floor(number) === number && isFinite(number))
+
+/**
+ * Reorders an array of tasks based on a provided transformation list.
+ *
+ * @param {Array<Object>} tasks - The array of tasks to be reordered. Like [{a:0},{b:1},{c:2}]
+ * @param {Array<number>} transform - An array representing the desired order of task IDs. Like [1,2,0]
+ * @returns {Array<Object>} Returns a new array of tasks reordered based on the transform list. Like [{a:1},{b:2},{c:0}]
+ */
+export const transform = (tasks, transform) => tasks.map((_, i) => tasks[transform[i]])
+
+/**
+ * Applies a sequence of transformation functions to an initial array of tasks.
+ *
+ * @param {Array<Object>} tasks - The initial array of tasks.
+ * @param {Array<Function>} transforms - An array of transformation functions to be applied in sequence.
+ * @returns {Array<Object>} Returns a new array of tasks after applying all specified transformations.
+ */
+export const transformAll = (tasks, transforms) => transforms.reduce((task, f) => f(task), tasks)
+
+/**
+ * Rearranges an array using a drag-and-drop (DnD) operation by moving an item from the source index to the destination index.
+ *
+ * @param {Array} dnd - The original array that will be rearranged.
+ * @param {number} source - The index of the item to be moved.
+ * @param {number} destination - The index where the item will be moved to.
+ * @returns {Array} - A new array with the rearranged items.
+ */
+export const rearrangeDnD = (dnd, source, destination) => {
+	const item = dnd.slice(source, source + 1)
+    const left = dnd.slice(0, source) // left of item
+    const right = dnd.slice(source + 1) // right of item
+    const both = left.concat(right) // all items except for the one we are moving
+    return [
+        ...both.slice(0, destination),
+        ...item,
+        ...both.slice(destination)
+    ]
+}
+
+/**
+ * Generates an ordinal set from an array of numbers.
+ * An ordinal set assigns ordinal values starting from 0 to unique numbers in the input array.
+ *
+ * @param {number[]} dnd - An array of numbers.
+ * @returns {number[]} An array where each element is the ordinal value corresponding to the input numbers.
+ * @example
+ * const dnd = [1, 3, 2]
+ * const ordinalSet = getOrdinalSet(dnd)
+ * // ordinalSet will be [0, 2, 1]
+ */
+export const ordinalSet = (dnd) => {
+	 const mapping = {}
+	 const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
+	 uniqueSortedArr.forEach((num, index) => {
+	   mapping[num] = index
+	 })
+	 return dnd.map(num => mapping[num])
+}
+

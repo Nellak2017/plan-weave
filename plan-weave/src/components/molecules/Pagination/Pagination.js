@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { THEMES } from '../../utils/constants'
+import { isInt } from '../../utils/helpers'
 import { PaginationContainer, PageChooserContainer } from '../Pagination/Pagination.elements'
 import NextButton from '../../atoms/NextButton/NextButton'
 import HoursInput from '../../atoms/HoursInput/HoursInput'
@@ -26,13 +27,13 @@ function Pagination({ variant = 'dark',
 }) {
 	// --- Input verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
-	if (!total && !max) max = 1
-	if (total && !max) max = Math.ceil(total / (defaultNumber ? defaultNumber : 10))
+	if (!total && !isInt(max)) max = 1
+	if (total && !isInt(max)) max = Math.ceil(total / (defaultNumber ? defaultNumber : 10))
 
 	// --- State
 	// define local max here
 	const [tasksPerPage, setTasksPerPage] = useState(defaultNumber ? defaultNumber : 0)
-	const [pageNumber, setPageNumber] = useState(min && typeof min === 'number' ? min : 1)
+	const [pageNumber, setPageNumber] = useState(isInt(min) ? min : 1)
 
 
 	// --- Handlers
@@ -75,8 +76,8 @@ function Pagination({ variant = 'dark',
 					initialValue={1}
 					controlledValue={pageNumber}
 					step={1}
-					min={min}
-					max={max}
+					min={parseInt(min)}
+					max={parseInt(max)}
 					integer={true}
 					onValueChange={handlePageNumber}
 				/>
@@ -84,7 +85,7 @@ function Pagination({ variant = 'dark',
 			</PageChooserContainer>
 			<NumberPicker
 				variant={variant}
-				defaultNumber={defaultNumber}
+				defaultNumber={parseInt(defaultNumber)}
 				options={options}
 				pickerText={pickerText}
 				onValueChange={handleTasksPerPage}

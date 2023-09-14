@@ -19,16 +19,9 @@ import { ThemeContext } from 'styled-components' // needed for theme object
 import { formatTimeLeft } from '../../utils/helpers.js'
 import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS } from '../../utils/constants.js'
 import Button from '../../atoms/Button/Button.js'
-
 import { useDispatch } from 'react-redux'
 import { addNewTask, removeTasks } from '../../../redux/thunks/taskThunks.js'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
-/* 
-TODO: 
-- [ ] Add in the Add and Delete Events From Parent Organism whenever we make the Task Row Molecule
-- [ ] If Tab Index is messed up from Other Components, fix it with dynamic tab index assignment
-- [ ] Whenever you add the API middleware for adding tasks, update add method so that unique id is ensured even on db
-*/
 
 function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x0, x1 = -36,
 	start = '10:30', end = '23:30', owlSize: iconSize = '32px', overNight = false,
@@ -43,7 +36,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	const theme = useContext(ThemeContext)
 	const dispatch = useDispatch()
 	const { taskList, setSearch, timeRange, setTimeRange, owl, setOwl,
-		isHighlighting, setIsHighlighting, selectedTasks, setSelectedTasks } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
+		isHighlighting, setIsHighlighting, selectedTasks, setSelectedTasks, dnd, setDnd } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
 
 	// State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
@@ -81,6 +74,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	}
 
 	// Bottom Left Icon Events
+	const addDnDEvent = dnd => [0, ...dnd.map(el => el + 1)]
 	const addEvent = () => {
 		toast.info('You added a New Default Task')
 		if (taskList) addNewTask({
@@ -89,10 +83,10 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 			ttc: 1,
 			eta: '12:00',
 			status: 'incomplete',
-			id: taskList?.length + 1,
+			id: new Date().getTime(), // guarantees unique ids down to the millisecond!
 			timestamp: Math.floor((new Date().getTime()) / 1000)
 		})(dispatch)
-		console.log('You added a New Default Task')
+		setDnd(addDnDEvent(dnd))
 	}
 	
 	const deleteEvent = () => {

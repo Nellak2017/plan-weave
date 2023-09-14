@@ -6,7 +6,7 @@ import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import { StyledTaskEditor } from './TaskEditor.elements'
 import {
-	filterTaskList, highlightDefaults, calculateWaste, validateTasks, millisToHours
+	calculateWaste, validateTasks, transform, transformAll, isInt
 } from '../../utils/helpers.js'
 import { parse } from 'date-fns'
 import PropTypes from 'prop-types'
@@ -15,32 +15,23 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 import Pagination from '../../molecules/Pagination/Pagination'
 
 /*
-	TODO: Convert Start/End Time Auto Calculation Feature to Functional version
-	TODO: Fix the Bug where the dnd is reset when store is updated and the list is sorted
-	TODO: Fix the display bug where when the checkmark is clicked, and it resets view
-		-> Use Timestamp swapping technique and keep using store for updates
-	TODO: Make a Completed at Timestamp, to record when it was completed!
-	TODO: Make a Hidden field, to indicate whether the task is hidden or showing. 
-	TODO: Only retrieve non-hidden tasks with selector, and Axios API request later.
-	TODO: Completed tasks should disable all fields and simply display it, also be fixed
-	TODO: When Sorting list, split completed/not completed into 2 lists, and apply sorting algos to both, then combine with completed on top always
-	TODO: Have Gray out tasks check every so often, to deal with the edge case for when it goes out of bounds of start,end and no user inputs
-	TODO: Investigate why ETA Twitches when you update the status fast
 	TODO: Decouple the styling in task row
 	TODO: Move the timeRange up to a prop, and pass down to TaskControl with respect to Context/No Context (flexibility)
 	TODO: Re-assess usage of useValidateTask(s) hooks and validation functions, I sense simplification and inefficiencies
-
-	*/
-
+	TODO: Figure out how to reset the minutes left every day. Maybe add a Recycle task button?
+	TODO: Fix the Next Day highlight bug. Since we use dates to highlight, the 'isNextDay' function doesn't work as expected when next day, look at this
+	TODO: Update the ETA Sorting method so it uses dates instead of string parsing
+	TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
+	TODO: Limit the Tasks fetched to be 1000 and the user created tasks to be 1000 as well
+	TODO: Full Task Schema
+	TODO: Refactor the form in task row to be like formik (maybe)
+	TODO: Config Support for Complete Tasks
+	TODO: Config Support for Delete Multiple Tasks
+	TODO: Reset the dnd list when sorting algorithm changes
+	TODO: Refresh Tasks Button
+*/
 export const TaskEditorContext = createContext()
-
-// TODO: When sort by timestamp, ensure the completed tasks are sorted by ETA so that order is Correctly maintained!
-// TODO: Extract out the Pagination thing into a molecule
-// TODO: Figure out how to reset the minutes left every day. Maybe add a Recycle task button?
-// TODO: Fix the pagination highlight bug. Maybe add a highlight field to the tasks?
-
-// TODO: Fix the Next Day highlight bug. Since we use dates to highlight, the 'isNextDay' function doesn't work as expected when next day, look at this
-const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', maxwidth = 818, options }) => {
+const TaskEditor = ({ variant = 'dark', tasks = [], sortingAlgorithm = 'timestamp', maxwidth = 818, options, paginationOptions = { 'tasksPerPage': 10, 'page': 1 } }) => {
 	// --- Input Verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (sortingAlgorithm && !Object.keys(SORTING_METHODS_NAMES).includes(sortingAlgorithm)) sortingAlgorithm = 'timestamp'
@@ -48,22 +39,22 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
 
 	// State for the Pagination feature
-	// TODO: This implementation is inefficient, it selects ALL tasks from the store then filters.
-	const [tasksPerPage, setTasksPerPage] = useState(10) // 10 is a placeholder, use a prop or something for actual default
-	const [page, setPage] = useState(1) // default page, 1 is a placeholder, use a prop or something for actual default
-
-	// Task Data (Redux), Task View (Context), Searching, Sorting, and Algorithm Change State
-	const tasksFromRedux = useSelector(selectNonHiddenTasks) // useValidateTasks() causes issues for some reason
-	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
-	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks) }))
-	const [search, setSearch] = useState('') // value of searchbar, for filtering tasks
-	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
+	const [tasksPerPage, setTasksPerPage] = useState(isInt(paginationOptions?.tasksPerPage) ? paginationOptions.tasksPerPage : 10)
+	const [page, setPage] = useState(isInt(paginationOptions?.page) ? paginationOptions.page : 1) // default page #
 
 	// Auto Calculation State
 	const [timeRange, setTimeRange] = useState({ start: parse('16:40', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
 	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
+
+	// Task Data (Redux), Task View (Context), Searching, Sorting, DnD, and Algorithm Change State
+	const tasksFromRedux = useSelector(selectNonHiddenTasks) // useValidateTasks() causes issues for some reason
+	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
+	const [dnd, setDnd] = useState(tasksFromRedux.map((_, i) => i)) // list that tells mapping of task list. ex: [1,3,2] - taskList:[a,b,c] -> [a,c,b] 
+	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks) }))
+	const [search, setSearch] = useState('') // value of searchbar, for filtering tasks
+	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// State for multiple delete feature
 	const [selectedTasks, setSelectedTasks] = useState(taskList.map(() => false)) // initializes with false list for each task
@@ -104,8 +95,8 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	}, [sortingAlgo])
 
 	// --- ETA + Waste Auto Calculation Feature
-	const update = () => setTaskList(calculateWaste({ start, taskList, time: new Date() }))
-	useEffect(() => update(), [timeRange, owl])
+	const update = () => setTaskList(old => old.length > 0 ? calculateWaste({ start, taskList: old, time: new Date() }) : old)
+	useEffect(() => update(), [timeRange, owl, dnd])
 	useEffect(() => {
 		if (taskUpdated) { update() }
 		const interval = setInterval(() => { if (!taskUpdated) update() }, 500)
@@ -113,11 +104,16 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 	}, [taskList]) // this is needed to update waste every second, unfortunately
 
 	// --- Completed Tasks On Top Feature
-	function completedOnTopSorted(reduxTasks, tasks) {
-		if (!reduxTasks) return SORTING_METHODS[sortingAlgo](tasks)
+	function completedOnTopSorted(reduxTasks, tasks, transforms = [SORTING_METHODS[sortingAlgo], t => transform(t, dnd), t => calculateWaste({ start, taskList: t, time: new Date() })]) {
+		// transforms is a list of transformation functions, tasks => ordering of tasks
+		if (!reduxTasks) tasks && tasks.length > 0 ? transformAll(tasks, transforms) : []
+
 		const completedTasks = reduxTasks.filter(task => task?.status === TASK_STATUSES.COMPLETED)
 		const remainingTasks = reduxTasks.filter(task => task?.status !== TASK_STATUSES.COMPLETED)
-		return [...SORTING_METHODS[sortingAlgo](completedTasks), ...SORTING_METHODS[sortingAlgo](remainingTasks)]
+		const completedTransformed = completedTasks.length > 0 ? transformAll(completedTasks, transforms) : []
+		const incompleteTransformed = remainingTasks.length > 0 ? transformAll(remainingTasks, transforms) : []
+
+		return [...completedTransformed, ...incompleteTransformed]
 	}
 
 	return (
@@ -125,7 +121,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 			taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
 			owl, setOwl, taskUpdated, setTaskUpdated,
 			selectedTasks, setSelectedTasks, isHighlighting, setIsHighlighting,
-			tasksPerPage, page
+			tasksPerPage, page, dnd, setDnd
 		}}>
 			<button onClick={() => {
 				console.log(sortingAlgo)
@@ -137,6 +133,7 @@ const TaskEditor = ({ variant = 'dark', tasks, sortingAlgorithm = 'timestamp', m
 				console.log(tasksFromRedux)
 			}}>Show Redux Store</button>
 			<button onClick={() => { console.log(`page: ${page}, tasks per page: ${tasksPerPage}\nstartRange = ${startRange}, endRange = ${endRange}`) }}>Show Page Number</button>
+			<button onClick={() => console.log(`Dnd Config: ${dnd}`)}>Show DnD Config</button>
 			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 				<TaskControl
 					variant={variant}
