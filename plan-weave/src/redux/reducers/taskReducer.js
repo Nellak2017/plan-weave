@@ -30,7 +30,6 @@ const initialState = {
 		{ status: 'incomplete', task: 'break', ttc: .75, id: 9, timestamp: timestamp - 9 },
 		{ status: 'incomplete', task: 'Driving', ttc: 1.75, id: 10, timestamp: timestamp - 10 },
 		{ status: 'incomplete', task: '', ttc: 1, id: 11, timestamp: timestamp - 11 },
-		
 		{ status: 'incomplete', task: '', ttc: 1.5, id: 12, timestamp: timestamp - 12 },
 		/*
 		{ status: 'incomplete', task: '', ttc: .5, id: 13, timestamp: timestamp - 13 },

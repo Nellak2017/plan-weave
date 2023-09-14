@@ -1,37 +1,55 @@
-import { createContext, useState, useEffect, useMemo } from 'react'
+import { createContext, useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasks } from '../../../redux/selectors'
 import { THEMES, SORTING_METHODS, SORTING_METHODS_NAMES, SIMPLE_TASK_HEADERS, TASK_STATUSES } from '../../utils/constants'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
-import { StyledTaskEditor } from './TaskEditor.elements'
+import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
 import {
 	calculateWaste, validateTasks, transform, transformAll, isInt
 } from '../../utils/helpers.js'
 import { parse } from 'date-fns'
 import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
-
 import Pagination from '../../molecules/Pagination/Pagination'
 
 /*
-	TODO: Decouple the styling in task row
-	TODO: Move the timeRange up to a prop, and pass down to TaskControl with respect to Context/No Context (flexibility)
-	TODO: Re-assess usage of useValidateTask(s) hooks and validation functions, I sense simplification and inefficiencies
-	TODO: Figure out how to reset the minutes left every day. Maybe add a Recycle task button?
-	TODO: Fix the Next Day highlight bug. Since we use dates to highlight, the 'isNextDay' function doesn't work as expected when next day, look at this
-	TODO: Update the ETA Sorting method so it uses dates instead of string parsing
-	TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
-	TODO: Limit the Tasks fetched to be 1000 and the user created tasks to be 1000 as well
-	TODO: Full Task Schema
-	TODO: Refactor the form in task row to be like formik (maybe)
-	TODO: Config Support for Complete Tasks
-	TODO: Config Support for Delete Multiple Tasks
-	TODO: Reset the dnd list when sorting algorithm changes
-	TODO: Refresh Tasks Button
+	Easy: 	
+		X TODO: Decouple the styling in task row
+		X TODO: Move the timeRange up to a prop, and pass down to TaskControl with respect to Context/No Context (flexibility)
+		X TODO: Re-assess usage of useValidateTask(s) hooks and validation functions, I sense simplification and inefficiencies
+		X TODO: Update the ETA Sorting method so it uses dates instead of string parsing
+		X TODO: Refactor the form in task row to be like formik (maybe)
+		X TODO: Reset the dnd list when sorting algorithm changes
+		X TODO: Today's Tasks Header
+
+	Medium:
+		TODO: Figure out how to reset the minutes left every day. Maybe add a Recycle task button?
+		TODO: Fix the Next Day highlight bug. Since we use dates to highlight, the 'isNextDay' function doesn't work as expected when next day, look at this
+		TODO: Limit the Tasks fetched to be 1000 and the user created tasks to be 1000 as well
+		TODO: Config Support for Complete Tasks
+		TODO: Config Support for Delete Multiple Tasks
+		TODO: Refresh Tasks Button
+		TODO: Sort icons
+		TODO: Refactor the form in task row to be like formik (When you make Full Task)
+
+	Hard: 
+		TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
+	
+	Super Hard:
+		TODO: Full Task Schema
 */
 export const TaskEditorContext = createContext()
-const TaskEditor = ({ variant = 'dark', tasks = [], sortingAlgorithm = 'timestamp', maxwidth = 818, options, paginationOptions = { 'tasksPerPage': 10, 'page': 1 } }) => {
+const TaskEditor = ({
+	variant = 'dark',
+	tasks = [],
+	sortingAlgorithm = 'timestamp',
+	maxwidth = 818,
+	options,
+	startEndTimes = { 'start': parse('16:40', 'HH:mm', new Date()), 'end': parse('00:30', 'HH:mm', new Date()) },
+	paginationOptions = { 'tasksPerPage': 10, 'page': 1 },
+	title = "Today's Tasks"
+}) => {
 	// --- Input Verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (sortingAlgorithm && !Object.keys(SORTING_METHODS_NAMES).includes(sortingAlgorithm)) sortingAlgorithm = 'timestamp'
@@ -43,7 +61,7 @@ const TaskEditor = ({ variant = 'dark', tasks = [], sortingAlgorithm = 'timestam
 	const [page, setPage] = useState(isInt(paginationOptions?.page) ? paginationOptions.page : 1) // default page #
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState({ start: parse('16:40', 'HH:mm', new Date()), end: parse('00:30', 'HH:mm', new Date()) }) // value of start, end time for tasks to be done today
+	const [timeRange, setTimeRange] = useState(startEndTimes) // value of start, end time for tasks to be done today
 	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
 	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
@@ -66,6 +84,7 @@ const TaskEditor = ({ variant = 'dark', tasks = [], sortingAlgorithm = 'timestam
 	}, [tasksFromRedux])
 	useEffect(() => {
 		if (tasksFromRedux) setTaskList(old => (!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(old, tasks))
+		setDnd(tasksFromRedux.map((_, i) => i)) // reset dnd whenever sorting algorithm changes
 	}, [sortingAlgo])
 
 	// --- Change Sorting Algorithm Feature
@@ -134,25 +153,30 @@ const TaskEditor = ({ variant = 'dark', tasks = [], sortingAlgorithm = 'timestam
 			}}>Show Redux Store</button>
 			<button onClick={() => { console.log(`page: ${page}, tasks per page: ${tasksPerPage}\nstartRange = ${startRange}, endRange = ${endRange}`) }}>Show Page Number</button>
 			<button onClick={() => console.log(`Dnd Config: ${dnd}`)}>Show DnD Config</button>
-			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
-				<TaskControl
-					variant={variant}
-					options={newDropdownOptions}
-					clock1Text={''}
-					clock2Text={''}
-				/>
-				<TaskTable
-					variant={variant}
-					headerLabels={SIMPLE_TASK_HEADERS}
-					maxwidth={maxwidth}
-				/>
-				<Pagination
-					variant={variant}
-					total={taskList?.length}
-					onTasksPerPageChange={setTasksPerPage}
-					onPageChange={setPage}
-				/>
-			</StyledTaskEditor>
+
+
+			<TaskEditorContainer>
+				<h1>{title}</h1>
+				<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
+					<TaskControl
+						variant={variant}
+						options={newDropdownOptions}
+						clock1Text={''}
+						clock2Text={''}
+					/>
+					<TaskTable
+						variant={variant}
+						headerLabels={SIMPLE_TASK_HEADERS}
+						maxwidth={maxwidth}
+					/>
+					<Pagination
+						variant={variant}
+						total={taskList?.length}
+						onTasksPerPageChange={setTasksPerPage}
+						onPageChange={setPage}
+					/>
+				</StyledTaskEditor>
+			</TaskEditorContainer>
 		</TaskEditorContext.Provider>
 	)
 }

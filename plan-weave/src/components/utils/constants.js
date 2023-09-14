@@ -32,17 +32,7 @@ export const SORTING_METHODS = {
 		return tasks?.slice().sort((a, b) => (a.task || '').localeCompare(b.task || ''))
 	},
 	'eta': tasks => {
-		return tasks?.slice().sort((a, b) => {
-			const etaA = a?.eta
-			const etaB = b?.eta
-
-			// Convert "HH:mm" timestamps to minutes since midnight for comparison
-			const minutesA = parseInt(etaA.split(':')[0]) * 60 + parseInt(etaA.split(':')[1])
-			const minutesB = parseInt(etaB.split(':')[0]) * 60 + parseInt(etaB.split(':')[1])
-
-			// Compare minutes since midnight
-			return minutesA - minutesB
-		})
+		return tasks?.slice().sort((a, b) => a?.eta.getTime() - b?.eta.getTime())
 	},
 	'': tasks => {
 		return tasks?.slice()

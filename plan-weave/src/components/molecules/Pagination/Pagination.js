@@ -72,6 +72,7 @@ function Pagination({ variant = 'dark',
 					variant={variant}
 					placeholder={1}
 					text={hoursText ? hoursText : ` of ${max}`}
+					// TODO: Make sure this text is properly updated by the parent. It doesn't update the 1 of 2 when it should be 1 of 1 when the tasks per page change 
 					maxwidth={35}
 					initialValue={1}
 					controlledValue={pageNumber}
@@ -89,7 +90,7 @@ function Pagination({ variant = 'dark',
 				options={options}
 				pickerText={pickerText}
 				onValueChange={handleTasksPerPage}
-
+				
 			/>
 		</PaginationContainer>
 	)

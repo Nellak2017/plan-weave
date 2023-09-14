@@ -2,28 +2,21 @@ import { useState, useEffect, useContext } from 'react'
 import { TaskRowStyled } from './TaskRow.elements.js'
 import SimpleRow from './SimpleRow.js'
 import { Draggable } from 'react-beautiful-dnd'
-import { millisToHours, hoursToMillis, ordinalSet } from '../../utils/helpers.js'
+import { millisToHours, ordinalSet } from '../../utils/helpers.js'
 import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
 import { useDispatch } from 'react-redux'
 import { validateTask } from '../../utils/helpers'
-import { parse, format } from 'date-fns'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 
-import isEqual from 'lodash/isEqual'
 
 import { Timestamp } from 'firebase/firestore'
 const timestampOuter = Timestamp.fromDate(new Date()).seconds
 /*
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
-TODO: Add required Redux stuff to stories
-TODO: Test validateTask
-TODO: refactor old prop into highlight prop so that 'old', 'outline' can be added so that 'old'=gray out, 'outline'=white outline
 TODO: Add Schema prop for TaskRow so that it can handle the Full Task
-TODO: Extract the 3 inline styles into some new classes or something, to reduce coupling
-TODO: When API is set up, set invalid id to be the latest id in the database, to avoid ugly errors 
 */
 
 function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Date(), status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: timestampOuter },

@@ -15,3 +15,17 @@ export const StyledTaskEditor = styled.div`
 	max-width: ${props => props.maxwidth}px;
 	border-radius: 36px;
 `
+
+export const TaskEditorContainer = styled.section`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+
+	h1 {
+		font-size: ${props => props.theme.fontSizes.larger};
+		font-weight: 100;
+	}
+
+	border: 1px solid red;
+`
