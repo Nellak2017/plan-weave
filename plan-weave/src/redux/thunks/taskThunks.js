@@ -18,4 +18,5 @@ export const removeTasks = taskIdList => (dispatch) => {
 export const updateTask = (taskId, updatedTask) => (dispatch) => {
   // You can perform any necessary logic here before dispatching the action
   dispatch(editTask({ id: taskId, updatedTask }))
+  console.log("task updated")
 }

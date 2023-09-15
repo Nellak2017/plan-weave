@@ -76,14 +76,13 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 
 		// Waste Feature 
 		const currentTime = new Date()
-		const newWaste = millisToHours(currentTime.getTime() - eta.getTime())
 		const updatedTask = {
 			...validateTask({ task: taskObject }),
 			status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
 			task: localTask,
-			waste: newWaste,
+			waste: millisToHours(currentTime.getTime() - eta.getTime()),
 			ttc: localTtc,
-			eta: isChecked && eta && eta instanceof Date ? eta.getTime() / 1000 : currentTime.getTime() / 1000,
+			eta: isChecked && eta instanceof Date ? eta.getTime() / 1000 : currentTime.getTime() / 1000,
 			completedTimeStamp: currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 		}
 
@@ -112,7 +111,6 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 			ttc: localTtc
 		})(dispatch)
 	}
-
 
 	return (
 		<>

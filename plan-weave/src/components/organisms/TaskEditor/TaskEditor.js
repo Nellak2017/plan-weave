@@ -41,7 +41,7 @@ const TaskEditor = ({
 	sortingAlgorithm = 'timestamp',
 	maxwidth = 818,
 	options,
-	startEndTimes = { 'start': parse('16:40', 'HH:mm', new Date()), 'end': parse('00:30', 'HH:mm', new Date()) },
+	startEndTimes = { 'start': parse('15:20', 'HH:mm', new Date()), 'end': parse('00:30', 'HH:mm', new Date()) },
 	paginationOptions = { 'tasksPerPage': 10, 'page': 1 },
 	title = "Today's Tasks"
 }) => {
@@ -73,21 +73,29 @@ const TaskEditor = ({
 	const [selectedTasks, setSelectedTasks] = useState(taskList.map(() => false)) // initializes with false list for each task
 	const [isHighlighting, setIsHighlighting] = useState(false) // Are we using the multiple delete feature?
 
-	// --- Ensure Sorted List when tasks and sorting algo change Feature
+	// --- Ensure Sorted List when tasks change Feature
 	useEffect(() => {
-		setTaskList((!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(tasksFromRedux, tasks, start))
-	}, [tasksFromRedux])
-	useEffect(() => {
-		if (tasksFromRedux) setTaskList(old => (!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(old, tasks, start, [
-			SORTING_METHODS[sortingAlgo], 
-			t => transform(t, tasksFromRedux.map((_,i) => i)), 
-			t => calculateWaste({ start, taskList: t, time: new Date() })
+		setTaskList((!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(tasksFromRedux, tasks, start, [
+			SORTING_METHODS[sortingAlgo], // sort
+			t => transform(t, dnd), // apply dnd config
+			t => calculateWaste({ start, taskList: t, time: new Date() }) // calculate waste/eta
 		]))
-		setDnd(tasksFromRedux.map((_, i) => i)) // reset dnd whenever sorting algorithm changes
-	}, [sortingAlgo])
+	}, [tasksFromRedux])
 
 	// --- Change Sorting Algorithm Feature
 	useEffect(() => {
+		// Apply transformations to ensure correctly sorted and other calculations applied
+		if (tasksFromRedux) {
+			setTaskList(old => (!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(old, tasks, start, [
+				SORTING_METHODS[sortingAlgo], // sort
+				t => transform(t, tasksFromRedux.map((_, i) => i)), // apply DEFAULT dnd config
+				t => calculateWaste({ start, taskList: t, time: new Date() }) // calculate waste/eta
+			]))
+		}
+
+		// reset dnd whenever sorting algorithm changes
+		{ setDnd(tasksFromRedux.map((_, i) => i)) }
+
 		// 0. Apply this middleware, (listener in option + setSortingAlgo(...)), to the dropdown options whenever the algorithm changes
 		(async () => {
 			// 1. Verify the options via schema, fill with defaults if invalid
@@ -108,8 +116,10 @@ const TaskEditor = ({
 					setSortingAlgo(option.algorithm)
 				}
 			})))
-
 		})()
+
+
+
 	}, [sortingAlgo])
 
 	// --- ETA + Waste Auto Calculation Feature
@@ -117,7 +127,7 @@ const TaskEditor = ({
 	useEffect(() => update(), [timeRange, owl, dnd])
 	useEffect(() => {
 		if (taskUpdated) { update() }
-		const interval = setInterval(() => { if (!taskUpdated) update() }, 500)
+		const interval = setInterval(() => { if (!taskUpdated) update() }, 5000)
 		return () => { if (interval) clearInterval(interval); setTaskUpdated(false) }
 	}, [taskList]) // this is needed to update waste every second, unfortunately
 

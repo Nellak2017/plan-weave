@@ -44,13 +44,8 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 		if (!taskList) return []
 		// startRange, endRange is for pagination capabilities
 		return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
-			const epochETA = task?.eta instanceof Date
-				? task?.eta?.getTime() / 1000
-				: typeof task?.eta === 'number'
-					? task?.eta
-					: new Date().getTime() / 1000
-
-			const highlightOld = epochETA && isTimestampFromToday(new Date(), epochETA) ? ' ' : 'old'
+			const epochETA = task?.eta?.getTime() / 1000
+			const highlightOld = isTimestampFromToday(new Date(), epochETA) ? ' ' : 'old'
 			return <TaskRow
 				key={`task-${task.id}`}
 				variant={variant}
