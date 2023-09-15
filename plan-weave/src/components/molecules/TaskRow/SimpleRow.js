@@ -18,7 +18,7 @@ import { format } from 'date-fns'
 // Task View Logic (Simple, Full) (Just Simple for now)
 const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, localTask, localTtc, setLocalTtc, handleCheckBoxClicked, handleDeleteTask }) => {
 
-	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
+	const { task, waste, ttc, eta, status } = { ...taskObject }
 	return (
 		<>
 			<IconContainer title={'Drag-n-Drop tasks to change view'} {...provided?.dragHandleProps ?? ''}>
@@ -78,9 +78,7 @@ const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, loc
 				<p>
 					{eta && eta instanceof Date && !isNaN(eta.getTime())
 						? format(eta, "HH:mm")
-						: typeof eta === 'number' // assuming epoch 
-							? format(new Date(eta * 1000), "HH:mm")
-							: '00:00'
+						: '00:00'
 					}
 				</p>
 			</TimeContainer>

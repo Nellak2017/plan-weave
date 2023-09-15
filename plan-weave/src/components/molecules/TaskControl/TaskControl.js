@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import SearchBar from '../../atoms/SearchBar/SearchBar.js'
 import DropDownButton from '../../atoms/DropDownButton/DropDownButton'
 import {
@@ -16,13 +16,12 @@ import { format, parse, getTime } from 'date-fns'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { ThemeContext } from 'styled-components' // needed for theme object
-import { formatTimeLeft } from '../../utils/helpers.js'
+import { formatTimeLeft, hoursToMillis } from '../../utils/helpers.js'
 import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS } from '../../utils/constants.js'
 import Button from '../../atoms/Button/Button.js'
 import { useDispatch } from 'react-redux'
 import { addNewTask, removeTasks } from '../../../redux/thunks/taskThunks.js'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
-import { hoursToMillis } from '../../utils/helpers.js'
 
 function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x0, x1 = -36,
 	start = '10:30', end = '23:30', owlSize: iconSize = '32px', overNight = false,
@@ -37,7 +36,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 	const theme = useContext(ThemeContext)
 	const dispatch = useDispatch()
 	const { taskList, setSearch, timeRange, setTimeRange, owl, setOwl,
-		isHighlighting, setIsHighlighting, selectedTasks, setSelectedTasks, dnd, setDnd } = !TaskEditorContext._currentValue ? { 1: '', 2: '' } : useContext(TaskEditorContext)
+		isHighlighting, setIsHighlighting, selectedTasks, setSelectedTasks, dnd, setDnd } = useContext(TaskEditorContext)
 
 	// State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
@@ -158,7 +157,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 						title={'Search for Tasks'}
 						variant={variant}
 						maxwidth={maxwidthsearch}
-						onChange={value => setSearch && setSearch(value)}
+						onChange={value => setSearch?.(value)}
 						{...rest}
 					/>
 					<p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>
@@ -223,7 +222,7 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 								title={'Delete Selected Tasks'}
 								role="button"
 								onClick={deleteMultipleEvent}
-								onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent } }}
+								onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent() } }}
 							>
 								Delete
 							</Button>

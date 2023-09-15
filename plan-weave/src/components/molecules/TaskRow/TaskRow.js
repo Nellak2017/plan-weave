@@ -24,7 +24,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
-	const { setTaskUpdated, setSelectedTasks, isHighlighting, dnd, setDnd } = !TaskEditorContext._currentValue ? { 1: () => console.log("hey") } : useContext(TaskEditorContext)  // used to help the waste feature. Ugly but it works
+	const { setTaskUpdated, setSelectedTasks, isHighlighting, dnd, setDnd } = useContext(TaskEditorContext)
 
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'

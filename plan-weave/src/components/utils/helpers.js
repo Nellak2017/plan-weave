@@ -43,11 +43,14 @@ export const formatTimeLeft = ({
 		const timeLeftInHours = Math.floor(totalHours)
 		const timeLeftInMinutes = Math.floor((totalHours - timeLeftInHours) * 60)
 
-		return timeLeftInHours > 0
-			? (timeLeftInMinutes > 0
-				? `${timeLeftInHours} ${hourText}${timeLeftInHours > 1 ? 's' : ''} ${timeLeftInMinutes} ${minuteText}`
+		if (timeLeftInHours > 0) {
+			const secondsText = timeLeftInHours > 1 ? 's' : ''
+			return (timeLeftInMinutes > 0
+				? `${timeLeftInHours} ${hourText}${secondsText} ${timeLeftInMinutes} ${minuteText}`
 				: `${timeLeftInHours} ${hourText2}`)
-			: `${timeLeftInMinutes} ${minuteText}`
+		} else {
+			return `${timeLeftInMinutes} ${minuteText}`
+		}
 	}
 
 	return formatTime(calculateTimeDifference({ endTime, currentTime, timeDifference, overNightMode }))
@@ -262,7 +265,7 @@ export const completedOnTopSorted = (reduxTasks, tasks, start, transforms) => {
 			t => calculateWaste({ start, taskList: t, time: new Date() })
 		]
 	}
-	if (!reduxTasks) tasks && tasks.length > 0 ? transformAll(tasks, transforms) : []
+	if (!reduxTasks) return tasks && tasks.length > 0 ? transformAll(tasks, transforms) : []
 
 	const completedTasks = [...reduxTasks].filter(task => task?.status === TASK_STATUSES.COMPLETED)
 	const remainingTasks = [...reduxTasks].filter(task => task?.status !== TASK_STATUSES.COMPLETED)

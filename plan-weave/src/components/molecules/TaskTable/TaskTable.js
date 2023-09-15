@@ -14,7 +14,7 @@ import { isTimestampFromToday, filterTaskList, rearrangeDnD } from '../../utils/
 const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const { taskList, setTaskList, tasksPerPage, page, search, dnd, setDnd, timeRange } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
+	const { taskList, setTaskList, tasksPerPage, page, search, dnd, setDnd, timeRange } = useContext(TaskEditorContext)
 	const [localTasks, setLocalTasks] = useState(tasks)
 
 	const lastCompletedIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1
@@ -47,7 +47,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 
 		const epochDiff = (end - start) / 1000 // seconds between end and start
 		const epochTimeSinceStart = (start.getTime() - new Date(start).setHours(0, 0, 0, 0)) / 1000 // seconds between 00:00 and start
-		const epochTotal = epochDiff >= 0 ? epochDiff + epochTimeSinceStart : epochTimeSinceStart // seconds in our modified day. If negative, then default to epochTimeSinceStart
+		const epochTotal = epochDiff >= 0 ? epochDiff + epochTimeSinceStart : epochTimeSinceStart // seconds in our modified day. If negative, then default to full day
 
 		// startRange, endRange is for pagination capabilities
 		return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
