@@ -62,7 +62,7 @@ export const formatTimeLeft = ({
  * @returns {boolean} - True if the timestamp is from today, false otherwise.
  */
 export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400) => {
-	const startOfTodaySeconds = today.setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
+	const startOfTodaySeconds = new Date(today).setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
 	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
 }
 
@@ -264,10 +264,7 @@ export const completedOnTopSorted = (reduxTasks, tasks, start, transforms) => {
 	}
 	if (!reduxTasks) tasks && tasks.length > 0 ? transformAll(tasks, transforms) : []
 
-	const completedTasks = reduxTasks.filter(task => task?.status === TASK_STATUSES.COMPLETED)
-	const remainingTasks = reduxTasks.filter(task => task?.status !== TASK_STATUSES.COMPLETED)
-	const completedTransformed = completedTasks.length > 0 ? transformAll(completedTasks, transforms) : []
-	const incompleteTransformed = remainingTasks.length > 0 ? transformAll(remainingTasks, transforms) : []
-
-	return [...completedTransformed, ...incompleteTransformed]
+	const completedTasks = [...reduxTasks].filter(task => task?.status === TASK_STATUSES.COMPLETED)
+	const remainingTasks = [...reduxTasks].filter(task => task?.status !== TASK_STATUSES.COMPLETED)
+	return transformAll([...completedTasks, ...remainingTasks], transforms)
 }

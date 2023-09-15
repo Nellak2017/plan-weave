@@ -16,7 +16,7 @@ import { formatTimeLeft } from '../../utils/helpers.js'
 import { format } from 'date-fns'
 
 // Task View Logic (Simple, Full) (Just Simple for now)
-const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, localTask, localTtc, handleCheckBoxClicked, handleDeleteTask }) => {
+const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, localTask, localTtc, setLocalTtc, handleCheckBoxClicked, handleDeleteTask }) => {
 
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
 	return (
@@ -71,7 +71,7 @@ const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, loc
 							hourText2: 'hours'
 						}) :
 						'0 minutes'}</pre>
-					: <HoursInput onValueChange={value => setLocalTtc(value)} value={localTtc} initialValue={localTtc && localTtc > .01 ? localTtc : 1} variant={variant} placeholder='hours' text='hours' />
+					: <HoursInput onValueChange={value => setLocalTtc(parseFloat(value))} value={localTtc} initialValue={localTtc && localTtc > .01 ? localTtc : 1} variant={variant} placeholder='hours' text='hours' />
 				}
 			</TimeContainer>
 			<TimeContainer style={{ width: '40px' }} title={'Estimated Time to Finish Task'}>

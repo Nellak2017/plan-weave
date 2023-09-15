@@ -131,6 +131,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 							setLocalTask={setLocalTask}
 							localTask={localTask}
 							localTtc={localTtc}
+							setLocalTtc={setLocalTtc}
 							handleCheckBoxClicked={handleCheckBoxClicked}
 							handleDeleteTask={handleDeleteTask}
 						/>}
@@ -157,6 +158,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 									setLocalTask={setLocalTask}
 									localTask={localTask}
 									localTtc={localTtc}
+									setLocalTtc={setLocalTtc}
 									handleCheckBoxClicked={handleCheckBoxClicked}
 									handleDeleteTask={handleDeleteTask}
 								/>}

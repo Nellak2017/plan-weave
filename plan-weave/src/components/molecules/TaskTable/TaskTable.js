@@ -14,7 +14,7 @@ import { isTimestampFromToday, filterTaskList, rearrangeDnD } from '../../utils/
 const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const { taskList, setTaskList, tasksPerPage, page, search, dnd, setDnd } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
+	const { taskList, setTaskList, tasksPerPage, page, search, dnd, setDnd, timeRange } = !TaskEditorContext._currentValue ? { 1: 'example', 2: 'example' } : useContext(TaskEditorContext)
 	const [localTasks, setLocalTasks] = useState(tasks)
 
 	const lastCompletedIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1
@@ -40,12 +40,19 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 	}
 
 	// --- Extracted view logic
-	const todoList = (taskList, startRange, endRange, lastCompleted) => {
+	const todoList = (taskList, startRange, endRange, lastCompleted, timeRange) => {
 		if (!taskList) return []
+
+		const { start, end } = { ...timeRange } ? { ...timeRange } : { 0: new Date(new Date().setHours(0, 0, 0, 0)), 1: new Date(new Date().setHours(24, 59, 59, 59)) }
+
+		const epochDiff = (end - start) / 1000 // seconds between end and start
+		const epochTimeSinceStart = (start.getTime() - new Date(start).setHours(0, 0, 0, 0)) / 1000 // seconds between 00:00 and start
+		const epochTotal = epochDiff >= 0 ? epochDiff + epochTimeSinceStart : epochTimeSinceStart // seconds in our modified day. If negative, then default to epochTimeSinceStart
+
 		// startRange, endRange is for pagination capabilities
 		return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
 			const epochETA = task?.eta?.getTime() / 1000
-			const highlightOld = isTimestampFromToday(new Date(), epochETA) ? ' ' : 'old'
+			const highlightOld = isTimestampFromToday(start, epochETA, epochTotal) ? ' ' : 'old'
 			return <TaskRow
 				key={`task-${task.id}`}
 				variant={variant}
@@ -74,8 +81,8 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
 								{taskList && taskList?.length >= 1
-									? todoList(filteredTasks, startRange, endRange, lastCompleted)
-									: todoList(localTasks, startRange, endRange, lastCompleted)}
+									? todoList(filteredTasks, startRange, endRange, lastCompleted, timeRange)
+									: todoList(localTasks, startRange, endRange, lastCompleted, timeRange)}
 								{provided.placeholder}
 							</tbody>
 						)}

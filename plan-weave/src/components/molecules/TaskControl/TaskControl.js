@@ -22,6 +22,7 @@ import Button from '../../atoms/Button/Button.js'
 import { useDispatch } from 'react-redux'
 import { addNewTask, removeTasks } from '../../../redux/thunks/taskThunks.js'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
+import { hoursToMillis } from '../../utils/helpers.js'
 
 function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x0, x1 = -36,
 	start = '10:30', end = '23:30', owlSize: iconSize = '32px', overNight = false,
@@ -140,13 +141,13 @@ function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x
 		}
 	}
 
-	// Update start/end time in Context Provided
+	// Update start/end time in Context Provided (owl needed for end to be today or tomorrow)
 	useEffect(() => {
 		if (setTimeRange) setTimeRange({
 			start: startTime,
-			end: endTime
+			end: owl ? new Date(endTime.getTime() + hoursToMillis(24)) : endTime
 		})
-	}, [startTime, endTime])
+	}, [startTime, endTime, owl])
 
 	return (
 		<>

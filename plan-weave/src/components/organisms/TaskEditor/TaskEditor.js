@@ -1,8 +1,8 @@
-import { createContext, useState, useEffect } from 'react'
+import { createContext, useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasks } from '../../../redux/selectors'
 import { THEMES, SORTING_METHODS_NAMES, SORTING_METHODS, SIMPLE_TASK_HEADERS } from '../../utils/constants'
-import { calculateWaste, validateTasks, transform, isInt, completedOnTopSorted } from '../../utils/helpers.js'
+import { calculateWaste, validateTasks, transform, isInt, completedOnTopSorted, hoursToMillis } from '../../utils/helpers.js'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import Pagination from '../../molecules/Pagination/Pagination'
@@ -14,7 +14,7 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 /*
 	Easy: 	
 		TODO: Add Test coverage to new helpers
-
+		
 	Medium:
 		TODO: Figure out how to reset the minutes left every day. Maybe add a Recycle task button?
 		TODO: Fix the Next Day highlight bug. Since we use dates to highlight, the 'isNextDay' function doesn't work as expected when next day, look at this
@@ -27,6 +27,7 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 		TODO: The x in the (n of x page) display doesn't update
 		TODO: Finish up the Pagination component
 		TODO: Refactor all functions to make use of Railway oriented design (for example the Maybe monad). Look at the validation helper
+		X TODO: Fix highlighting bug (Start, End are "HH:mm", should be Dates for manipulation) (Highlight should be start - end)
 
 	Hard: 
 		TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
@@ -56,9 +57,9 @@ const TaskEditor = ({
 	const [page, setPage] = useState(isInt(paginationOptions?.page) ? paginationOptions.page : 1) // default page #
 
 	// Auto Calculation State
-	const [timeRange, setTimeRange] = useState(startEndTimes) // value of start, end time for tasks to be done today
-	const { start, end } = { ...timeRange } // Destructure timeRange
 	const [owl, setOwl] = useState(true)
+	const [timeRange, setTimeRange] = useState({...startEndTimes}) // starts off in possibly incorrect state, but TaskControl fixes it (to avoid races, and ensure integrity)
+	const { start, end } = {...timeRange} // destructure timerange
 	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
 
 	// Task Data (Redux), Task View (Context), Searching, Sorting, DnD, and Algorithm Change State
@@ -133,7 +134,7 @@ const TaskEditor = ({
 
 	return (
 		<TaskEditorContext.Provider value={{
-			taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
+			taskList, setTaskList, search, setSearch, timeRange, setTimeRange, 
 			owl, setOwl, taskUpdated, setTaskUpdated,
 			selectedTasks, setSelectedTasks, isHighlighting, setIsHighlighting,
 			tasksPerPage, page, dnd, setDnd
@@ -149,7 +150,6 @@ const TaskEditor = ({
 			}}>Show Redux Store</button>
 			<button onClick={() => { console.log(`page: ${page}, tasks per page: ${tasksPerPage}\nstartRange = ${startRange}, endRange = ${endRange}`) }}>Show Page Number</button>
 			<button onClick={() => console.log(`Dnd Config: ${dnd}`)}>Show DnD Config</button>
-
 
 			<TaskEditorContainer>
 				<h1>{title}</h1>
