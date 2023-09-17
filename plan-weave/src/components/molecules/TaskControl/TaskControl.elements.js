@@ -2,6 +2,8 @@ import styled from 'styled-components'
 import { space, layout, typography } from 'styled-system'
 import { getPresetCSS, taskControlPresets } from '../../../styles/theme'
 
+// TODO: Fix sizing prop. It needs to switch based on xs,s,m, l,.. not custom px values
+// TODO: Add Size switch
 export const TaskControlContainer = styled.div`
 	display: flex;
 	align-items: center;

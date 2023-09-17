@@ -23,9 +23,18 @@ import { useDispatch } from 'react-redux'
 import { addNewTask, removeTasks } from '../../../redux/thunks/taskThunks.js'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 
-function TaskControl({ variant, color, maxwidth = 818, maxwidthsearch, y0, y1, x0, x1 = -36,
-	start = '10:30', end = '23:30', owlSize: iconSize = '32px', overNight = false,
-	clock1Text = '', clock2Text = '', toolTips = DEFAULT_TASK_CONTROL_TOOL_TIPS,
+// TODO: Refactor this so that iconSize is not aliased and so that we pass in the xs,s,m,l,xl,xxl as in the theme
+function TaskControl({ 
+	variant, 
+	color, 
+	maxwidth = 818, 
+	maxwidthsearch, 
+	y0, y1, x0, x1 = -36,
+	start = '10:30', end = '23:30', 
+	owlSize: iconSize = '32px', 
+	overNight = false,
+	clock1Text = '', clock2Text = '', 
+	toolTips = DEFAULT_TASK_CONTROL_TOOL_TIPS,
 	...rest }) {
 
 	// Input Validation and Destructuring

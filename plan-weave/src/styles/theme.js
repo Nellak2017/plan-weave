@@ -1039,9 +1039,15 @@ export const paginationPresets = {
   variant: {
     light: css`
       background-color: ${props => props.theme.colors.lightNeutralLight};
+      .pagination-icon {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
     `,
     dark: css`
       background-color: ${props => props.theme.colors.darkNeutralDark};
+      .pagination-icon {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
     `
   },
   color: colorPreset

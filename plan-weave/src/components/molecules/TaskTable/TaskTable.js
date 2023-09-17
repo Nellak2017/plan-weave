@@ -53,6 +53,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 		return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
 			const epochETA = task?.eta?.getTime() / 1000
 			const highlightOld = isTimestampFromToday(start, epochETA, epochTotal) ? ' ' : 'old'
+			//console.log(new Date(epochETA*1000))
 			return <TaskRow
 				key={`task-${task.id}`}
 				variant={variant}

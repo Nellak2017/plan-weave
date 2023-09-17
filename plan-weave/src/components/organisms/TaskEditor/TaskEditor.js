@@ -13,20 +13,19 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 
 /*
 	Easy: 	
-		TODO: Add Test coverage to new helpers
-		X TODO: Fix all Linting warnings
+		TODO: Add Test coverage to new helpers and extract all helper functions to helper.js
 		
 	Medium:
-		X TODO: Finish up the Pagination component
-		TODO: Config Support for Complete Tasks, Delete Multiple Tasks
-		X TODO: The x in the (n of x page) display doesn't update
-		
-		TODO: Refresh Tasks Button (Lets user set the dates of all visible tasks to be today, so they can effectively recycle them)
+		X TODO: Refresh Tasks Button (Lets user set the dates of all visible tasks to be today, so they can effectively recycle them)
 		TODO: Sort icons
 		
 		TODO: Limit the Tasks fetched to be 1000 and the user created tasks to be 1000 as well
 		TODO: Refactor all functions to make use of Railway oriented design (for example the Maybe monad). Look at the validation helper
 		TODO: Refactor the form in task row to be like formik (When you make Full Task)
+
+		TODO: Fix the Completed on Top bug where it uses old dnd config to keep completed in place despite needing to be on top.
+			(dnd should only apply to incomplete components)
+		TODO: Fix the Dnd config not updating properly when multiple updates applied
 		
 	Hard: 
 		TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
@@ -132,13 +131,17 @@ const TaskEditor = ({
 	}, [sortingAlgo])
 
 	// --- ETA + Waste Auto Calculation Feature
-	const update = () => setTaskList(old => old || calculateWaste({ start, taskList: old, time: new Date() }))
-	useEffect(() => update(), [timeRange, owl, dnd])
+	const update = () => setTaskList(old => old || calculateWaste({ start: start, taskList: old, time: new Date() }))
+	useEffect(() => update(), [start, owl, dnd])
 	useEffect(() => {
 		if (taskUpdated) { update() }
 		const interval = setInterval(() => { if (!taskUpdated) update() }, 5000)
 		return () => { if (interval) { clearInterval(interval); setTaskUpdated(false) } }
 	}, [taskList]) // this is needed to update waste every second, unfortunately
+
+	// For some reason unknown to me, you need to explicitly do this so that the view updates properly
+	useEffect(() => setTaskList(calculateWaste({ start: start, taskList: taskList, time: new Date() })), [timeRange])
+
 
 	return (
 		<TaskEditorContext.Provider value={memoizedContext}>
@@ -153,6 +156,8 @@ const TaskEditor = ({
 			}}>Show Redux Store</button>
 			<button onClick={() => { console.log(`page: ${page}, tasks per page: ${tasksPerPage}\nstartRange = ${startRange}, endRange = ${endRange}`) }}>Show Page Number</button>
 			<button onClick={() => console.log(`Dnd Config: ${dnd}`)}>Show DnD Config</button>
+			<button onClick={() => console.log(`start: ${timeRange['start']}\nend: ${timeRange['end']}`)}>Show timerange</button>
+			<button onClick={() => console.log(`start: ${start}`)}>Show memoized start</button>
 
 			<TaskEditorContainer>
 				<h1>{title}</h1>
