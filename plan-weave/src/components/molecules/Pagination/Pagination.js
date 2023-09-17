@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { THEMES } from '../../utils/constants'
 import { isInt } from '../../utils/helpers'
 import { PaginationContainer, PageChooserContainer } from '../Pagination/Pagination.elements'
@@ -28,29 +28,30 @@ function Pagination({ variant = 'dark',
 	// --- Input verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (!total && !isInt(max)) max = 1
-	if (total && !isInt(max)) max = Math.ceil(total / (defaultNumber ? defaultNumber : 10))
+	if (total && !isInt(max)) max = Math.ceil(total / (defaultNumber || 10))
 
 	// --- State
 	// define local max here
-	const [tasksPerPage, setTasksPerPage] = useState(defaultNumber ? defaultNumber : 0)
+	const [tasksPerPage, setTasksPerPage] = useState(defaultNumber || 10)
 	const [pageNumber, setPageNumber] = useState(isInt(min) ? min : 1)
 
-
+	const maxPage = useMemo(() => Math.ceil(total / tasksPerPage)) // re-calculate when anything changes
+	
 	// --- Handlers
 	const handleTasksPerPage = e => {
 		const newValue = parseInt(e)
 		setTasksPerPage(newValue)
-		if (onTasksPerPageChange) {
-			onTasksPerPageChange(newValue)
-		} // Notify parent component about tasks per page change
+
+		// Notify parent component about tasks per page change
+		if (onTasksPerPageChange) onTasksPerPageChange(newValue) 
 	}
 
 	const handlePageNumber = e => {
 		const newValue = parseInt(e)
 		setPageNumber(newValue)
-		if (onPageChange) {
-			onPageChange(newValue)
-		} // Notify parent component about page number change
+
+		// Notify parent component about page number change
+		if (onPageChange) onPageChange(newValue)
 	}
 
 	const handleNextPage = () => {
@@ -71,14 +72,13 @@ function Pagination({ variant = 'dark',
 				<HoursInput
 					variant={variant}
 					placeholder={1}
-					text={hoursText ? hoursText : ` of ${max}`}
-					// TODO: Make sure this text is properly updated by the parent. It doesn't update the 1 of 2 when it should be 1 of 1 when the tasks per page change 
+					text={hoursText || ` of ${maxPage}`}
 					maxwidth={35}
 					initialValue={1}
 					controlledValue={pageNumber}
 					step={1}
 					min={parseInt(min)}
-					max={parseInt(max)}
+					max={parseInt(maxPage)}
 					integer={true}
 					onValueChange={handlePageNumber}
 				/>
@@ -90,7 +90,7 @@ function Pagination({ variant = 'dark',
 				options={options}
 				pickerText={pickerText}
 				onValueChange={handleTasksPerPage}
-				
+				controlledValue={tasksPerPage}
 			/>
 		</PaginationContainer>
 	)

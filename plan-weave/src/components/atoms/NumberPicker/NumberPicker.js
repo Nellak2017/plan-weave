@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { THEMES } from '../../utils/constants'
 import {
 	PickerContainer,
@@ -6,15 +6,30 @@ import {
 	StyledNumberPicker
 } from './NumberPicker.elements'
 
-function NumberPicker({ variant = 'dark', defaultNumber = 10, options = [10], text = 'Tasks per page', onValueChange }) {
+function NumberPicker({ 
+	variant = 'dark', 
+	defaultNumber = 10, 
+	options = [10], 
+	text = 'Tasks per page', 
+	onValueChange,
+	controlledValue
+}) {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const [number, setNumber] = useState(defaultNumber)
+
+	const value = useMemo(() => controlledValue || number, [number])
+
+	//console.log(value)
+
 	const handleNumberChange = e => {
+		// Pass the new value to the parent component
+		if (onValueChange) onValueChange(e.target.value)
+		
 		setNumber(e.target.value)
-		if (onValueChange) {
-			onValueChange(e.target.value)
-		}
+
+		// If it's not being controlled, update the local state
+		if (controlledValue !== 0 && !controlledValue) setNumber(e.target.value)
 	}
 
 	return (
@@ -22,7 +37,7 @@ function NumberPicker({ variant = 'dark', defaultNumber = 10, options = [10], te
 			<PickerContainer variant={variant}>
 				{text && <p>{text}</p>}
 				<DropdownWrapper>
-					<StyledNumberPicker onChange={handleNumberChange} value={number}>
+					<StyledNumberPicker onChange={handleNumberChange} value={value}>
 						{options?.map((opt, index) => (
 							<option key={opt.toString().concat(index)} value={opt}>{opt}</option>
 						))}

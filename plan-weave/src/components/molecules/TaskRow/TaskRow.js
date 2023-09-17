@@ -120,7 +120,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 						variant={variant}
 						status={status}
 						maxwidth={maxwidth}
-						highlight={isHighlighting ? (isChecked ? 'selected' : ' ') : highlight}
+						highlight={isHighlighting ? isChecked && 'selected' || ' ': highlight}
 						onBlur={handleUpdateTask}
 					>
 						{<SimpleRow
@@ -147,7 +147,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 								{...provided.draggableProps}
 								style={{ ...provided.draggableProps.style, boxShadow: provided.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
 								maxwidth={maxwidth}
-								highlight={isHighlighting ? (isChecked ? 'selected' : ' ') : highlight}
+								highlight={isHighlighting ? isChecked && 'selected' || ' ': highlight}
 								onBlur={handleUpdateTask}
 							>
 								{<SimpleRow

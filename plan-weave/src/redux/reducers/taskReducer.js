@@ -20,13 +20,13 @@ const initialState = {
 	], // Initial state for tasks
 	*/
 	tasks: [
-		{ status: 'incomplete', task: 'Cyber - Rev q 1, linux study, q 2 prep', ttc: 2, id: 1, timestamp: timestamp }, 
-		{ status: 'incomplete', task: 'Meal Prep + break', ttc: 1, id: 2, timestamp: timestamp - 1 }, 
-		{ status: 'incomplete', task: 'Ethics - Lib', ttc: 1.5, id: 3, timestamp: timestamp - 2 },
-		{ status: 'incomplete', task: 'Span - Mindtap, Disc, Study', ttc: 1.75, id: 4, timestamp: timestamp - 3 },
-		{ status: 'incomplete', task: 'break', ttc: .75, id: 5, timestamp: timestamp - 4 },
-		{ status: 'incomplete', task: 'SE II - Discord Plan, Study', ttc: .5, id: 6, timestamp: timestamp - 5 },
-		{ status: 'incomplete', task: 'ML - A4, Study', ttc: .5, id: 7, timestamp: timestamp - 6 },
+		{ status: 'incomplete', task: 'Git - Tests, Pagination, Component testing', ttc: 2, id: 1, timestamp: timestamp }, 
+		{ status: 'incomplete', task: 'Ethics - P2', ttc: 1.5, id: 2, timestamp: timestamp - 1 }, 
+		{ status: 'incomplete', task: 'Span - Mindtap, Disc, Study', ttc: 2, id: 3, timestamp: timestamp - 2 },
+		{ status: 'incomplete', task: 'break', ttc: .75, id: 4, timestamp: timestamp - 3 },
+		{ status: 'incomplete', task: 'ML - A4, Study', ttc: .75, id: 5, timestamp: timestamp - 4 },
+		{ status: 'incomplete', task: 'break', ttc: .5, id: 6, timestamp: timestamp - 5 },
+		{ status: 'incomplete', task: 'SE II - Discord Plan, Study', ttc: .5, id: 7, timestamp: timestamp - 6 },
 		{ status: 'incomplete', task: 'break', ttc: .75, id: 9, timestamp: timestamp - 9 },
 		{ status: 'incomplete', task: 'Driving', ttc: 1.75, id: 10, timestamp: timestamp - 10 },
 		/*

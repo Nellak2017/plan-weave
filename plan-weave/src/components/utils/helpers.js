@@ -4,6 +4,21 @@ import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, SORTING_MET
 
 // This file contains many helpers used through out the application
 
+// --- Private Functions
+
+// validate function private helpers
+const validateTransformation = (task, schema, customErrorMessage) => { if (!schema.isValidSync(task, { strict: true })) throw new Error(customErrorMessage + ` task : ${JSON.stringify(task)}`) }
+const isRequired = (field, schema) => schema.describe().fields[field] ? !schema?.describe()?.fields[field]?.optional : false
+const requiredFields = (schema) => Object.keys(schema.describe().fields)
+	.map(field => isRequired(field, schema) ? field : null)
+	.filter(field => field !== null)
+
+// calculate waste private helpers
+const add = (start, hours) => new Date(start.getTime() + hoursToMillis(hours)) // (Date: start, hours: hours) -> Date(start + hours)
+const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
+const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) => [...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)], [start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
+
+// --- Helpers Exported
 /**
  * Format time left for tasks in a pure way.
  *
@@ -87,22 +102,15 @@ export const validateTasks = ({ taskList, schema = simpleTaskSchema, schemaDefau
  */
 export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
 	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
-
-	const validateTransformation = task => { if (!schema.isValidSync(task, { strict: true })) throw new Error(customErrorMessage + ` task : ${JSON.stringify(task)}`) }
-	const isRequired = field => schema.describe().fields[field] ? !schema?.describe()?.fields[field]?.optional : false
-	const requiredFields = () => Object.keys(schema.describe().fields)
-		.map(field => isRequired(field) ? field : null)
-		.filter(field => field !== null)
-
 	try {
 		// Case 1: If the Task is valid, but missing/extra field, strip and fill defaults. Return list
 		const validatedTask = schema.validateSync(task, { abortEarly: false, stripUnknown: true, })
 		const modifiedTask = schemaDefaultFx(validatedTask)
-		validateTransformation(modifiedTask)
+		validateTransformation(modifiedTask, schema, customErrorMessage)
 		return modifiedTask
 	} catch (validationError) {
 		// Case 2: If the Task is invalid and missing required fields. Display errors and throw Error.
-		if (!requiredFields().every(field => schema?.fields[field]?.isValidSync(task[field]))) throw new Error(validationError.message)
+		if (!requiredFields(schema).every(field => schema?.fields[field]?.isValidSync(task[field]))) throw new Error(validationError.message)
 
 		// Case 3: If the Task is invalid, but has required fields. Update it and return list.
 		// Iterate through fields and apply defaults to invalid ones, or delete it if it isn't in the attribute list
@@ -113,7 +121,7 @@ export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx 
 			if (!isValid && fieldExists) updatedTask[field] = fieldExists?.getDefault()
 			else if (!isValid && !fieldExists) delete updatedTask[field]
 		})
-		validateTransformation(updatedTask)
+		validateTransformation(updatedTask, schema, customErrorMessage)
 		return updatedTask
 	}
 }
@@ -166,9 +174,6 @@ export const calculateWaste = ({ start, taskList, time = new Date() }) => {
 	}
 
 	return ((tasks = taskList, currentTime = time) => {
-		const add = (start, hours) => new Date(start.getTime() + hoursToMillis(hours)) // (Date: start, hours: hours) -> Date(start + hours)
-		const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
-		const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) => [...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)], [start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
 		const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
 		const etas = etaList(taskList.slice(firstIncompleteIndex)) // etas calculated only for the incomplete tasks
 		const lastCompletedTimestamp = tasks[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completedTimestamp to millis
@@ -217,14 +222,14 @@ export const transformAll = (tasks, transforms) => transforms.reduce((task, f) =
  */
 export const rearrangeDnD = (dnd, source, destination) => {
 	const item = dnd.slice(source, source + 1)
-    const left = dnd.slice(0, source) // left of item
-    const right = dnd.slice(source + 1) // right of item
-    const both = left.concat(right) // all items except for the one we are moving
-    return [
-        ...both.slice(0, destination),
-        ...item,
-        ...both.slice(destination)
-    ]
+	const left = dnd.slice(0, source) // left of item
+	const right = dnd.slice(source + 1) // right of item
+	const both = left.concat(right) // all items except for the one we are moving
+	return [
+		...both.slice(0, destination),
+		...item,
+		...both.slice(destination)
+	]
 }
 
 /**
@@ -239,12 +244,12 @@ export const rearrangeDnD = (dnd, source, destination) => {
  * // ordinalSet will be [0, 2, 1]
  */
 export const ordinalSet = (dnd) => {
-	 const mapping = {}
-	 const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
-	 uniqueSortedArr.forEach((num, index) => {
-	   mapping[num] = index
-	 })
-	 return dnd.map(num => mapping[num])
+	const mapping = {}
+	const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
+	uniqueSortedArr.forEach((num, index) => {
+		mapping[num] = index
+	})
+	return dnd.map(num => mapping[num])
 }
 
 /**
@@ -260,8 +265,8 @@ export const completedOnTopSorted = (reduxTasks, tasks, start, transforms) => {
 	// transforms is a list of transformation functions, tasks => ordering of tasks
 	if (!transforms) {
 		transforms = [
-			SORTING_METHODS[SORTING_METHODS_NAMES.TIMESTAMP], 
-			t => transform(t, reduxTasks.map((_,i) => i)), 
+			SORTING_METHODS[SORTING_METHODS_NAMES.TIMESTAMP],
+			t => transform(t, reduxTasks.map((_, i) => i)),
 			t => calculateWaste({ start, taskList: t, time: new Date() })
 		]
 	}

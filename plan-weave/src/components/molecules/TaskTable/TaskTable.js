@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo } from 'react'
+import { useContext, useMemo } from 'react'
 import TableHeader from '../../atoms/TableHeader/TableHeader'
 import TaskRow from '../TaskRow/TaskRow'
 import { TaskTableContainer } from './TaskTable.elements'
@@ -15,7 +15,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const { taskList, setTaskList, tasksPerPage, page, search, dnd, setDnd, timeRange } = useContext(TaskEditorContext)
-	const [localTasks, setLocalTasks] = useState(tasks)
+	const localTasks = useMemo(() => tasks, [tasks])
 
 	const lastCompletedIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1
 	const lastCompleted = lastCompletedIndex >= 0 ? taskList[lastCompletedIndex] : null // gives last completed task

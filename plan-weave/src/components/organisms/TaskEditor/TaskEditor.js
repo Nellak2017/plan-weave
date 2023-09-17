@@ -14,17 +14,20 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 /*
 	Easy: 	
 		TODO: Add Test coverage to new helpers
+		X TODO: Fix all Linting warnings
 		
 	Medium:
-		TODO: Limit the Tasks fetched to be 1000 and the user created tasks to be 1000 as well
+		X TODO: Finish up the Pagination component
 		TODO: Config Support for Complete Tasks, Delete Multiple Tasks
+		X TODO: The x in the (n of x page) display doesn't update
+		
 		TODO: Refresh Tasks Button (Lets user set the dates of all visible tasks to be today, so they can effectively recycle them)
 		TODO: Sort icons
-		TODO: Refactor the form in task row to be like formik (When you make Full Task)
-		TODO: The x in the (n of x page) display doesn't update
-		TODO: Finish up the Pagination component
+		
+		TODO: Limit the Tasks fetched to be 1000 and the user created tasks to be 1000 as well
 		TODO: Refactor all functions to make use of Railway oriented design (for example the Maybe monad). Look at the validation helper
-
+		TODO: Refactor the form in task row to be like formik (When you make Full Task)
+		
 	Hard: 
 		TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
 	
@@ -55,7 +58,7 @@ const TaskEditor = ({
 	// Auto Calculation State
 	const [owl, setOwl] = useState(true)
 	const [timeRange, setTimeRange] = useState({ ...startEndTimes }) // starts off in possibly incorrect state, but TaskControl fixes it (to avoid races, and ensure integrity)
-	const { start, _ } = { ...timeRange } // destructure timerange
+	const start = useMemo(() => timeRange['start'], [timeRange]) // destructure timerange, only start (we don't use end here)
 	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
 
 	// Task Data (Redux), Task View (Context), Searching, Sorting, DnD, and Algorithm Change State
@@ -129,12 +132,12 @@ const TaskEditor = ({
 	}, [sortingAlgo])
 
 	// --- ETA + Waste Auto Calculation Feature
-	const update = () => setTaskList(old => old.length > 0 ? calculateWaste({ start, taskList: old, time: new Date() }) : old)
+	const update = () => setTaskList(old => old || calculateWaste({ start, taskList: old, time: new Date() }))
 	useEffect(() => update(), [timeRange, owl, dnd])
 	useEffect(() => {
 		if (taskUpdated) { update() }
 		const interval = setInterval(() => { if (!taskUpdated) update() }, 5000)
-		return () => { if (interval) {clearInterval(interval); setTaskUpdated(false)} }
+		return () => { if (interval) { clearInterval(interval); setTaskUpdated(false) } }
 	}, [taskList]) // this is needed to update waste every second, unfortunately
 
 	return (

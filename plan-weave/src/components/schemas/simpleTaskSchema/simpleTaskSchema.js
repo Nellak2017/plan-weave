@@ -1,5 +1,5 @@
 import * as Yup from 'yup'
-import { TASK_STATUSES, STATUS_COLORS } from '../../utils/constants'
+import { TASK_STATUSES } from '../../utils/constants'
 import { Timestamp } from 'firebase/firestore'
 
 const timestamp = Timestamp.fromDate(new Date()).seconds

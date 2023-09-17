@@ -1,7 +1,7 @@
 import {
 	HoursInputStyled, HoursContainer
 } from './HoursInput.elements'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { THEMES } from '../../utils/constants'
 
 const HoursInput = ({
@@ -23,33 +23,25 @@ const HoursInput = ({
 	const [localValue, setLocalValue] = useState(initialValue)
 
 	// Use the controlledValue prop if it exists, otherwise, use localValue
-	const value = controlledValue !== undefined ? controlledValue : localValue;
+	const value = useMemo(() => controlledValue || localValue, [localValue])
 
 	const handleChange = e => {
 		const newValue = e.target.value
 		const cleanedValue = (newValue >= min && newValue <= max) || newValue === '' ? newValue : min
+		
 		setLocalValue(cleanedValue) // if it is in range, then it is that, default to min
-		if (onValueChange) {
-			onValueChange(cleanedValue) // Pass the new value to the parent component
-		}
-		// If it's not being controlled, update the local state
-		if (controlledValue === undefined) {
-			setLocalValue(cleanedValue)
-		}
+		
+		// Pass the new value to the parent component
+		if (onValueChange) onValueChange(cleanedValue) 
 	}
 	const handleBlur = () => {
 		let sanitizedValue = Math.max(min, Math.min(24, parseFloat(localValue) || min))
 		sanitizedValue = isNaN(sanitizedValue) ? '' : sanitizedValue.toFixed(1)
 
-		// If it's being controlled, call the parent's onValueChange
-		if (onValueChange && controlledValue !== undefined) {
-			onValueChange(sanitizedValue)
-		}
+		setLocalValue(sanitizedValue)
 
-		// If it's not being controlled, update the local state
-		if (controlledValue === undefined) {
-			setLocalValue(sanitizedValue)
-		}
+		// If it's being controlled, call the parent's onValueChange
+		if (onValueChange && controlledValue !== undefined) onValueChange(sanitizedValue)
 	}
 	return (
 		<HoursContainer variant={variant} color={color}>
