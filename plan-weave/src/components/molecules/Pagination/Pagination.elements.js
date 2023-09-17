@@ -53,5 +53,5 @@ export const PageChooserContainer = styled.div`
 	align-items: center;
 	column-gap: ${props => props.theme.spaces.medium};
 
-	margin-left: 20%; // Don't question it, it just works
+	margin-left: 18%; // Don't question it, it just works
 `

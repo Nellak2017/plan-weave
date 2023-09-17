@@ -16,16 +16,15 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 		TODO: Add Test coverage to new helpers and extract all helper functions to helper.js
 		
 	Medium:
-		X TODO: Refresh Tasks Button (Lets user set the dates of all visible tasks to be today, so they can effectively recycle them)
 		TODO: Sort icons
-		
-		TODO: Limit the Tasks fetched to be 1000 and the user created tasks to be 1000 as well
-		TODO: Refactor all functions to make use of Railway oriented design (for example the Maybe monad). Look at the validation helper
-		TODO: Refactor the form in task row to be like formik (When you make Full Task)
+		X TODO: Limit the Tasks fetched to be 1000 and the user created tasks to be 1000 as well
 
 		TODO: Fix the Completed on Top bug where it uses old dnd config to keep completed in place despite needing to be on top.
 			(dnd should only apply to incomplete components)
 		TODO: Fix the Dnd config not updating properly when multiple updates applied
+
+		TODO: Refactor all functions to make use of Railway oriented design (for example the Maybe monad). Look at the validation helper
+		TODO: Refactor the form in task row to be like formik (When you make Full Task)
 		
 	Hard: 
 		TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
