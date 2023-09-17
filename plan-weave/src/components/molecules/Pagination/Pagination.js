@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useContext } from 'react'
 import { THEMES } from '../../utils/constants'
-import { isInt } from '../../utils/helpers'
+import { hoursToMillis, isInt } from '../../utils/helpers'
 import { PaginationContainer, PageChooserContainer } from '../Pagination/Pagination.elements'
 import NextButton from '../../atoms/NextButton/NextButton'
 import HoursInput from '../../atoms/HoursInput/HoursInput'
@@ -28,7 +28,7 @@ function Pagination({ variant = 'dark',
 	if (total && !isInt(max)) max = Math.ceil(total / (defaultNumber || 10))
 
 	// --- Context (for Refresh Feature)
-	const { setTimeRange, setTaskList } = useContext(TaskEditorContext)
+	const { setTimeRange, setTaskList, owl } = useContext(TaskEditorContext)
 
 	// --- State
 	// define local max here
@@ -76,10 +76,12 @@ function Pagination({ variant = 'dark',
 
 	const handleRefresh = () => {
 		/* 
-			1. update start to be for today (get time from today and set date to be today's)
+			1. update start to be for today and end to be for today if no owl, and tomorrow if owl
 			2. update every task in the task list to have timestamp for today but with it's hours
 		*/
-		setTimeRange(old => ({ ...old, start: dateToToday(old['start']) }))
+		const endPlusOne = old => new Date(dateToToday(old['end']).getTime() + hoursToMillis(24))
+
+		setTimeRange(old => ({ start: dateToToday(old['start']), end: owl ? endPlusOne(old) : dateToToday(old['end']) }))
 		setTaskList(old => old.map(task => ({ ...task , timestamp : dateToToday(new Date(task.timestamp)).getTime() / 1000 })))
 	}
 
@@ -87,12 +89,12 @@ function Pagination({ variant = 'dark',
 		<PaginationContainer variant={variant} maxWidth={maxWidth}>
 			<BiRecycle
 				className='pagination-icon'
-				tabIndex={1}
+				tabIndex={8}
 				title={'Re-use tasks by making all tasks current'}
 				onClick={handleRefresh}
 			/>
 			<PageChooserContainer>
-				<NextButton variant={'left'} onClick={handlePreviousPage} size={size} />
+				<NextButton variant={'left'} onClick={handlePreviousPage} size={size} tabIndex={9}/>
 				<HoursInput
 					variant={variant}
 					placeholder={1}
@@ -105,8 +107,9 @@ function Pagination({ variant = 'dark',
 					max={parseInt(maxPage)}
 					integer={true}
 					onValueChange={handlePageNumber}
+					tabIndex={10}
 				/>
-				<NextButton variant={'right'} onClick={handleNextPage} size={size} />
+				<NextButton variant={'right'} onClick={handleNextPage} size={size} tabIndex={11}/>
 			</PageChooserContainer>
 			<NumberPicker
 				variant={variant}
@@ -115,6 +118,7 @@ function Pagination({ variant = 'dark',
 				pickerText={pickerText}
 				onValueChange={handleTasksPerPage}
 				controlledValue={tasksPerPage}
+				tabIndex={12}
 			/>
 		</PaginationContainer>
 	)

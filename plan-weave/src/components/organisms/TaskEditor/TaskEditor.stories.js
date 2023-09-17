@@ -1,7 +1,7 @@
 import TaskEditor from './TaskEditor'
 // redux stuff
 import store from '../../../redux/store'
-import { Provider, useSelector } from 'react-redux'
+import { Provider } from 'react-redux'
 import { toast } from 'react-toastify'
 
 export default {

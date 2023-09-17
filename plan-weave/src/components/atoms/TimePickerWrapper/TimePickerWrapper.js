@@ -46,8 +46,8 @@ function TimePickerWrapper({
   const currentTime = controlled ? controlledTime : time // Use controlledTime if controlled by the parent
 
   // --- Debouncing the Clock Feature
-  useEffect(() => { return () => { debouncedChangeHandler.cancel() }}, [debouncedChangeHandler])
   const debouncedChangeHandler = useMemo( () => debounce(newTime => onTimeChange(newTime), CLOCK_DEBOUNCE), [])
+  useEffect(() => { return () => { debouncedChangeHandler.cancel() }}, [debouncedChangeHandler])
 
   // --- Clock FSM (implemented without State machines) Feature
   const handleTimeChange = newTime => {
@@ -88,7 +88,7 @@ function TimePickerWrapper({
             size={32}
             view={view}
             onBlur={handleBlur}
-            ref={input => input && input.focus()}
+            ref={input => input?.focus()}
             tabIndex={0}
           />
         </TimeClockWrapper>

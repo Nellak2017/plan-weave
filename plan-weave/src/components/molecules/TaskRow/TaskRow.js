@@ -103,7 +103,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 	}
 
 	const handleUpdateTask = () => {
-		toast.info('This Task was Updated')
+		//toast.info('This Task was Updated')
 		updateTask(id, {
 			...taskObject,
 			eta: taskObject?.eta && taskObject.eta instanceof Date ? taskObject.eta.getTime() / 1000 : new Date().getTime() / 1000,
