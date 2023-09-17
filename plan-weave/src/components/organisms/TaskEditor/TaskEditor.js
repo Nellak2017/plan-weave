@@ -17,12 +17,9 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 		
 	Medium:
 		TODO: Sort icons
-		X TODO: Limit the Tasks fetched to be 1000 and the user created tasks to be 1000 as well
-
 		TODO: Fix the Completed on Top bug where it uses old dnd config to keep completed in place despite needing to be on top.
 			(dnd should only apply to incomplete components)
 		TODO: Fix the Dnd config not updating properly when multiple updates applied
-
 		TODO: Refactor all functions to make use of Railway oriented design (for example the Maybe monad). Look at the validation helper
 		TODO: Refactor the form in task row to be like formik (When you make Full Task)
 		
@@ -130,17 +127,13 @@ const TaskEditor = ({
 	}, [sortingAlgo])
 
 	// --- ETA + Waste Auto Calculation Feature
-	const update = () => setTaskList(old => old || calculateWaste({ start: start, taskList: old, time: new Date() }))
-	useEffect(() => update(), [start, owl, dnd])
+	const update = () => setTaskList(old => calculateWaste({ start: start, taskList:old, time: new Date() }) || old)
+	useEffect(() => update(), [timeRange, start, owl, dnd])
 	useEffect(() => {
 		if (taskUpdated) { update() }
-		const interval = setInterval(() => { if (!taskUpdated) update() }, 5000)
+		const interval = setInterval(() => { if (!taskUpdated) update() }, 50)
 		return () => { if (interval) { clearInterval(interval); setTaskUpdated(false) } }
 	}, [taskList]) // this is needed to update waste every second, unfortunately
-
-	// For some reason unknown to me, you need to explicitly do this so that the view updates properly
-	useEffect(() => setTaskList(calculateWaste({ start: start, taskList: taskList, time: new Date() })), [timeRange])
-
 
 	return (
 		<TaskEditorContext.Provider value={memoizedContext}>

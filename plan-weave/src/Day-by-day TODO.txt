@@ -84,7 +84,7 @@ X Delete Tasks Multiple Select
 	X Test The Selecting thing
 	X Batch Delete Multiple Tasks
 
-pagination
+X pagination
 	Bottom Background (exactly same as TaskControl, except upside down)
 	Left,Right buttons
 	Center Input, [X] of Y, show Z per page
