@@ -24,6 +24,8 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 		TODO: Refactor the form in task row to be like formik (When you make Full Task)
 		
 	Hard: 
+		TODO: Add full test coverage for this component
+		TODO: Add visual tests for this component in storybook
 		TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
 	
 	Super Hard:
@@ -36,7 +38,7 @@ const TaskEditor = ({
 	sortingAlgorithm = 'timestamp',
 	maxwidth = 818,
 	options,
-	startEndTimes = { 'start': parse('15:20', 'HH:mm', new Date()), 'end': parse('00:30', 'HH:mm', new Date()) },
+	startEndTimes = { 'start': parse('20:00', 'HH:mm', new Date()), 'end': parse('00:30', 'HH:mm', new Date()) },
 	paginationOptions = { 'tasksPerPage': 10, 'page': 1 },
 	title = "Today's Tasks"
 }) => {
