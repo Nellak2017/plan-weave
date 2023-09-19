@@ -1,4 +1,4 @@
-import { TASK_STATUSES } from "../../utils/constants"
+import { TASK_STATUSES, TASK_ROW_TOOLTIPS } from "../../utils/constants"
 import TaskInput from '../../atoms/TaskInput/TaskInput.js'
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
 import {
@@ -16,27 +16,41 @@ import { formatTimeLeft } from '../../utils/helpers.js'
 import { format } from 'date-fns'
 
 // Task View Logic (Simple, Full) (Just Simple for now)
-const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, localTask, localTtc, setLocalTtc, handleCheckBoxClicked, handleDeleteTask }) => {
+const SimpleRow = ({
+	provided,
+	taskObject,
+	variant,
+	isChecked,
+	setLocalTask,
+	localTask,
+	localTtc,
+	setLocalTtc,
+	handleCheckBoxClicked,
+	handleDeleteTask,
+	tooltips = TASK_ROW_TOOLTIPS
+}) => {
 
 	const { task, waste, ttc, eta, status } = { ...taskObject }
+	const { dnd: dndTooltip, completed: completedTooltip, incomplete: incompleteTooltip, task: taskTooltip,
+		waste: wasteTooltip, ttc: ttcTooltip, eta: etaTooltip, delete: deleteTooltip } = { ...tooltips }
 	return (
 		<>
-			<IconContainer title={'Drag-n-Drop tasks to change view'} {...provided?.dragHandleProps ?? ''}>
+			<IconContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''}>
 				<DragIndicator size={32} />
 			</IconContainer>
-			<IconContainer title={isChecked ? 'Mark Incomplete' : 'Mark Complete'}>
+			<IconContainer title={isChecked ? completedTooltip : incompleteTooltip}>
 				{isChecked
 					? (<MdOutlineCheckBox size={32} onClick={handleCheckBoxClicked} />)
 					: (<MdOutlineCheckBoxOutlineBlank size={32} onClick={handleCheckBoxClicked} />)
 				}
 			</IconContainer>
-			<TaskContainer title={'Task Name'}>
+			<TaskContainer title={taskTooltip}>
 				{status === TASK_STATUSES.COMPLETED ?
 					<p>{task}</p>
 					: <TaskInput onChange={e => setLocalTask(e.target.value)} value={localTask} variant={variant} />
 				}
 			</TaskContainer>
-			<TimeContainer title={'Wasted Time on this Task'} style={{ width: '200px' }}>
+			<TimeContainer title={wasteTooltip} style={{ width: '200px' }}>
 				<p>
 					{(() => {
 						// This function displays the waste for the positive, 0, and negative cases
@@ -61,7 +75,7 @@ const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, loc
 					}
 				</p>
 			</TimeContainer>
-			<TimeContainer style={{ width: '120px' }} title={'Time To Complete Task'}>
+			<TimeContainer style={{ width: '120px' }} title={ttcTooltip}>
 				{status === TASK_STATUSES.COMPLETED ?
 					<pre>{ttc && !isNaN(ttc) && ttc > 0 ?
 						formatTimeLeft({
@@ -74,7 +88,7 @@ const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, loc
 					: <HoursInput onValueChange={value => setLocalTtc(parseFloat(value))} value={localTtc} initialValue={localTtc && localTtc > .01 ? localTtc : 1} variant={variant} placeholder='hours' text='hours' />
 				}
 			</TimeContainer>
-			<TimeContainer style={{ width: '40px' }} title={'Estimated Time to Finish Task'}>
+			<TimeContainer style={{ width: '40px' }} title={etaTooltip}>
 				<p>
 					{eta && eta instanceof Date && !isNaN(eta.getTime())
 						? format(eta, "HH:mm")
@@ -83,7 +97,7 @@ const SimpleRow = ({ provided, taskObject, variant, isChecked, setLocalTask, loc
 				</p>
 			</TimeContainer>
 			<IconContainer>
-				<BiTrash title={'Delete this task'} onClick={handleDeleteTask} size={32} />
+				<BiTrash title={deleteTooltip} onClick={handleDeleteTask} size={32} />
 			</IconContainer>
 		</>)
 }

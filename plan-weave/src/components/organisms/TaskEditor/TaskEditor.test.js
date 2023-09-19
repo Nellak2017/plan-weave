@@ -1,8 +1,7 @@
 import React from 'react'
-import { act, fireEvent } from '@testing-library/react'
+import { act, fireEvent, screen } from '@testing-library/react'
 import TaskEditor from './TaskEditor' // Import your TaskEditor component
 import { configureStore, combineReducers, createSlice } from '@reduxjs/toolkit'
-
 import { renderWithProviders } from '../../utils/test-utils'
 
 // --- Shared Data
@@ -13,17 +12,19 @@ const options = [
   { name: 'default', listener: () => console.log('Default Sorting applied. Tasks now appear as they do in the database.'), algorithm: '' },
 ]
 const timestamp = new Date().getTime() / 1000 // epoch of current time
-const initialTasks = [
-  { status: 'incomplete', task: 'Git - Tests, Pagination, Component testing', ttc: 2, id: 1, timestamp: timestamp },
-  { status: 'incomplete', task: 'Ethics - P2', ttc: 1.5, id: 2, timestamp: timestamp - 1 },
-  { status: 'incomplete', task: 'Span - Mindtap, Disc, Study', ttc: 2, id: 3, timestamp: timestamp - 2 },
-  { status: 'incomplete', task: 'break', ttc: .75, id: 4, timestamp: timestamp - 3 },
-  { status: 'incomplete', task: 'ML - A4, Study', ttc: .75, id: 5, timestamp: timestamp - 4 },
-  { status: 'incomplete', task: 'break', ttc: .5, id: 6, timestamp: timestamp - 5 },
-  { status: 'incomplete', task: 'SE II - Discord Plan, Study', ttc: .5, id: 7, timestamp: timestamp - 6 },
-  { status: 'incomplete', task: 'break', ttc: .75, id: 9, timestamp: timestamp - 9 },
-  { status: 'incomplete', task: 'Driving', ttc: 1.75, id: 10, timestamp: timestamp - 10 },
-]
+const initialTasks = {
+  tasks: [
+    { status: 'incomplete', task: 'break', ttc: 1.5, id: 1, timestamp: timestamp },
+    { status: 'incomplete', task: 'Span - Mindtap, Disc, Study', ttc: 3, id: 2, timestamp: timestamp - 1 },
+    { status: 'incomplete', task: 'Exampl3 2', ttc: 1.25, id: 3, timestamp: timestamp - 2 },
+    { status: 'incomplete', task: 'Ethics - P2', ttc: 1.5, id: 4, timestamp: timestamp - 3 },
+    { status: 'incomplete', task: 'break', ttc: .75, id: 5, timestamp: timestamp - 4 },
+    { status: 'incomplete', task: 'ML - A4, Study', ttc: .5, id: 6, timestamp: timestamp - 5 },
+    { status: 'incomplete', task: 'break', ttc: .5, id: 7, timestamp: timestamp - 6 },
+    { status: 'incomplete', task: 'SE II - Discord Plan, Study', ttc: .75, id: 9, timestamp: timestamp - 9 },
+    { status: 'incomplete', task: 'Driving', ttc: 1.75, id: 10, timestamp: timestamp - 10 },
+  ]
+}
 const searchStore = configureStore({
   reducer: combineReducers({
     tasks: createSlice({
@@ -49,10 +50,9 @@ const searchStore = configureStore({
           }
         },
       },
-    }).reducer
+    }).reducer,
   })
 })
-
 
 // --- Mocks
 // Mock the CSS import
@@ -62,12 +62,12 @@ jest.mock('react-toastify/dist/ReactToastify.css', () => { }) // Replace with th
 const searchTestCases = [
   {
     description: 'Searching for first task should result in atleast 1 task in the task table',
-    value: initialTasks[0].task,
-    action: (searchInput, value = initialTasks[0].task) => fireEvent.change(searchInput, { target: { value } }),
-    expected: ({ getAllByDisplayValue, queryByDisplayValue, value = initialTasks[0].task, tasks = initialTasks }) => {
+    value: initialTasks.tasks[0].task,
+    action: (searchInput, value = initialTasks.tasks[0].task) => fireEvent.change(searchInput, { target: { value } }),
+    expected: ({ getAllByDisplayValue, queryByDisplayValue, value = initialTasks.tasks[0].task, tasks = initialTasks.tasks }) => {
       // Assert that search and atleast 1 are in the task table
       const visibleTasks = getAllByDisplayValue(value)
-      expect(visibleTasks.length).toBeGreaterThanOrEqual(2) 
+      expect(visibleTasks.length).toBeGreaterThanOrEqual(2)
 
       // Assert that all non-selected tasks are missing
       tasks.forEach(task => {
@@ -76,30 +76,53 @@ const searchTestCases = [
           expect(hiddenTask).toBeNull()
         }
       })
-
     }
   },
   {
     description: 'Searching for first task should be case-insensitive and result in atleast 1 task in the task table',
-    value: initialTasks[0].task,
-    action: (searchInput, value = initialTasks[0].task) => fireEvent.change(searchInput, { target: { value } }),
-    expected: ({ getAllByDisplayValue, queryByDisplayValue, value = initialTasks[0].task, tasks = initialTasks }) => {
+    value: initialTasks.tasks[0].task.toLowerCase(),
+    action: (searchInput, value = initialTasks.tasks[0].task.toLowerCase()) => fireEvent.change(searchInput, { target: { value } }),
+    expected: ({ getAllByDisplayValue, queryByDisplayValue, value = initialTasks.tasks[0].task.toLowerCase(), tasks = initialTasks.tasks }) => {
       // Assert that search (lowercase) and atleast 1 are in the task table
-      const searchValueLowercase = value.toLowerCase()
-      const visibleTasks = getAllByDisplayValue(taskValue => taskValue.toLowerCase() === searchValueLowercase)
-      expect(visibleTasks.length).toBeGreaterThanOrEqual(2) 
+      const visibleTasks = getAllByDisplayValue(taskValue => taskValue.toLowerCase().includes(value))
+      expect(visibleTasks.length).toBeGreaterThanOrEqual(2)
 
       // Assert that all non-selected tasks are missing
       tasks.forEach(task => {
-        if (!task.task.includes(value)) {
+        if (!task.task.toLowerCase().includes(value)) {
           const hiddenTask = queryByDisplayValue(task.task)
           expect(hiddenTask).toBeNull()
         }
       })
     }
   },
-  // TODO: Empty String
-  // TODO: Etas that are visible should have the same exact value as the old Etas before altering the TaskRow
+  {
+    description: 'Searching for Empty Input returns full task list',
+    value: "",
+    action: (searchInput, value = "") => fireEvent.change(searchInput, { target: { value } }),
+    expected: ({ tasks = initialTasks.tasks }) => {
+      // Assert that all tasks are in the task table
+      tasks.forEach(task => {
+        const visibleTasks = screen.getAllByDisplayValue(task.task)
+        expect(visibleTasks.length).toBeGreaterThanOrEqual(1)
+      })
+    }
+  },
+  {
+    description: 'Searching should not alter eta values',
+    value: initialTasks.tasks[0].task,
+    action: (searchInput, value = initialTasks.tasks[0].task) => fireEvent.change(searchInput, { target: { value } }),
+    expected: ({ getAllByDisplayValue, value = initialTasks.tasks[0].task.toLowerCase(), originalMatches }) => {
+      // Assert that all etas that are visible have etas that match their original counterparts
+      const newMatches = getAllByDisplayValue(value).slice(1)
+      expect(newMatches.length).toEqual(originalMatches.length)
+      newMatches.forEach((el, i) => expect(el).toEqual(originalMatches[i]))
+    }
+  },
+  // TODO: Preceeding white space should be stripped
+  // TODO: Post white space should be stripped
+  // TODO: Queries with internal whitespace greater than 2 should be respected
+  // TODO: When no tasks are found, no tasks are displayed
 ]
 
 // --- Tests
@@ -107,8 +130,9 @@ describe('TaskEditor - 1. Search Feature', () => {
   searchTestCases.forEach(testCase => {
     it(testCase.description, async () => {
       // -- Arrange
-      const { getByPlaceholderText, queryByDisplayValue, getAllByDisplayValue } = renderWithProviders(<TaskEditor options={options} />, { searchStore })
+      const { getByPlaceholderText, queryByDisplayValue, getAllByDisplayValue } = renderWithProviders(<TaskEditor options={options} />, { store: searchStore })
       const searchInput = getByPlaceholderText('Search for a Task')
+      const originalMatches = getAllByDisplayValue(testCase?.value)
 
       // -- Act
       await act(async () => {
@@ -116,7 +140,7 @@ describe('TaskEditor - 1. Search Feature', () => {
       })
 
       // -- Assert
-      testCase.expected({ getByPlaceholderText, getAllByDisplayValue, queryByDisplayValue, value: testCase?.value })
+      testCase.expected({ getByPlaceholderText, getAllByDisplayValue, queryByDisplayValue, value: testCase?.value, originalMatches })
     })
   })
 })

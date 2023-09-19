@@ -56,3 +56,14 @@ export const DEFAULT_TASK_CONTROL_TOOL_TIPS = {
 }
 
 export const CLOCK_DEBOUNCE = 20 // measured in ms
+
+export const TASK_ROW_TOOLTIPS = {
+	dnd : 'Drag-n-Drop tasks to change view',
+	completed: 'Mark Incomplete',
+	incomplete: 'Mark Complete',
+	task: 'Task Name',
+	waste: 'Wasted Time on this Task',
+	ttc: 'Time To Complete Task',
+	eta: 'Estimated Time to Finish Task',
+	delete: 'Delete this task',
+}

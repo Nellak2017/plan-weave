@@ -22,12 +22,15 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 		TODO: Fix the Dnd config not updating properly when multiple updates applied
 		TODO: Refactor all functions to make use of Railway oriented design (for example the Maybe monad). Look at the validation helper
 		TODO: Refactor the form in task row to be like formik (When you make Full Task)
+		TODO: Completed Highlight bug. When it is the next day (owl on), and you swap a task using dnd to 1st completed and complete it, it displays as old instead of completed.
 		
 	Hard: 
 		TODO: Add full test coverage for this component
 		TODO: Add visual tests for this component in storybook
 		TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
-	
+		TODO: Solve the Refresh Problem (If you refresh, it alters components inline potentially harming Analytics. 
+			  What should be done is sent tasks to store and hide them, then generate a copy based on old)
+
 	Super Hard:
 		TODO: Full Task Schema
 */
@@ -38,7 +41,7 @@ const TaskEditor = ({
 	sortingAlgorithm = 'timestamp',
 	maxwidth = 818,
 	options,
-	startEndTimes = { 'start': parse('20:00', 'HH:mm', new Date()), 'end': parse('00:30', 'HH:mm', new Date()) },
+	startEndTimes = { 'start': parse('16:20', 'HH:mm', new Date()), 'end': parse('00:30', 'HH:mm', new Date()) },
 	paginationOptions = { 'tasksPerPage': 10, 'page': 1 },
 	title = "Today's Tasks"
 }) => {
