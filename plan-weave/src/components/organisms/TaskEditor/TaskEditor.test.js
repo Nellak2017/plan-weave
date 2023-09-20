@@ -112,14 +112,26 @@ const searchTestCases = [
     description: 'Searching should not alter eta values',
     value: initialTasks.tasks[0].task,
     action: (searchInput, value = initialTasks.tasks[0].task) => fireEvent.change(searchInput, { target: { value } }),
-    expected: ({ getAllByDisplayValue, value = initialTasks.tasks[0].task.toLowerCase(), originalMatches }) => {
+    expected: ({ getAllByDisplayValue, value = initialTasks.tasks[0].task, originalMatches }) => {
       // Assert that all etas that are visible have etas that match their original counterparts
       const newMatches = getAllByDisplayValue(value).slice(1)
       expect(newMatches.length).toEqual(originalMatches.length)
       newMatches.forEach((el, i) => expect(el).toEqual(originalMatches[i]))
     }
   },
-  // TODO: Preceeding white space should be stripped
+  {
+    description: 'Preceeding white space should be stripped. ("Exampl3 2" === "    Exampl3 2")',
+    value: "       ".concat(initialTasks.tasks[0].task),
+    action: (searchInput, value = "       ".concat(initialTasks.tasks[0].task)) => fireEvent.change(searchInput, { target: { value } }),
+    expected: ({ getAllByDisplayValue, value = initialTasks.tasks[0].task, originalMatches }) => {
+      // Assert that all the original matches ("   "+query) === (query) after doing the action
+      const newMatches = getAllByDisplayValue(value.trim()).slice(1) // Get all the inputs that match the new query (it will have 1 less because the search itself is " "+query)
+      const oldMatches = originalMatches // Slice off the search to get the table inputs
+
+      expect(newMatches.length).toEqual(oldMatches.length)
+      newMatches.forEach((el, i) => expect(el).toEqual(oldMatches[i])) // Every new match must equal every old match (assuming "  "+query === query)
+    },
+  }
   // TODO: Post white space should be stripped
   // TODO: Queries with internal whitespace greater than 2 should be respected
   // TODO: When no tasks are found, no tasks are displayed
@@ -132,7 +144,7 @@ describe('TaskEditor - 1. Search Feature', () => {
       // -- Arrange
       const { getByPlaceholderText, queryByDisplayValue, getAllByDisplayValue } = renderWithProviders(<TaskEditor options={options} />, { store: searchStore })
       const searchInput = getByPlaceholderText('Search for a Task')
-      const originalMatches = getAllByDisplayValue(testCase?.value)
+      const originalMatches = getAllByDisplayValue(testCase?.value.trim())
 
       // -- Act
       await act(async () => {

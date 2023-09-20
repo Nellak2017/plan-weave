@@ -20,17 +20,17 @@ const initialState = {
 	], // Initial state for tasks
 	*/
 	tasks: [
-		{ status: 'incomplete', task: 'Gym', ttc: 1.5, id: 1, timestamp: timestamp }, 
-		{ status: 'incomplete', task: 'Span - Mindtap, Disc, Study', ttc: 3, id: 2, timestamp: timestamp - 1 }, 
-		{ status: 'incomplete', task: 'Groceries', ttc: 1.25, id: 3, timestamp: timestamp - 2 },
-		{ status: 'incomplete', task: 'Ethics - P2', ttc: 1.5, id: 4, timestamp: timestamp - 3 },
-		{ status: 'incomplete', task: 'break', ttc: .75, id: 5, timestamp: timestamp - 4 },
-		{ status: 'incomplete', task: 'ML - A4, Study', ttc: .5, id: 6, timestamp: timestamp - 5 },
+		{ status: 'incomplete', task: 'break', ttc: .5, id: 1, timestamp: timestamp }, 
+		{ status: 'incomplete', task: 'Ethics - P2', ttc: 1.5, id: 2, timestamp: timestamp - 1 }, 
+		{ status: 'incomplete', task: 'break', ttc: .5, id: 3, timestamp: timestamp - 2 },
+		{ status: 'incomplete', task: 'ML - A4, Study', ttc: 1.5, id: 4, timestamp: timestamp - 3 },
+		{ status: 'incomplete', task: 'break', ttc: .5, id: 5, timestamp: timestamp - 4 },
+		{ status: 'incomplete', task: 'Cyber Security', ttc: 2.5, id: 6, timestamp: timestamp - 5 },
 		{ status: 'incomplete', task: 'break', ttc: .5, id: 7, timestamp: timestamp - 6 },
 		{ status: 'incomplete', task: 'SE II - Discord Plan, Study', ttc: .75, id: 9, timestamp: timestamp - 9 },
-		{ status: 'incomplete', task: 'Driving', ttc: 1.75, id: 10, timestamp: timestamp - 10 },
+		{ status: 'incomplete', task: 'break', ttc: 1, id: 10, timestamp: timestamp - 10 },
+		{ status: 'incomplete', task: 'Span - Mindtap, Disc, Study', ttc: 1, id: 11, timestamp: timestamp - 11 },
 		/*
-		{ status: 'incomplete', task: '', ttc: 1, id: 11, timestamp: timestamp - 11 },
 		{ status: 'incomplete', task: '', ttc: 1.5, id: 12, timestamp: timestamp - 12 },
 		{ status: 'incomplete', task: '', ttc: .5, id: 13, timestamp: timestamp - 13 },
 		{ status: 'incomplete', task: '', ttc: .5, id: 14, timestamp: timestamp - 14 },
