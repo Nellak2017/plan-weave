@@ -166,7 +166,7 @@ function TaskControl({
 						title={'Search for Tasks'}
 						variant={variant}
 						maxwidth={maxwidthsearch}
-						onChange={value => setSearch?.(value)}
+						onChange={value => setSearch?.(value.trimRight())}
 						{...rest}
 					/>
 					<p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>

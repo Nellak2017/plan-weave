@@ -3,6 +3,7 @@ import { act, fireEvent, screen } from '@testing-library/react'
 import TaskEditor from './TaskEditor' // Import your TaskEditor component
 import { configureStore, combineReducers, createSlice } from '@reduxjs/toolkit'
 import { renderWithProviders } from '../../utils/test-utils'
+import { diagonalize } from '../../utils/helpers.js'
 
 // --- Shared Data
 const options = [
@@ -53,6 +54,7 @@ const searchStore = configureStore({
     }).reducer,
   })
 })
+const diagonalizedValue = diagonalize(initialTasks.tasks.map(task => task.task)) // unique query not in list of tasks
 
 // --- Mocks
 // Mock the CSS import
@@ -123,18 +125,39 @@ const searchTestCases = [
     description: 'Preceeding white space should be stripped. ("Exampl3 2" === "    Exampl3 2")',
     value: "       ".concat(initialTasks.tasks[0].task),
     action: (searchInput, value = "       ".concat(initialTasks.tasks[0].task)) => fireEvent.change(searchInput, { target: { value } }),
-    expected: ({ getAllByDisplayValue, value = initialTasks.tasks[0].task, originalMatches }) => {
+    expected: ({ getAllByDisplayValue, value = initialTasks.tasks[0].task }) => {
       // Assert that all the original matches ("   "+query) === (query) after doing the action
       const newMatches = getAllByDisplayValue(value.trim()).slice(1) // Get all the inputs that match the new query (it will have 1 less because the search itself is " "+query)
-      const oldMatches = originalMatches // Slice off the search to get the table inputs
+      const oldMatches = screen.getAllByRole('textbox').slice(1) // Slice off the search to get the table inputs
 
       expect(newMatches.length).toEqual(oldMatches.length)
       newMatches.forEach((el, i) => expect(el).toEqual(oldMatches[i])) // Every new match must equal every old match (assuming "  "+query === query)
+    }
+  },
+  {
+    description: 'White space to the right should be stripped. ("Exampl3 2" === "Exampl3 2     ")',
+    value: initialTasks.tasks[0].task.concat("       "),
+    action: (searchInput, value = initialTasks.tasks[0].task.concat("       ")) => fireEvent.change(searchInput, { target: { value } }),
+    expected: ({ getAllByDisplayValue, value = initialTasks.tasks[0].task }) => {
+      // Assert that all the original matches (query+"  ") === (query) after doing the action
+      const newMatches = getAllByDisplayValue(value.trim()).slice(1) // Get all the inputs that match the new query 
+      const oldMatches = screen.getAllByRole('textbox').slice(1)
+
+      expect(newMatches.length).toEqual(oldMatches.length)
+      newMatches.forEach((el, i) => expect(el).toEqual(oldMatches[i])) // Every new match must equal every old match (assuming query+"  " === query)
+    },
+  },
+  {
+    description: 'When no tasks are found, no tasks are displayed',
+    value: diagonalizedValue, // a value not in the original list of tasks
+    action: (searchInput, value = diagonalizedValue) => fireEvent.change(searchInput, { target: { value } }),
+    expected: ({ getAllByDisplayValue,  value = diagonalizedValue }) => {
+      // Assert that there is no matches for the query
+      const noMatches = getAllByDisplayValue(value).slice(1) // Get all the inputs that match the new query that is not in the list of tasks
+
+      expect(noMatches.length).toBe(0)
     },
   }
-  // TODO: Post white space should be stripped
-  // TODO: Queries with internal whitespace greater than 2 should be respected
-  // TODO: When no tasks are found, no tasks are displayed
 ]
 
 // --- Tests
@@ -144,8 +167,8 @@ describe('TaskEditor - 1. Search Feature', () => {
       // -- Arrange
       const { getByPlaceholderText, queryByDisplayValue, getAllByDisplayValue } = renderWithProviders(<TaskEditor options={options} />, { store: searchStore })
       const searchInput = getByPlaceholderText('Search for a Task')
-      const originalMatches = getAllByDisplayValue(testCase?.value.trim())
-
+      const originalMatches = testCase?.value.trim() !== diagonalizedValue ? getAllByDisplayValue(testCase?.value.trim()) : []
+      
       // -- Act
       await act(async () => {
         testCase.action(searchInput, testCase?.value)

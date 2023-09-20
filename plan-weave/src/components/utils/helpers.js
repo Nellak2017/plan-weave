@@ -276,3 +276,39 @@ export const completedOnTopSorted = (reduxTasks, tasks, start, transforms) => {
 	const remainingTasks = [...reduxTasks].filter(task => task?.status !== TASK_STATUSES.COMPLETED)
 	return transformAll([...completedTasks, ...remainingTasks], transforms)
 }
+
+/**
+ * Constructs a string that is not present in the original list of strings using the diagonal argument.
+ *
+ * The function takes an array of strings and applies the diagonal argument to generate a new string
+ * that is not found in the original list. It increments the characters along the diagonal of each string
+ * to create the new string.
+ *
+ * @param {string[]} strList - An array of strings from which to construct the new string.
+ * @throws {Error} Throws an error if the input is not a valid array of strings.
+ * @returns {string} A string that is not present in the original list.
+ *
+ * @complexity O(n), where n is the length of the input strings in `strList`.
+ *
+ * @example
+ * const example = ['apple', 'banana','cherry', 'glass']
+ * console.log(diagonalize(originalStrings)) // resulting string is not in original list
+ * > 'bbft'
+ */
+export const diagonalize = strList => {
+	// 1. Input verification: Ensure all elements in the list are strings
+	if (!Array.isArray(strList) || !strList.every(str => typeof str === 'string')) throw new Error('Invalid input. Expected an array of strings.')
+	
+	// 2. Consider the diagonal characters of the strings and add 1 to them, this results in a string not in the list
+	return strList.map((str, i) => i < str.length ? String.fromCharCode(str[i].charCodeAt(0) + 1) : 'a').join('')
+}
+
+
+
+
+
+
+
+
+
+
