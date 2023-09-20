@@ -1064,6 +1064,13 @@ export const taskEditorPresets = {
   color: colorPreset
 }
 
+export const authFormPresets = {
+  variant: {
+    light: css``,
+    dark: css``
+  },
+  color: colorPreset
+}
 
 // Pre-set Getter function
 // see also: https://github.com/styled-system/styled-system/issues/1798
