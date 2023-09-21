@@ -1,49 +1,138 @@
-import React, { useRef } from 'react'
+import React, { useState } from 'react'
+import { useRouter } from 'next/router'
 import TaskInput from '../../atoms/TaskInput/TaskInput.js'
-import { StyledAuthContainer } from './AuthForm.elements.js'
+import GoogleButton from '../../atoms/GoogleButton/GoogleButton.js'
+import {
+	AuthContainer,
+	StyledAuthForm,
+	InputSection,
+	SignInContainer,
+	OrSeparator,
+	Line,
+	Or,
+	SpinnerContainer,
+	CenteredContainer
+} from './AuthForm.elements.js'
+import Image from 'next/image'
+import logo from '../../../../public/Plan-Weave-Logo.png'
+import { InfinitySpin } from 'react-loader-spinner'
+import {
+	signInWithEmail,
+	signUpWithEmail,
+	signInWithGoogle
+} from '../../../../firebase/firebase_auth.js'
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
-function AuthForm({ variant, maxwidth = 818 }) {
-	// DO NOT STORE Form in Plain-text!
-	const emailRef = useRef('')
-	const passwordRef = useRef('')
+function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
+	const router = useRouter()
+	const [email, setEmail] = useState('')
+	const [password, setPassword] = useState('')
+	const [loading, setLoading] = useState(false)
 
-	const handleSignInWithEmail = () => {
-		const email = emailRef.current.value
-		const password = passwordRef.current.value
+	const handleHomePage = () => router.push('/')
+	const handleEmailChange = e => setEmail(e.target.value)
+	const handlePasswordChange = e => setPassword(e.target.value)
+
+	const handleSignInWithEmail = async e => {
+		e.preventDefault()
+		setLoading(true)
+		console.log('sign-in with email pressed')
 
 		// Firebase email auth here
-		// use Firebase Auth SDK to handle email/password
+		try {
+			signup ? await signUpWithEmail(email, password) : await signInWithEmail(email, password) // you can assign to variable to use
+			router.push('/plan-weave')
+		} catch (e) {
+			console.error(e.message)
+			toast.error(e.message.replace("FirebaseError: Firebase: ", ""), { autoClose: 5000 })
+		} finally {
+			setEmail('')
+			setPassword('')
+			setLoading(false)
+		}
 	}
 
-	const handleSignInWithGoogle = () => {
+	const handleSignInWithGoogle = async e => {
+		e.preventDefault()
+		setLoading(true)
+		console.log('sign-in with google pressed')
+
 		// Google Auth here
-		// Firebase UI for Google Sign-in
+		try {
+			await signInWithGoogle() // you can assign to variable to use
+			router.push('/plan-weave')
+		} catch (e) {
+			console.error(e.message)
+			toast.error('Error Logging In With Google Auth', { autoClose: 5000 })
+		} finally {
+			setEmail('')
+			setPassword('')
+			setLoading(false)
+		}
 	}
 
+	if (loading) return (
+		<SpinnerContainer>
+			<InfinitySpin width='200' />
+		</SpinnerContainer>
+	)
+	
 	return (
-		<StyledAuthContainer maxwidth={409}>
-			<h2>Sign In</h2>
-			<div>
-				<label htmlFor='email'>Email Address:</label>
-				<TaskInput
-					type='email'
-					id='email'
-					ref={emailRef}
-					placeholder='email@example.com'
-				/>
-			</div>
-			<div>
-				<label htmlFor='password'>Password:</label>
-				<TaskInput
-					type='password'
-					id='password'
-					ref={passwordRef}
-					placeholder='Enter your password'
-				/>
-			</div>
-			<button onClick={handleSignInWithEmail}>Sign In with Email</button>
-			<button onClick={handleSignInWithGoogle}>Sign In with Google</button>
-		</StyledAuthContainer>
+		<CenteredContainer>
+			<AuthContainer variant={variant} maxwidth={maxwidth}>
+				<StyledAuthForm id='email-form' variant={variant} maxwidth={maxwidth} onSubmit={handleSignInWithEmail} method='POST'>
+					<Image
+						src={logo.src} //'/Plan-Weave-Logo.png'
+						alt='Plan Weave Logo'
+						width={125}
+						height={100}
+						className={'logo'}
+						title={'Go Home'}
+						onClick={handleHomePage}
+						priority={true}
+					/>
+					<h2>{`Sign ${signup ? 'Up' : 'In'}`}</h2>
+					<InputSection>
+						<label htmlFor='email'>Email Address</label>
+						<TaskInput
+							variant={variant}
+							type='email'
+							id='email'
+							value={email}
+							onChange={handleEmailChange}
+							placeholder='email@example.com'
+							autoComplete='username'
+						/>
+					</InputSection>
+					<InputSection>
+						<label htmlFor='password'>Password</label>
+						<TaskInput
+							variant={variant}
+							type='password'
+							id='password'
+							value={password}
+							onChange={handlePasswordChange}
+							placeholder='Enter your password'
+							autoComplete='current-password'
+						/>
+					</InputSection>
+					<SignInContainer>
+						<button type='submit' name='email-auth' title={`Sign ${signup ? 'up' : 'in'} with Email`}>
+							{`Sign ${signup ? 'up' : 'in'} with Email`}
+						</button>
+					</SignInContainer>
+				</StyledAuthForm>
+				<OrSeparator>
+					<Line />
+					<Or>or</Or>
+					<Line />
+				</OrSeparator>
+				<SignInContainer id='google-auth-container'>
+					<GoogleButton name='google-auth' type='button' onClick={handleSignInWithGoogle} signup={signup} />
+				</SignInContainer>
+			</AuthContainer>
+		</CenteredContainer>
 	)
 }
 

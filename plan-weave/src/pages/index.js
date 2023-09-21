@@ -12,6 +12,10 @@ export default function Home() {
     router.push('/login')
   }
 
+  const handleSignUp = () => {
+    router.push('/signup')
+  }
+
   const handleAppPage = () => {
     router.push('/plan-weave')
   }
@@ -29,6 +33,7 @@ export default function Home() {
     <>
       <nav>
         <button onClick={user ? handleLogout : handleLoginPage}>{user ? 'Log Out' : 'Log In'}</button>
+        <button onClick={handleSignUp}>Sign Up</button>
         <button onClick={handleAppPage}>Go to App</button>
       </nav>
       <h1>Home Page</h1>

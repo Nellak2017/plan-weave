@@ -49,7 +49,7 @@ p, input, button, li, a, span {
 
 input, li, a :hover{ // span, p removed because it looks cringe
     color: ${props => props.theme.colors.defaultFontColor};
-    box-shadow: ${props => props.theme.elevations.extraSmall};
+    box-shadow: ${props => props.theme.elevations.small};
 }
 
 // appears like a medium sized, primary, standard button by default

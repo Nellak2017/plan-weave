@@ -26,4 +26,10 @@ export const TaskEditorContainer = styled.section`
 		font-size: ${props => props.theme.fontSizes.larger};
 		font-weight: 100;
 	}
+
+	${space};
+	${layout};
+	${typography};
+  	${getPresetCSS(taskEditorPresets, 'variant')};
+	${getPresetCSS(taskEditorPresets, 'color')};
 `

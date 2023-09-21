@@ -1058,16 +1058,61 @@ export const paginationPresets = {
 
 export const taskEditorPresets = {
   variant: {
-    light: css``,
-    dark: css``
+    light: css`
+      h1 {
+        color: ${props => props.theme.colors.lightNeutral};
+      }
+    `,
+    dark: css`
+      h1 {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
+    `
   },
   color: colorPreset
 }
 
 export const authFormPresets = {
   variant: {
-    light: css``,
-    dark: css``
+    light: css`
+      color: ${props => props.theme.colors.lightNeutral};
+      background-color: ${props => props.theme.colors.lightNeutralLight};
+      box-shadow: ${props => props.theme.elevations.small};
+      & h2, label {
+        color: ${props => props.theme.colors.lightNeutral};
+      }
+      & input {
+        box-shadow: ${props => props.theme.elevations.small};
+      }
+      & section {
+        background-color: ${props => props.theme.colors.lightNeutralLightActive};
+      }
+      & span {
+        color: ${props => props.theme.colors.lightNeutral};
+      }
+      & .logo {
+        background: transparent;
+        filter: invert(80%) sepia(7%) saturate(933%) hue-rotate(247deg) brightness(92%) contrast(85%);
+        // see also (convert black to any hex with filter): https://codepen.io/sosuke/pen/Pjoqqp
+      }
+    `,
+    dark: css`
+      color: ${props => props.theme.colors.lightNeutralLight};
+      background-color: ${props => props.theme.colors.darkNeutralDark};
+      box-shadow: ${props => props.theme.elevations.small};
+      & h2, label {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
+      & input {
+        box-shadow: ${props => props.theme.elevations.small};
+      }
+      & section {
+        background-color: ${props => props.theme.colors.lightNeutralLightActive};
+      }
+      & span {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
+    `
   },
   color: colorPreset
 }

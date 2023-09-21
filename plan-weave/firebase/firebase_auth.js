@@ -2,15 +2,34 @@ import {
 	getAuth,
 	signInWithEmailAndPassword,
 	signInWithPopup,
+	createUserWithEmailAndPassword,
 	GoogleAuthProvider,
 	signOut
 } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import app from '../firebase/config.js'
 
+// TODO: Verify Email and Password conforms to Rules
+
 // Initialize Firebase authentication
 export const auth = getAuth(app)
 export const firestore = getFirestore(app)
+
+// Function for signing up with email and password
+export const signUpWithEmail = async (email, password) => {
+	try {
+		const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+
+		// If successful, it's a sign-up
+		const user = userCredential.user
+		console.log('User signed up successfully:', user)
+	
+		return user
+	} catch (e) {
+		console.error('Error signing up:', e.message)
+		throw new Error(e)
+	}
+}
 
 // Function for signing in with email and password
 export const signInWithEmail = async (email, password) => {

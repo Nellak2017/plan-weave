@@ -156,7 +156,7 @@ const TaskEditor = ({
 			<button onClick={() => console.log(`start: ${timeRange['start']}\nend: ${timeRange['end']}`)}>Show timerange</button>
 			<button onClick={() => console.log(`start: ${start}`)}>Show memoized start</button>
 
-			<TaskEditorContainer>
+			<TaskEditorContainer variant={variant}>
 				<h1>{title}</h1>
 				<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 					<TaskControl
