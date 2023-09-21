@@ -11,7 +11,8 @@ import {
 	Line,
 	Or,
 	SpinnerContainer,
-	CenteredContainer
+	CenteredContainer,
+	SubtitleContainer
 } from './AuthForm.elements.js'
 import Image from 'next/image'
 import logo from '../../../../public/Plan-Weave-Logo.png'
@@ -77,7 +78,7 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 			<InfinitySpin width='200' />
 		</SpinnerContainer>
 	)
-	
+
 	return (
 		<CenteredContainer>
 			<AuthContainer variant={variant} maxwidth={maxwidth}>
@@ -93,6 +94,12 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 						priority={true}
 					/>
 					<h2>{`Sign ${signup ? 'Up' : 'In'}`}</h2>
+					<SubtitleContainer>
+						<h3>
+							<p>{`${signup ? "H" : "Don't h"}ave an account?`}</p>
+						</h3>
+						<a href={`/${signup ? 'login' : 'signup'}`}>{`Sign ${signup ? 'in' : 'up'}.`}</a>
+					</SubtitleContainer>
 					<InputSection>
 						<label htmlFor='email'>Email Address</label>
 						<TaskInput

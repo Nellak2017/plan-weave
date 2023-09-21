@@ -39,6 +39,7 @@ export const StyledGoogleButton = styled.button`
 
 	&:hover {
 		background-color: #fff;
+		color: #4285F4;
 		box-shadow: ${props => props.theme.elevations.small};
 	}
 `

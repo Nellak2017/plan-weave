@@ -1078,7 +1078,7 @@ export const authFormPresets = {
       color: ${props => props.theme.colors.lightNeutral};
       background-color: ${props => props.theme.colors.lightNeutralLight};
       box-shadow: ${props => props.theme.elevations.small};
-      & h2, label {
+      & h2, h3, p, label {
         color: ${props => props.theme.colors.lightNeutral};
       }
       & input {
@@ -1100,7 +1100,7 @@ export const authFormPresets = {
       color: ${props => props.theme.colors.lightNeutralLight};
       background-color: ${props => props.theme.colors.darkNeutralDark};
       box-shadow: ${props => props.theme.elevations.small};
-      & h2, label {
+      & h2, h3, p, label {
         color: ${props => props.theme.colors.lightNeutralLight};
       }
       & input {

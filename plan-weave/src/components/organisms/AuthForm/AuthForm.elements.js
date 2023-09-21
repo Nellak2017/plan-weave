@@ -42,6 +42,7 @@ export const StyledAuthForm = styled.form`
 	}
 	img {
 		border-radius: 20%;
+		cursor: pointer;
 	}
 
 `
@@ -72,6 +73,7 @@ export const SignInContainer = styled.div`
 	margin: 20px 0 20px 0;
 	& button {
 		font-size: 14px; // so it for sure conforms to Google Standard
+		width: 80%;
 	}
 `
 
@@ -109,4 +111,13 @@ export const CenteredContainer = styled.div`
   justify-content: center; 
   align-items: center; 
   height: 100vh; 
+`
+
+export const SubtitleContainer = styled.div`
+	display: flex;
+	column-gap: ${props => props.theme.spaces.small};
+	a {
+		color: ${props => props.theme.colors.primary};
+		text-decoration: underline;
+	}
 `
