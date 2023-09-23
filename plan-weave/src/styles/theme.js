@@ -1053,6 +1053,16 @@ export const paginationPresets = {
   color: colorPreset
 }
 
+export const navPresets = {
+  variant: {
+    light: css`
+    `,
+    dark: css`
+    `
+  },
+  color: colorPreset
+}
+
 // ------
 // --- Organisms ---
 
