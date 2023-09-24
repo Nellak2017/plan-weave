@@ -1,47 +1,47 @@
+import Nav from '../components/molecules/Nav/Nav.js'
+import { makeLink, defaultLogin } from '../components/molecules/Nav/Nav.helpers.js'
 import { signOutOfApp, auth } from '../../firebase/firebase_auth.js'
 import { useRouter } from 'next/router'
 import { useAuthState } from 'react-firebase-hooks/auth'
-import { toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
 
 export default function Home() {
   const router = useRouter()
-  const [user, loading, error] = useAuthState(auth)
+  const [user] = useAuthState(auth) // [user, loading, error]
 
-  const handleLoginPage = () => {
-    router.push('/login')
-  }
-
-  const handleSignUp = () => {
-    router.push('/signup')
-  }
-
-  const handleAppPage = () => {
-    router.push('/plan-weave')
-  }
+  const handleApp = () => router.push('/plan-weave')
+  const handleLogIn = () => router.push('/login')
+  const handleSignUp = () => router.push('/signup')
 
   const handleLogout = async () => {
+    console.log("Logging out")
     try {
       await signOutOfApp()
       router.push('/')
+      console.log("Logged out")
     } catch (error) {
       console.log(error)
     }
   }
 
+  const defaultLogout = ({
+    text = 'Log Out',
+    link = '/',
+    title = 'Log Out',
+    label = 'Login Out of Plan-Weave',
+    handler,
+    index = 4
+  }) => (makeLink({ text, link, title, label, handler, index }))
+
   return (
     <>
-      <nav>
-        <button onClick={user ? handleLogout : handleLoginPage}>{user ? 'Log Out' : 'Log In'}</button>
-        <button onClick={handleSignUp}>Sign Up</button>
-        <button onClick={handleAppPage}>Go to App</button>
-      </nav>
+      <Nav
+        LoginComponent={user ? defaultLogout : defaultLogin}
+        handleApp={handleApp}
+        handleLogIn={user ? handleLogout : handleLogIn}
+        handleSignUp={handleSignUp}
+      />
       <h1>Home Page</h1>
       <p>Under Construction</p>
-      <button onClick={() => toast.warning('This is a warning message!')}>Warning Notification</button>
-      <button onClick={() => toast.info('This is an info message!')}>Info Notification</button>
-      <button onClick={() => toast.success('This is a success message!')}>Success Notification</button>
-      <button onClick={() => toast.error('This is an error message!')}>Error Notification</button>
     </>
   )
 }

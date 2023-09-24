@@ -42,4 +42,7 @@ export const StyledGoogleButton = styled.button`
 		color: #4285F4;
 		box-shadow: ${props => props.theme.elevations.small};
 	}
+	&:focus {
+		outline: 2px solid #4285F4;
+	}
 `

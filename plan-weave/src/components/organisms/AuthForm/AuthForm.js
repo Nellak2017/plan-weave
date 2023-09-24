@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/router'
 import TaskInput from '../../atoms/TaskInput/TaskInput.js'
+import Spinner from '../../atoms/Spinner/Spinner.js'
+import Button from '../../atoms/Button/Button.js'
 import GoogleButton from '../../atoms/GoogleButton/GoogleButton.js'
 import {
 	AuthContainer,
@@ -10,13 +12,12 @@ import {
 	OrSeparator,
 	Line,
 	Or,
-	SpinnerContainer,
 	CenteredContainer,
 	SubtitleContainer
 } from './AuthForm.elements.js'
 import Image from 'next/image'
+import Link from 'next/link'
 import logo from '../../../../public/Plan-Weave-Logo.png'
-import { InfinitySpin } from 'react-loader-spinner'
 import {
 	signInWithEmail,
 	signUpWithEmail,
@@ -73,11 +74,7 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 		}
 	}
 
-	if (loading) return (
-		<SpinnerContainer>
-			<InfinitySpin width='200' />
-		</SpinnerContainer>
-	)
+	if (loading) return (<Spinner />)
 
 	return (
 		<CenteredContainer>
@@ -93,12 +90,12 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 						onClick={handleHomePage}
 						priority={true}
 					/>
-					<h2>{`Sign ${signup ? 'Up' : 'In'}`}</h2>
+					<h2>{`Sign ${signup ? 'Up' : 'In'}`}</h2>	
 					<SubtitleContainer>
 						<h3>
 							<p>{`${signup ? "H" : "Don't h"}ave an account?`}</p>
 						</h3>
-						<a href={`/${signup ? 'login' : 'signup'}`}>{`Sign ${signup ? 'in' : 'up'}.`}</a>
+						<Link href={`/${signup ? 'login' : 'signup'}`}>{`Sign ${signup ? 'in' : 'up'}.`}</Link>
 					</SubtitleContainer>
 					<InputSection>
 						<label htmlFor='email'>Email Address</label>
@@ -125,9 +122,9 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 						/>
 					</InputSection>
 					<SignInContainer>
-						<button type='submit' name='email-auth' title={`Sign ${signup ? 'up' : 'in'} with Email`}>
+						<Button type='submit' name='email-auth' title={`Sign ${signup ? 'up' : 'in'} with Email`}>
 							{`Sign ${signup ? 'up' : 'in'} with Email`}
-						</button>
+						</Button>
 					</SignInContainer>
 				</StyledAuthForm>
 				<OrSeparator>

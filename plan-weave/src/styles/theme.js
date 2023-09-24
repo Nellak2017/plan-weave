@@ -1056,8 +1056,30 @@ export const paginationPresets = {
 export const navPresets = {
   variant: {
     light: css`
+      h1, a {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+       & .logo {
+        background: transparent;
+        filter: invert(100%) brightness(0%);
+        // see also (convert black to any hex with filter): https://codepen.io/sosuke/pen/Pjoqqp
+      }
+      & .logo:active {
+        filter: invert(100%) brightness(0%) invert(36%) sepia(80%) saturate(3178%) hue-rotate(238deg) brightness(99%) contrast(91%);
+      }
     `,
     dark: css`
+      h1, a {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
+      & .logo {
+        background: transparent;
+        filter: invert(0%) brightness(100%);
+        // see also (convert black to any hex with filter): https://codepen.io/sosuke/pen/Pjoqqp
+      }
+      & .logo:active {
+        filter: invert(100%) brightness(0%) invert(36%) sepia(80%) saturate(3178%) hue-rotate(238deg) brightness(99%) contrast(91%);
+      }
     `
   },
   color: colorPreset
@@ -1102,7 +1124,7 @@ export const authFormPresets = {
       }
       & .logo {
         background: transparent;
-        filter: invert(80%) sepia(7%) saturate(933%) hue-rotate(247deg) brightness(92%) contrast(85%);
+        filter: invert(100%) brightness(0%) invert(80%) sepia(7%) saturate(933%) hue-rotate(247deg) brightness(92%) contrast(85%);
         // see also (convert black to any hex with filter): https://codepen.io/sosuke/pen/Pjoqqp
       }
     `,

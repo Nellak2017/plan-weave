@@ -94,18 +94,6 @@ export const Or = styled.div`
 	padding: 0 10px;
 `
 
-export const SpinnerContainer = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-	height: 100vh;
-	color: ${props => props.theme.colors.primary};
-	svg {
-		color: ${props => props.theme.colors.primary};
-	}
-`
-
 export const CenteredContainer = styled.div`
   display: flex;
   justify-content: center; 

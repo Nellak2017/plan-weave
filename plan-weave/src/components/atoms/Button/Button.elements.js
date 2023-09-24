@@ -16,6 +16,9 @@ export const ButtonStyled = styled.button`
 	&:active {
         box-shadow: ${props => props.theme.insets.normal};
     }
+    &:focus {
+        outline: 2px solid white;
+    }
     // ------ 
     ${space} // lowest precedence
     ${layout}
