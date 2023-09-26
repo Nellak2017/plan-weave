@@ -112,59 +112,47 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 		})(dispatch)
 	}
 
+
+	// -- Helper components
+	const completedTask = provided => (
+		<>
+			<TaskRowStyled
+				variant={variant}
+				status={status}
+				ref={provided?.innerRef || null}
+				{...provided?.draggableProps}
+				{...provided.dragHandleProps}
+				style={{ ...provided.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
+				maxwidth={maxwidth}
+				highlight={isHighlighting ? isChecked && 'selected' || ' ' : highlight}
+				onBlur={handleUpdateTask}
+			>
+				{<SimpleRow
+					provided={provided || undefined}
+					taskObject={{ task, waste, ttc, eta, status, id, timestamp }}
+					variant={variant}
+					isChecked={isChecked}
+					setLocalTask={setLocalTask}
+					localTask={localTask}
+					localTtc={localTtc}
+					setLocalTtc={setLocalTtc}
+					handleCheckBoxClicked={handleCheckBoxClicked}
+					handleDeleteTask={handleDeleteTask}
+				/>}
+			</TaskRowStyled>
+		</>
+	)
+
 	return (
 		<>
-			{status === TASK_STATUSES.COMPLETED || isHighlighting ?
-				(
-					<TaskRowStyled
-						variant={variant}
-						status={status}
-						maxwidth={maxwidth}
-						highlight={isHighlighting ? isChecked && 'selected' || ' ': highlight}
-						onBlur={handleUpdateTask}
-					>
-						{<SimpleRow
-							provided={undefined}
-							taskObject={{ task, waste, ttc, eta, status, id, timestamp }}
-							variant={variant}
-							isChecked={isChecked}
-							setLocalTask={setLocalTask}
-							localTask={localTask}
-							localTtc={localTtc}
-							setLocalTtc={setLocalTtc}
-							handleCheckBoxClicked={handleCheckBoxClicked}
-							handleDeleteTask={handleDeleteTask}
-						/>}
-					</TaskRowStyled>
-				)
+			{status === TASK_STATUSES.COMPLETED || isHighlighting
+				? (completedTask())
 				: (
-					<Draggable draggableId={`task-${id}`} index={index}>
-						{provided => (
-							<TaskRowStyled
-								variant={variant}
-								status={status}
-								ref={provided.innerRef}
-								{...provided.draggableProps}
-								style={{ ...provided.draggableProps.style, boxShadow: provided.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
-								maxwidth={maxwidth}
-								highlight={isHighlighting ? isChecked && 'selected' || ' ': highlight}
-								onBlur={handleUpdateTask}
-							>
-								{<SimpleRow
-									provided={provided}
-									taskObject={{ task, waste, ttc, eta, status, id, timestamp }}
-									variant={variant}
-									isChecked={isChecked}
-									setLocalTask={setLocalTask}
-									localTask={localTask}
-									localTtc={localTtc}
-									setLocalTtc={setLocalTtc}
-									handleCheckBoxClicked={handleCheckBoxClicked}
-									handleDeleteTask={handleDeleteTask}
-								/>}
-							</TaskRowStyled>
-						)}
-					</Draggable>
+					<>
+						<Draggable draggableId={`task-${id}`} index={index} key={`task-${id}-key`}>
+							{provided => (completedTask(provided))}
+						</Draggable >
+					</>
 				)
 			}
 		</>

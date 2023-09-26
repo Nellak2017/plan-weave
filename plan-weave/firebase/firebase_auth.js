@@ -47,6 +47,8 @@ export const signInWithEmail = async (email, password) => {
 	}
 }
 
+
+// TODO: Add Promise to this so that user never gets stuck in loading state if exit out of pop-up
 // Function to sign in with Google
 export const signInWithGoogle = async () => {
 	const provider = new GoogleAuthProvider()

@@ -1,5 +1,6 @@
 import TaskRow from './TaskRow'
-import { DragDropContext, Droppable } from 'react-beautiful-dnd'
+import { DragDropContext } from 'react-beautiful-dnd'
+import StrictModeDroppable from '../../atoms/StrictModeDroppable/StrictModeDroppable.js' // Wrapper for the unmaintained Droppable component
 // redux stuff
 import store from '../../../redux/store'
 import { Provider } from 'react-redux'
@@ -28,14 +29,14 @@ const Template = args =>
 	<DragDropContext onDragEnd={() => { console.log('dummy context') }}>
 		<table style={{borderCollapse: 'collapse'}}>
 			<thead></thead>
-			<Droppable droppableId="taskTable" type="TASK">
+			<StrictModeDroppable droppableId="taskTable" type="TASK">
 				{(provided) => (
 					<tbody ref={provided.innerRef} {...provided.droppableProps}>
 						<TaskRow {...args} index={0} />
 						{provided.placeholder}
 					</tbody>
 				)}
-			</Droppable>
+			</StrictModeDroppable>
 		</table>
 	</DragDropContext>
 

@@ -3,7 +3,8 @@ import {
 	StyledNav,
 	Logo,
 	SiteTitle,
-	LoginContainer
+	LoginContainer,
+	ContentContainer
 } from './Nav.elements'
 import { makeLink, defaultLogin } from './Nav.helpers'
 import Button from '../../atoms/Button/Button.js'
@@ -29,7 +30,7 @@ const defaultImage = ({
 	/>
 )
 
-const defaultAppLink = () => ( makeLink({}) )
+const defaultAppLink = () => (makeLink({}))
 
 const defaultMiddle = ({
 	text = 'Plan Weave',
@@ -44,7 +45,7 @@ const defaultMiddle = ({
 )
 
 const defaultSignUp = ({
-	text = 'Get Started',
+	text = 'Sign up',
 	title = 'Sign up',
 	label = 'Sign up for Plan-Weave',
 	handler,
@@ -63,31 +64,37 @@ const defaultSignUp = ({
 	</Button>
 )
 
+// TODO: Refactor this so that you can pass listeners to any of them easily
 // TODO: Refactor this to handle any number of handlers and components (map through them instead of hard-coding)
+// 		1 Logo, any amount of middle components, any amount of right components
+// 		1 Logo listener, any amount of middle listeners, any amount of right listeners
 function Nav({
 	variant = 'dark',
 	NavLogo = defaultImage,
 	MiddleComponent = defaultMiddle,
-	AppComponent = defaultAppLink, 
+	AppComponent = defaultAppLink,
 	LoginComponent = defaultLogin,
 	SignUpComponent = defaultSignUp,
+	handleLogo,
 	handleApp,
 	handleLogIn,
 	handleSignUp
 }) {
 	return (
 		<StyledNav variant={variant}>
-			<Logo className='logo' tabIndex={1}>
-				<NavLogo />
-			</Logo>
+			<ContentContainer>
+				<Logo className='logo' tabIndex={1} onClick={handleLogo}>
+					<NavLogo />
+				</Logo>
 
-			<MiddleComponent handler={handleApp} />
+				<MiddleComponent handler={handleApp} />
 
-			<LoginContainer>
-				<AppComponent handler={handleApp} />
-				<LoginComponent handler={handleLogIn} />
-				<SignUpComponent handler={handleSignUp} />
-			</LoginContainer>
+				<LoginContainer>
+					<AppComponent handler={handleApp} />
+					<LoginComponent handler={handleLogIn} />
+					<SignUpComponent handler={handleSignUp} />
+				</LoginContainer>
+			</ContentContainer>
 		</StyledNav>
 	)
 }

@@ -1,8 +1,10 @@
 import Nav from '../components/molecules/Nav/Nav.js'
+import InfoSection from '../components/molecules/InfoSection/InfoSection.js'
 import { makeLink, defaultLogin } from '../components/molecules/Nav/Nav.helpers.js'
 import { signOutOfApp, auth } from '../../firebase/firebase_auth.js'
 import { useRouter } from 'next/router'
 import { useAuthState } from 'react-firebase-hooks/auth'
+import { body } from '../Data/HomePage/Data.js'
 
 export default function Home() {
   const router = useRouter()
@@ -27,7 +29,7 @@ export default function Home() {
     text = 'Log Out',
     link = '/',
     title = 'Log Out',
-    label = 'Login Out of Plan-Weave',
+    label = 'Log Out of Plan-Weave',
     handler,
     index = 4
   }) => (makeLink({ text, link, title, label, handler, index }))
@@ -40,8 +42,13 @@ export default function Home() {
         handleLogIn={user ? handleLogout : handleLogIn}
         handleSignUp={handleSignUp}
       />
-      <h1>Home Page</h1>
-      <p>Under Construction</p>
+      {body.map((section, index) => (
+        <InfoSection
+          key={section?.topLine || index}
+          variant={index % 2 === 0 ? 'dark' : 'light'}
+          data={section}
+        />
+      ))}
     </>
   )
 }

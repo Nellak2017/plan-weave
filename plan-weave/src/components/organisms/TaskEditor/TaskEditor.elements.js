@@ -24,7 +24,7 @@ export const TaskEditorContainer = styled.section`
 
 	h1 {
 		font-size: ${props => props.theme.fontSizes.larger};
-		font-weight: 100;
+		font-weight: 300;
 	}
 
 	${space};

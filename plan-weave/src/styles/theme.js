@@ -1085,6 +1085,33 @@ export const navPresets = {
   color: colorPreset
 }
 
+export const infoSectionPresets = {
+  variant: {
+    light: css`
+      background-color: ${props => props.theme.colors.lightNeutralLight};
+      .reverse {
+        flex-direction: row-reverse;
+      }
+      h2 {
+        color: ${props => props.theme.colors.primary};
+      }
+      h1 {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+      p {
+        color: ${props => props.theme.colors.darkNeutral};
+      }
+    `,
+    dark: css`
+      background-color: ${props => props.theme.colors.darkNeutralDark};
+
+      h2, p {
+        color: ${props => props.theme.colors.backgroundTextColor};
+      }
+    `
+  },
+}
+
 // ------
 // --- Organisms ---
 
@@ -1123,8 +1150,9 @@ export const authFormPresets = {
         color: ${props => props.theme.colors.lightNeutral};
       }
       & .logo {
+        // darkNeutralDark color
         background: transparent;
-        filter: invert(100%) brightness(0%) invert(80%) sepia(7%) saturate(933%) hue-rotate(247deg) brightness(92%) contrast(85%);
+        filter: invert(100%) brightness(0%) invert(11%) sepia(7%) saturate(1281%) hue-rotate(245deg) brightness(101%) contrast(89%);
         // see also (convert black to any hex with filter): https://codepen.io/sosuke/pen/Pjoqqp
       }
     `,
@@ -1220,7 +1248,8 @@ export default {
     warningDarkActive: '#685436',
     warningDarker: '#51412a',
     body: '#39313a',
-    defaultFontColor: '#f4f0ff'
+    defaultFontColor: '#f4f0ff',
+    backgroundTextColor: '#a9b3c1' // For Text that is not as pronounced as others. Slightly gray
   },
   fontSizes,
   breakpoints,
