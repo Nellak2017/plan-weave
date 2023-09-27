@@ -4,6 +4,10 @@ import TaskEditor from './TaskEditor' // Import your TaskEditor component
 import { configureStore, combineReducers, createSlice } from '@reduxjs/toolkit'
 import { renderWithProviders } from '../../utils/test-utils'
 import { diagonalize } from '../../utils/helpers.js'
+//import { userEvent } from '@testing-library/user-event'
+
+// -- Private Helpers
+const findLastTaskIndex = (taskList, prop = "complete") => taskList.slice().reverse().findIndex(task => task?.status === prop)
 
 // --- Shared Data
 const options = [
@@ -16,6 +20,19 @@ const timestamp = new Date().getTime() / 1000 // epoch of current time
 const initialTasks = {
   tasks: [
     { status: 'incomplete', task: 'break', ttc: 1.5, id: 1, timestamp: timestamp },
+    { status: 'incomplete', task: 'Span - Mindtap, Disc, Study', ttc: 3, id: 2, timestamp: timestamp - 1 },
+    { status: 'incomplete', task: 'Exampl3 2', ttc: 1.25, id: 3, timestamp: timestamp - 2 },
+    { status: 'incomplete', task: 'Ethics - P2', ttc: 1.5, id: 4, timestamp: timestamp - 3 },
+    { status: 'incomplete', task: 'break', ttc: .75, id: 5, timestamp: timestamp - 4 },
+    { status: 'incomplete', task: 'ML - A4, Study', ttc: .5, id: 6, timestamp: timestamp - 5 },
+    { status: 'incomplete', task: 'break', ttc: .5, id: 7, timestamp: timestamp - 6 },
+    { status: 'incomplete', task: 'SE II - Discord Plan, Study', ttc: .75, id: 9, timestamp: timestamp - 9 },
+    { status: 'incomplete', task: 'Driving', ttc: 1.75, id: 10, timestamp: timestamp - 10 },
+  ]
+}
+const addTasks = {
+  tasks: [
+    { status: 'complete', task: 'break', ttc: 1.5, id: 1, timestamp: timestamp },
     { status: 'incomplete', task: 'Span - Mindtap, Disc, Study', ttc: 3, id: 2, timestamp: timestamp - 1 },
     { status: 'incomplete', task: 'Exampl3 2', ttc: 1.25, id: 3, timestamp: timestamp - 2 },
     { status: 'incomplete', task: 'Ethics - P2', ttc: 1.5, id: 4, timestamp: timestamp - 3 },
@@ -54,6 +71,35 @@ const searchStore = configureStore({
     }).reducer,
   })
 })
+const addStore = configureStore({
+  reducer: combineReducers({
+    tasks: createSlice({
+      name: 'tasks',
+      initialState: addTasks,
+      reducers: {
+        addTask: (state, action) => {
+          state.tasks?.push(action.payload) // Add a new task to the state
+        },
+        deleteTask: (state, action) => {
+          state.tasks = state?.tasks?.map(task => task?.id && task?.id === action.payload ? { ...task, hidden: true } : task)
+        },
+        deleteTasks: (state, action) => {
+          const idsToDelete = action.payload
+          state.tasks = state?.tasks?.map(task => task?.id && idsToDelete.includes(task?.id) ? { ...task, hidden: true } : task)
+        },
+        editTask: (state, action) => {
+          if (state.tasks.length >= 1000) return
+          const { id, updatedTask } = action?.payload || { 0: -1, 1: -1 } // TODO: poor default, think of better later
+          const taskIndex = state?.tasks?.findIndex(task => task?.id === id)
+          if (taskIndex !== -1) {
+            state.tasks[taskIndex] = updatedTask // Edit a task by ID
+          }
+        },
+      },
+    }).reducer,
+  })
+})
+
 const diagonalizedValue = diagonalize(initialTasks.tasks.map(task => task.task)) // unique query not in list of tasks
 
 // --- Mocks
@@ -160,6 +206,37 @@ const searchTestCases = [
   }
 ]
 
+const addTestCases = [
+  /* 
+    1. Add Task should add a new task after the last complete task
+    2. Add Task should increase the amount of tasks
+  */
+  {
+    description: 'Add Task should add a new task after the last complete task',
+    action: addButton => fireEvent.click(addButton),
+    expected: ({ getAllByRole }) => {
+      // Assert that the first incomplete task is after the last complete task (first incomplete index > last complete index)
+      const newTableElements = getAllByRole('row').slice(1) // get all tr with status (not the header tr) -> [elements]
+      const newStatuses = newTableElements.map(el => ({ status: el.getAttribute('status') })) // newTableElements:[elements] -> [{status}] 
+      console.log(newStatuses)
+
+      const firstIncompleteIndex = findLastTaskIndex(newStatuses.reverse(), 'incomplete')
+      const lastCompletedIndex = findLastTaskIndex(newStatuses)
+
+      console.log(`first incomplete at: ${firstIncompleteIndex}, last complete at: ${lastCompletedIndex}`)
+      expect(firstIncompleteIndex).toBeGreaterThan(lastCompletedIndex)
+    }
+  },
+  {
+    description: 'Add Task should increase the amount of tasks',
+    action: addButton => fireEvent.click(addButton),
+    expected: ({ store, tasks = addTasks.tasks }) => {
+      const storeLen = store?.getState()?.tasks?.tasks?.length
+      expect(storeLen).toBeGreaterThan(tasks.length)
+    }
+  }
+]
+
 // --- Tests
 describe('TaskEditor - 1. Search Feature', () => {
   searchTestCases.forEach(testCase => {
@@ -182,7 +259,23 @@ describe('TaskEditor - 1. Search Feature', () => {
 
 // It is impossible to test the MUI Start/End component apparently, do manual tests for this
 
-// describe('TaskEditor - 3. Add Task Feature', () => {})
+describe('TaskEditor - 3. Add Task Feature', () => {
+  addTestCases.forEach(testCase => {
+    it(testCase.description, async () => {
+      // -- Arrange
+      const { getAllByRole, getByTestId } = renderWithProviders(<TaskEditor options={options} />, { store: addStore })
+      const addButton = getByTestId('add-button')
+
+      // -- Act
+      await act(async () => {
+        testCase.action(addButton)
+      })
+
+      // -- Assert
+      testCase.expected({ getAllByRole, store: addStore })
+    })
+  })
+})
 // describe('TaskEditor - 4. Multi-Delete Feature', () => {})
 // describe('TaskEditor - 5. Sort Drop-down Feature', () => {})
 // describe('TaskEditor - 6. DnD Feature', () => {})

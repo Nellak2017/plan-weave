@@ -218,6 +218,7 @@ function TaskControl({
 							onClick={addEvent}
 							onKeyDown={e => { if (e.key === 'Enter') { addEvent() } }}
 							size={iconSize}
+							data-testid={'add-button'}
 						/>
 						<BiTrash
 							tabIndex={6}
@@ -227,6 +228,7 @@ function TaskControl({
 							onClick={deleteEvent}
 							onKeyDown={e => { if (e.key === 'Enter') { deleteEvent() } }}
 							size={iconSize}
+							data-testid={'multi-delete-button'}
 						/>
 						{isHighlighting &&
 							<Button
