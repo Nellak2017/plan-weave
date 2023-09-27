@@ -30,7 +30,7 @@ const SimpleRow = ({
 	tooltips = TASK_ROW_TOOLTIPS
 }) => {
 
-	const { task, waste, ttc, eta, status } = { ...taskObject }
+	const { task, waste, ttc, eta, status, index } = { ...taskObject }
 	const { dnd: dndTooltip, completed: completedTooltip, incomplete: incompleteTooltip, task: taskTooltip,
 		waste: wasteTooltip, ttc: ttcTooltip, eta: etaTooltip, delete: deleteTooltip } = { ...tooltips }
 	return (
@@ -89,7 +89,7 @@ const SimpleRow = ({
 				}
 			</TimeContainer>
 			<TimeContainer style={{ width: '40px' }} title={etaTooltip}>
-				<p>
+				<p aria-label={`eta for task ${index}`}>
 					{eta && eta instanceof Date && !isNaN(eta.getTime())
 						? format(eta, "HH:mm")
 						: '00:00'

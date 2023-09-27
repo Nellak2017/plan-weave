@@ -1,9 +1,11 @@
 import React from 'react'
-import { act, fireEvent, screen } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import TaskEditor from './TaskEditor' // Import your TaskEditor component
 import { configureStore, combineReducers, createSlice } from '@reduxjs/toolkit'
 import { renderWithProviders } from '../../utils/test-utils'
-import { diagonalize } from '../../utils/helpers.js'
+import { diagonalize, hoursToMillis } from '../../utils/helpers.js'
+import { parse, format } from 'date-fns'
 
 // --- Shared Data
 const options = [
@@ -151,13 +153,54 @@ const searchTestCases = [
     description: 'When no tasks are found, no tasks are displayed',
     value: diagonalizedValue, // a value not in the original list of tasks
     action: (searchInput, value = diagonalizedValue) => fireEvent.change(searchInput, { target: { value } }),
-    expected: ({ getAllByDisplayValue,  value = diagonalizedValue }) => {
+    expected: ({ getAllByDisplayValue, value = diagonalizedValue }) => {
       // Assert that there is no matches for the query
       const noMatches = getAllByDisplayValue(value).slice(1) // Get all the inputs that match the new query that is not in the list of tasks
 
       expect(noMatches.length).toBe(0)
     },
   }
+]
+
+const startEndTestCases = [
+  /*
+    1. If first task is incomplete, then changing the start will change the first task eta to be first task.ttc + start
+    2. If first task is complete, then changing the start will not affect the eta at all
+    3. The End time (parsed to correct date) should mark the beginning of what tasks are considered old
+    4. Tasks before the start time (parsed to correct date) should be marked old, unless if they are completed
+    5. Completed tasks are always green, even if old or out of today range
+  */
+  {
+    description: 'If first task is incomplete, then changing the start will change the first task eta to be first task.ttc + start',
+    action: async ({ hour = 8, getByTestId }) => {
+      // Find the start time-picker by test-id
+      const startPickerElement = getByTestId('start-time-picker') // see also: TaskControl.js for test-id
+
+      // Find the button to show the clock itself
+      const clockBtn = getByTestId('start-time-picker-button')
+      await waitFor(() => fireEvent.mouseDown(clockBtn))
+
+      // Find the clock options to manipulate within the clock element
+      const optionElements = startPickerElement.querySelectorAll('[role="option"]')
+      console.log(`optionElements[hour]: ${optionElements[hour].textContent}`)
+
+      screen.debug(optionElements[hour])
+
+      // Select what hour you want, where hour 0 < hour <= 24
+      //fireEvent.mouseDown(optionElements[hour])
+      userEvent.click(optionElements[hour])
+    },
+    expected: ({ oldFirstEta, newFirstEta, oldStart, tasks = initialTasks.tasks }) => {
+      const firstTTC = tasks[0]?.ttc
+      const expectedFirst = format(new Date(hoursToMillis(firstTTC) + parse(oldStart, 'HH:mm', new Date()).getTime()), "HH:mm") // ttc + oldStart = "HH:mm"
+
+      //console.log(`expect ${oldFirstEta} not to equal ${newFirstEta}`)
+      // Assert that first eta (gathered before action) is not equal to new first eta (after action)
+      expect(oldFirstEta).not.toEqual(newFirstEta) // Str:old != Str:new
+      // Assert that new first eta (after action) is equal to (new) start + first ttc
+      expect(newFirstEta).toEqual(expectedFirst)
+    }
+  },
 ]
 
 // --- Tests
@@ -168,7 +211,7 @@ describe('TaskEditor - 1. Search Feature', () => {
       const { getByPlaceholderText, queryByDisplayValue, getAllByDisplayValue } = renderWithProviders(<TaskEditor options={options} />, { store: searchStore })
       const searchInput = getByPlaceholderText('Search for a Task')
       const originalMatches = testCase?.value.trim() !== diagonalizedValue ? getAllByDisplayValue(testCase?.value.trim()) : []
-      
+
       // -- Act
       await act(async () => {
         testCase.action(searchInput, testCase?.value)
@@ -180,7 +223,43 @@ describe('TaskEditor - 1. Search Feature', () => {
   })
 })
 
-// describe('TaskEditor - 2. Start/End/Owl Feature', () => {})
+describe('TaskEditor - 2. Start/End/Owl Feature', () => {
+  startEndTestCases.forEach(testCase => {
+    it(testCase.description, async () => {
+      // -- Private Test Helpers
+      const getStartEndElements = () => {
+        const startEndTimes = screen.getAllByLabelText((text, el) =>
+          text.startsWith('Time display:')
+        )
+        const originalStartString = startEndTimes[0]?.textContent
+        const originalEndString = startEndTimes[1]?.textContent
+        return [originalStartString, originalEndString]
+      }
+
+      // -- Arrange
+      const { getByTestId, getByLabelText, getAllByText } = renderWithProviders(<TaskEditor options={options} />, { store: searchStore })
+      const hour = 9 // 9:00 a.m.
+      const owlElement = getByTestId('owl-button')
+      const isOwl = owlElement.getAttribute('style') !== null // if style attribute is empty then false otherwise true
+      const [originalStartString, originalEndString] = [...getStartEndElements()]
+      const originalETA = getByLabelText('eta for task 0')?.textContent
+      // TODO: Parse Start/End into Dates based on Owl
+
+      // -- Act
+      await act(async () => {
+        testCase.action({ hour, getByTestId })
+      })
+
+      // -- Assert
+      await waitFor(() => {
+        const newETA = getByLabelText('eta for task 0')?.textContent
+        const [newStartString, newEndString] = [...getStartEndElements()]
+
+        testCase.expected({ oldFirstEta: originalETA, newFirstEta: newETA, oldStart: originalStartString })
+      }, { timeout: 500 })
+    })
+  })
+})
 // describe('TaskEditor - 3. Add Task Feature', () => {})
 // describe('TaskEditor - 4. Multi-Delete Feature', () => {})
 // describe('TaskEditor - 5. Sort Drop-down Feature', () => {})

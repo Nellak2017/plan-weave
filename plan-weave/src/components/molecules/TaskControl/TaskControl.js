@@ -24,16 +24,16 @@ import { addNewTask, removeTasks } from '../../../redux/thunks/taskThunks.js'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 
 // TODO: Refactor this so that iconSize is not aliased and so that we pass in the xs,s,m,l,xl,xxl as in the theme
-function TaskControl({ 
-	variant, 
-	color, 
-	maxwidth = 818, 
-	maxwidthsearch, 
+function TaskControl({
+	variant,
+	color,
+	maxwidth = 818,
+	maxwidthsearch,
 	y0, y1, x0, x1 = -36,
-	start = '10:30', end = '23:30', 
-	owlSize: iconSize = '32px', 
+	start = '10:30', end = '23:30',
+	owlSize: iconSize = '32px',
 	overNight = false,
-	clock1Text = '', clock2Text = '', 
+	clock1Text = '', clock2Text = '',
 	toolTips = DEFAULT_TASK_CONTROL_TOOL_TIPS,
 	...rest }) {
 
@@ -97,7 +97,7 @@ function TaskControl({
 		})(dispatch)
 		setDnd(addDnDEvent(dnd))
 	}
-	
+
 	const deleteEvent = () => {
 		if (!isHighlighting) {
 			setIsDeleteClicked(false)
@@ -182,6 +182,7 @@ function TaskControl({
 							controlled
 							time={startTime}
 							onTimeChange={newTime => setStartTime(newTime)}
+							testid={'start-time-picker'} // used in testing
 						/>
 						<TimePickerWrapper
 							tabIndex={3}
@@ -194,6 +195,7 @@ function TaskControl({
 							controlled
 							time={endTime}
 							onTimeChange={newTime => setEndTime(newTime)}
+							testid={'end-time-picker'} // used in testing
 						/>
 						<GiOwl
 							tabIndex={4}
@@ -202,7 +204,9 @@ function TaskControl({
 							style={overNightMode && { color: theme.colors.primary }}
 							onClick={setOverNight}
 							onKeyDown={e => { if (e.key === 'Enter') { setOverNight() } }}
-							size={iconSize} />
+							size={iconSize}
+							data-testid={'owl-button'}
+						/>
 					</TimePickerContainer>
 				</TopContainer>
 				<BottomContainer>

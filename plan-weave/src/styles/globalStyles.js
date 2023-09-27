@@ -3,6 +3,7 @@ import { createGlobalStyle } from 'styled-components'
 // This provides default global CSS that is as minimal and as reasonable as possible
 const GlobalStyle = createGlobalStyle`
 * {
+    pointer-events: all !important; // needed for testing
     box-sizing: border-box;
     margin: 0;
     padding: 0;

@@ -120,16 +120,15 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 				variant={variant}
 				status={status}
 				ref={provided?.innerRef || null}
-				{...provided?.draggableProps}
-				{...provided.dragHandleProps}
-				style={{ ...provided.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
+				{...(provided?.draggableProps ? provided.draggableProps : {})} // conditionally destructure if not completed task
+				style={{ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
 				maxwidth={maxwidth}
 				highlight={isHighlighting ? isChecked && 'selected' || ' ' : highlight}
 				onBlur={handleUpdateTask}
 			>
 				{<SimpleRow
 					provided={provided || undefined}
-					taskObject={{ task, waste, ttc, eta, status, id, timestamp }}
+					taskObject={{ task, waste, ttc, eta, status, id, timestamp, index }}
 					variant={variant}
 					isChecked={isChecked}
 					setLocalTask={setLocalTask}

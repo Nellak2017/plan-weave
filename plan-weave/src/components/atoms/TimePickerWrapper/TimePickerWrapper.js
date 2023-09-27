@@ -28,11 +28,12 @@ function TimePickerWrapper({
   time: controlledTime, // Controlled time passed from the parent
   tabIndex, // used for selecting the icon
   onKeyDown, // used for using enter key to press on icon
-  title // used to tell the user what clicking the icon will do whenever they hover over it (tool tip)
+  title, // used to tell the user what clicking the icon will do whenever they hover over it (tool tip)
+  testid // used for unit testing
 }) {
   // --- Verify Input
   if (variant && !THEMES.includes(variant)) variant = 'dark'
-  
+
   // --- State for component
   const [time, setTime] = useState(parse(defaultTime, 'HH:mm', new Date()))
   const [showClock, setShowClock] = useState(false)
@@ -46,8 +47,8 @@ function TimePickerWrapper({
   const currentTime = controlled ? controlledTime : time // Use controlledTime if controlled by the parent
 
   // --- Debouncing the Clock Feature
-  const debouncedChangeHandler = useMemo( () => debounce(newTime => onTimeChange(newTime), CLOCK_DEBOUNCE), [])
-  useEffect(() => { return () => { debouncedChangeHandler.cancel() }}, [debouncedChangeHandler])
+  const debouncedChangeHandler = useMemo(() => debounce(newTime => onTimeChange(newTime), CLOCK_DEBOUNCE), [])
+  useEffect(() => { return () => { debouncedChangeHandler.cancel() } }, [debouncedChangeHandler])
 
   // --- Clock FSM (implemented without State machines) Feature
   const handleTimeChange = newTime => {
@@ -67,12 +68,15 @@ function TimePickerWrapper({
     setButtonClicked(false)
   }
 
+  // --- Memo for time display
+  const timeDisplayMemo = useMemo(() => ampm ? format(currentTime, 'hh:mm a') : format(currentTime, 'HH:mm'), [currentTime, ampm])
+
   // BEFORE Controlled code, time was used to be displayed, not currentTime
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <TimePickerWrapperStyled variant={variant} >
-        <Display><p>{displayText}</p><p>{ampm ? format(currentTime, 'hh:mm a') : format(currentTime, 'HH:mm')}</p></Display>
-        <ClockIconWrapper role="button" onMouseDown={toggleClock} onKeyDown={(e) => { if (e.key === 'Enter') { toggleClock() } }}>
+        <Display><p>{displayText}</p><p aria-label={`Time display: ${timeDisplayMemo}`}>{timeDisplayMemo}</p></Display>
+        <ClockIconWrapper data-testid={testid.concat('-button')} role="button" onMouseDown={toggleClock} onKeyDown={(e) => { if (e.key === 'Enter') { toggleClock() } }}>
           <AiOutlineClockCircle tabIndex={tabIndex} size={32} title={title} />
         </ClockIconWrapper>
         <TimeClockWrapper
@@ -80,6 +84,7 @@ function TimePickerWrapper({
           $verticalOffset={verticalOffset}
           $horizontalOffset={horizontalOffset}>
           <ClockStyled
+            data-testid={testid} // used in unit testing
             value={currentTime}
             onChange={handleTimeChange}
             onFocusedViewChange={handleViewChange}
