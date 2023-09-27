@@ -1,5 +1,4 @@
 import styled from 'styled-components'
-import { space, layout, typography } from 'styled-system'
 import {
 	getPresetCSS,
 	timePickerPresets,
@@ -18,9 +17,6 @@ export const ClockStyled = styled(TimeClock)`
     .css-1j9v0by-MuiClock-root {
       margin: 0; 
     }
-	.css-4f0ona-MuiClock-clock {
-		pointer-events: all;
-	}
 	width: 150px;
 	outline: none;
 `
