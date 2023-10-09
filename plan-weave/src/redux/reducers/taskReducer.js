@@ -37,15 +37,15 @@ const taskSlice = createSlice({
 			state.tasks?.push(action.payload) // Add a new task to the state
 		},
 		deleteTask: (state, action) => {
-			state.tasks = state?.tasks?.map(task => task?.id && task?.id === action.payload ? {...task, hidden: true} : task)
+			state.tasks = state?.tasks?.map(task => task?.id && task?.id === action.payload ? { ...task, hidden: true } : task)
 		},
 		deleteTasks: (state, action) => {
 			const idsToDelete = action.payload
-			state.tasks = state?.tasks?.map(task => task?.id && idsToDelete.includes(task?.id) ? {...task, hidden: true} : task)
+			state.tasks = state?.tasks?.map(task => task?.id && idsToDelete.includes(task?.id) ? { ...task, hidden: true } : task)
 		},
 		editTask: (state, action) => {
 			if (state.tasks.length >= 1000) return
-			const { id, updatedTask } = action?.payload || {0:-1, 1:-1} // TODO: poor default, think of better later
+			const { id, updatedTask } = action?.payload || { 0: -1, 1: -1 } // TODO: poor default, think of better later
 			const taskIndex = state?.tasks?.findIndex(task => task?.id === id)
 			if (taskIndex !== -1) {
 				state.tasks[taskIndex] = updatedTask // Edit a task by ID

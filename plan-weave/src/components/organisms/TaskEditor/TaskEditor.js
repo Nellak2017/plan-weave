@@ -88,22 +88,28 @@ const TaskEditor = ({
 
 	// --- Ensure Sorted List when tasks change Feature
 	useEffect(() => {
-		setTaskList((!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(tasksFromRedux, tasks, start, [
-			SORTING_METHODS[sortingAlgo], // sort
+		const transforms = [
 			t => transform(t, dnd), // apply dnd config
 			t => calculateWaste({ start, taskList: t, time: new Date() }) // calculate waste/eta
-		]))
+		]
+		setTaskList((!sortingAlgo && sortingAlgo !== '')
+			? tasksFromRedux
+			: completedOnTopSorted(tasksFromRedux, tasks, start, transforms, SORTING_METHODS[sortingAlgo])
+		)
 	}, [tasksFromRedux])
 
 	// --- Change Sorting Algorithm Feature
 	useEffect(() => {
 		// Apply transformations to ensure correctly sorted and other calculations applied
+		const transforms = [
+			t => transform(t, tasksFromRedux.map((_, i) => i)), // apply DEFAULT dnd config
+			t => calculateWaste({ start, taskList: t, time: new Date() }) // calculate waste/eta
+		]
 		if (tasksFromRedux) {
-			setTaskList(old => (!sortingAlgo && sortingAlgo !== '') ? tasksFromRedux : completedOnTopSorted(old, tasks, start, [
-				SORTING_METHODS[sortingAlgo], // sort
-				t => transform(t, tasksFromRedux.map((_, i) => i)), // apply DEFAULT dnd config
-				t => calculateWaste({ start, taskList: t, time: new Date() }) // calculate waste/eta
-			]))
+			setTaskList(old => (!sortingAlgo && sortingAlgo !== '')
+				? tasksFromRedux
+				: completedOnTopSorted(old, tasks, start, transforms, SORTING_METHODS[sortingAlgo])
+			)
 			// reset dnd whenever sorting algorithm changes
 			setDnd(tasksFromRedux.map((_, i) => i))
 		}
@@ -132,7 +138,7 @@ const TaskEditor = ({
 	}, [sortingAlgo])
 
 	// --- ETA + Waste Auto Calculation Feature
-	const update = () => setTaskList(old => calculateWaste({ start: start, taskList:old, time: new Date() }) || old)
+	const update = () => setTaskList(old => calculateWaste({ start: start, taskList: old, time: new Date() }) || old)
 	useEffect(() => update(), [timeRange, start, owl, dnd])
 	useEffect(() => {
 		if (taskUpdated) { update() }

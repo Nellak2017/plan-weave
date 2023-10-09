@@ -1,6 +1,6 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
 import { getTime } from 'date-fns'
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, SORTING_METHODS, SORTING_METHODS_NAMES } from './constants'
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
 
 // This file contains many helpers used through out the application
 
@@ -259,21 +259,21 @@ export const ordinalSet = (dnd) => {
  * @param {Object[]} tasks - The list of tasks to be sorted.
  * @param {Date} start - The start time for calculating waste.
  * @param {Function[]} transforms - A list of transformation functions to apply (optional).
+ * @param {Function} sort - A sorting function. Must be explicitly defined so no bugs happen.
  * @returns {Object[]} The sorted and transformed list of tasks.
  */
-export const completedOnTopSorted = (reduxTasks, tasks, start, transforms) => {
+export const completedOnTopSorted = (reduxTasks, tasks, start, transforms, sort = t => t.slice()) => {
 	// transforms is a list of transformation functions, tasks => ordering of tasks
 	if (!transforms) {
 		transforms = [
-			SORTING_METHODS[SORTING_METHODS_NAMES.TIMESTAMP],
 			t => transform(t, reduxTasks.map((_, i) => i)),
 			t => calculateWaste({ start, taskList: t, time: new Date() })
 		]
 	}
 	if (!reduxTasks) return tasks && tasks.length > 0 ? transformAll(tasks, transforms) : []
 
-	const completedTasks = [...reduxTasks].filter(task => task?.status === TASK_STATUSES.COMPLETED)
-	const remainingTasks = [...reduxTasks].filter(task => task?.status !== TASK_STATUSES.COMPLETED)
+	const completedTasks = sort([...reduxTasks].filter(task => task?.status === TASK_STATUSES.COMPLETED))
+	const remainingTasks = sort([...reduxTasks].filter(task => task?.status !== TASK_STATUSES.COMPLETED))
 	return transformAll([...completedTasks, ...remainingTasks], transforms)
 }
 

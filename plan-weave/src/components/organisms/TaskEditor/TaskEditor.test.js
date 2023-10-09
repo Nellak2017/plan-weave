@@ -7,7 +7,9 @@ import { diagonalize } from '../../utils/helpers.js'
 //import { userEvent } from '@testing-library/user-event'
 
 // -- Private Helpers
-const findLastTaskIndex = (taskList, prop = "complete") => taskList.slice().reverse().findIndex(task => task?.status === prop)
+const findLastTaskIndex = (taskList, prop = "completed") => taskList.slice().findLastIndex(task => task?.status === prop)
+const findFirstTaskIndex = (taskList, prop = "incomplete") => taskList.slice().findIndex(task => task?.status === prop)
+
 
 // --- Shared Data
 const options = [
@@ -32,7 +34,7 @@ const initialTasks = {
 }
 const addTasks = {
   tasks: [
-    { status: 'complete', task: 'break', ttc: 1.5, id: 1, timestamp: timestamp },
+    { status: 'completed', task: 'break', ttc: 1.5, id: 1, timestamp: timestamp },
     { status: 'incomplete', task: 'Span - Mindtap, Disc, Study', ttc: 3, id: 2, timestamp: timestamp - 1 },
     { status: 'incomplete', task: 'Exampl3 2', ttc: 1.25, id: 3, timestamp: timestamp - 2 },
     { status: 'incomplete', task: 'Ethics - P2', ttc: 1.5, id: 4, timestamp: timestamp - 3 },
@@ -214,16 +216,15 @@ const addTestCases = [
   {
     description: 'Add Task should add a new task after the last complete task',
     action: addButton => fireEvent.click(addButton),
-    expected: ({ getAllByRole }) => {
+    expected: async ({ getAllByRole }) => {
+
       // Assert that the first incomplete task is after the last complete task (first incomplete index > last complete index)
       const newTableElements = getAllByRole('row').slice(1) // get all tr with status (not the header tr) -> [elements]
       const newStatuses = newTableElements.map(el => ({ status: el.getAttribute('status') })) // newTableElements:[elements] -> [{status}] 
-      console.log(newStatuses)
 
-      const firstIncompleteIndex = findLastTaskIndex(newStatuses.reverse(), 'incomplete')
-      const lastCompletedIndex = findLastTaskIndex(newStatuses)
+      const firstIncompleteIndex = findFirstTaskIndex(newStatuses.slice()) // Incomplete is default prop
+      const lastCompletedIndex = findLastTaskIndex(newStatuses.slice()) // Complete is default prop
 
-      console.log(`first incomplete at: ${firstIncompleteIndex}, last complete at: ${lastCompletedIndex}`)
       expect(firstIncompleteIndex).toBeGreaterThan(lastCompletedIndex)
     }
   },
