@@ -58,6 +58,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 	}
 
 	// Handlers
+	// TODO: When Completed, move this completed task dnd index to the index of last completed + 1. Basically set dnd so that this is at last completed + 1
 	const handleCheckBoxClicked = () => {
 		// Change the Checkmark first before all so we don't forget!
 		setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
@@ -87,6 +88,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 		}
 
 		// Usual API+View Update 
+		// TODO: setDnd here where it is going to be at the index of last completed (possibly, must maintain proper sorting)
 		updateTask(id, updatedTask)(dispatch)
 		if (TaskEditorContext._currentValue) setTaskUpdated(true)
 	}

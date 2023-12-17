@@ -17,9 +17,8 @@ import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/o
 		
 	Medium:
 		TODO: Sort icons
-		TODO: Fix the Completed on Top bug where it uses old dnd config to keep completed in place despite needing to be on top.
-			(dnd should only apply to incomplete components)
 		TODO: Fix the Dnd config not updating properly when multiple updates applied
+		TODO: Fix the Dnd bug where dragging an item to somewhere then completing it will cause it to not go to top as expected (completed not on top error!)
 		TODO: Refactor all functions to make use of Railway oriented design (for example the Maybe monad). Look at the validation helper
 		TODO: Refactor the form in task row to be like formik (When you make Full Task)
 		TODO: Completed Highlight bug. When it is the next day (owl on), and you swap a task using dnd to 1st completed and complete it, it displays as old instead of completed.
@@ -41,7 +40,7 @@ const TaskEditor = ({
 	sortingAlgorithm = 'timestamp',
 	maxwidth = 818,
 	options,
-	startEndTimes = { 'start': parse('16:45', 'HH:mm', new Date()), 'end': parse('00:30', 'HH:mm', new Date()) },
+	startEndTimes = { 'start': parse('13:30', 'HH:mm', new Date()), 'end': parse('00:30', 'HH:mm', new Date()) },
 	paginationOptions = { 'tasksPerPage': 10, 'page': 1 },
 	title = "Today's Tasks"
 }) => {
@@ -157,7 +156,7 @@ const TaskEditor = ({
 			<button onClick={() => {
 				console.log(tasksFromRedux)
 			}}>Show Redux Store</button>
-			<button onClick={() => { console.log(`page: ${page}, tasks per page: ${tasksPerPage}\nstartRange = ${startRange}, endRange = ${endRange}`) }}>Show Page Number</button>
+			<button onClick={() => { console.log(`page: ${page}, tasks per page: ${tasksPerPage}`) }}>Show Page Number</button>
 			<button onClick={() => console.log(`Dnd Config: ${dnd}`)}>Show DnD Config</button>
 			<button onClick={() => console.log(`start: ${timeRange['start']}\nend: ${timeRange['end']}`)}>Show timerange</button>
 			<button onClick={() => console.log(`start: ${start}`)}>Show memoized start</button>

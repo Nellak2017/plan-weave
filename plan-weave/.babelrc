@@ -4,6 +4,9 @@
 	],
 	"plugins": [
 		[
+			"styled-components", {"ssr": true}
+		],
+		[
 			"@babel/plugin-transform-react-jsx",
 			{
 				"runtime": "automatic"
