@@ -1,4 +1,4 @@
-import { addTask, deleteTask, deleteTasks, editTask } from '../reducers/taskReducer'
+import { addTask, deleteTask, deleteTasks, editTask } from '../reducers/taskEditorReducer'
 
 // Thunks for tasks
 export const addNewTask = task => (dispatch) => {

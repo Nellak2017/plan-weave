@@ -1,6 +1,6 @@
 // reducers/index.js
 import { combineReducers } from '@reduxjs/toolkit'
-import taskReducer from './taskReducer' // Import the taskReducer
+import taskReducer from './taskEditorReducer' // Import the taskReducer
 // Import other reducers here
 
 const rootReducer = combineReducers({

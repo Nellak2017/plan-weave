@@ -8,13 +8,15 @@ import { THEMES, TASK_STATUSES } from '../../utils/constants'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 import { isTimestampFromToday, filterTaskList, rearrangeDnD } from '../../utils/helpers'
 
+import { useSelector } from 'react-redux' // temporary only
+
 /* 
  TODO: Fix the Full Task Schema (See Full Task TODO)
 */
 const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const { taskList, setTaskList, tasksPerPage, page, search, dnd, setDnd, timeRange } = useContext(TaskEditorContext)
+	const { taskList, setTaskList, tasksPerPage, page, dnd, setDnd, timeRange } = useContext(TaskEditorContext)
 	const localTasks = useMemo(() => tasks, [tasks])
 
 	const lastCompletedIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1
@@ -25,6 +27,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page), [tasksPerPage, page])
 
 	// --- Search Feature (pure version where eta and waste are constants)
+	const search = useSelector(state => state?.tasks?.search)
 	const filteredTasks = useMemo(() => (search === search.trimRight())
 		? filterTaskList({ list: taskList, filter: search.trim(), attribute: 'task' }) : taskList, [taskList, search])
 

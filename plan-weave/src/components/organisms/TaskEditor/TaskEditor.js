@@ -65,7 +65,6 @@ const TaskEditor = ({
 	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
 	const [dnd, setDnd] = useState(tasksFromRedux.map((_, i) => i)) // list that tells mapping of task list. ex: [1,3,2] - taskList:[a,b,c] -> [a,c,b] 
 	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks, start) }))
-	const [search, setSearch] = useState('') // value of searchbar, for filtering tasks
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
 	// State for multiple delete feature
@@ -74,12 +73,12 @@ const TaskEditor = ({
 
 	// Memo for context
 	const memoizedContext = useMemo(() => ({
-		taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
+		taskList, setTaskList, timeRange, setTimeRange,
 		owl, setOwl, taskUpdated, setTaskUpdated,
 		selectedTasks, setSelectedTasks, isHighlighting, setIsHighlighting,
 		tasksPerPage, page, dnd, setDnd
 	}), [
-		taskList, setTaskList, search, setSearch, timeRange, setTimeRange,
+		taskList, setTaskList, timeRange, setTimeRange,
 		owl, setOwl, taskUpdated, setTaskUpdated,
 		selectedTasks, setSelectedTasks, isHighlighting, setIsHighlighting,
 		tasksPerPage, page, dnd, setDnd

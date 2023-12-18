@@ -5,6 +5,7 @@ import { Timestamp } from 'firebase/firestore'
 const timestamp = Timestamp.fromDate(new Date()).seconds // used for testing purposes
 
 const initialState = {
+	search: '',
 	tasks: [
 		{ status: 'incomplete', task: 'Eat 1', ttc: .5, id: 1, timestamp: timestamp }, 
 		{ status: 'incomplete', task: 'ML : Flash (Lectures/Study guide)', ttc: 3, id: 2, timestamp: timestamp - 1 }, 
@@ -31,10 +32,16 @@ const initialState = {
 }
 
 // TODO: Test this reducer 
-const taskSlice = createSlice({
+const taskEditorSlice = createSlice({
 	name: 'tasks',
 	initialState,
 	reducers: {
+
+		updateSearch: (state, action) => {
+			state.search = action.payload.trim() // assuming action.payload is the new search value
+			console.log("Updated Search: ", state.search)
+		},
+
 		addTask: (state, action) => {
 			state.tasks?.push(action.payload) // Add a new task to the state
 		},
@@ -56,5 +63,5 @@ const taskSlice = createSlice({
 	},
 })
 
-export const { addTask, deleteTask, deleteTasks, editTask } = taskSlice.actions
-export default taskSlice.reducer
+export const { updateSearch, addTask, deleteTask, deleteTasks, editTask } = taskEditorSlice.actions
+export default taskEditorSlice.reducer

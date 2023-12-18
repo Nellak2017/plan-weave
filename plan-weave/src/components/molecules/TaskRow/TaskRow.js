@@ -117,7 +117,6 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 
 	// -- Helper components
 	const completedTask = provided => (
-		<>
 			<TaskRowStyled
 				variant={variant}
 				status={status}
@@ -141,7 +140,6 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 					handleDeleteTask={handleDeleteTask}
 				/>}
 			</TaskRowStyled>
-		</>
 	)
 
 	return (
