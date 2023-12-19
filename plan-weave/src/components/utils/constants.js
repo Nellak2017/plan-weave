@@ -50,6 +50,16 @@ export const DEFAULT_SIMPLE_TASKS = [
 	{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4 },
 ]
 
+export const DEFAULT_SIMPLE_TASK = {
+	task: '',
+	waste: 1,
+	ttc: 1,
+	eta: '12:00',
+	status: 'incomplete',
+	id: new Date().getTime(), // guarantees unique ids down to the millisecond!
+	timestamp: Math.floor((new Date().getTime()) / 1000)
+} // Used when adding a new simple task
+
 export const DEFAULT_TASK_CONTROL_TOOL_TIPS = {
 	owlToolTip: 'Toggle Overnight Mode', addToolTip: 'Add a New Task',
 	deleteToolTip: 'Delete selected', dropDownToolTip: 'Select Sorting Method'
@@ -58,7 +68,7 @@ export const DEFAULT_TASK_CONTROL_TOOL_TIPS = {
 export const CLOCK_DEBOUNCE = 20 // measured in ms
 
 export const TASK_ROW_TOOLTIPS = {
-	dnd : 'Drag-n-Drop tasks to change view',
+	dnd: 'Drag-n-Drop tasks to change view',
 	completed: 'Mark Incomplete',
 	incomplete: 'Mark Complete',
 	task: 'Task Name',

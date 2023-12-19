@@ -3,7 +3,8 @@ import {
 } from "../../redux/reducers/taskEditorReducer.js"
 import {
 	updateTimeRangeThunk,
-	updateOwlThunk
+	updateOwlThunk,
+	addNewTaskThunk,
 } from "../../redux/thunks/taskEditorThunks.js"
 
 
@@ -21,9 +22,11 @@ export const createTaskEditorServices = (store) => {
 			}, // thunk to update start/end
 			owl: () => {
 				dispatch(updateOwlThunk())
-			} // thunk to update owl
-			/* 
-			addTask: // thunk to add task
+			}, // thunk to update owl
+			addTask: (task) => {
+				dispatch(addNewTaskThunk(task))
+			} // thunk to add task
+			/*
 			deleteMany: // thunk to delete many
 			sort: // thunk to update sorting method
 		  },

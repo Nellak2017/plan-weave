@@ -17,7 +17,7 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { ThemeContext } from 'styled-components' // needed for theme object
 import { formatTimeLeft, hoursToMillis } from '../../utils/helpers.js'
-import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS } from '../../utils/constants.js'
+import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS, DEFAULT_SIMPLE_TASK } from '../../utils/constants.js'
 import Button from '../../atoms/Button/Button.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { addNewTaskThunk, removeTasksThunk } from '../../../redux/thunks/taskEditorThunks.js'
@@ -45,23 +45,23 @@ function TaskControl({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip } = { ...toolTips }
 
-	const timeRange = useSelector(state => state?.tasks?.timeRange)
-	const startTime = useMemo(() => parseISO(timeRange?.start), [timeRange])
-	const endTime = useMemo(() => parseISO(timeRange?.end), [timeRange])
-	const owl = useSelector(state => state?.tasks?.owl)
-
-	useEffect(() => console.log(endTime), [endTime])
-
 	// Context and Redux Stuff
 	const theme = useContext(ThemeContext)
 	const dispatch = useDispatch()
 	const { taskList, isHighlighting, setIsHighlighting, selectedTasks, setSelectedTasks, dnd, setDnd } = useContext(TaskEditorContext)
 
-	// State
+	// Local State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
 	const [isDeleteClicked, setIsDeleteClicked] = useState(false) // used to track if delete has been presed once or not (HOF didn't work)
 
+	// Redux State
+	const timeRange = useSelector(state => state?.tasks?.timeRange)
+	const startTime = useMemo(() => parseISO(timeRange?.start), [timeRange])
+	const endTime = useMemo(() => parseISO(timeRange?.end), [timeRange])
+	const owl = useSelector(state => state?.tasks?.owl)
+
 	// Effects
+	useEffect(() => { if (owl) shiftEndTime(24, startTime, endTime, 2 * 24) }, [])
 	useEffect(() => { checkTimeRange() }, [owl])
 	useEffect(() => {
 		const intervalId = setInterval(() => { setCurrentTime(new Date()) }, 1000)
@@ -69,6 +69,11 @@ function TaskControl({
 	}, [currentTime]) // update time every 1 second
 
 	// Clock helpers (with side-effects)
+	const shiftEndTime = (shift, startTime, endTime, maxDifference) => {
+		const newDate = new Date(endTime.getTime() + hoursToMillis(shift))
+		const startEndDifference = differenceInHours(newDate, startTime)
+		if (startEndDifference <= maxDifference) services?.timeRange(undefined, newDate.toISOString())
+	}
 	const checkTimeRange = () => {
 		if ((getTime(endTime) < getTime(startTime)) && !owl) {
 			services?.timeRange(undefined, startTime.toISOString())
@@ -96,18 +101,9 @@ function TaskControl({
 	const addDnDEvent = dnd => [0, ...dnd.map(el => el + 1)]
 	const addEvent = () => {
 		toast.info('You added a New Default Task')
-		if (taskList) addNewTaskThunk({
-			task: '',
-			waste: 1,
-			ttc: 1,
-			eta: '12:00',
-			status: 'incomplete',
-			id: new Date().getTime(), // guarantees unique ids down to the millisecond!
-			timestamp: Math.floor((new Date().getTime()) / 1000)
-		})(dispatch)
+		services?.addTask(DEFAULT_SIMPLE_TASK)
 		setDnd(addDnDEvent(dnd))
 	}
-
 	const deleteEvent = () => {
 		if (!isHighlighting) {
 			setIsDeleteClicked(false)
@@ -118,7 +114,6 @@ function TaskControl({
 			setIsHighlighting(old => !old)
 		}
 	}
-
 	const deleteMultipleEvent = () => {
 		const tasksAreSelected = selectedTasks.some(task => task === true) // if there is atleast 1 task selected then true
 		if (tasksAreSelected && !isDeleteClicked) {
@@ -158,25 +153,8 @@ function TaskControl({
 				})
 		}
 	}
-
-	const shiftEndTime = (shift, startTime, endTime, maxDifference) => {
-		const newDate = new Date(endTime.getTime() + hoursToMillis(shift))
-		const startEndDifference = differenceInHours(newDate, startTime)
-		if (startEndDifference <= maxDifference) services?.timeRange(undefined, newDate.toISOString())
-	}
-
-	useEffect(() => {
-		const maxDifference = 2 * 24
-		if (owl) shiftEndTime(24, startTime, endTime, maxDifference)
-	}, [])
-
-	const handleStartTimeChange = newStart => {
-		services?.timeRange(newStart.toISOString())
-	}
-	const handleEndTimeChange = newEnd => {
-		const adjustedEndTime = owl ? new Date(endTime.getTime() + hoursToMillis(24)) : newEnd
-		services?.timeRange(undefined, adjustedEndTime.toISOString())
-	}
+	const startTimeChangeEvent = newStart => { services?.timeRange(newStart.toISOString()) }
+	const endTimeChangeEvent = newEnd => { services?.timeRange(undefined, newEnd.toISOString()) }
 
 	return (
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
@@ -201,7 +179,7 @@ function TaskControl({
 						horizontalOffset={x0}
 						controlled
 						time={startTime}
-						onTimeChange={newTime => handleStartTimeChange(newTime)} // Untested 
+						onTimeChange={newTime => startTimeChangeEvent(newTime)} // Untested 
 						testid={'start-time-picker'} // used in testing
 					/>
 					<TimePickerWrapper
@@ -214,7 +192,7 @@ function TaskControl({
 						horizontalOffset={x1}
 						controlled
 						time={endTime}
-						onTimeChange={newTime => handleEndTimeChange(newTime)} // Untested
+						onTimeChange={newTime => endTimeChangeEvent(newTime)} // Untested
 						testid={'end-time-picker'} // used in testing
 					/>
 					<GiOwl
