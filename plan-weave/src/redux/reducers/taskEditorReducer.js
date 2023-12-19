@@ -1,14 +1,19 @@
 // reducers/taskReducer.js
 import { createSlice } from '@reduxjs/toolkit'
-
+import { parse } from 'date-fns'
 import { Timestamp } from 'firebase/firestore'
 const timestamp = Timestamp.fromDate(new Date()).seconds // used for testing purposes
 
 const initialState = {
 	search: '',
+	timeRange: {
+		start: parse('00:00', 'HH:mm', new Date()).toISOString(), // Initial Start Date 
+		end: parse('17:00', 'HH:mm', new Date()).toISOString(), // Initial End Date
+	},
+	owl: true,
 	tasks: [
-		{ status: 'incomplete', task: 'Eat 1', ttc: .5, id: 1, timestamp: timestamp }, 
-		{ status: 'incomplete', task: 'ML : Flash (Lectures/Study guide)', ttc: 3, id: 2, timestamp: timestamp - 1 }, 
+		{ status: 'incomplete', task: 'Eat 1', ttc: .5, id: 1, timestamp: timestamp },
+		{ status: 'incomplete', task: 'ML : Flash (Lectures/Study guide)', ttc: 3, id: 2, timestamp: timestamp - 1 },
 		{ status: 'incomplete', task: 'br 1', ttc: .5, id: 3, timestamp: timestamp - 2 },
 		{ status: 'incomplete', task: 'ML : Written Ass Analysis', ttc: 2, id: 4, timestamp: timestamp - 3 },
 		{ status: 'incomplete', task: 'ML : Flash Cards', ttc: 1, id: 5, timestamp: timestamp - 4 },
@@ -41,6 +46,18 @@ const taskEditorSlice = createSlice({
 			state.search = action.payload.trim() // assuming action.payload is the new search value
 			console.log("Updated Search: ", state.search)
 		},
+		updateTimeRange: (state, action) => {
+			const { start, end } = action.payload
+			state.timeRange = {
+				start: start !== undefined ? start : state.timeRange.start,
+				end: end !== undefined ? end : state.timeRange.end,
+			}
+			//console.log("Updated Start, End:\n", state.timeRange.start, '\n', state.timeRange.end)
+		},
+		updateOwl: (state, _) => {
+			state.owl = !state.owl
+		},
+
 
 		addTask: (state, action) => {
 			state.tasks?.push(action.payload) // Add a new task to the state
@@ -63,5 +80,9 @@ const taskEditorSlice = createSlice({
 	},
 })
 
-export const { updateSearch, addTask, deleteTask, deleteTasks, editTask } = taskEditorSlice.actions
+export const {
+	updateSearch,
+	updateTimeRange,
+	updateOwl,
+	addTask, deleteTask, deleteTasks, editTask } = taskEditorSlice.actions
 export default taskEditorSlice.reducer

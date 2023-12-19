@@ -11,6 +11,11 @@ import { parse } from 'date-fns'
 import PropTypes from 'prop-types'
 import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
 
+import store from '../../../redux/store.js'
+import {
+	createTaskEditorServices,
+	createStateObject
+} from '../../../services/PlanWeavePage/TaskEditorServices'
 /*
 	Easy: 	
 		TODO: Add Test coverage to new helpers and extract all helper functions to helper.js
@@ -40,7 +45,7 @@ const TaskEditor = ({
 	sortingAlgorithm = 'timestamp',
 	maxwidth = 818,
 	options,
-	startEndTimes = { 'start': parse('13:30', 'HH:mm', new Date()), 'end': parse('00:30', 'HH:mm', new Date()) },
+	startEndTimes = { 'start': parse('00:00', 'HH:mm', new Date()), 'end': parse('17:00', 'HH:mm', new Date()) },
 	paginationOptions = { 'tasksPerPage': 10, 'page': 1 },
 	title = "Today's Tasks"
 }) => {
@@ -48,6 +53,8 @@ const TaskEditor = ({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	if (sortingAlgorithm && !Object.keys(SORTING_METHODS_NAMES).includes(sortingAlgorithm)) sortingAlgorithm = 'timestamp'
 
+	const services = createTaskEditorServices(store)
+	const reduxStore = useSelector(state => state?.tasks)
 	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
 
 	// State for the Pagination feature
@@ -154,7 +161,13 @@ const TaskEditor = ({
 			}}>Show Task View</button>
 			<button onClick={() => {
 				console.log(tasksFromRedux)
-			}}>Show Redux Store</button>
+			}}>Show Redux Store tasks only</button>
+			<button onClick={() => {
+				console.log(reduxStore)
+			}}>Show whole redux store</button>
+			<button onClick={() => {
+				console.log(reduxStore?.timeRange)
+			}}>Show timerange Redux</button>
 			<button onClick={() => { console.log(`page: ${page}, tasks per page: ${tasksPerPage}`) }}>Show Page Number</button>
 			<button onClick={() => console.log(`Dnd Config: ${dnd}`)}>Show DnD Config</button>
 			<button onClick={() => console.log(`start: ${timeRange['start']}\nend: ${timeRange['end']}`)}>Show timerange</button>
@@ -164,6 +177,7 @@ const TaskEditor = ({
 				<h1>{title}</h1>
 				<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 					<TaskControl
+						services={services?.taskControl}
 						variant={variant}
 						options={newDropdownOptions}
 						clock1Text={''}

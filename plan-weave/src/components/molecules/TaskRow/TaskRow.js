@@ -6,7 +6,7 @@ import { millisToHours, ordinalSet } from '../../utils/helpers.js'
 import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { removeTask, updateTask } from '../../../redux/thunks/taskThunks.js'
+import { removeTaskThunk, updateTaskThunk } from '../../../redux/thunks/taskEditorThunks.js'
 import { useDispatch } from 'react-redux'
 import { validateTask } from '../../utils/helpers'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
@@ -89,14 +89,14 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 
 		// Usual API+View Update 
 		// TODO: setDnd here where it is going to be at the index of last completed (possibly, must maintain proper sorting)
-		updateTask(id, updatedTask)(dispatch)
+		updateTaskThunk(id, updatedTask)(dispatch)
 		if (TaskEditorContext._currentValue) setTaskUpdated(true)
 	}
 
 	const handleDeleteTask = () => {
 		try {
 			setDnd(deleteDnDEvent(dnd, index))
-			removeTask(id)(dispatch)
+			removeTaskThunk(id)(dispatch)
 			toast.info('This Task was deleted')
 		} catch (e) {
 			console.error(e)
@@ -106,7 +106,7 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 
 	const handleUpdateTask = () => {
 		//toast.info('This Task was Updated')
-		updateTask(id, {
+		updateTaskThunk(id, {
 			...taskObject,
 			eta: taskObject?.eta && taskObject.eta instanceof Date ? taskObject.eta.getTime() / 1000 : new Date().getTime() / 1000,
 			task: localTask,

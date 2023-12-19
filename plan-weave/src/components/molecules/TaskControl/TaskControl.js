@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useMemo } from 'react'
 import SearchBar from '../../atoms/SearchBar/SearchBar.js'
 import DropDownButton from '../../atoms/DropDownButton/DropDownButton'
 import {
@@ -12,19 +12,23 @@ import {
 import TimePickerWrapper from '../../atoms/TimePickerWrapper/TimePickerWrapper.js'
 import { GiOwl } from 'react-icons/gi'
 import { BiPlusCircle, BiTrash } from 'react-icons/bi'
-import { format, parse, getTime } from 'date-fns'
+import { format, parseISO, getTime, differenceInHours } from 'date-fns'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { ThemeContext } from 'styled-components' // needed for theme object
 import { formatTimeLeft, hoursToMillis } from '../../utils/helpers.js'
 import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS } from '../../utils/constants.js'
 import Button from '../../atoms/Button/Button.js'
-import { useDispatch } from 'react-redux'
-import { addNewTask, removeTasks } from '../../../redux/thunks/taskThunks.js'
+import { useDispatch, useSelector } from 'react-redux'
+import { addNewTaskThunk, removeTasksThunk } from '../../../redux/thunks/taskEditorThunks.js'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 
+
 // TODO: Refactor this so that iconSize is not aliased and so that we pass in the xs,s,m,l,xl,xxl as in the theme
+// services = {search, timeRange, owl, addTask, deleteMany, sort}
+// state = {getSearch, getTimeRange, getOwl, ...others}
 function TaskControl({
+	services,
 	variant,
 	color,
 	maxwidth = 818,
@@ -41,22 +45,24 @@ function TaskControl({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip } = { ...toolTips }
 
+	const timeRange = useSelector(state => state?.tasks?.timeRange)
+	const startTime = useMemo(() => parseISO(timeRange?.start), [timeRange])
+	const endTime = useMemo(() => parseISO(timeRange?.end), [timeRange])
+	const owl = useSelector(state => state?.tasks?.owl)
+
+	useEffect(() => console.log(endTime), [endTime])
+
 	// Context and Redux Stuff
 	const theme = useContext(ThemeContext)
 	const dispatch = useDispatch()
-	const { taskList, timeRange, setTimeRange, owl, setOwl,
-		isHighlighting, setIsHighlighting, selectedTasks, setSelectedTasks, dnd, setDnd } = useContext(TaskEditorContext)
+	const { taskList, isHighlighting, setIsHighlighting, selectedTasks, setSelectedTasks, dnd, setDnd } = useContext(TaskEditorContext)
 
 	// State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
-	const [startTime, setStartTime] = useState(!TaskEditorContext._currentValue ? parse(start, 'HH:mm', new Date()) : timeRange.start)
-	const [endTime, setEndTime] = useState(!TaskEditorContext._currentValue ? parse(end, 'HH:mm', new Date()) : timeRange.end)
-	const [overNightMode, setOverNightMode] = useState(owl === undefined || owl === null ? overNight : owl) // if true, then end<start means over-night
-
 	const [isDeleteClicked, setIsDeleteClicked] = useState(false) // used to track if delete has been presed once or not (HOF didn't work)
 
 	// Effects
-	useEffect(() => { checkTimeRange() }, [overNightMode])
+	useEffect(() => { checkTimeRange() }, [owl])
 	useEffect(() => {
 		const intervalId = setInterval(() => { setCurrentTime(new Date()) }, 1000)
 		return () => { clearInterval(intervalId) }
@@ -64,29 +70,33 @@ function TaskControl({
 
 	// Clock helpers (with side-effects)
 	const checkTimeRange = () => {
-		if ((getTime(endTime) < getTime(startTime)) && !overNightMode) {
-			setEndTime(startTime)
+		if ((getTime(endTime) < getTime(startTime)) && !owl) {
+			services?.timeRange(undefined, startTime.toISOString())
 			toast.warn('End time cannot be less than start time. End time is set to start time.')
 		}
 	}
 	const setOverNight = () => {
-		setOverNightMode(prev => !prev)
-		if (setOwl) setOwl(prev => !prev) // for context use
-		if (overNightMode)
+		services?.owl()
+		if (owl) {
+			const maxDifference = 24
+			shiftEndTime(-24, startTime, endTime, maxDifference)
 			toast.info('Overnight Mode is off: Tasks must be scheduled between 12 pm and 12 am. End time must be after the start time.', {
 				autoClose: 5000,
 			})
-		else
+		} else {
+			const maxDifference = 2 * 24
+			shiftEndTime(24, startTime, endTime, maxDifference)
 			toast.info('Overnight Mode is on: You can schedule tasks overnight, and end time can be before the start time.', {
 				autoClose: 5000,
 			})
+		}
 	}
 
 	// Bottom Left Icon Events
 	const addDnDEvent = dnd => [0, ...dnd.map(el => el + 1)]
 	const addEvent = () => {
 		toast.info('You added a New Default Task')
-		if (taskList) addNewTask({
+		if (taskList) addNewTaskThunk({
 			task: '',
 			waste: 1,
 			ttc: 1,
@@ -124,7 +134,7 @@ function TaskControl({
 										? taskList[index]?.id // it should have id, but ? to be safe
 										: selected)
 								.filter(selected => typeof selected !== 'boolean')
-							removeTasks(selectedIds)(dispatch)
+							removeTasksThunk(selectedIds)(dispatch)
 							setIsHighlighting(false)
 							closeToast()
 						}}>
@@ -149,18 +159,30 @@ function TaskControl({
 		}
 	}
 
-	// Update start/end time in Context Provided (owl needed for end to be today or tomorrow)
+	const shiftEndTime = (shift, startTime, endTime, maxDifference) => {
+		const newDate = new Date(endTime.getTime() + hoursToMillis(shift))
+		const startEndDifference = differenceInHours(newDate, startTime)
+		if (startEndDifference <= maxDifference) services?.timeRange(undefined, newDate.toISOString())
+	}
+
 	useEffect(() => {
-		if (setTimeRange) setTimeRange({
-			start: startTime,
-			end: owl ? new Date(endTime.getTime() + hoursToMillis(24)) : endTime
-		})
-	}, [startTime, endTime, owl])
+		const maxDifference = 2 * 24
+		if (owl) shiftEndTime(24, startTime, endTime, maxDifference)
+	}, [])
+
+	const handleStartTimeChange = newStart => {
+		services?.timeRange(newStart.toISOString())
+	}
+	const handleEndTimeChange = newEnd => {
+		const adjustedEndTime = owl ? new Date(endTime.getTime() + hoursToMillis(24)) : newEnd
+		services?.timeRange(undefined, adjustedEndTime.toISOString())
+	}
 
 	return (
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
 			<TopContainer>
 				<SearchBar
+					services={{ search: services?.search }}
 					tabIndex={1}
 					title={'Search for Tasks'}
 					variant={variant}
@@ -179,7 +201,7 @@ function TaskControl({
 						horizontalOffset={x0}
 						controlled
 						time={startTime}
-						onTimeChange={newTime => setStartTime(newTime)}
+						onTimeChange={newTime => handleStartTimeChange(newTime)} // Untested 
 						testid={'start-time-picker'} // used in testing
 					/>
 					<TimePickerWrapper
@@ -192,14 +214,14 @@ function TaskControl({
 						horizontalOffset={x1}
 						controlled
 						time={endTime}
-						onTimeChange={newTime => setEndTime(newTime)}
+						onTimeChange={newTime => handleEndTimeChange(newTime)} // Untested
 						testid={'end-time-picker'} // used in testing
 					/>
 					<GiOwl
 						tabIndex={4}
 						title={owlToolTip}
 						role="button"
-						style={overNightMode && { color: theme.colors.primary }}
+						style={owl && { color: theme.colors.primary }}
 						onClick={setOverNight}
 						onKeyDown={e => { if (e.key === 'Enter') { setOverNight() } }}
 						size={iconSize}
@@ -243,7 +265,7 @@ function TaskControl({
 					<Separator variant={variant} color={color} />
 				</BottomContentContainer>
 				<BottomContentContainer>
-					<p title={'Time left until End of Task Period'}>{formatTimeLeft({ currentTime, endTime, overNightMode })}</p>
+					<p title={'Time left until End of Task Period'}>{formatTimeLeft({ currentTime, endTime, owl })}</p>
 				</BottomContentContainer>
 				<BottomContentContainer>
 					<Separator variant={variant} color={color} />
