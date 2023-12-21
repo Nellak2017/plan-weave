@@ -11,6 +11,8 @@ const initialState = {
 		end: parse('17:00', 'HH:mm', new Date()).toISOString(), // Initial End Date
 	},
 	owl: true,
+	highlighting: false,
+	selectedTasks: [], // initialized by Task Control on initial mount
 	tasks: [
 		{ status: 'incomplete', task: 'Eat 1', ttc: .5, id: 1, timestamp: timestamp },
 		{ status: 'incomplete', task: 'ML : Flash (Lectures/Study guide)', ttc: 3, id: 2, timestamp: timestamp - 1 },
@@ -57,6 +59,12 @@ const taskEditorSlice = createSlice({
 		updateOwl: (state, _) => {
 			state.owl = !state.owl
 		},
+		updateHighlighting: (state, _) => {
+			state.highlighting = !state.highlighting
+		},
+		updateSelectedTasks: (state, action) => {
+			state.selectedTasks = action.payload
+		},
 
 
 		addTask: (state, action) => {
@@ -84,5 +92,7 @@ export const {
 	updateSearch,
 	updateTimeRange,
 	updateOwl,
+	updateHighlighting,
+	updateSelectedTasks,
 	addTask, deleteTask, deleteTasks, editTask } = taskEditorSlice.actions
 export default taskEditorSlice.reducer

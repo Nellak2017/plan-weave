@@ -7,7 +7,7 @@ import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { removeTaskThunk, updateTaskThunk } from '../../../redux/thunks/taskEditorThunks.js'
-import { useDispatch } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { validateTask } from '../../utils/helpers'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
 
@@ -18,13 +18,20 @@ const timestampOuter = Timestamp.fromDate(new Date()).seconds
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
 TODO: Add Schema prop for TaskRow so that it can handle the Full Task
 */
-
-function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Date(), status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: timestampOuter },
-	variant = 'dark', maxwidth = 818, index, highlight = 'no', lastCompletedTask }) {
+// services = {...others, updateSelectedTasks}
+function TaskRow({
+	services, 
+	taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Date(), status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: timestampOuter },
+	variant = 'dark', 
+	maxwidth = 818, 
+	index, 
+	highlight = 'no', 
+	lastCompletedTask 
+}) {
 
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
-	const { setTaskUpdated, setSelectedTasks, isHighlighting, dnd, setDnd } = useContext(TaskEditorContext)
+	const { setTaskUpdated, dnd, setDnd } = useContext(TaskEditorContext)
 
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -35,6 +42,8 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 	// Redux + Checkmark state (change locally because it is faster)
 	const dispatch = useDispatch()
 	const [isChecked, setIsChecked] = useState(status.toLowerCase().trim() === TASK_STATUSES.COMPLETED)
+	const isHighlighting = useSelector(state => state?.tasks?.highlighting)
+	const selectedTasks = useSelector(state => state?.tasks?.selectedTasks)
 
 	// Local State of the form so that it may be updated into the redux store
 	const [localTask, setLocalTask] = useState(task)
@@ -65,11 +74,11 @@ function TaskRow({ taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Da
 
 		// Multiple Deletion feature
 		if (isHighlighting) {
-			setSelectedTasks(old => {
-				const updatedSelection = [...old]
+			services?.updateSelectedTasks((() => {
+				const updatedSelection = [...selectedTasks]
 				updatedSelection[index] = !updatedSelection[index]
 				return updatedSelection
-			}) // we need to update what task is to be deleted in the context list
+			})()) // we need to update what task is to be deleted in the context list
 			return // So that the task is NOT updated
 		}
 

@@ -19,14 +19,14 @@ import { ThemeContext } from 'styled-components' // needed for theme object
 import { formatTimeLeft, hoursToMillis } from '../../utils/helpers.js'
 import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS, DEFAULT_SIMPLE_TASK } from '../../utils/constants.js'
 import Button from '../../atoms/Button/Button.js'
-import { useDispatch, useSelector } from 'react-redux'
-import { addNewTaskThunk, removeTasksThunk } from '../../../redux/thunks/taskEditorThunks.js'
+import DeleteModal from '../../atoms/DeleteModal/DeleteModal.js'
+import { useSelector } from 'react-redux'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
-
+import { selectNonHiddenTasks } from '../../../redux/selectors.js'
 
 // TODO: Refactor this so that iconSize is not aliased and so that we pass in the xs,s,m,l,xl,xxl as in the theme
-// services = {search, timeRange, owl, addTask, deleteMany, sort}
-// state = {getSearch, getTimeRange, getOwl, ...others}
+// services = {search, timeRange, owl, addTask, deleteMany, highlighting}
+// state = {getSearch, getTimeRange, getOwl, isHighlighting, taskList, selectedTasks ...others}
 function TaskControl({
 	services,
 	variant,
@@ -47,8 +47,7 @@ function TaskControl({
 
 	// Context and Redux Stuff
 	const theme = useContext(ThemeContext)
-	const dispatch = useDispatch()
-	const { taskList, isHighlighting, setIsHighlighting, selectedTasks, setSelectedTasks, dnd, setDnd } = useContext(TaskEditorContext)
+	const { dnd, setDnd } = useContext(TaskEditorContext)
 
 	// Local State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
@@ -59,6 +58,9 @@ function TaskControl({
 	const startTime = useMemo(() => parseISO(timeRange?.start), [timeRange])
 	const endTime = useMemo(() => parseISO(timeRange?.end), [timeRange])
 	const owl = useSelector(state => state?.tasks?.owl)
+	const isHighlighting = useSelector(state => state?.tasks?.highlighting)
+	const taskList = useSelector(selectNonHiddenTasks)
+	const selectedTasks = useSelector(state => state?.tasks?.selectedTasks)
 
 	// Effects
 	useEffect(() => { if (owl) shiftEndTime(24, startTime, endTime, 2 * 24) }, [])
@@ -67,6 +69,7 @@ function TaskControl({
 		const intervalId = setInterval(() => { setCurrentTime(new Date()) }, 1000)
 		return () => { clearInterval(intervalId) }
 	}, [currentTime]) // update time every 1 second
+	useEffect(() => { services?.updateSelectedTasks(taskList?.map(() => false)) }, [taskList])
 
 	// Clock helpers (with side-effects)
 	const shiftEndTime = (shift, startTime, endTime, maxDifference) => {
@@ -83,7 +86,7 @@ function TaskControl({
 	const setOverNight = () => {
 		services?.owl()
 		if (owl) {
-			const maxDifference = 24
+			const maxDifference = 24 // variable included here to communicate intent
 			shiftEndTime(-24, startTime, endTime, maxDifference)
 			toast.info('Overnight Mode is off: Tasks must be scheduled between 12 pm and 12 am. End time must be after the start time.', {
 				autoClose: 5000,
@@ -97,53 +100,37 @@ function TaskControl({
 		}
 	}
 
-	// Bottom Left Icon Events
+	// Events
 	const addDnDEvent = dnd => [0, ...dnd.map(el => el + 1)]
 	const addEvent = () => {
 		toast.info('You added a New Default Task')
 		services?.addTask(DEFAULT_SIMPLE_TASK)
 		setDnd(addDnDEvent(dnd))
 	}
+
 	const deleteEvent = () => {
 		if (!isHighlighting) {
 			setIsDeleteClicked(false)
 			toast.info('You may now select multiple tasks to delete at once! Click again to toggle.')
 		}
-		if (setIsHighlighting) {
-			if (setSelectedTasks) setSelectedTasks(taskList.map(() => false))
-			setIsHighlighting(old => !old)
-		}
+		services?.highlighting() // changes highlighting from true->false or false->true
 	}
+
 	const deleteMultipleEvent = () => {
 		const tasksAreSelected = selectedTasks.some(task => task === true) // if there is atleast 1 task selected then true
 		if (tasksAreSelected && !isDeleteClicked) {
 			setIsDeleteClicked(true) // This is to prevent the user from spamming the delete buttom multiple times
 			toast.warning(({ closeToast }) => (
-				<div>
-					<p style={{ color: 'black' }}>Warning, you are deleting multiple tasks. Are you sure?</p>
-					<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-evenly' }}>
-						<Button variant={'delete'} onClick={() => {
-							const selectedIds = selectedTasks
-								.map((selected, index) =>
-									selected
-										? taskList[index]?.id // it should have id, but ? to be safe
-										: selected)
-								.filter(selected => typeof selected !== 'boolean')
-							removeTasksThunk(selectedIds)(dispatch)
-							setIsHighlighting(false)
-							closeToast()
-						}}>
-							Yes
-						</Button>
-						<Button variant={'newTask'} onClick={() => {
-							setIsDeleteClicked(false)
-							closeToast()
-						}}>
-							No
-						</Button>
-					</div>
-				</div>
-			),
+				<DeleteModal
+					services={{
+						deleteMany: services?.deleteMany,
+						highlighting: services?.highlighting,
+					}}
+					selectedTasks={selectedTasks}
+					taskList={taskList}
+					setIsDeleteClicked={setIsDeleteClicked}
+					closeToast={closeToast}
+				/>),
 				{
 					position: toast.POSITION.TOP_CENTER,
 					autoClose: false, // Don't auto-close the toast

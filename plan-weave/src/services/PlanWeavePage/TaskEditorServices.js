@@ -1,10 +1,13 @@
 import {
-	updateSearch
+	updateSearch,
+	updateHighlighting,
+	updateSelectedTasks,
 } from "../../redux/reducers/taskEditorReducer.js"
 import {
 	updateTimeRangeThunk,
 	updateOwlThunk,
 	addNewTaskThunk,
+	removeTasksThunk,
 } from "../../redux/thunks/taskEditorThunks.js"
 
 
@@ -13,6 +16,13 @@ export const createTaskEditorServices = (store) => {
 	const dispatch = store.dispatch
 
 	const services = {
+		// Shared between all of TaskEditor sub-components
+		global: {
+			// dragNdrop: // reducer to update dnd config list when drag and drop happens (not DB)
+			updateSelectedTasks: (newSelectedTasks) => {
+				dispatch(updateSelectedTasks(newSelectedTasks))
+			}, // reducer to update selected tasks for multi-delete feature
+		},
 		taskControl: {
 			search: (newSearchValue) => {
 				dispatch(updateSearch(newSearchValue.trim()))
@@ -25,13 +35,17 @@ export const createTaskEditorServices = (store) => {
 			}, // thunk to update owl
 			addTask: (task) => {
 				dispatch(addNewTaskThunk(task))
-			} // thunk to add task
+			}, // thunk to add task
+			deleteMany: (selectedIds) => {
+				dispatch(removeTasksThunk(selectedIds))
+			}, // thunk to delete many
+			highlighting: () => {
+				dispatch(updateHighlighting())
+			}, // reducer to update highlighting bool for delete many tasks
 			/*
-			deleteMany: // thunk to delete many
 			sort: // thunk to update sorting method
 		  },
 		  taskTable: {
-			dragNdrop: // reducer to update store when drag and drop happens (not DB)
 			taskRow: {
 			  delete: // thunk to delete task
 			  update: // thunk to update task, includes checkbox, name, ttc

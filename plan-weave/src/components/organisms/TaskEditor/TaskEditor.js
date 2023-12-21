@@ -74,20 +74,14 @@ const TaskEditor = ({
 	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks, start) }))
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
 
-	// State for multiple delete feature
-	const [selectedTasks, setSelectedTasks] = useState(taskList.map(() => false)) // initializes with false list for each task
-	const [isHighlighting, setIsHighlighting] = useState(false) // Are we using the multiple delete feature?
-
 	// Memo for context
 	const memoizedContext = useMemo(() => ({
 		taskList, setTaskList, timeRange, setTimeRange,
 		owl, setOwl, taskUpdated, setTaskUpdated,
-		selectedTasks, setSelectedTasks, isHighlighting, setIsHighlighting,
 		tasksPerPage, page, dnd, setDnd
 	}), [
 		taskList, setTaskList, timeRange, setTimeRange,
 		owl, setOwl, taskUpdated, setTaskUpdated,
-		selectedTasks, setSelectedTasks, isHighlighting, setIsHighlighting,
 		tasksPerPage, page, dnd, setDnd
 	])
 
@@ -177,13 +171,17 @@ const TaskEditor = ({
 				<h1>{title}</h1>
 				<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 					<TaskControl
-						services={services?.taskControl}
+						services={{
+							...services?.global,
+							...services?.taskControl
+						}}
 						variant={variant}
 						options={newDropdownOptions}
 						clock1Text={''}
 						clock2Text={''}
 					/>
 					<TaskTable
+						services={services?.global}
 						variant={variant}
 						headerLabels={SIMPLE_TASK_HEADERS}
 						maxwidth={maxwidth}

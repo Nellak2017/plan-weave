@@ -8,7 +8,7 @@ const HoursInput = ({
 	placeholder = '0',
 	text,
 	variant = 'dark',
-	maxwidth = 61,
+	maxwidth = 45,
 	color,
 	initialValue,
 	controlledValue,
@@ -50,10 +50,12 @@ const HoursInput = ({
 				placeholder={placeholder}
 				maxwidth={maxwidth}
 				color={color}
-				type='number'
+				type='text'
 				min={min}
 				max={max}
-				step={step}
+				inputMode='numeric'
+				pattern='[0-9]*'
+				//step={step}
 				onChange={handleChange}
 				onBlur={handleBlur}
 				value={integer ? parseInt(value) : value}

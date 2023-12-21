@@ -13,7 +13,13 @@ import { useSelector } from 'react-redux' // temporary only
 /* 
  TODO: Fix the Full Task Schema (See Full Task TODO)
 */
-const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) => {
+const TaskTable = ({
+	services,
+	variant = 'dark',
+	headerLabels,
+	tasks,
+	maxwidth = 818
+}) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const { taskList, setTaskList, tasksPerPage, page, dnd, setDnd, timeRange } = useContext(TaskEditorContext)
@@ -58,6 +64,7 @@ const TaskTable = ({ variant = 'dark', headerLabels, tasks, maxwidth = 818 }) =>
 			const highlightOld = isTimestampFromToday(start, epochETA, epochTotal) ? ' ' : 'old'
 			//console.log(new Date(epochETA*1000))
 			return <TaskRow
+				services={services}
 				key={`task-${task.id}`}
 				variant={variant}
 				taskObject={{
