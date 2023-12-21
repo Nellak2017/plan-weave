@@ -1,5 +1,6 @@
 // File containing many constants
 import colors from '../../styles/theme'
+import { toast } from 'react-toastify'
 
 export const MILLISECONDS_PER_HOUR = 60 * 60 * 1000
 export const MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * 24
@@ -18,12 +19,6 @@ export const STATUS_COLORS = {
 	[TASK_STATUSES.INCONSISTENT]: colors.danger,
 }
 
-export const SORTING_METHODS_NAMES = {
-	TIMESTAMP: 'timestamp',
-	NAME: 'name',
-	DEFAULT: ''
-}
-
 export const SORTING_METHODS = {
 	'timestamp': tasks => {
 		return tasks?.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
@@ -37,6 +32,13 @@ export const SORTING_METHODS = {
 	'': tasks => {
 		return tasks?.slice()
 	},
+}
+
+export const OPTION_NOTIFICATIONS = {
+	'timestamp': () => toast.info('Time Sorting applied. Tasks now appear in chronological order.'),
+	'name': () => toast.info('Name Sorting applied. Tasks now appear alphabetically.'),
+	'eta': () => toast.info('ETA Sorting applied. Tasks now appear in ETA order.'),
+	'': () => toast.info('Default Sorting applied. Tasks now appear as they do in the database.'),
 }
 
 export const SIMPLE_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA']

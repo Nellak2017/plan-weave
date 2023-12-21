@@ -1,6 +1,7 @@
 import {
   updateTimeRange,
   updateOwl,
+  updateSortingAlgorithm,
 
   addTask,
   deleteTask,
@@ -16,6 +17,10 @@ export const updateTimeRangeThunk = (start, end) => (dispatch) => {
 
 export const updateOwlThunk = () => (dispatch) => {
   dispatch(updateOwl())
+}
+
+export const updateSortingAlgorithmThunk = (sortingAlgo) => (dispatch) => {
+  dispatch(updateSortingAlgorithm(sortingAlgo))
 }
 
 // Thunks for tasks

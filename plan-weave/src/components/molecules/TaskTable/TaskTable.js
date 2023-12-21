@@ -48,6 +48,23 @@ const TaskTable = ({
 		setTaskList(rearrangeDnD(taskList, result.source.index, result.destination.index))
 	}
 
+
+	/*
+		useEffect(() => {
+			// Apply transformations to ensure correctly sorted and other calculations applied
+			const transforms = [
+				t => transform(t, tasksFromRedux.map((_, i) => i)), // apply DEFAULT dnd config
+				t => calculateWaste({ start, taskList: t, time: new Date() }) // calculate waste/eta
+			]
+			setTaskList(old => (!sortingAlgo && sortingAlgo !== '')
+				? tasksFromRedux
+				: completedOnTopSorted(old, tasks, start, transforms, SORTING_METHODS[sortingAlgo])
+			)
+		}, [sortingAlgo])
+		*/
+
+
+
 	// --- Extracted view logic
 	const todoList = (taskList, startRange, endRange, lastCompleted, timeRange) => {
 		if (!taskList) return []

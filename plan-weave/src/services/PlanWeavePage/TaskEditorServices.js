@@ -2,12 +2,14 @@ import {
 	updateSearch,
 	updateHighlighting,
 	updateSelectedTasks,
+	updateDnD,
 } from "../../redux/reducers/taskEditorReducer.js"
 import {
 	updateTimeRangeThunk,
 	updateOwlThunk,
 	addNewTaskThunk,
 	removeTasksThunk,
+	updateSortingAlgorithmThunk,
 } from "../../redux/thunks/taskEditorThunks.js"
 
 
@@ -18,7 +20,9 @@ export const createTaskEditorServices = (store) => {
 	const services = {
 		// Shared between all of TaskEditor sub-components
 		global: {
-			// dragNdrop: // reducer to update dnd config list when drag and drop happens (not DB)
+			updateDnDConfig: (newConfig) => {
+				dispatch(updateDnD(newConfig))
+			}, // reducer to update dnd config list when drag and drop happens (not DB)
 			updateSelectedTasks: (newSelectedTasks) => {
 				dispatch(updateSelectedTasks(newSelectedTasks))
 			}, // reducer to update selected tasks for multi-delete feature
@@ -42,9 +46,13 @@ export const createTaskEditorServices = (store) => {
 			highlighting: () => {
 				dispatch(updateHighlighting())
 			}, // reducer to update highlighting bool for delete many tasks
-			/*
-			sort: // thunk to update sorting method
-		  },
+			sort: (sortingAlgo) => {
+				console.log("Sort being dispatched")
+				console.log(sortingAlgo)
+				dispatch(updateSortingAlgorithmThunk(sortingAlgo))
+			} // thunk to update sorting method
+		 /*  
+		 },
 		  taskTable: {
 			taskRow: {
 			  delete: // thunk to delete task

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
+import PropTypes from 'prop-types'
 import SearchBar from '../../atoms/SearchBar/SearchBar.js'
 import DropDownButton from '../../atoms/DropDownButton/DropDownButton'
 import {
@@ -12,143 +13,74 @@ import {
 import TimePickerWrapper from '../../atoms/TimePickerWrapper/TimePickerWrapper.js'
 import { GiOwl } from 'react-icons/gi'
 import { BiPlusCircle, BiTrash } from 'react-icons/bi'
-import { format, parseISO, getTime, differenceInHours } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { ThemeContext } from 'styled-components' // needed for theme object
-import { formatTimeLeft, hoursToMillis } from '../../utils/helpers.js'
-import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS, DEFAULT_SIMPLE_TASK } from '../../utils/constants.js'
+import { formatTimeLeft } from '../../utils/helpers.js'
+import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS, SORTING_METHODS, OPTION_NOTIFICATIONS } from '../../utils/constants.js'
 import Button from '../../atoms/Button/Button.js'
-import DeleteModal from '../../atoms/DeleteModal/DeleteModal.js'
-import { useSelector } from 'react-redux'
-import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
-import { selectNonHiddenTasks } from '../../../redux/selectors.js'
+import {
+	shiftEndTime,
+	checkTimeRange,
+	setOverNight,
+	addEvent,
+	deleteEvent,
+	deleteMultipleEvent,
+	startTimeChangeEvent,
+	endTimeChangeEvent,
+} from './TaskControl.events.js'
 
-// TODO: Refactor this so that iconSize is not aliased and so that we pass in the xs,s,m,l,xl,xxl as in the theme
-// services = {search, timeRange, owl, addTask, deleteMany, highlighting}
-// state = {getSearch, getTimeRange, getOwl, isHighlighting, taskList, selectedTasks ...others}
+// services are: search, timeRange, owl, addTask, deleteMany, highlighting, updateSelectedTasks, updateDnDConfig, sort
+// state is: timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme
 function TaskControl({
 	services,
+	state,
 	variant,
 	color,
 	maxwidth = 818,
 	maxwidthsearch,
-	y0, y1, x0, x1 = -36,
-	start = '10:30', end = '23:30',
-	owlSize: iconSize = '32px',
-	overNight = false,
+	owlSize = '32px',
 	clock1Text = '', clock2Text = '',
+	coords = { y0: 0, y1: 0, x0: 0, x1: -36 },
 	toolTips = DEFAULT_TASK_CONTROL_TOOL_TIPS,
 	...rest }) {
 
 	// Input Validation and Destructuring
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	const { y0, y1, x0, x1 } = { ...coords }
 	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip } = { ...toolTips }
-
-	// Context and Redux Stuff
-	const theme = useContext(ThemeContext)
-	const { dnd, setDnd } = useContext(TaskEditorContext)
+	const { updateSelectedTasks, search, sort, updateDnDConfig } = { ...services }
+	const { timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme, sortingAlgo } = { ...state }
+	const startTime = useMemo(() => parseISO(timeRange?.start), [timeRange])
+	const endTime = useMemo(() => parseISO(timeRange?.end), [timeRange])
 
 	// Local State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
 	const [isDeleteClicked, setIsDeleteClicked] = useState(false) // used to track if delete has been presed once or not (HOF didn't work)
-
-	// Redux State
-	const timeRange = useSelector(state => state?.tasks?.timeRange)
-	const startTime = useMemo(() => parseISO(timeRange?.start), [timeRange])
-	const endTime = useMemo(() => parseISO(timeRange?.end), [timeRange])
-	const owl = useSelector(state => state?.tasks?.owl)
-	const isHighlighting = useSelector(state => state?.tasks?.highlighting)
-	const taskList = useSelector(selectNonHiddenTasks)
-	const selectedTasks = useSelector(state => state?.tasks?.selectedTasks)
+	const options = useMemo(() => Object.keys(SORTING_METHODS).map(name => ({
+		name: name || 'default',
+		listener: () => {
+			OPTION_NOTIFICATIONS[name]() // This will do a toast notification when option is pressed
+			sort(name) // service for changing the sortingAlgo based on the name
+		}
+	})), []) // Drop-down options for sorting methods. 
 
 	// Effects
-	useEffect(() => { if (owl) shiftEndTime(24, startTime, endTime, 2 * 24) }, [])
-	useEffect(() => { checkTimeRange() }, [owl])
+	useEffect(() => { if (owl) shiftEndTime(services, 24, startTime, endTime, 2 * 24) }, [])
+	useEffect(() => { checkTimeRange(services, toast, endTime, startTime, owl) }, [owl])
 	useEffect(() => {
 		const intervalId = setInterval(() => { setCurrentTime(new Date()) }, 1000)
 		return () => { clearInterval(intervalId) }
 	}, [currentTime]) // update time every 1 second
-	useEffect(() => { services?.updateSelectedTasks(taskList?.map(() => false)) }, [taskList])
-
-	// Clock helpers (with side-effects)
-	const shiftEndTime = (shift, startTime, endTime, maxDifference) => {
-		const newDate = new Date(endTime.getTime() + hoursToMillis(shift))
-		const startEndDifference = differenceInHours(newDate, startTime)
-		if (startEndDifference <= maxDifference) services?.timeRange(undefined, newDate.toISOString())
-	}
-	const checkTimeRange = () => {
-		if ((getTime(endTime) < getTime(startTime)) && !owl) {
-			services?.timeRange(undefined, startTime.toISOString())
-			toast.warn('End time cannot be less than start time. End time is set to start time.')
-		}
-	}
-	const setOverNight = () => {
-		services?.owl()
-		if (owl) {
-			const maxDifference = 24 // variable included here to communicate intent
-			shiftEndTime(-24, startTime, endTime, maxDifference)
-			toast.info('Overnight Mode is off: Tasks must be scheduled between 12 pm and 12 am. End time must be after the start time.', {
-				autoClose: 5000,
-			})
-		} else {
-			const maxDifference = 2 * 24
-			shiftEndTime(24, startTime, endTime, maxDifference)
-			toast.info('Overnight Mode is on: You can schedule tasks overnight, and end time can be before the start time.', {
-				autoClose: 5000,
-			})
-		}
-	}
-
-	// Events
-	const addDnDEvent = dnd => [0, ...dnd.map(el => el + 1)]
-	const addEvent = () => {
-		toast.info('You added a New Default Task')
-		services?.addTask(DEFAULT_SIMPLE_TASK)
-		setDnd(addDnDEvent(dnd))
-	}
-
-	const deleteEvent = () => {
-		if (!isHighlighting) {
-			setIsDeleteClicked(false)
-			toast.info('You may now select multiple tasks to delete at once! Click again to toggle.')
-		}
-		services?.highlighting() // changes highlighting from true->false or false->true
-	}
-
-	const deleteMultipleEvent = () => {
-		const tasksAreSelected = selectedTasks.some(task => task === true) // if there is atleast 1 task selected then true
-		if (tasksAreSelected && !isDeleteClicked) {
-			setIsDeleteClicked(true) // This is to prevent the user from spamming the delete buttom multiple times
-			toast.warning(({ closeToast }) => (
-				<DeleteModal
-					services={{
-						deleteMany: services?.deleteMany,
-						highlighting: services?.highlighting,
-					}}
-					selectedTasks={selectedTasks}
-					taskList={taskList}
-					setIsDeleteClicked={setIsDeleteClicked}
-					closeToast={closeToast}
-				/>),
-				{
-					position: toast.POSITION.TOP_CENTER,
-					autoClose: false, // Don't auto-close the toast
-					closeOnClick: false, // Keep the toast open on click
-					closeButton: false, // Don't show a close button
-					draggable: false, // Prevent dragging to close
-				})
-		}
-	}
-	const startTimeChangeEvent = newStart => { services?.timeRange(newStart.toISOString()) }
-	const endTimeChangeEvent = newEnd => { services?.timeRange(undefined, newEnd.toISOString()) }
+	useEffect(() => { updateSelectedTasks(taskList?.map(() => false)) }, [taskList])
+	useEffect(() => { updateDnDConfig(taskList.map((_, i) => i)) }, [sortingAlgo])
 
 	return (
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
 			<TopContainer>
 				<SearchBar
-					services={{ search: services?.search }}
-					tabIndex={1}
+					services={{ search }}
+					tabIndex={0}
 					title={'Search for Tasks'}
 					variant={variant}
 					maxwidth={maxwidthsearch}
@@ -157,7 +89,7 @@ function TaskControl({
 				<p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>
 				<TimePickerContainer onBlur={checkTimeRange}>
 					<TimePickerWrapper
-						tabIndex={2}
+						tabIndex={0}
 						title={'Enter Start Time'}
 						variant={variant}
 						defaultTime={format(startTime, 'HH:mm')}
@@ -166,11 +98,11 @@ function TaskControl({
 						horizontalOffset={x0}
 						controlled
 						time={startTime}
-						onTimeChange={newTime => startTimeChangeEvent(newTime)} // Untested 
+						onTimeChange={newTime => startTimeChangeEvent(services, newTime)}
 						testid={'start-time-picker'} // used in testing
 					/>
 					<TimePickerWrapper
-						tabIndex={3}
+						tabIndex={0}
 						title={'Enter End Time'}
 						variant={variant}
 						defaultTime={format(endTime, 'HH:mm')}
@@ -179,17 +111,16 @@ function TaskControl({
 						horizontalOffset={x1}
 						controlled
 						time={endTime}
-						onTimeChange={newTime => endTimeChangeEvent(newTime)} // Untested
+						onTimeChange={newTime => endTimeChangeEvent(services, newTime)}
 						testid={'end-time-picker'} // used in testing
 					/>
 					<GiOwl
-						tabIndex={4}
+						tabIndex={0}
 						title={owlToolTip}
-						role="button"
 						style={owl && { color: theme.colors.primary }}
-						onClick={setOverNight}
-						onKeyDown={e => { if (e.key === 'Enter') { setOverNight() } }}
-						size={iconSize}
+						onClick={() => setOverNight(services, toast, owl, startTime, endTime)}
+						onKeyDown={e => { if (e.key === 'Enter') { setOverNight(services, toast, owl, startTime, endTime) } }}
+						size={owlSize}
 						data-testid={'owl-button'}
 					/>
 				</TimePickerContainer>
@@ -197,32 +128,29 @@ function TaskControl({
 			<BottomContainer>
 				<BottomContentContainer>
 					<BiPlusCircle
-						tabIndex={5}
+						tabIndex={0}
 						title={addToolTip}
-						role="button"
-						onClick={addEvent}
-						onKeyDown={e => { if (e.key === 'Enter') { addEvent() } }}
-						size={iconSize}
+						onClick={() => addEvent(services, toast, dnd)}
+						onKeyDown={e => { if (e.key === 'Enter') { addEvent(services, toast, dnd) } }}
+						size={owlSize}
 						data-testid={'add-button'}
 					/>
 					<BiTrash
-						tabIndex={6}
+						tabIndex={0}
 						title={deleteToolTip}
-						role="button"
 						style={isHighlighting && { color: theme.colors.primary }}
-						onClick={deleteEvent}
-						onKeyDown={e => { if (e.key === 'Enter') { deleteEvent() } }}
-						size={iconSize}
+						onClick={() => deleteEvent(services, toast, setIsDeleteClicked, isHighlighting)}
+						onKeyDown={e => { if (e.key === 'Enter') { deleteEvent(services, toast, setIsDeleteClicked, isHighlighting) } }}
+						size={owlSize}
 						data-testid={'multi-delete-button'}
 					/>
 					{isHighlighting &&
 						<Button
-							tabIndex={7}
+							tabIndex={0}
 							variant={'delete'}
 							title={'Delete Selected Tasks'}
-							role="button"
-							onClick={deleteMultipleEvent}
-							onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent() } }}
+							onClick={() => deleteMultipleEvent(services, toast, taskList, setIsDeleteClicked, selectedTasks, isDeleteClicked)}
+							onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent(services, toast, taskList, setIsDeleteClicked, selectedTasks, isDeleteClicked) } }}
 						>
 							Delete
 						</Button>
@@ -235,17 +163,74 @@ function TaskControl({
 				<BottomContentContainer>
 					<Separator variant={variant} color={color} />
 					<DropDownButton
-						tabIndex={8}
+						tabIndex={0}
 						title={dropDownToolTip}
-						role="button"
 						variant={variant}
 						color={color}
+						options={options}
 						{...rest}
 					/>
 				</BottomContentContainer>
 			</BottomContainer>
 		</TaskControlContainer>
 	)
+}
+
+TaskControl.propTypes = {
+	services: PropTypes.shape({
+		search: PropTypes.func,
+		timeRange: PropTypes.func,
+		owl: PropTypes.func,
+		addTask: PropTypes.func,
+		deleteMany: PropTypes.func,
+		highlighting: PropTypes.func,
+		updateSelectedTasks: PropTypes.func,
+		updateDnDConfig: PropTypes.func,
+		sort: PropTypes.func,
+	}).isRequired,
+
+	state: PropTypes.shape({
+		timeRange: PropTypes.object,
+		owl: PropTypes.bool,
+		isHighlighting: PropTypes.bool,
+		taskList: PropTypes.array,
+		selectedTasks: PropTypes.array,
+		dnd: PropTypes.array,
+		theme: PropTypes.object,
+		sortingAlgo: PropTypes.string,
+	}).isRequired,
+
+	variant: PropTypes.string,
+	color: PropTypes.string,
+	maxwidth: PropTypes.number,
+	maxwidthsearch: PropTypes.number,
+	owlSize: PropTypes.string,
+	clock1Text: PropTypes.string,
+	clock2Text: PropTypes.string,
+	coords: PropTypes.shape({
+		y0: PropTypes.number,
+		y1: PropTypes.number,
+		x0: PropTypes.number,
+		x1: PropTypes.number,
+	}),
+	toolTips: PropTypes.shape({
+		owlToolTip: PropTypes.string,
+		addToolTip: PropTypes.string,
+		deleteToolTip: PropTypes.string,
+		dropDownToolTip: PropTypes.string,
+	}),
+}
+
+TaskControl.defaultProps = {
+	variant: 'dark',
+	owlSize: '32px',
+	coords: {
+		y0: 0,
+		y1: 0,
+		x0: 0,
+		x1: -36,
+	},
+	toolTips: {},
 }
 
 export default TaskControl

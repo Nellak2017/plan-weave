@@ -1,7 +1,7 @@
-import { createContext, useState, useEffect, useMemo } from 'react'
+import { createContext, useState, useEffect, useMemo, useContext } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasks } from '../../../redux/selectors'
-import { THEMES, SORTING_METHODS_NAMES, SORTING_METHODS, SIMPLE_TASK_HEADERS } from '../../utils/constants'
+import { THEMES, SORTING_METHODS, SIMPLE_TASK_HEADERS } from '../../utils/constants'
 import { calculateWaste, validateTasks, transform, isInt, completedOnTopSorted } from '../../utils/helpers.js'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
@@ -16,6 +16,8 @@ import {
 	createTaskEditorServices,
 	createStateObject
 } from '../../../services/PlanWeavePage/TaskEditorServices'
+import { parseISO } from 'date-fns'
+import { ThemeContext } from 'styled-components' // needed for theme object
 /*
 	Easy: 	
 		TODO: Add Test coverage to new helpers and extract all helper functions to helper.js
@@ -51,7 +53,6 @@ const TaskEditor = ({
 }) => {
 	// --- Input Verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
-	if (sortingAlgorithm && !Object.keys(SORTING_METHODS_NAMES).includes(sortingAlgorithm)) sortingAlgorithm = 'timestamp'
 
 	const services = createTaskEditorServices(store)
 	const reduxStore = useSelector(state => state?.tasks)
@@ -69,10 +70,23 @@ const TaskEditor = ({
 
 	// Task Data (Redux), Task View (Context), Searching, Sorting, DnD, and Algorithm Change State
 	const tasksFromRedux = useSelector(selectNonHiddenTasks) // useValidateTasks() causes issues for some reason
-	const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
+	//const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
 	const [dnd, setDnd] = useState(tasksFromRedux.map((_, i) => i)) // list that tells mapping of task list. ex: [1,3,2] - taskList:[a,b,c] -> [a,c,b] 
 	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks, start) }))
 	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
+
+	// State for TaskControl
+	const TaskControlState = {
+		timeRange: useSelector(state => state?.tasks?.timeRange),
+		owl: useSelector(state => state?.tasks?.owl),
+		isHighlighting: useSelector(state => state?.tasks?.highlighting),
+		taskList: useSelector(selectNonHiddenTasks),
+		selectedTasks: useSelector(state => state?.tasks?.selectedTasks),
+		dnd: useSelector(state => state?.tasks?.dndConfig),
+		theme: useContext(ThemeContext), 
+		sortingAlgo: useSelector(state => state?.tasks?.sortingAlgo)
+	}
+
 
 	// Memo for context
 	const memoizedContext = useMemo(() => ({
@@ -86,6 +100,7 @@ const TaskEditor = ({
 	])
 
 	// --- Ensure Sorted List when tasks change Feature
+	/*
 	useEffect(() => {
 		const transforms = [
 			t => transform(t, dnd), // apply dnd config
@@ -96,46 +111,9 @@ const TaskEditor = ({
 			: completedOnTopSorted(tasksFromRedux, tasks, start, transforms, SORTING_METHODS[sortingAlgo])
 		)
 	}, [tasksFromRedux])
+	*/
 
-	// --- Change Sorting Algorithm Feature
-	useEffect(() => {
-		// Apply transformations to ensure correctly sorted and other calculations applied
-		const transforms = [
-			t => transform(t, tasksFromRedux.map((_, i) => i)), // apply DEFAULT dnd config
-			t => calculateWaste({ start, taskList: t, time: new Date() }) // calculate waste/eta
-		]
-		if (tasksFromRedux) {
-			setTaskList(old => (!sortingAlgo && sortingAlgo !== '')
-				? tasksFromRedux
-				: completedOnTopSorted(old, tasks, start, transforms, SORTING_METHODS[sortingAlgo])
-			)
-			// reset dnd whenever sorting algorithm changes
-			setDnd(tasksFromRedux.map((_, i) => i))
-		}
-
-		// 0. Apply this middleware, (listener in option + setSortingAlgo(...)), to the dropdown options whenever the algorithm changes
-		(async () => {
-			// 1. Verify the options via schema, fill with defaults if invalid
-			const validateAndFillOptions = async options => {
-				const isValid = await taskEditorOptionsSchema.isValid(options)
-				if (!isValid) return options.map(fillWithOptionDefaults)
-				return options
-			}
-
-			// 2. With validated options list, construct new dropdown options with middleware applied
-			const validatedOptions = await validateAndFillOptions(options)
-
-			// 3. Set the newDropdownOptions with the middleware applied
-			setNewDropdownOptions(validatedOptions.map(option => ({
-				...option,
-				listener: () => {
-					option.listener()
-					setSortingAlgo(option.algorithm)
-				}
-			})))
-		})()
-	}, [sortingAlgo])
-
+	
 	// --- ETA + Waste Auto Calculation Feature
 	const update = () => setTaskList(old => calculateWaste({ start: start, taskList: old, time: new Date() }) || old)
 	useEffect(() => update(), [timeRange, start, owl, dnd])
@@ -175,8 +153,9 @@ const TaskEditor = ({
 							...services?.global,
 							...services?.taskControl
 						}}
+						state={TaskControlState}
 						variant={variant}
-						options={newDropdownOptions}
+						//options={newDropdownOptions}
 						clock1Text={''}
 						clock2Text={''}
 					/>

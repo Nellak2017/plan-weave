@@ -1,6 +1,7 @@
 // reducers/taskReducer.js
 import { createSlice } from '@reduxjs/toolkit'
 import { parse } from 'date-fns'
+import { SORTING_METHODS } from '../../components/utils/constants'
 import { Timestamp } from 'firebase/firestore'
 const timestamp = Timestamp.fromDate(new Date()).seconds // used for testing purposes
 
@@ -13,6 +14,8 @@ const initialState = {
 	owl: true,
 	highlighting: false,
 	selectedTasks: [], // initialized by Task Control on initial mount
+	dndConfig: [], // initialized by Task Table on initial mount
+	sortingAlgo: 'timestamp',
 	tasks: [
 		{ status: 'incomplete', task: 'Eat 1', ttc: .5, id: 1, timestamp: timestamp },
 		{ status: 'incomplete', task: 'ML : Flash (Lectures/Study guide)', ttc: 3, id: 2, timestamp: timestamp - 1 },
@@ -54,7 +57,6 @@ const taskEditorSlice = createSlice({
 				start: start !== undefined ? start : state.timeRange.start,
 				end: end !== undefined ? end : state.timeRange.end,
 			}
-			//console.log("Updated Start, End:\n", state.timeRange.start, '\n', state.timeRange.end)
 		},
 		updateOwl: (state, _) => {
 			state.owl = !state.owl
@@ -64,6 +66,14 @@ const taskEditorSlice = createSlice({
 		},
 		updateSelectedTasks: (state, action) => {
 			state.selectedTasks = action.payload
+		},
+		updateDnD: (state, action) => {
+			state.dndConfig = action.payload
+		},
+		updateSortingAlgorithm: (state, action) => {
+			const selectedAlgorithm = action.payload.toLowerCase().trim()
+			if (Object.keys(SORTING_METHODS).includes(selectedAlgorithm)) state.sortingAlgo = selectedAlgorithm
+			else state.sortingAlgo = ''
 		},
 
 
@@ -94,5 +104,7 @@ export const {
 	updateOwl,
 	updateHighlighting,
 	updateSelectedTasks,
+	updateDnD,
+	updateSortingAlgorithm,
 	addTask, deleteTask, deleteTasks, editTask } = taskEditorSlice.actions
 export default taskEditorSlice.reducer
