@@ -37,10 +37,9 @@ export const setOverNight = (services, toast, owl, startTime, endTime) => {
 }
 
 // Events
-export const addEvent = (services, toast, dnd) => {
+export const addEvent = (services, toast) => {
 	toast.info('You added a New Default Task')
-	services?.addTask(DEFAULT_SIMPLE_TASK)
-	services?.updateDnDConfig([0, ...dnd.map(el => el + 1)])
+	services?.addTask(DEFAULT_SIMPLE_TASK) // automatically updates dnd in the reducer
 }
 
 export const deleteEvent = (services, toast, setIsDeleteClicked, isHighlighting) => {

@@ -5,6 +5,7 @@ import {
 	filterTaskList,
 	calculateWaste,
 	rearrangeDnD,
+	relativeSortIndex,
 } from './helpers'
 import { TASK_STATUSES } from './constants'
 
@@ -310,6 +311,62 @@ describe('rearrangeDnD', () => {
 			const expected = [...initialDnD] // Copy the initial DnD array
 			expected.splice(destination, 0, expected.splice(3, 1)[0]) // Perform the same rearrangement as the function
 			expect(result).toEqual(expected)
+		})
+	})
+})
+
+describe('relativeSortIndex', () => {
+	const sortFunction = array => array.sort((a, b) => a.id - b.id) // Sort by task ID
+	const incomplete = TASK_STATUSES.INCOMPLETE
+	const complete = TASK_STATUSES.COMPLETED
+
+	const testCases = [
+		{
+			description: 'Incomplete -> Complete',
+			tasks: [{ id: 1, status: incomplete }, { id: 2, status: complete }],
+			index: 1,
+			expected: 0,
+		},
+		{
+			description: 'Complete -> Incomplete',
+			tasks: [{ id: 1, status: incomplete }, { id: 2, status: incomplete }],
+			index: 0,
+			expected: 0,
+		},
+		{
+			description: 'Middle Complete -> Incomplete',
+			tasks: [
+				{ id: 1, status: complete },
+				{ id: 3, status: incomplete },
+				{ id: 2, status: complete },
+			],
+			index: 1,
+			expected: 2,
+		},
+		{
+			description: 'Middle Incomplete -> Complete',
+			tasks: [
+				{ id: 1, status: incomplete },
+				{ id: 3, status: complete },
+				{ id: 2, status: incomplete },
+			],
+			index: 1,
+			expected: 0,
+		},
+		{
+			description: 'Last to Middle, Incomplete -> Complete',
+			tasks: [
+				{ id: 1, status: complete },
+				{ id: 3, status: incomplete },
+				{ id: 2, status: complete },
+			],
+			index: 2,
+			expected: 1,
+		},
+	]
+	testCases.forEach(({ description, tasks, index, expected }) => {
+		it(`Correctly calculates index for ${description} case`, () => {
+			expect(relativeSortIndex(tasks, sortFunction, index)).toBe(expected)
 		})
 	})
 })

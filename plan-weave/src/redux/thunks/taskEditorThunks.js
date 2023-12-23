@@ -6,7 +6,8 @@ import {
   addTask,
   deleteTask,
   deleteTasks,
-  editTask
+  editTask,
+  completeTask,
 } from '../reducers/taskEditorReducer'
 
 // Thunks for misc other
@@ -41,5 +42,9 @@ export const removeTasksThunk = taskIdList => (dispatch) => {
 export const updateTaskThunk = (taskId, updatedTask) => (dispatch) => {
   // You can perform any necessary logic here before dispatching the action
   dispatch(editTask({ id: taskId, updatedTask }))
-  console.log("task updated")
+}
+
+export const completedTaskThunk = (taskId, updatedTask, index) => (dispatch) => {
+  // Same as updateTaskThunk, but with extra logic for completing tasks, like dnd config updates and source update for taskTable
+  dispatch(completeTask({ id: taskId, updatedTask, index }))
 }

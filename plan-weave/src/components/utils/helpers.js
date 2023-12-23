@@ -253,6 +253,43 @@ export const ordinalSet = (dnd) => {
 }
 
 /**
+ * Deletes the specified range of indices, inclusive, from the DnD configuration, while maintaining dnd config invariants.
+ *
+ * @param {number[]} dnd - The DnD configuration array.
+ * @param {number[]} indexRange - The range of indices to be deleted. [start, end]
+ * @returns {number[]} The updated DnD configuration after deleting the specified range.
+ * @throws {TypeError} Throws a TypeError if the input parameters are invalid.
+ * 
+ * @example
+ * // Example 1: Deleting a single index
+ * const dnd = [1, 3, 2, 4, 5]
+ * const result1 = deleteDnDEvent(dnd, [0, 0])
+ * // Result: [2, 1, 3, 4]
+ *
+ * @example
+ * // Example 2: Deleting a range of indices starting from 0
+ * const dnd = [1, 3, 2, 4, 5]
+ * const result2 = deleteDnDEvent(dnd, [0, 2])
+ * // Result: [1, 2]
+ *
+ * @example
+ * // Example 3: Deleting another range of indices starting from not 0
+ * const dnd = [1, 3, 2, 4, 5]
+ * const result3 = deleteDnDEvent(dnd, [2, 3])
+ * // Result: [1, 2, 3]
+ */
+export const deleteDnDEvent = (dnd, indexRange) => {
+	if (!Array.isArray(dnd) || !Array.isArray(indexRange) || indexRange.length !== 2) {
+		throw new TypeError(`Invalid input parameters in deleteDnDEvent.\ndnd = ${dnd}\nindexRange = ${indexRange}`)
+	}
+	const [startIndex, endIndex] = indexRange
+	const invalidRange = startIndex < 0 || endIndex < startIndex || endIndex >= dnd.length
+	if (invalidRange) throw new TypeError(`Invalid index range in deleteDnDEvent.\nRange = ${indexRange}`)
+
+	return ordinalSet(dnd.filter((_, i) => i < startIndex || i > endIndex))
+}
+
+/**
  * Sorts tasks with completed tasks on top and applies transformation functions.
  *
  * @param {Object[]} reduxTasks - The list of tasks from Redux.
@@ -298,17 +335,53 @@ export const completedOnTopSorted = (reduxTasks, tasks, start, transforms, sort 
 export const diagonalize = strList => {
 	// 1. Input verification: Ensure all elements in the list are strings
 	if (!Array.isArray(strList) || !strList.every(str => typeof str === 'string')) throw new Error('Invalid input. Expected an array of strings.')
-	
+
 	// 2. Consider the diagonal characters of the strings and add 1 to them, this results in a string not in the list
 	return strList.map((str, i) => i < str.length ? String.fromCharCode(str[i].charCodeAt(0) + 1) : 'a').join('')
 }
 
+/**
+ * Calculates the range of tasks to display based on the number of tasks per page and the current page.
+ *
+ * @param {number} tasksPerPage - The number of tasks to display per page.
+ * @param {number} page - The current page number.
+ * @returns {Array} An array representing the range of tasks to display. The first element is the starting index (inclusive),
+ * and the second element is the ending index (exclusive). If either tasksPerPage or page is not a valid integer, [0, undefined]
+ * is returned.
+ */
+
+export const calculateRange = (tasksPerPage, page) => (isInt(tasksPerPage) && isInt(page))
+	? [(page - 1) * tasksPerPage + 1, page * tasksPerPage]
+	: [0, undefined]
 
 
+/**
+ * Calculates the index at which a task should be inserted in order to maintain DnD index invariants.
+ *
+ * This function supports the sorting of tasks based on completion status and ensures that the DnD
+ * configuration is updated correctly after completing or incompleting a task.
+ *
+ * @param {Array} tasks - The array of tasks to consider.
+ * @param {Function} sort - The sorting function to determine the order of tasks.
+ * @param {number} index - The index of the task being completed or incompleted.
+ * @returns {number} - The index at which the task should be inserted to maintain dnd invariants.
+ *
+ * @example
+ * // This is a Incomplete --> Complete Case
+ * // task 3 is out of order because it is being updated in TaskRow. TaskTable will adjust it based on the result of this fx.
+ * 
+ * const tasks = [{id: 1, status: 'completed'}, {id: 2, status: 'incomplete'}, {id: 3, status: 'completed'}] 
+ * const sort = (a, b) => a.id - b.id // Sort by task ID
+ * const indexOfInsertion = relativeSortIndex(tasks, sort, 2)
+ * 
+ * // Result: indexOfInsertion is 1, maintaining DnD index invariants after completing task with ID 3.
+ */
 
-
-
-
-
-
-
+export const relativeSortIndex = (tasks, sort, index, complete = TASK_STATUSES.COMPLETED, incomplete = TASK_STATUSES.INCOMPLETE) => {
+	const completed = tasks.filter(t => t.status === complete)
+	const incompleted = tasks.filter(t => t.status === incomplete)
+	const task = tasks[index]
+	return task.status === complete
+		? sort(completed).indexOf(task) 					 // Incomplete --> Complete Case
+		: completed.length + sort(incompleted).indexOf(task) // Complete   --> Incomplete Case
+}

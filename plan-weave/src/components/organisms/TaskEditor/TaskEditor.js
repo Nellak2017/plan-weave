@@ -1,22 +1,17 @@
-import { createContext, useState, useEffect, useMemo, useContext } from 'react'
+import { createContext, useState, useMemo, useContext } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasks } from '../../../redux/selectors'
-import { THEMES, SORTING_METHODS, SIMPLE_TASK_HEADERS } from '../../utils/constants'
-import { calculateWaste, validateTasks, transform, isInt, completedOnTopSorted } from '../../utils/helpers.js'
+import { THEMES, SIMPLE_TASK_HEADERS } from '../../utils/constants'
+import { validateTasks, isInt, completedOnTopSorted } from '../../utils/helpers.js'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import Pagination from '../../molecules/Pagination/Pagination'
 import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
 import { parse } from 'date-fns'
 import PropTypes from 'prop-types'
-import { taskEditorOptionsSchema, fillWithOptionDefaults } from '../../schemas/options/taskEditorOptionsSchema'
 
 import store from '../../../redux/store.js'
-import {
-	createTaskEditorServices,
-	createStateObject
-} from '../../../services/PlanWeavePage/TaskEditorServices'
-import { parseISO } from 'date-fns'
+import { createTaskEditorServices } from '../../../services/PlanWeavePage/TaskEditorServices'
 import { ThemeContext } from 'styled-components' // needed for theme object
 /*
 	Easy: 	
@@ -31,8 +26,6 @@ import { ThemeContext } from 'styled-components' // needed for theme object
 		TODO: Completed Highlight bug. When it is the next day (owl on), and you swap a task using dnd to 1st completed and complete it, it displays as old instead of completed.
 		
 	Hard: 
-		TODO: Add full test coverage for this component
-		TODO: Add visual tests for this component in storybook
 		TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
 		TODO: Solve the Refresh Problem (If you refresh, it alters components inline potentially harming Analytics. 
 			  What should be done is sent tasks to store and hide them, then generate a copy based on old)
@@ -44,9 +37,7 @@ export const TaskEditorContext = createContext()
 const TaskEditor = ({
 	variant = 'dark',
 	tasks = [],
-	sortingAlgorithm = 'timestamp',
 	maxwidth = 818,
-	options,
 	startEndTimes = { 'start': parse('00:00', 'HH:mm', new Date()), 'end': parse('17:00', 'HH:mm', new Date()) },
 	paginationOptions = { 'tasksPerPage': 10, 'page': 1 },
 	title = "Today's Tasks"
@@ -63,17 +54,15 @@ const TaskEditor = ({
 	const [page, setPage] = useState(isInt(paginationOptions?.page) ? paginationOptions.page : 1) // default page #
 
 	// Auto Calculation State
-	const [owl, setOwl] = useState(true)
 	const [timeRange, setTimeRange] = useState({ ...startEndTimes }) // starts off in possibly incorrect state, but TaskControl fixes it (to avoid races, and ensure integrity)
 	const start = useMemo(() => timeRange['start'], [timeRange]) // destructure timerange, only start (we don't use end here)
 	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
 
 	// Task Data (Redux), Task View (Context), Searching, Sorting, DnD, and Algorithm Change State
 	const tasksFromRedux = useSelector(selectNonHiddenTasks) // useValidateTasks() causes issues for some reason
-	//const [sortingAlgo, setSortingAlgo] = useState(sortingAlgorithm?.toLowerCase().trim() || '')
-	const [dnd, setDnd] = useState(tasksFromRedux.map((_, i) => i)) // list that tells mapping of task list. ex: [1,3,2] - taskList:[a,b,c] -> [a,c,b] 
 	const [taskList, setTaskList] = useState(validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks, start) }))
-	const [newDropdownOptions, setNewDropdownOptions] = useState(options)
+
+	// --- State Objects for Children
 
 	// State for TaskControl
 	const TaskControlState = {
@@ -82,52 +71,39 @@ const TaskEditor = ({
 		isHighlighting: useSelector(state => state?.tasks?.highlighting),
 		taskList: useSelector(selectNonHiddenTasks),
 		selectedTasks: useSelector(state => state?.tasks?.selectedTasks),
-		dnd: useSelector(state => state?.tasks?.dndConfig),
-		theme: useContext(ThemeContext), 
-		sortingAlgo: useSelector(state => state?.tasks?.sortingAlgo)
+		theme: useContext(ThemeContext),
 	}
 
+	// State for TaskTable 
+	const TaskTableState = {
+		search: useSelector(state => state?.tasks?.search),
+		dnd: useSelector(state => state?.tasks?.dndConfig),
+		timeRange: useSelector(state => state?.tasks?.timeRange),
+		page: useSelector(state => state?.tasks?.page), 
+		tasksPerPage: useSelector(state => state?.tasks?.tasksPerPage),
+		taskList: useSelector(selectNonHiddenTasks),
+		sortingAlgo: useSelector(state => state?.tasks?.sortingAlgo),
+		owl: useSelector(state => state?.tasks?.owl),
+		source: useSelector(state => state?.tasks?.source),
+		taskRowState: {
+			isHighlighting: useSelector(state => state?.tasks?.highlighting), 
+			selectedTasks: useSelector(state => state?.tasks?.selectedTasks),
+		}
+	}
 
 	// Memo for context
 	const memoizedContext = useMemo(() => ({
 		taskList, setTaskList, timeRange, setTimeRange,
-		owl, setOwl, taskUpdated, setTaskUpdated,
-		tasksPerPage, page, dnd, setDnd
+		taskUpdated, setTaskUpdated,
+		tasksPerPage, page
 	}), [
 		taskList, setTaskList, timeRange, setTimeRange,
-		owl, setOwl, taskUpdated, setTaskUpdated,
-		tasksPerPage, page, dnd, setDnd
+		taskUpdated, setTaskUpdated,
+		tasksPerPage, page
 	])
-
-	// --- Ensure Sorted List when tasks change Feature
-	/*
-	useEffect(() => {
-		const transforms = [
-			t => transform(t, dnd), // apply dnd config
-			t => calculateWaste({ start, taskList: t, time: new Date() }) // calculate waste/eta
-		]
-		setTaskList((!sortingAlgo && sortingAlgo !== '')
-			? tasksFromRedux
-			: completedOnTopSorted(tasksFromRedux, tasks, start, transforms, SORTING_METHODS[sortingAlgo])
-		)
-	}, [tasksFromRedux])
-	*/
-
-	
-	// --- ETA + Waste Auto Calculation Feature
-	const update = () => setTaskList(old => calculateWaste({ start: start, taskList: old, time: new Date() }) || old)
-	useEffect(() => update(), [timeRange, start, owl, dnd])
-	useEffect(() => {
-		if (taskUpdated) { update() }
-		const interval = setInterval(() => { if (!taskUpdated) update() }, 50)
-		return () => { if (interval) { clearInterval(interval); setTaskUpdated(false) } }
-	}, [taskList]) // this is needed to update waste every second, unfortunately
 
 	return (
 		<TaskEditorContext.Provider value={memoizedContext}>
-			<button onClick={() => {
-				console.log(sortingAlgo)
-			}}>Show Sorting Algo</button>
 			<button onClick={() => {
 				console.log(taskList)
 			}}>Show Task View</button>
@@ -141,7 +117,6 @@ const TaskEditor = ({
 				console.log(reduxStore?.timeRange)
 			}}>Show timerange Redux</button>
 			<button onClick={() => { console.log(`page: ${page}, tasks per page: ${tasksPerPage}`) }}>Show Page Number</button>
-			<button onClick={() => console.log(`Dnd Config: ${dnd}`)}>Show DnD Config</button>
 			<button onClick={() => console.log(`start: ${timeRange['start']}\nend: ${timeRange['end']}`)}>Show timerange</button>
 			<button onClick={() => console.log(`start: ${start}`)}>Show memoized start</button>
 
@@ -151,16 +126,19 @@ const TaskEditor = ({
 					<TaskControl
 						services={{
 							...services?.global,
-							...services?.taskControl
+							...services?.taskControl,
 						}}
 						state={TaskControlState}
 						variant={variant}
-						//options={newDropdownOptions}
 						clock1Text={''}
 						clock2Text={''}
 					/>
 					<TaskTable
-						services={services?.global}
+						services={{
+							...services?.global,
+							...services?.taskTable,
+						}}
+						state={TaskTableState}
 						variant={variant}
 						headerLabels={SIMPLE_TASK_HEADERS}
 						maxwidth={maxwidth}

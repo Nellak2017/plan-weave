@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import Button from '../Button/Button.js'
 
 // Styles here because it is so basic, no styled components needed
@@ -23,7 +24,6 @@ const DeleteModal = ({
 	taskList,
 	warningText = 'Warning, you are deleting multiple tasks. Are you sure?',
 	options = ['Yes', 'No'],
-	setIsHighlighting = (_) => console.warn('No setIsHighlighting defined for DeleteModal'),
 	setIsDeleteClicked = (_) => console.warn('No setIsDeleteClicked defined for DeleteModal'),
 	closeToast = () => console.warn('No closeToast defined for DeleteModal')
 }) => {
@@ -52,6 +52,19 @@ const DeleteModal = ({
 			</div>
 		</div>
 	)
+}
+
+DeleteModal.propTypes = {
+	services: PropTypes.shape({
+		deleteMany: PropTypes.func.isRequired,
+		highlighting: PropTypes.func.isRequired,
+	}).isRequired,
+	selectedTasks: PropTypes.arrayOf(PropTypes.bool),
+	taskList: PropTypes.arrayOf(PropTypes.object),
+	warningText: PropTypes.string,
+	options: PropTypes.arrayOf(PropTypes.string),
+	setIsDeleteClicked: PropTypes.func,
+	closeToast: PropTypes.func,
 }
 
 export default DeleteModal

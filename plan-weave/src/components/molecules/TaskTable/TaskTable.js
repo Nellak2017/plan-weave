@@ -1,116 +1,128 @@
-import { useContext, useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import TableHeader from '../../atoms/TableHeader/TableHeader'
-import TaskRow from '../TaskRow/TaskRow'
 import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import 'react-toastify/dist/ReactToastify.css'
-import { THEMES, TASK_STATUSES } from '../../utils/constants'
-import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
-import { isTimestampFromToday, filterTaskList, rearrangeDnD } from '../../utils/helpers'
+import { THEMES, TASK_STATUSES, SORTING_METHODS } from '../../utils/constants'
+import { filterTaskList, rearrangeDnD, completedOnTopSorted } from '../../utils/helpers'
+import { transform, calculateWaste, calculateRange } from '../../utils/helpers.js'
+import { parseISO } from 'date-fns'
+import { todoList } from './TodoList.js'
+/*
+	Intended Features:
 
-import { useSelector } from 'react-redux' // temporary only
+	1. Initially, Redux Tasks -> Local tasks = Redux Tasks(sort, dnd config == [0,...,n], waste/eta) 
+	2. Redux Tasks change -> Local tasks = Redux Tasks(sort, dnd config, waste/eta)
+	3. Sorting Algo changes -> Local tasks = Redux Tasks(sort, dnd config == [0,...,n], waste/eta)
+	4. Dnd event -> Local tasks = transform(Local Tasks, dnd list)
+	5. Search changes -> displayed tasks are Local Tasks, but filtered using search as filter (must be memoized)
+	6. Every 50ms, waste should be updated
 
-/* 
- TODO: Fix the Full Task Schema (See Full Task TODO)
+	Notes: Completed must always be on top, regardless of sorting method
 */
+// services: updateDnDConfig 
+// state: dndConfig, search
 const TaskTable = ({
 	services,
+	state,
 	variant = 'dark',
 	headerLabels,
-	tasks,
 	maxwidth = 818
 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	const { taskList, setTaskList, tasksPerPage, page, dnd, setDnd, timeRange } = useContext(TaskEditorContext)
-	const localTasks = useMemo(() => tasks, [tasks])
+	// Services and State (destructured)
+	const { updateDnDConfig } = { ...services }
+	const { search, dnd, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, source, taskRowState } = { ...state }
+	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
 
-	const lastCompletedIndex = taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1
-	const lastCompleted = lastCompletedIndex >= 0 ? taskList[lastCompletedIndex] : null // gives last completed task
-
-	// --- Temporary Pagination Feature
-	const calculateRange = (tasksPerPage, page) => (Math.floor(tasksPerPage) !== tasksPerPage || Math.floor(page) !== page) ? [0, undefined] : [(page - 1) * tasksPerPage + 1, page * tasksPerPage]
+	// Local State
+	const [localTasks, setLocalTasks] = useState(taskList)
 	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page), [tasksPerPage, page])
+	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
 
-	// --- Search Feature (pure version where eta and waste are constants)
-	const search = useSelector(state => state?.tasks?.search)
+	const lastCompletedIndex = useMemo(
+		() => taskList?.findIndex(task => task.status !== TASK_STATUSES.COMPLETED) - 1,
+		[taskList])
+
+	const lastCompleted = useMemo(
+		() => lastCompletedIndex >= 0 ? taskList[lastCompletedIndex] : null,
+		[lastCompletedIndex]) // gives last completed task
+
 	const filteredTasks = useMemo(() => (search === search.trimRight())
-		? filterTaskList({ list: taskList, filter: search.trim(), attribute: 'task' }) : taskList, [taskList, search])
+		? filterTaskList({ list: localTasks, filter: search.trim(), attribute: 'task' })
+		: localTasks, [localTasks, taskList, search]) // covers: search changes (case: 5)
 
-	// --- DnD Feature (DnD in context so config can be applied between renders)
+	// --- DnD Event, covers: DnD event (case: 4)
 	const onDragEnd = result => {
 		if (!result.destination) return // Drag was canceled or dropped outside the list
+		/*
+		const source = result.source.index
+		const destination = result.destination.index
 
-		// Set the config so that next time we get the tasks from the store, we can place it properly
-		setDnd(rearrangeDnD(dnd, result.source.index, result.destination.index))
-
-		// It is not enough to set dnd config, we must setTasks too. If we do this and make a re-render it is inefficient and will flicker the UI
-		setTaskList(rearrangeDnD(taskList, result.source.index, result.destination.index))
-	}
-
-
-	/*
-		useEffect(() => {
-			// Apply transformations to ensure correctly sorted and other calculations applied
-			const transforms = [
-				t => transform(t, tasksFromRedux.map((_, i) => i)), // apply DEFAULT dnd config
-				t => calculateWaste({ start, taskList: t, time: new Date() }) // calculate waste/eta
-			]
-			setTaskList(old => (!sortingAlgo && sortingAlgo !== '')
-				? tasksFromRedux
-				: completedOnTopSorted(old, tasks, start, transforms, SORTING_METHODS[sortingAlgo])
-			)
-		}, [sortingAlgo])
+		setLocalTasks(rearrangeDnD(localTasks, source, destination))
+		setTimeout(() => { updateDnDConfig(rearrangeDnD(dnd, source, destination)) }, 0) // setTimeout used to eliminate UI flickering when dnd
 		*/
+		const source = result.source.index
+		const destination = result.destination.index
 
-
-
-	// --- Extracted view logic
-	const todoList = (taskList, startRange, endRange, lastCompleted, timeRange) => {
-		if (!taskList) return []
-
-		const { start, end } = { ...timeRange } ? { ...timeRange } : { 0: new Date(new Date().setHours(0, 0, 0, 0)), 1: new Date(new Date().setHours(24, 59, 59, 59)) }
-
-		const epochDiff = (end - start) / 1000 // seconds between end and start
-		const epochTimeSinceStart = (start.getTime() - new Date(start).setHours(0, 0, 0, 0)) / 1000 // seconds between 00:00 and start
-		const epochTotal = epochDiff >= 0 ? epochDiff + epochTimeSinceStart : epochTimeSinceStart // seconds in our modified day. If negative, then default to full day
-
-		// startRange, endRange is for pagination capabilities
-		return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
-			const epochETA = task?.eta?.getTime() / 1000
-			const highlightOld = isTimestampFromToday(start, epochETA, epochTotal) ? ' ' : 'old'
-			//console.log(new Date(epochETA*1000))
-			return <TaskRow
-				services={services}
-				key={`task-${task.id}`}
-				variant={variant}
-				taskObject={{
-					task: task.task,
-					waste: task.waste,
-					ttc: task.ttc,
-					eta: task.eta,
-					id: task.id,
-					status: task.status,
-					timestamp: task.timestamp,
-				}}
-				index={idx}
-				highlight={highlightOld}
-				lastCompletedTask={lastCompleted}
-			/>
-		})
+		setLocalTasks(rearrangeDnD(localTasks, source, destination))
+		setTimeout(() => { updateDnDConfig(rearrangeDnD(dnd, source, destination)) }, 0)
 	}
+
+	useEffect(() => {
+		console.log("source =", source)
+	    console.log("TaskTable's perspective = ", localTasks[source[0]])
+	}, [source])
+
+
+	// Effects
+	const transformList = dnd => [
+		t => transform(t, dnd), // [...completed, ...incomplete] => dnd applied correctly 
+		t => calculateWaste({ start, taskList: t, time: new Date() }) // dnd applied correctly => waste / eta applied correctly
+	] // helper to get correct transformer list easily
+
+	useEffect(() => {
+		const correctedDnd = dnd?.length > 0 ? dnd : taskList.map((_, i) => i) // to prevent dnd from being empty in any case
+		setLocalTasks(completedOnTopSorted(
+			taskList,
+			taskList,
+			start,
+			transformList(correctedDnd)
+		))
+	}, [taskList])
+
+	useEffect(() => {
+		const resetDnD = taskList.map((_, i) => i)
+		updateDnDConfig(resetDnD)
+		setLocalTasks(completedOnTopSorted(
+			taskList,
+			taskList,
+			start,
+			transformList(resetDnD)
+		))
+	}, [sortingAlgo])
+
+	// --- ETA + Waste Auto Calculation Feature
+	const update = () => setLocalTasks(old => calculateWaste({ start: start, taskList: old, time: new Date() }) || old)
+	useEffect(() => update(), [timeRange, start, owl, dnd])
+	useEffect(() => {
+		if (taskUpdated) { update() }
+		const interval = setInterval(() => { if (!taskUpdated) update() }, 50)
+		return () => { if (interval) { clearInterval(interval); setTaskUpdated(false) } }
+	}, [taskList, localTasks]) // covers: waste update every 50ms (case: 6)
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
+			<button onClick={() => console.log(localTasks[0])}>Task 0</button>
+			<button onClick={() => console.log(services)}>Services TaskTable</button>
 			<TaskTableContainer maxwidth={maxwidth}>
 				<table>
 					<TableHeader variant={variant} labels={headerLabels} />
 					<Droppable droppableId="taskTable" type="TASK">
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
-								{taskList && taskList?.length >= 1
-									? todoList(filteredTasks, startRange, endRange, lastCompleted, timeRange)
-									: todoList(localTasks, startRange, endRange, lastCompleted, timeRange)}
+								{todoList(services, taskRowState, filteredTasks, startRange, endRange, lastCompleted, timeRange, variant)}
 								{provided.placeholder}
 							</tbody>
 						)}

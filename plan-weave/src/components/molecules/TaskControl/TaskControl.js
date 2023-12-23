@@ -30,7 +30,7 @@ import {
 	endTimeChangeEvent,
 } from './TaskControl.events.js'
 
-// services are: search, timeRange, owl, addTask, deleteMany, highlighting, updateSelectedTasks, updateDnDConfig, sort
+// services are: search, timeRange, owl, addTask, deleteMany, highlighting, updateSelectedTasks, sort
 // state is: timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme
 function TaskControl({
 	services,
@@ -49,8 +49,8 @@ function TaskControl({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	const { y0, y1, x0, x1 } = { ...coords }
 	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip } = { ...toolTips }
-	const { updateSelectedTasks, search, sort, updateDnDConfig } = { ...services }
-	const { timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme, sortingAlgo } = { ...state }
+	const { updateSelectedTasks, search, sort } = { ...services }
+	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme } = { ...state }
 	const startTime = useMemo(() => parseISO(timeRange?.start), [timeRange])
 	const endTime = useMemo(() => parseISO(timeRange?.end), [timeRange])
 
@@ -73,7 +73,6 @@ function TaskControl({
 		return () => { clearInterval(intervalId) }
 	}, [currentTime]) // update time every 1 second
 	useEffect(() => { updateSelectedTasks(taskList?.map(() => false)) }, [taskList])
-	useEffect(() => { updateDnDConfig(taskList.map((_, i) => i)) }, [sortingAlgo])
 
 	return (
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
@@ -130,8 +129,8 @@ function TaskControl({
 					<BiPlusCircle
 						tabIndex={0}
 						title={addToolTip}
-						onClick={() => addEvent(services, toast, dnd)}
-						onKeyDown={e => { if (e.key === 'Enter') { addEvent(services, toast, dnd) } }}
+						onClick={() => addEvent(services, toast)}
+						onKeyDown={e => { if (e.key === 'Enter') { addEvent(services, toast) } }}
 						size={owlSize}
 						data-testid={'add-button'}
 					/>
@@ -185,7 +184,6 @@ TaskControl.propTypes = {
 		deleteMany: PropTypes.func,
 		highlighting: PropTypes.func,
 		updateSelectedTasks: PropTypes.func,
-		updateDnDConfig: PropTypes.func,
 		sort: PropTypes.func,
 	}).isRequired,
 
@@ -195,9 +193,7 @@ TaskControl.propTypes = {
 		isHighlighting: PropTypes.bool,
 		taskList: PropTypes.array,
 		selectedTasks: PropTypes.array,
-		dnd: PropTypes.array,
 		theme: PropTypes.object,
-		sortingAlgo: PropTypes.string,
 	}).isRequired,
 
 	variant: PropTypes.string,
