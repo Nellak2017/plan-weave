@@ -1,8 +1,8 @@
 // reducers/taskReducer.js
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 import { parse } from 'date-fns'
 import { SORTING_METHODS } from '../../components/utils/constants.js'
-import { deleteDnDEvent, relativeSortIndex, rearrangeDnD } from '../../components/utils/helpers.js'
+import { relativeSortIndex, rearrangeDnD } from '../../components/utils/helpers.js'
 
 const initialState = {
 	search: '',
@@ -13,7 +13,6 @@ const initialState = {
 	owl: true,
 	highlighting: false,
 	selectedTasks: [], // initialized by Task Control on initial mount, and updated by Task Row
-	dndConfig: [], // initialized by Task Table on initial mount, and reset by Task Table anytime sorting algo changes
 	sortingAlgo: 'timestamp',
 	page: 1, // what page the user is currently on. Starts at 1
 	tasksPerPage: 10,
@@ -23,7 +22,7 @@ const initialState = {
 // Extracted because CompleteTask Reducer uses this logic
 const editTaskReducer = (state, action) => {
 	if (state.tasks.length >= 1000) return
-	const { id, updatedTask } = action?.payload || { 0: -1, 1: -1 } // TODO: poor default, think of better later
+	const { id, updatedTask } = action?.payload || { 0: -1, 1: -1 }
 	const taskIndex = state?.tasks?.findIndex(task => task?.id === id)
 	if (taskIndex !== -1) state.tasks[taskIndex] = updatedTask // Edit a task by ID
 }
@@ -52,9 +51,6 @@ const taskEditorSlice = createSlice({
 		updateSelectedTasks: (state, action) => {
 			state.selectedTasks = action.payload
 		},
-		updateDnD: (state, action) => {
-			state.dndConfig = action.payload
-		},
 		updateSortingAlgorithm: (state, action) => {
 			// updates sorting algorithm, then sorts local tasks
 			const selectedAlgorithm = action.payload.toLowerCase().trim()
@@ -70,6 +66,11 @@ const taskEditorSlice = createSlice({
 		updateTasksPerPage: (state, action) => {
 			state.tasksPerPage = Math.abs(parseInt(action.payload, 10)) || 10 // default to 10 if bad values provided
 		},
+		updateDnD: (state, action) => {
+			const [source, destination] = action.payload
+			const taskList = Array.from(state.tasks)
+			state.tasks = rearrangeDnD(taskList, source, destination)
+		}, // given source, destination, it automatically updates local redux tasks
 
 
 		updateTasks: (state, action) => {
@@ -94,9 +95,7 @@ const taskEditorSlice = createSlice({
 			const taskList = Array.from(state.tasks)
 			const destination = relativeSortIndex(taskList, sortingFunction, id)
 
-			state.taskTransition = [index, destination]
-			// Note: You seemingly can't do dnd config update here because proxy revocation when using setTimeOut
-			// if you do it normally, the UI won't update. Thus, you must update DnD inside TaskTable.
+			state.tasks = rearrangeDnD(taskList, index, destination)
 		}, // This is a special case of editTask. It does: editTask + update Source. 
 		// This is so that TaskTable only has to listen to source updates and update Local tasks Only when source updates (DnD config auto taken care of)
 	},

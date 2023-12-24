@@ -22,13 +22,12 @@ export const createTaskEditorServices = (store) => {
 	const services = {
 		// Shared between all of TaskEditor sub-components
 		global: {
-			updateDnDConfig: (newConfig) => {
-				dispatch(updateDnD(newConfig))
+			updateDnD: (movePoints) => {
+				dispatch(updateDnD(movePoints))
 			}, // reducer to update dnd config list when drag and drop happens (not DB)
 			updateSelectedTasks: (newSelectedTasks) => {
 				dispatch(updateSelectedTasks(newSelectedTasks))
 			}, // reducer to update selected tasks for multi-delete feature
-
 			updateTasks: (tasks) => {
 				dispatch(updateTasks(tasks))
 			},

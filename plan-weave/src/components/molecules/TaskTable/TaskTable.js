@@ -1,27 +1,17 @@
-import { useMemo, useState, useEffect, useCallback } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import TableHeader from '../../atoms/TableHeader/TableHeader'
 import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import 'react-toastify/dist/ReactToastify.css'
-import { THEMES, TASK_STATUSES, SORTING_METHODS } from '../../utils/constants'
-import { filterTaskList, rearrangeDnD, completedOnTopSorted } from '../../utils/helpers'
-import { transform, calculateWaste, calculateRange } from '../../utils/helpers.js'
+import { THEMES, SORTING_METHODS } from '../../utils/constants'
+import { filterTaskList, completedOnTopSorted } from '../../utils/helpers'
+import { calculateWaste, calculateRange } from '../../utils/helpers.js'
 import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
-/*
-	Intended Features:
+import PropTypes from 'prop-types'
 
-	1. Initially, Redux Tasks -> Local tasks = Redux Tasks(sort, dnd config == [0,...,n], waste/eta) 
-	2. Redux Tasks change -> Local tasks = Redux Tasks(sort, dnd config, waste/eta)
-	3. Sorting Algo changes -> Local tasks = Redux Tasks(sort, dnd config == [0,...,n], waste/eta)
-	4. Dnd event -> Local tasks = transform(Local Tasks, dnd list)
-	5. Search changes -> displayed tasks are Local Tasks, but filtered using search as filter (must be memoized)
-	6. Every 50ms, waste should be updated
-
-	Notes: Completed must always be on top, regardless of sorting method
-*/
-// services: updateDnDConfig 
-// state: dndConfig, search
+// services: updateTasks, updateDnD
+// state: globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState
 const TaskTable = ({
 	services,
 	state,
@@ -32,7 +22,7 @@ const TaskTable = ({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	// Services and State (destructured)
-	const { updateTasks } = { ...services }
+	const { updateTasks, updateDnD } = { ...services }
 	const { globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState } = { ...state }
 	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
 
@@ -47,23 +37,15 @@ const TaskTable = ({
 	// --- DnD Event, covers: DnD event (case: 4)
 	const onDragEnd = result => {
 		if (!result.destination) return // Drag was canceled or dropped outside the list
-		const [source, destination] = [result.source.index, result.destination.index]
-		updateTasks(rearrangeDnD(taskList, source, destination))
+		updateDnD([result.source.index, result.destination.index]) // This is shorthand notation for the manual method of updating the store
 	}
-
-
 	// Effects
-	const transformList = start => [
-		t => calculateWaste({ start, taskList: t, time: new Date() }) // Sorted => waste / eta applied correctly
-	] // helper to get correct transformer list easily
-
 	useEffect(() => {
-		const rawTasks = globalTasks?.tasks
 		const transformsAppliedTasks = completedOnTopSorted(
-			rawTasks,
-			rawTasks,
-			start, 
-			transformList(start),
+			globalTasks?.tasks,
+			[],
+			start,
+			[t => calculateWaste({ start, taskList: t, time: new Date() })],
 			SORTING_METHODS[sortingAlgo]
 		)
 		updateTasks(transformsAppliedTasks) // Note that each eta is an ISO string, not a date
@@ -80,31 +62,8 @@ const TaskTable = ({
 		return () => { if (interval) { clearInterval(interval); setTaskUpdated(false) } }
 	}, [taskList]) // covers: waste update every 500ms (case: 6)
 
-	/*
-	
-	useEffect(() => {
-		if (!dnd || dnd.length === 0) return // dnd config should not be used unless you want bugs
-		const [source, destination] = [taskTransition[0], taskTransition[1]]
-		//setLocalTasks(rearrangeDnD(localTasks, source, destination))
-		setTimeout(() => { updateDnDConfig(rearrangeDnD(dnd, source, destination)) }, 0)
-	}, [taskTransition])
-
-	useEffect(() => {
-		const correctedDnd = dnd?.length > 0 ? dnd : taskList.map((_, i) => i) // to prevent dnd from being empty in any case
-		setLocalTasks(completedOnTopSorted(
-			taskList,
-			taskList,
-			start,
-			transformList(correctedDnd)
-		))
-		console.log('taskList')
-	}, [taskList])
-	*/
-
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
-			<button onClick={() => console.log(taskList)}>Tasks</button>
-			<button onClick={() => console.log(services)}>Services TaskTable</button>
 			<TaskTableContainer maxwidth={maxwidth}>
 				<table>
 					<TableHeader variant={variant} labels={headerLabels} />
@@ -121,4 +80,82 @@ const TaskTable = ({
 		</DragDropContext>
 	)
 }
+
+TaskTable.propTypes = {
+	services: PropTypes.shape({
+		updateTasks: PropTypes.func,
+		updateDnD: PropTypes.func
+	}),
+	state: PropTypes.shape({
+		globalTasks: PropTypes.object,
+		search: PropTypes.string,
+		timeRange: PropTypes.object,
+		page: PropTypes.number,
+		tasksPerPage: PropTypes.number,
+		taskList: PropTypes.array,
+		sortingAlgo: PropTypes.string,
+		owl: PropTypes.any,
+		taskRowState: PropTypes.any
+	}),
+	variant: PropTypes.string,
+	headerLabels: PropTypes.array,
+	maxwidth: PropTypes.number
+}
+
 export default TaskTable
+
+/* 
+0. filteredTasks = useMemo(() => filterOperation(taskList),[taskList, search])
+
+1. Initial State, useEffect([])
+
+	taskList = global tasks |> sort(sorting method) |> waste/eta algo
+
+2. Start/End/Owl change OR 500 ms passes, useEffect([start,end,owl,timer])
+
+	taskList = taskList |> waste/eta algo
+
+3. Sort Algorithm Changes, useEffect([sortingAlgo])
+
+	dispatch change sorting algorithm thunk
+	--> PATCH sorting algorithm change to API endpoint (Potentially)
+	--> Sort the Local tasks with this algorithm
+
+4. Search event
+
+	search = search bar text
+
+5. Add event
+
+	dispatch addThunk for global 
+	--> POSTs default task to API endpoint
+	--> updates global task with default task
+	--> updates local task with default task in correct order to maintain dnd 
+
+6. Delete Single/Multiple Event
+
+	dispatch delete/deleteMultiple for global
+	--> DELETEs the series of tasks at the API endpoint
+	--> deletes specified global tasks 
+	--> deletes specified local tasks in correct order to maintain dnd
+
+7. Edit Event (non-completing)
+
+	// Note: This event should not be used to update completion, even though it can be mis-used
+	dispatch edit event for global
+	--> PATCHes the task at the API endpoint
+	--> edits specified global task
+	--> edits specified local task (doesn't affect order, assuming that non-completing editing was done)
+
+8. Completion Event (special case of Edit Event)
+
+	dispatch completion event for global
+	--> PATCHes the task at the API endpoint
+	--> edits specified global task
+	--> edits specified local task and changes ordering of tasks to match where it is supposed to be
+
+9. DnD Event
+
+	dispatch dnd event for local slice
+	--> changes ordering of local tasks in this slice to match based on (source, destination)
+*/
