@@ -29,6 +29,7 @@ import {
 	startTimeChangeEvent,
 	endTimeChangeEvent,
 } from './TaskControl.events.js'
+import { useInterval } from '../../../hooks/useInterval.js'
 
 // services are: search, timeRange, owl, addTask, deleteMany, highlighting, updateSelectedTasks, sort
 // state is: timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme
@@ -49,7 +50,7 @@ function TaskControl({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	const { y0, y1, x0, x1 } = { ...coords }
 	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip } = { ...toolTips }
-	const { updateSelectedTasks, search, sort } = { ...services }
+	const { search, sort } = { ...services }
 	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme } = { ...state }
 	const startTime = useMemo(() => parseISO(timeRange?.start), [timeRange])
 	const endTime = useMemo(() => parseISO(timeRange?.end), [timeRange])
@@ -66,14 +67,10 @@ function TaskControl({
 	})), []) // Drop-down options for sorting methods. 
 
 	// Effects
-	useEffect(() => { if (owl) shiftEndTime(services, 24, startTime, endTime, 2 * 24) }, [])
-	useEffect(() => { checkTimeRange(services, toast, endTime, startTime, owl) }, [owl])
-	useEffect(() => {
-		const intervalId = setInterval(() => { setCurrentTime(new Date()) }, 1000)
-		return () => { clearInterval(intervalId) }
-	}, [currentTime]) // update time every 1 second
-	useEffect(() => { updateSelectedTasks(taskList?.map(() => false)) }, [])
-
+	useEffect(() => checkTimeRange(services, toast, endTime, startTime, owl), [owl])
+	useInterval(() => setCurrentTime(new Date()), 1000, [currentTime])
+	useEffect(() => { if (owl) shiftEndTime(services, 24, startTime, endTime, 2 * 24) }, [] )
+		
 	return (
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
 			<TopContainer>

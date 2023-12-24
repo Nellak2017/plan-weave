@@ -18,7 +18,6 @@ export const todoList = (services, state, taskList, startRange, endRange, timeRa
 	// startRange, endRange is for pagination capabilities
 	return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
 		const epochETA = parseISO(task?.eta)?.getTime() / 1000
-		//const highlightOld = isTimestampFromToday(start, epochETA, epochTotal) ? ' ' : 'old'
 		const isOld = !isTimestampFromToday(start, epochETA, epochTotal)
 		
 		return <TaskRow
@@ -36,7 +35,6 @@ export const todoList = (services, state, taskList, startRange, endRange, timeRa
 				timestamp: task.timestamp,
 			}}
 			index={idx}
-			//highlight={highlightOld}
 			old={isOld}
 		/>
 	})

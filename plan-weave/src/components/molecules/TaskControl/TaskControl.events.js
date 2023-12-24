@@ -21,14 +21,11 @@ export const checkTimeRange = (services, toast, endTime, startTime, owl) => {
 
 export const setOverNight = (services, owl, startTime, endTime) => {
 	services?.owl(owl)
-	shiftEndTime(services, -24, startTime, endTime, owl ? 24 : 2 * 24)
+	shiftEndTime(services, owl ? -24 : 24, startTime, endTime, owl ? 24 : 2 * 24)
 }
 
 // Events
-export const addEvent = (services) => {
-	const uniqueIdSimpleTask = { ...DEFAULT_SIMPLE_TASK, id: new Date().getTime() } // you must call this code here to always ensure unique!
-	services?.addTask(uniqueIdSimpleTask) // automatically updates dnd in the reducer
-}
+export const addEvent = services => { services?.addTask({ ...DEFAULT_SIMPLE_TASK, id: new Date().getTime() }) }
 
 export const deleteEvent = (services, toast, setIsDeleteClicked, isHighlighting, taskList) => {
 	if (!isHighlighting) {

@@ -112,7 +112,7 @@ export const completedTaskThunk = (taskId, updatedTask, index) => (dispatch) => 
   // Same as updateTaskThunk, but with extra logic for completing tasks, like dnd config updates and source update for taskTable
   try {
     dispatch(completeTask({ id: taskId, updatedTask, index }))
-    toast.info('This Task was Completed')
+    //toast.info('This Task was Completed')
   } catch (e) {
     console.error(e)
     toast.error('The Task failed to complete or incomplete')

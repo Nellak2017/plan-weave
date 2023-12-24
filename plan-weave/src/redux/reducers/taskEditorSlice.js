@@ -33,6 +33,8 @@ const taskEditorSlice = createSlice({
 	reducers: {
 
 		updateSearch: (state, action) => {
+			if (action.payload === state.search) return // if it is the same as before, don't update state!
+			console.log(action.payload)
 			state.search = action.payload.trim() // assuming action.payload is the new search value
 		},
 		updateTimeRange: (state, action) => {
@@ -54,6 +56,7 @@ const taskEditorSlice = createSlice({
 		updateSortingAlgorithm: (state, action) => {
 			// updates sorting algorithm, then sorts local tasks
 			const selectedAlgorithm = action.payload.toLowerCase().trim()
+			if (selectedAlgorithm === state.sortingAlgo) return // If it is the same as before, don't update state!!
 			if (Object.keys(SORTING_METHODS).includes(selectedAlgorithm)) {
 				state.sortingAlgo = selectedAlgorithm
 				const sortedTasks = SORTING_METHODS[selectedAlgorithm](state.tasks)

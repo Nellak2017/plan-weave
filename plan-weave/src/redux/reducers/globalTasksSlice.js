@@ -1,8 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { Timestamp } from 'firebase/firestore'
 
-const timestamp = Timestamp.fromDate(new Date()).seconds // used for testing purposes
-
+const timestamp = Math.floor((new Date()).getTime() / 1000)
 const initialState = {
 	tasks: [
 
@@ -29,7 +27,6 @@ const initialState = {
 		*/
 	]
 }
-
 const globalTasksSlice = createSlice({
 	name: 'globalTasks',
 	initialState,

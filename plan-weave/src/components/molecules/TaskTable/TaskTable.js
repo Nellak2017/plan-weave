@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useEffect } from 'react'
 import TableHeader from '../../atoms/TableHeader/TableHeader'
 import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
@@ -9,6 +9,7 @@ import { calculateWaste, calculateRange } from '../../utils/helpers.js'
 import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
 import PropTypes from 'prop-types'
+import { useInterval } from '../../../hooks/useInterval.js'
 
 // services: updateTasks, updateDnD
 // state: globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState
@@ -21,46 +22,23 @@ const TaskTable = ({
 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
-	// Services and State (destructured)
+	// --- Services and State (destructured)
 	const { updateTasks, updateDnD } = { ...services }
 	const { globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState } = { ...state }
 	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
-
-	const filteredTasks = useMemo(() => (search === search.trimRight())
-		? filterTaskList({ list: taskList, filter: search.trim(), attribute: 'task' })
-		: taskList, [taskList, search]) // covers: search changes (case: 5)
-
-	// Local State
+	const filteredTasks = useMemo(() => filterTaskList({ list: taskList, filter: search.trim(), attribute: 'task' }), [taskList, search])
 	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page), [tasksPerPage, page])
-	const [taskUpdated, setTaskUpdated] = useState(false) // Used to help the waste update every second feature. Ugly but it works
 
-	// --- DnD Event, covers: DnD event (case: 4)
-	const onDragEnd = result => {
-		if (!result.destination) return // Drag was canceled or dropped outside the list
-		updateDnD([result.source.index, result.destination.index]) // This is shorthand notation for the manual method of updating the store
-	}
-	// Effects
-	useEffect(() => {
-		const transformsAppliedTasks = completedOnTopSorted(
-			globalTasks?.tasks,
-			[],
-			start,
-			[t => calculateWaste({ start, taskList: t, time: new Date() })],
-			SORTING_METHODS[sortingAlgo]
-		)
-		updateTasks(transformsAppliedTasks) // Note that each eta is an ISO string, not a date
-	}, [])
+	// --- DnD Event
+	const onDragEnd = result => { if (result.destination) updateDnD([result.source.index, result.destination.index]) }
 
-	const update = () => {
-		const ret = calculateWaste({ start: start, taskList: taskList, time: new Date() })
-		if (ret.length > 0) updateTasks(ret || taskList)
-	}
-	useEffect(() => update(), [timeRange, owl])
+	// --- Effects
 	useEffect(() => {
-		if (taskUpdated) { update() }
-		const interval = setInterval(() => { if (!taskUpdated) update() }, 50)
-		return () => { if (interval) { clearInterval(interval); setTaskUpdated(false) } }
-	}, [taskList]) // covers: waste update every 500ms (case: 6)
+		const transforms = [t => calculateWaste({ start, taskList: t, time: new Date() })]
+		updateTasks(completedOnTopSorted(globalTasks?.tasks, [], start, transforms, SORTING_METHODS[sortingAlgo]))
+	}, [sortingAlgo])
+	const update = () => { if (taskList.length > 0) updateTasks(calculateWaste({ start, taskList, time: new Date() }) || taskList) }
+	useInterval(() => update(), 50, [timeRange, owl, taskList])
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>

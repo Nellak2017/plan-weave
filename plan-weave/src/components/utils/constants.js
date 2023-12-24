@@ -1,6 +1,7 @@
 // File containing many constants
 import colors from '../../styles/theme'
 import { toast } from 'react-toastify'
+import { parseISO } from 'date-fns'
 
 export const MILLISECONDS_PER_HOUR = 60 * 60 * 1000
 export const MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * 24
@@ -27,7 +28,7 @@ export const SORTING_METHODS = {
 		return tasks?.slice().sort((a, b) => (a.task || '').localeCompare(b.task || ''))
 	},
 	'eta': tasks => {
-		return tasks?.slice().sort((a, b) => a?.eta.getTime() - b?.eta.getTime())
+		return tasks?.slice().sort((a, b) => parseISO(a?.eta).getTime() - parseISO(b?.eta).getTime())
 	},
 	'': tasks => {
 		return tasks?.slice()
@@ -56,7 +57,7 @@ export const DEFAULT_SIMPLE_TASK = {
 	task: '',
 	waste: 1,
 	ttc: 1,
-	eta: '12:00',
+	eta: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // ISO Date, 12:00 noon
 	status: 'incomplete',
 	id: new Date().getTime(), // guarantees unique ids down to the millisecond! IF and ONLY IF you do this logic in the caller as well!
 	timestamp: Math.floor((new Date().getTime()) / 1000)
