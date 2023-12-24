@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect } from 'react'
 import { TaskRowStyled } from './TaskRow.elements.js'
 import SimpleRow from './SimpleRow.js'
 import { Draggable } from 'react-beautiful-dnd'
@@ -8,8 +8,7 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { removeTaskThunk, updateTaskThunk, completedTaskThunk } from '../../../redux/thunks/taskEditorThunks.js'
 import { useDispatch } from 'react-redux'
-import { validateTask } from '../../utils/helpers'
-import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
+import { validateTask, highlightTaskRow } from '../../utils/helpers'
 import { parseISO } from 'date-fns'
 
 import { Timestamp } from 'firebase/firestore'
@@ -17,6 +16,7 @@ const timestampOuter = Timestamp.fromDate(new Date()).seconds
 /*
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
 TODO: Add Schema prop for TaskRow so that it can handle the Full Task
+TODO: FIX THE HIGHLIGHTING BUG. When user presses "complete" task, the task is highlighted "old" instead of what it is supposed to be
 */
 // services = {...others, updateSelectedTasks}
 // state = {isHighlighting, selectedTasks}
@@ -27,15 +27,14 @@ function TaskRow({
 	variant = 'dark',
 	maxwidth = 818,
 	index,
-	highlight = 'no',
+	highlight = 'no', // maybe unnecessary??
+	old = false // is task old or not?
 }) {
 
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
 
 	const newETA = parseISO(eta) // Converts eta from ISO -> Date
-
-	const { setTaskUpdated } = useContext(TaskEditorContext)
 
 	// Input Checks
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
@@ -93,7 +92,6 @@ function TaskRow({
 		}
 
 		completedTaskThunk(id, updatedTask, index)(dispatch)
-		if (TaskEditorContext._currentValue) setTaskUpdated(true)
 	}
 
 	const handleDeleteTask = () => {
@@ -127,8 +125,8 @@ function TaskRow({
 			{...(provided?.draggableProps ? provided.draggableProps : {})} // conditionally destructure if not completed task
 			style={{ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
 			maxwidth={maxwidth}
-			highlight={isHighlighting ? isChecked && 'selected' || ' ' : highlight}
-			onClick={() => console.log(isHighlighting ? isChecked && 'selected' || ' ' : highlight)}
+			highlight={highlightTaskRow(isHighlighting, isChecked, old)}
+			onClick={() => console.log(highlightTaskRow(isHighlighting, isChecked, old))}
 			onBlur={handleUpdateTask}
 		>
 			{<SimpleRow

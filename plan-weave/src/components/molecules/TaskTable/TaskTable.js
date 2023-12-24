@@ -58,7 +58,7 @@ const TaskTable = ({
 	useEffect(() => update(), [timeRange, owl])
 	useEffect(() => {
 		if (taskUpdated) { update() }
-		const interval = setInterval(() => { if (!taskUpdated) update() }, 500)
+		const interval = setInterval(() => { if (!taskUpdated) update() }, 50)
 		return () => { if (interval) { clearInterval(interval); setTaskUpdated(false) } }
 	}, [taskList]) // covers: waste update every 500ms (case: 6)
 

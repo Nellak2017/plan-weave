@@ -6,8 +6,10 @@ import {
 	calculateWaste,
 	rearrangeDnD,
 	relativeSortIndex,
+	highlightTaskRow
 } from './helpers'
 import { TASK_STATUSES } from './constants'
+import { format } from 'date-fns-tz'
 
 describe('formatTimeLeft', () => {
 	it('should return the correct string when endTime - startTime = 1', () => {
@@ -118,12 +120,12 @@ describe('isTimestampFromToday', () => {
 })
 
 describe('validateTask', () => {
-	const twelve = new Date(new Date().setHours(12, 0, 0, 0))
+	const twelve = new Date(new Date().setHours(12, 0, 0, 0)).toISOString()
 	const defaultTask = {
 		task: ' ',
 		waste: 1,
 		ttc: 1,
-		eta: new Date(new Date().setHours(12, 0, 0, 0)), //'12:00',
+		eta: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), //'12:00',
 		id: 1,
 		status: TASK_STATUSES.INCOMPLETE,
 		timestamp: 1692543600 - 1,
@@ -252,7 +254,9 @@ describe('calculateWaste', () => {
 	const completedTimeSeconds = completedTime.getTime() / 1000
 
 	const hoursToMillis = hours => hours * 60000 * 60
-	const add = (dateA, hour) => new Date(dateA.getTime() + hoursToMillis(hour))
+	const fmt = (dateISO) => format(new Date(dateISO), 'yyyy-MM-dd\'T\'HH:mm:ssXXX', { timeZone: 'America/Chicago' }) // gets it in correct format, so tests will pass
+	const add = (dateA, hour) => fmt(new Date(dateA.getTime() + hoursToMillis(hour)).toISOString()) // used to be without these wrappers, but now dates are ISO strings
+
 
 	// Test cases covering what happens whenever we don't want any tasks updated and just want them initialized
 	const initialTestCases = [
@@ -289,7 +293,6 @@ describe('calculateWaste', () => {
 			],
 		}
 	]
-
 	// Task Row is responsible for updating and submitting Completed tasks
 
 	initialTestCases.forEach(testCase => {
@@ -456,5 +459,30 @@ describe('relativeSortIndex', () => {
 		it(`Correctly calculates index for ${description} case`, () => {
 			expect(relativeSortIndex(tasks, sortFunction, id)).toBe(expected)
 		})
+	})
+})
+
+describe('highlightTaskRow', () => {
+	const testCases = [
+		{ isHighlighting: true, isChecked: true, isOld: true, expected: 'selected' },
+		{ isHighlighting: true, isChecked: false, isOld: true, expected: '' },
+		{ isHighlighting: true, isChecked: true, isOld: false, expected: 'selected' },
+		{ isHighlighting: true, isChecked: false, isOld: false, expected: '' },
+		{ isHighlighting: false, isChecked: true, isOld: true, expected: '' },
+		{ isHighlighting: false, isChecked: false, isOld: true, expected: 'old' },
+		{ isHighlighting: false, isChecked: true, isOld: false, expected: '' },
+		{ isHighlighting: false, isChecked: false, isOld: false, expected: '' },
+	]
+
+	describe.each(testCases)('highlightTaskRow', ({ isHighlighting, isChecked, isOld, expected }) => {
+		it(`returns "${expected}" for isHighlighting: ${isHighlighting}, isChecked: ${isChecked}, isOld: ${isOld}`, () => {
+			expect(highlightTaskRow(isHighlighting, isChecked, isOld)).toBe(expected)
+		})
+	})
+
+	it('throws TypeError for illegal inputs', () => {
+		expect(() => highlightTaskRow('string', true, false)).toThrow(TypeError)
+		expect(() => highlightTaskRow(true, 'string', false)).toThrow(TypeError)
+		expect(() => highlightTaskRow(true, true, 'string')).toThrow(TypeError)
 	})
 })

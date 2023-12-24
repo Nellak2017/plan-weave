@@ -380,7 +380,7 @@ export const calculateRange = (tasksPerPage, page) => (isInt(tasksPerPage) && is
  */
 
 export const relativeSortIndex = (tasks, sort, id, complete = TASK_STATUSES.COMPLETED, incomplete = TASK_STATUSES.INCOMPLETE) => {
-	const newTasks = tasks.map(el => ({...el})) // ensures no proxies used
+	const newTasks = tasks.map(el => ({ ...el })) // ensures no proxies used
 	const completed = newTasks.filter(t => t.status === complete)
 	const incompleted = newTasks.filter(t => t.status === incomplete)
 	const task = newTasks.find(t => parseInt(t.id) === parseInt(id))
@@ -388,3 +388,34 @@ export const relativeSortIndex = (tasks, sort, id, complete = TASK_STATUSES.COMP
 		? sort(completed).indexOf(task) 					 // Incomplete --> Complete Case
 		: completed.length + sort(incompleted).indexOf(task) // Complete   --> Incomplete Case
 }
+
+
+/**
+ * Determines the highlight style for a task row based on provided conditions.
+ *
+ * @param {boolean} isHighlighting - Indicates whether the row should be highlighted.
+ * @param {boolean} isChecked - Indicates whether the task is checked.
+ * @param {boolean} isOld - Indicates whether the task is considered old.
+ *
+ * @throws {TypeError} Throws an error if any of the input parameters are not boolean.
+ *
+ * @returns {string} Returns a string representing the highlight style:
+ * - 'selected': If isHighlighting is true and isChecked is true.
+ * - 'old': If isHighlighting is false, isChecked is false, and isOld is true.
+ * - '': If none of the above conditions are met.
+ */
+export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
+	if (typeof isHighlighting !== 'boolean' || typeof isChecked !== 'boolean' || typeof isOld !== 'boolean') {
+		throw new TypeError('All parameters must be of type boolean')
+	}
+
+	if (isHighlighting && isChecked) return 'selected'
+	else if (!isHighlighting && !isChecked && isOld) return 'old'
+	else return ''
+}
+
+
+
+
+
+

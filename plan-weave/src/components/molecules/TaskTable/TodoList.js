@@ -2,6 +2,7 @@ import React from "react"
 import { parseISO } from 'date-fns'
 import { isTimestampFromToday } from '../../utils/helpers'
 import TaskRow from '../TaskRow/TaskRow'
+import { GiConsoleController } from "react-icons/gi"
 
 // --- Extracted view logic for Task Table
 export const todoList = (services, state, taskList, startRange, endRange, timeRange, variant = 'dark') => {
@@ -18,7 +19,9 @@ export const todoList = (services, state, taskList, startRange, endRange, timeRa
 	// startRange, endRange is for pagination capabilities
 	return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
 		const epochETA = parseISO(task?.eta)?.getTime() / 1000
-		const highlightOld = isTimestampFromToday(start, epochETA, epochTotal) ? ' ' : 'old'
+		//const highlightOld = isTimestampFromToday(start, epochETA, epochTotal) ? ' ' : 'old'
+		const isOld = !isTimestampFromToday(start, epochETA, epochTotal)
+		
 		return <TaskRow
 			services={services}
 			state={state}
@@ -34,7 +37,8 @@ export const todoList = (services, state, taskList, startRange, endRange, timeRa
 				timestamp: task.timestamp,
 			}}
 			index={idx}
-			highlight={highlightOld}
+			//highlight={highlightOld}
+			old={isOld}
 		/>
 	})
 }

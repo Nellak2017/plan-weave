@@ -3,7 +3,7 @@ import { TASK_STATUSES } from '../../utils/constants'
 import { Timestamp } from 'firebase/firestore'
 
 const timestamp = Timestamp.fromDate(new Date()).seconds
-
+const isoStringRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|[+-]\d{2}:\d{2})$/;
 const twelve = new Date(new Date().setHours(12, 0, 0, 0))
 
 // This schema is for the Simple Task
@@ -87,6 +87,7 @@ export const simpleTaskSchema = Yup.object({
 	*/
 	eta: Yup.string()
 		.typeError('Eta must be a valid ISO string')
+		.matches(isoStringRegex, 'Eta must be a valid ISO String, it failed the regex test')
 		.default(() => twelve.toISOString()) 
 		.transform((value, originalValue) => {
 			if (!originalValue) return twelve.toISOString()

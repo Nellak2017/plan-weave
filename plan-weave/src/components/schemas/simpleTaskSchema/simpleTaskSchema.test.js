@@ -4,9 +4,9 @@ import { Timestamp } from 'firebase/firestore'
 
 const timestamp = Timestamp.fromDate(new Date()).seconds
 
-const fourteenThirty = new Date(new Date().setHours(14, 30, 0, 0))
-const nineFifteen = new Date(new Date().setHours(9, 15, 0, 0))
-const twelve = new Date(new Date().setHours(12, 0, 0, 0))
+const fourteenThirty = new Date(new Date().setHours(14, 30, 0, 0)).toISOString()
+const nineFifteen = new Date(new Date().setHours(9, 15, 0, 0)).toISOString()
+const twelve = new Date(new Date().setHours(12, 0, 0, 0)).toISOString()
 
 const validTask = {
 	task: 'Example task',
