@@ -16,10 +16,9 @@ const timestampOuter = Timestamp.fromDate(new Date()).seconds
 /*
 TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
 TODO: Add Schema prop for TaskRow so that it can handle the Full Task
-TODO: FIX THE HIGHLIGHTING BUG. When user presses "complete" task, the task is highlighted "old" instead of what it is supposed to be
 */
-// services = {...others, updateSelectedTasks}
-// state = {isHighlighting, selectedTasks}
+// services: {...others, updateSelectedTasks}
+// state: {isHighlighting, selectedTasks}
 function TaskRow({
 	services,
 	state,
@@ -44,7 +43,7 @@ function TaskRow({
 
 	// Redux destructuring
 	const dispatch = useDispatch()
-	const { updateSelectedTasks } = { ...services }
+	const { updateSelectedTasks, taskRow } = { ...services }
 	const { isHighlighting, selectedTasks } = { ...state }
 
 	// Local State of the form so that it may be updated into the redux store
@@ -76,8 +75,6 @@ function TaskRow({
 			return // So that the task is NOT updated
 		}
 
-		if (!isChecked) toast.info('This Task was Completed')
-
 		// Waste Feature 
 
 		const currentTime = new Date()
@@ -90,29 +87,18 @@ function TaskRow({
 			eta: isChecked && newETA instanceof Date ? newETA.getTime() / 1000 : currentTime.getTime() / 1000,
 			completedTimeStamp: currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 		}
-
-		completedTaskThunk(id, updatedTask, index)(dispatch)
-	}
-
-	const handleDeleteTask = () => {
-		try {
-			removeTaskThunk(id)(dispatch)
-			toast.info('This Task was deleted')
-		} catch (e) {
-			console.error(e)
-			toast.error('The Task failed to be deleted')
-		}
+		taskRow?.complete(id, updatedTask, index)
 	}
 
 	const handleUpdateTask = () => {
-		updateTaskThunk(id, {
+		taskRow?.update(id, {
 			...taskObject,
 			eta: parseISO(taskObject?.eta) && parseISO(taskObject.eta) instanceof Date
 				? parseISO(taskObject.eta).getTime() / 1000
 				: new Date().getTime() / 1000,
 			task: localTask,
 			ttc: localTtc
-		})(dispatch)
+		})
 	}
 
 
@@ -126,7 +112,6 @@ function TaskRow({
 			style={{ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
 			maxwidth={maxwidth}
 			highlight={highlightTaskRow(isHighlighting, isChecked, old)}
-			onClick={() => console.log(highlightTaskRow(isHighlighting, isChecked, old))}
 			onBlur={handleUpdateTask}
 		>
 			{<SimpleRow
@@ -139,7 +124,7 @@ function TaskRow({
 				localTtc={localTtc}
 				setLocalTtc={setLocalTtc}
 				handleCheckBoxClicked={handleCheckBoxClicked}
-				handleDeleteTask={handleDeleteTask}
+				handleDeleteTask={() => taskRow?.delete(id)}
 			/>}
 		</TaskRowStyled>
 	)

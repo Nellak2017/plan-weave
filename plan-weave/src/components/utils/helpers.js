@@ -1,5 +1,5 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
-import { getTime, formatISO, parseISO } from 'date-fns'
+import { getTime, formatISO } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
 
 // This file contains many helpers used through out the application

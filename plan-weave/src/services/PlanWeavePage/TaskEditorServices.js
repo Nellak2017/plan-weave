@@ -10,8 +10,11 @@ import {
 	updateTimeRangeThunk,
 	updateOwlThunk,
 	addNewTaskThunk,
+	removeTaskThunk,
 	removeTasksThunk,
+	updateTaskThunk,
 	updateSortingAlgorithmThunk,
+	completedTaskThunk
 } from "../../redux/thunks/taskEditorThunks.js"
 
 
@@ -39,8 +42,8 @@ export const createTaskEditorServices = (store) => {
 			timeRange: (newStart, newEnd) => {
 				dispatch(updateTimeRangeThunk(newStart, newEnd))
 			}, // thunk to update start/end
-			owl: () => {
-				dispatch(updateOwlThunk())
+			owl: (prev=false) => {
+				dispatch(updateOwlThunk(prev))
 			}, // thunk to update owl
 			highlighting: () => {
 				dispatch(updateHighlighting())
@@ -58,11 +61,15 @@ export const createTaskEditorServices = (store) => {
 		},
 		taskTable: {
 			taskRow: {
-				/*
-				  delete: // thunk to delete task
-				  update: // thunk to update task, includes name, ttc
-				  complete: // thunk to specifically update the task w/ checkbox (so special logic applies)
-				*/
+				complete: (id, updatedTask, index) => {
+					dispatch(completedTaskThunk(id, updatedTask, index))
+				},
+				delete: (id) => {
+					dispatch(removeTaskThunk(id))
+				},
+				update: (id, newTask) => {
+					dispatch(updateTaskThunk(id, newTask))
+				}
 			},
 		},
 

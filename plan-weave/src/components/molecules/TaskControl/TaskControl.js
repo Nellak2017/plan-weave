@@ -117,8 +117,8 @@ function TaskControl({
 						tabIndex={0}
 						title={owlToolTip}
 						style={owl && { color: theme.colors.primary }}
-						onClick={() => setOverNight(services, toast, owl, startTime, endTime)}
-						onKeyDown={e => { if (e.key === 'Enter') { setOverNight(services, toast, owl, startTime, endTime) } }}
+						onClick={() => setOverNight(services, owl, startTime, endTime)}
+						onKeyDown={e => { if (e.key === 'Enter') { setOverNight(services, owl, startTime, endTime) } }}
 						size={owlSize}
 						data-testid={'owl-button'}
 					/>
@@ -129,8 +129,8 @@ function TaskControl({
 					<BiPlusCircle
 						tabIndex={0}
 						title={addToolTip}
-						onClick={() => addEvent(services, toast)}
-						onKeyDown={e => { if (e.key === 'Enter') { addEvent(services, toast) } }}
+						onClick={() => addEvent(services)}
+						onKeyDown={e => { if (e.key === 'Enter') { addEvent(services) } }}
 						size={owlSize}
 						data-testid={'add-button'}
 					/>

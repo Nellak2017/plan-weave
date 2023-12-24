@@ -2,7 +2,6 @@ import React from "react"
 import { parseISO } from 'date-fns'
 import { isTimestampFromToday } from '../../utils/helpers'
 import TaskRow from '../TaskRow/TaskRow'
-import { GiConsoleController } from "react-icons/gi"
 
 // --- Extracted view logic for Task Table
 export const todoList = (services, state, taskList, startRange, endRange, timeRange, variant = 'dark') => {

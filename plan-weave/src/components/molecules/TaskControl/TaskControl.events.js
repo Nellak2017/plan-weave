@@ -19,26 +19,13 @@ export const checkTimeRange = (services, toast, endTime, startTime, owl) => {
 	}
 }
 
-export const setOverNight = (services, toast, owl, startTime, endTime) => {
-	services?.owl()
-	if (owl) {
-		const maxDifference = 24 // variable included here to communicate intent
-		shiftEndTime(services, -24, startTime, endTime, maxDifference)
-		toast.info('Overnight Mode is off: Tasks must be scheduled between 12 pm and 12 am. End time must be after the start time.', {
-			autoClose: 5000,
-		})
-	} else {
-		const maxDifference = 2 * 24
-		shiftEndTime(services, 24, startTime, endTime, maxDifference)
-		toast.info('Overnight Mode is on: You can schedule tasks overnight, and end time can be before the start time.', {
-			autoClose: 5000,
-		})
-	}
+export const setOverNight = (services, owl, startTime, endTime) => {
+	services?.owl(owl)
+	shiftEndTime(services, -24, startTime, endTime, owl ? 24 : 2 * 24)
 }
 
 // Events
-export const addEvent = (services, toast) => {
-	toast.info('You added a New Default Task')
+export const addEvent = (services) => {
 	const uniqueIdSimpleTask = { ...DEFAULT_SIMPLE_TASK, id: new Date().getTime() } // you must call this code here to always ensure unique!
 	services?.addTask(uniqueIdSimpleTask) // automatically updates dnd in the reducer
 }
