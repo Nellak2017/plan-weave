@@ -72,7 +72,7 @@ function TaskControl({
 		const intervalId = setInterval(() => { setCurrentTime(new Date()) }, 1000)
 		return () => { clearInterval(intervalId) }
 	}, [currentTime]) // update time every 1 second
-	useEffect(() => { updateSelectedTasks(taskList?.map(() => false)) }, [taskList])
+	useEffect(() => { updateSelectedTasks(taskList?.map(() => false)) }, [])
 
 	return (
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
@@ -138,8 +138,8 @@ function TaskControl({
 						tabIndex={0}
 						title={deleteToolTip}
 						style={isHighlighting && { color: theme.colors.primary }}
-						onClick={() => deleteEvent(services, toast, setIsDeleteClicked, isHighlighting)}
-						onKeyDown={e => { if (e.key === 'Enter') { deleteEvent(services, toast, setIsDeleteClicked, isHighlighting) } }}
+						onClick={() => deleteEvent(services, toast, setIsDeleteClicked, isHighlighting, taskList)}
+						onKeyDown={e => { if (e.key === 'Enter') { deleteEvent(services, toast, setIsDeleteClicked, isHighlighting, taskList) } }}
 						size={owlSize}
 						data-testid={'multi-delete-button'}
 					/>

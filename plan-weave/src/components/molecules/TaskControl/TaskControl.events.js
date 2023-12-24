@@ -39,12 +39,14 @@ export const setOverNight = (services, toast, owl, startTime, endTime) => {
 // Events
 export const addEvent = (services, toast) => {
 	toast.info('You added a New Default Task')
-	services?.addTask(DEFAULT_SIMPLE_TASK) // automatically updates dnd in the reducer
+	const uniqueIdSimpleTask = { ...DEFAULT_SIMPLE_TASK, id: new Date().getTime() } // you must call this code here to always ensure unique!
+	services?.addTask(uniqueIdSimpleTask) // automatically updates dnd in the reducer
 }
 
-export const deleteEvent = (services, toast, setIsDeleteClicked, isHighlighting) => {
+export const deleteEvent = (services, toast, setIsDeleteClicked, isHighlighting, taskList) => {
 	if (!isHighlighting) {
 		setIsDeleteClicked(false)
+		services?.updateSelectedTasks(taskList?.map(() => false)) // This ensures that selected is always in proper state when we use it
 		toast.info('You may now select multiple tasks to delete at once! Click again to toggle.')
 	}
 	services?.highlighting() // changes highlighting from true->false or false->true

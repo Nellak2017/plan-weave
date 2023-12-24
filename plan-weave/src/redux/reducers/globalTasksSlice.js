@@ -17,8 +17,8 @@ const initialState = {
 		{ status: 'incomplete', task: 'br', ttc: .5, id: 10, timestamp: timestamp - 10 },
 		{ status: 'incomplete', task: 'Cyber : Practice', ttc: 1, id: 11, timestamp: timestamp - 11 },
 		{ status: 'incomplete', task: 'Calculator Custom Formulas', ttc: .75, id: 12, timestamp: timestamp - 12 },
-
 		/*
+		
 		{ status: 'incomplete', task: 'br', ttc: 1, id: 13, timestamp: timestamp - 13 },
 		{ status: 'incomplete', task: 'ML Videos 16-23', ttc: 1.2, id: 14, timestamp: timestamp - 14 },
 		{ status: 'incomplete', task: 'Shower+', ttc: .5, id: 15, timestamp: timestamp - 15 },
@@ -34,12 +34,34 @@ const globalTasksSlice = createSlice({
 	name: 'globalTasks',
 	initialState,
 	reducers: {
-	  updateGlobalTasks: (state, action) => {
-		return action.payload;
-	  },
-	  // other global task-related reducers
+		updateGlobalTasks: (state, action) => {
+			state.tasks = action.payload
+		}, // lets you change all global tasks at once
+		addGlobalTask: (state, action) => {
+			state.tasks = [action.payload, ...state.tasks] // Add a new task to the state
+		},
+		deleteGlobalTask: (state, action) => {
+			const taskId = action.payload
+			state.tasks = state?.tasks?.map(task => task?.id && task?.id === taskId ? { ...task, hidden: true } : task)
+		},
+		deleteGlobalTasks: (state, action) => {
+			const idsToDelete = action.payload
+			state.tasks = state?.tasks?.map(task => task?.id && idsToDelete.includes(task?.id) ? { ...task, hidden: true } : task)
+		},
+		editGlobalTask: (state, action) => {
+			if (state.tasks.length >= 1000) return
+			const { id, updatedTask } = action?.payload || { 0: -1, 1: -1 }
+			const taskIndex = state?.tasks?.findIndex(task => task?.id === id)
+			if (taskIndex !== -1) state.tasks[taskIndex] = updatedTask // Edit a task by ID
+		},
 	},
   })
   
-  export const { updateGlobalTasks } = globalTasksSlice.actions
+  export const { 
+	updateGlobalTasks,
+	addGlobalTask, 
+	deleteGlobalTask,
+	deleteGlobalTasks,
+	editGlobalTask,
+ } = globalTasksSlice.actions
   export default globalTasksSlice.reducer

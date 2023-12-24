@@ -12,6 +12,7 @@ export const StyledTaskEditor = styled.div`
 
 	background-color: black; // Stand-in color
 	//height: 1000px;
+	width: 100%;
 	max-width: ${props => props.maxwidth}px;
 	border-radius: 36px;
 `

@@ -1,5 +1,5 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
-import { getTime } from 'date-fns'
+import { getTime, formatISO, parseISO } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
 
 // This file contains many helpers used through out the application
@@ -161,6 +161,8 @@ export const millisToHours = milliseconds => (milliseconds / 60000) / 60
 /**
  * Calculates and updates task waste and estimated time of arrival (ETA).
  *
+ * Eta is an ISOString so that it is serializable in the redux store.
+ * 
  * @param {Object} options - Options for waste calculation.
  * @param {Date} options.start - The start time for waste calculation.
  * @param {Object[]} options.taskList - The list of tasks to calculate waste for.
@@ -179,9 +181,9 @@ export const calculateWaste = ({ start, taskList, time = new Date() }) => {
 		const lastCompletedTimestamp = tasks[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completedTimestamp to millis
 		const startTime = firstIncompleteIndex === 0 || !lastCompletedTimestamp || isNaN(lastCompletedTimestamp) ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
 		return tasks.map((task, index) => {
-			const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : new Date(currentTime) // index - firstIncomplete shifts accordingly
-			const waste = index === firstIncompleteIndex ? subtract(currentTime, eta) : 0 // we must use the updated eta value
-			return task?.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta }
+			const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : currentTime // index - firstIncomplete shifts accordingly
+			const waste = index === firstIncompleteIndex ? subtract(currentTime, eta) : 0 // we must use the updated eta value.
+			return task?.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta: formatISO(eta) }
 		})
 	})()
 }

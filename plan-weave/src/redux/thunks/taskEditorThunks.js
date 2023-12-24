@@ -1,14 +1,24 @@
+import { SORTING_METHODS } from '../../components/utils/constants'
 import {
   updateTimeRange,
   updateOwl,
   updateSortingAlgorithm,
 
+  updateTasks,
   addTask,
   deleteTask,
   deleteTasks,
   editTask,
   completeTask,
-} from '../reducers/taskEditorSlice'
+} from '../reducers/taskEditorSlice.js'
+
+import {
+  updateGlobalTasks,
+  addGlobalTask,
+  deleteGlobalTask,
+  deleteGlobalTasks,
+  editGlobalTask,
+} from '../reducers/globalTasksSlice.js'
 
 // Thunks for misc other
 export const updateTimeRangeThunk = (start, end) => (dispatch) => {
@@ -21,26 +31,32 @@ export const updateOwlThunk = () => (dispatch) => {
 }
 
 export const updateSortingAlgorithmThunk = (sortingAlgo) => (dispatch) => {
+  // Potentially PATCH request here
   dispatch(updateSortingAlgorithm(sortingAlgo))
 }
 
 // Thunks for tasks
 export const addNewTaskThunk = task => (dispatch) => {
-  // You can perform any necessary logic here before dispatching the action
+  // POST here
+  dispatch(addGlobalTask(task))
   dispatch(addTask(task))
 }
 
 export const removeTaskThunk = taskId => (dispatch) => {
-  // You can perform any necessary logic here before dispatching the action
+  // DELETE here
+  dispatch(deleteGlobalTask(taskId))
   dispatch(deleteTask(taskId))
 }
 
 export const removeTasksThunk = taskIdList => (dispatch) => {
+  // DELETE here
+  dispatch(deleteGlobalTasks(taskIdList))
   dispatch(deleteTasks(taskIdList))
 }
 
 export const updateTaskThunk = (taskId, updatedTask) => (dispatch) => {
   // You can perform any necessary logic here before dispatching the action
+  dispatch(editGlobalTask({ id: taskId, updatedTask }))
   dispatch(editTask({ id: taskId, updatedTask }))
 }
 

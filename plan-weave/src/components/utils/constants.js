@@ -58,7 +58,7 @@ export const DEFAULT_SIMPLE_TASK = {
 	ttc: 1,
 	eta: '12:00',
 	status: 'incomplete',
-	id: new Date().getTime(), // guarantees unique ids down to the millisecond!
+	id: new Date().getTime(), // guarantees unique ids down to the millisecond! IF and ONLY IF you do this logic in the caller as well!
 	timestamp: Math.floor((new Date().getTime()) / 1000)
 } // Used when adding a new simple task
 

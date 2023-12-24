@@ -10,7 +10,7 @@ import { removeTaskThunk, updateTaskThunk, completedTaskThunk } from '../../../r
 import { useDispatch } from 'react-redux'
 import { validateTask } from '../../utils/helpers'
 import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
-
+import { parseISO } from 'date-fns'
 
 import { Timestamp } from 'firebase/firestore'
 const timestampOuter = Timestamp.fromDate(new Date()).seconds
@@ -32,6 +32,9 @@ function TaskRow({
 
 	// destructure taskObject and context
 	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
+
+	const newETA = parseISO(eta) // Converts eta from ISO -> Date
+
 	const { setTaskUpdated } = useContext(TaskEditorContext)
 
 	// Input Checks
@@ -77,14 +80,15 @@ function TaskRow({
 		if (!isChecked) toast.info('This Task was Completed')
 
 		// Waste Feature 
+
 		const currentTime = new Date()
 		const updatedTask = {
 			...validateTask({ task: taskObject }),
 			status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
 			task: localTask,
-			waste: millisToHours(currentTime.getTime() - eta.getTime()),
+			waste: millisToHours(currentTime.getTime() - newETA.getTime()), // millisToHours(currentTime.getTime() - eta.getTime())
 			ttc: localTtc,
-			eta: isChecked && eta instanceof Date ? eta.getTime() / 1000 : currentTime.getTime() / 1000,
+			eta: isChecked && newETA instanceof Date ? newETA.getTime() / 1000 : currentTime.getTime() / 1000,
 			completedTimeStamp: currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 		}
 
@@ -105,7 +109,9 @@ function TaskRow({
 	const handleUpdateTask = () => {
 		updateTaskThunk(id, {
 			...taskObject,
-			eta: taskObject?.eta && taskObject.eta instanceof Date ? taskObject.eta.getTime() / 1000 : new Date().getTime() / 1000,
+			eta: parseISO(taskObject?.eta) && parseISO(taskObject.eta) instanceof Date
+				? parseISO(taskObject.eta).getTime() / 1000
+				: new Date().getTime() / 1000,
 			task: localTask,
 			ttc: localTtc
 		})(dispatch)
@@ -122,11 +128,12 @@ function TaskRow({
 			style={{ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
 			maxwidth={maxwidth}
 			highlight={isHighlighting ? isChecked && 'selected' || ' ' : highlight}
+			onClick={() => console.log(isHighlighting ? isChecked && 'selected' || ' ' : highlight)}
 			onBlur={handleUpdateTask}
 		>
 			{<SimpleRow
 				provided={provided || undefined}
-				taskObject={{ task, waste, ttc, eta, status, id, timestamp, index }}
+				taskObject={{ task, waste, ttc, eta, status, id, timestamp, index }} // eta was used previously
 				variant={variant}
 				isChecked={isChecked}
 				setLocalTask={setLocalTask}

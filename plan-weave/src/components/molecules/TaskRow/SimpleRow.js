@@ -13,7 +13,7 @@ import {
 	IconContainer
 } from './TaskRow.elements.js'
 import { formatTimeLeft } from '../../utils/helpers.js'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 
 // Task View Logic (Simple, Full) (Just Simple for now)
 const SimpleRow = ({
@@ -33,6 +33,7 @@ const SimpleRow = ({
 	const { task, waste, ttc, eta, status, index } = { ...taskObject }
 	const { dnd: dndTooltip, completed: completedTooltip, incomplete: incompleteTooltip, task: taskTooltip,
 		waste: wasteTooltip, ttc: ttcTooltip, eta: etaTooltip, delete: deleteTooltip } = { ...tooltips }
+
 	return (
 		<>
 			<IconContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''}>
@@ -90,8 +91,8 @@ const SimpleRow = ({
 			</TimeContainer>
 			<TimeContainer style={{ width: '40px' }} title={etaTooltip}>
 				<p aria-label={`eta for task ${index}`}>
-					{eta && eta instanceof Date && !isNaN(eta.getTime())
-						? format(eta, "HH:mm")
+					{eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime())
+						? format(parseISO(eta), "HH:mm")
 						: '00:00'
 					}
 				</p>

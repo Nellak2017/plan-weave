@@ -35,7 +35,6 @@ const taskEditorSlice = createSlice({
 
 		updateSearch: (state, action) => {
 			state.search = action.payload.trim() // assuming action.payload is the new search value
-			console.log("Updated Search: ", state.search)
 		},
 		updateTimeRange: (state, action) => {
 			const { start, end } = action.payload
@@ -57,9 +56,13 @@ const taskEditorSlice = createSlice({
 			state.dndConfig = action.payload
 		},
 		updateSortingAlgorithm: (state, action) => {
+			// updates sorting algorithm, then sorts local tasks
 			const selectedAlgorithm = action.payload.toLowerCase().trim()
-			if (Object.keys(SORTING_METHODS).includes(selectedAlgorithm)) state.sortingAlgo = selectedAlgorithm
-			else state.sortingAlgo = ''
+			if (Object.keys(SORTING_METHODS).includes(selectedAlgorithm)) {
+				state.sortingAlgo = selectedAlgorithm
+				const sortedTasks = SORTING_METHODS[selectedAlgorithm](state.tasks)
+				state.tasks = sortedTasks
+			} else state.sortingAlgo = ''
 		},
 		updatePage: (state, action) => {
 			state.page = Math.abs(parseInt(action.payload, 10)) || 1 // default to 1 if bad values are provided
@@ -69,29 +72,19 @@ const taskEditorSlice = createSlice({
 		},
 
 
-
+		updateTasks: (state, action) => {
+			state.tasks = action.payload
+		}, // lets you change all tasks at once
 		addTask: (state, action) => {
-			const oldDnD = state.dndConfig
-			state.tasks?.push(action.payload) // Add a new task to the state
-			state.dndConfig = [0, ...oldDnD.map(el => el + 1)] // Must be updated on every add, to maintain the invariants for dnd config
+			state.tasks = [action.payload, ...state.tasks] // Add a new task to the state
 		},
 		deleteTask: (state, action) => {
 			const taskId = action.payload
-			const oldDnD = state.dndConfig // Must be updated on every delete, to maintain the invariants for dnd config
 			state.tasks = state?.tasks?.map(task => task?.id && task?.id === taskId ? { ...task, hidden: true } : task)
-			const taskIndex = state?.tasks?.findIndex(task => task?.id === taskId)
-			if (taskIndex >= 0) state.dndConfig = deleteDnDEvent(oldDnD, [taskIndex, taskIndex])
-
-			console.log('old dnd config: ', Array.from(oldDnD))
-			console.log('new dnd config: ', state.dndConfig)
 		},
 		deleteTasks: (state, action) => {
 			const idsToDelete = action.payload
-			const oldDnD = state.dndConfig // Must be updated on every delete, to maintain the invariants for dnd config
-			const startIndex = state.tasks.findIndex(task => task?.id === idsToDelete[0])
-			const endIndex = state.tasks.findIndex(task => task?.id === idsToDelete[idsToDelete.length - 1])
 			state.tasks = state?.tasks?.map(task => task?.id && idsToDelete.includes(task?.id) ? { ...task, hidden: true } : task)
-			if (startIndex >= 0 && endIndex >= 0) state.dndConfig = deleteDnDEvent(oldDnD, [startIndex, endIndex])
 		},
 		editTask: editTaskReducer,
 		completeTask: (state, action) => {
@@ -119,5 +112,5 @@ export const {
 	updateSortingAlgorithm,
 	updatePage,
 	updateTasksPerPage,
-	addTask, deleteTask, deleteTasks, editTask, completeTask } = taskEditorSlice.actions
+	updateTasks, addTask, deleteTask, deleteTasks, editTask, completeTask } = taskEditorSlice.actions
 export default taskEditorSlice.reducer

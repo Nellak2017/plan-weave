@@ -4,7 +4,7 @@ import {
 	updateSelectedTasks,
 	updateDnD,
 	updatePage,
-	initializeLocalTasks,
+	updateTasks,
 } from "../../redux/reducers/taskEditorSlice.js"
 import {
 	updateTimeRangeThunk,
@@ -28,6 +28,10 @@ export const createTaskEditorServices = (store) => {
 			updateSelectedTasks: (newSelectedTasks) => {
 				dispatch(updateSelectedTasks(newSelectedTasks))
 			}, // reducer to update selected tasks for multi-delete feature
+
+			updateTasks: (tasks) => {
+				dispatch(updateTasks(tasks))
+			},
 		},
 		taskControl: {
 			search: (newSearchValue) => {
@@ -39,15 +43,15 @@ export const createTaskEditorServices = (store) => {
 			owl: () => {
 				dispatch(updateOwlThunk())
 			}, // thunk to update owl
+			highlighting: () => {
+				dispatch(updateHighlighting())
+			}, // reducer to update highlighting bool for delete many tasks
 			addTask: (task) => {
 				dispatch(addNewTaskThunk(task))
 			}, // thunk to add task
 			deleteMany: (selectedIds) => {
 				dispatch(removeTasksThunk(selectedIds))
 			}, // thunk to delete many
-			highlighting: () => {
-				dispatch(updateHighlighting())
-			}, // reducer to update highlighting bool for delete many tasks
 			sort: (sortingAlgo) => {
 				dispatch(updateSortingAlgorithmThunk(sortingAlgo))
 			} // thunk to update sorting method

@@ -118,8 +118,8 @@ const TaskEditor = ({
 				console.log(reduxStore)
 			}}>Show whole redux store</button>
 			<button onClick={() => {
-				console.log(reduxStore?.timeRange)
-			}}>Show timerange Redux</button>
+				console.log(globalTasks)
+			}}>Show global tasks</button>
 			<button onClick={() => { console.log(`page: ${page}, tasks per page: ${tasksPerPage}`) }}>Show Page Number</button>
 			<button onClick={() => console.log(`start: ${timeRange['start']}\nend: ${timeRange['end']}`)}>Show timerange</button>
 			<button onClick={() => console.log(`start: ${start}`)}>Show memoized start</button>

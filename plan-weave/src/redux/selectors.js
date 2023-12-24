@@ -9,7 +9,7 @@ export const selectNonHiddenTasks = createSelector(
 		.filter(task => task?.hidden !== true)
 		.map(task => ({
 			...task,
-			eta: new Date(task?.eta ? task?.eta * 1000 : new Date().getTime()), // convert epoch to Date if you can, else just use current time
+			//eta: new Date(task?.eta ? task?.eta * 1000 : new Date().getTime()), // convert epoch to Date if you can, else just use current time
 		})) || []
 
 )

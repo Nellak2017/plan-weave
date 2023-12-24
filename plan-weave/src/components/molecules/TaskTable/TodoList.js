@@ -4,7 +4,7 @@ import { isTimestampFromToday } from '../../utils/helpers'
 import TaskRow from '../TaskRow/TaskRow'
 
 // --- Extracted view logic for Task Table
-export const todoList = (services, state, taskList, startRange, endRange, lastCompleted, timeRange, variant = 'dark') => {
+export const todoList = (services, state, taskList, startRange, endRange, timeRange, variant = 'dark') => {
 	if (!taskList) return []
 
 	const { start, end } = { ...timeRange }
@@ -17,7 +17,7 @@ export const todoList = (services, state, taskList, startRange, endRange, lastCo
 
 	// startRange, endRange is for pagination capabilities
 	return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
-		const epochETA = task?.eta?.getTime() / 1000
+		const epochETA = parseISO(task?.eta)?.getTime() / 1000
 		const highlightOld = isTimestampFromToday(start, epochETA, epochTotal) ? ' ' : 'old'
 		return <TaskRow
 			services={services}
@@ -35,7 +35,6 @@ export const todoList = (services, state, taskList, startRange, endRange, lastCo
 			}}
 			index={idx}
 			highlight={highlightOld}
-			lastCompletedTask={lastCompleted}
 		/>
 	})
 }

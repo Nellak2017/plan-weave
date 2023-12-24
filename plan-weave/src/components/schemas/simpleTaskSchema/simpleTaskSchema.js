@@ -75,12 +75,25 @@ export const simpleTaskSchema = Yup.object({
 			return value
 		}),
 	*/
+	/*
 	eta: Yup.date()
 		.typeError('Eta must be a Date object')
 		.default(twelve)
 		.transform((value, originalValue) => {
 			if (!originalValue) return twelve 
 			else if (typeof originalValue === 'number') return new Date(value * 1000) // transform epoch to date  
+			return value
+		}),
+	*/
+	eta: Yup.string()
+		.typeError('Eta must be a valid ISO string')
+		.default(() => twelve.toISOString()) 
+		.transform((value, originalValue) => {
+			if (!originalValue) return twelve.toISOString()
+			else if (typeof originalValue === 'number') {
+				const date = new Date(originalValue * 1000)
+				return date.toISOString()
+			}
 			return value
 		}),
 	id: Yup.number().positive('Id must be greater than 0').required('Id is required'),
