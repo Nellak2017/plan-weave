@@ -4,7 +4,8 @@ import {
 	updateSelectedTasks,
 	updateDnD,
 	updatePage,
-} from "../../redux/reducers/taskEditorReducer.js"
+	initializeLocalTasks,
+} from "../../redux/reducers/taskEditorSlice.js"
 import {
 	updateTimeRangeThunk,
 	updateOwlThunk,

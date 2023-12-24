@@ -1,11 +1,11 @@
 // reducers/index.js
 import { combineReducers } from '@reduxjs/toolkit'
-import taskReducer from './taskEditorReducer' // Import the taskReducer
-// Import other reducers here
+import globalTasks from './globalTasksSlice.js'
+import taskEditor from './taskEditorSlice.js' 
 
 const rootReducer = combineReducers({
-  tasks: taskReducer, // Assign the taskReducer to the 'tasks' key
-  // Assign other reducers here
+  taskEditor: taskEditor, 
+  globalTasks: globalTasks,
 })
 
 export default rootReducer

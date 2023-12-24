@@ -8,7 +8,7 @@ import {
   deleteTasks,
   editTask,
   completeTask,
-} from '../reducers/taskEditorReducer'
+} from '../reducers/taskEditorSlice'
 
 // Thunks for misc other
 export const updateTimeRangeThunk = (start, end) => (dispatch) => {

@@ -3,7 +3,7 @@ import { createSelector } from 'reselect' // This would be used to memoize easil
 
 // Task Selectors
 export const selectNonHiddenTasks = createSelector(
-	[state => state?.tasks?.tasks],
+	[state => state?.taskEditor?.tasks],
 	allTasks => allTasks
 		.slice(0, 1000) // limit tasks retrieved to be only 1000, assuming the db messes up and gives more
 		.filter(task => task?.hidden !== true)

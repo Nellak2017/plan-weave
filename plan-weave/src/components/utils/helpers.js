@@ -377,10 +377,11 @@ export const calculateRange = (tasksPerPage, page) => (isInt(tasksPerPage) && is
  * // Result: indexOfInsertion is 1, maintaining DnD index invariants after completing task with ID 3.
  */
 
-export const relativeSortIndex = (tasks, sort, index, complete = TASK_STATUSES.COMPLETED, incomplete = TASK_STATUSES.INCOMPLETE) => {
-	const completed = tasks.filter(t => t.status === complete)
-	const incompleted = tasks.filter(t => t.status === incomplete)
-	const task = tasks[index]
+export const relativeSortIndex = (tasks, sort, id, complete = TASK_STATUSES.COMPLETED, incomplete = TASK_STATUSES.INCOMPLETE) => {
+	const newTasks = tasks.map(el => ({...el})) // ensures no proxies used
+	const completed = newTasks.filter(t => t.status === complete)
+	const incompleted = newTasks.filter(t => t.status === incomplete)
+	const task = newTasks.find(t => parseInt(t.id) === parseInt(id))
 	return task.status === complete
 		? sort(completed).indexOf(task) 					 // Incomplete --> Complete Case
 		: completed.length + sort(incompleted).indexOf(task) // Complete   --> Incomplete Case

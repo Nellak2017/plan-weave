@@ -324,13 +324,13 @@ describe('relativeSortIndex', () => {
 		{
 			description: 'Incomplete -> Complete',
 			tasks: [{ id: 1, status: incomplete }, { id: 2, status: complete }],
-			index: 1,
+			id: 2,
 			expected: 0,
 		},
 		{
 			description: 'Complete -> Incomplete',
 			tasks: [{ id: 1, status: incomplete }, { id: 2, status: incomplete }],
-			index: 0,
+			id: 1,
 			expected: 0,
 		},
 		{
@@ -340,7 +340,7 @@ describe('relativeSortIndex', () => {
 				{ id: 3, status: incomplete },
 				{ id: 2, status: complete },
 			],
-			index: 1,
+			id: 3,
 			expected: 2,
 		},
 		{
@@ -350,7 +350,7 @@ describe('relativeSortIndex', () => {
 				{ id: 3, status: complete },
 				{ id: 2, status: incomplete },
 			],
-			index: 1,
+			id: 3,
 			expected: 0,
 		},
 		{
@@ -360,13 +360,101 @@ describe('relativeSortIndex', () => {
 				{ id: 3, status: incomplete },
 				{ id: 2, status: complete },
 			],
-			index: 2,
+			id: 2,
 			expected: 1,
 		},
+		{
+			description: 'Real Case, 1st to 0th, Incomplete -> Complete',
+			tasks: [
+				{
+					"task": "Eat 1",
+					"waste": -2.3942413888888887,
+					"ttc": 0.5,
+					"eta": 1703315180.731,
+					"id": 1,
+					"status": "completed",
+					"timestamp": 1703315063,
+					"completedTimeStamp": 1703315180.731,
+					"hidden": false
+				},
+				{
+					"status": "incomplete",
+					"task": "ML : Flash (Lectures/Study guide)",
+					"ttc": 3,
+					"id": 2,
+					"timestamp": 1703315062
+				},
+				{
+					"status": "incomplete",
+					"task": "br 1",
+					"ttc": 0.5,
+					"id": 3,
+					"timestamp": 1703315061
+				},
+				{
+					"status": "incomplete",
+					"task": "ML : Written Ass Analysis",
+					"ttc": 2,
+					"id": 4,
+					"timestamp": 1703315060
+				},
+				{
+					"status": "incomplete",
+					"task": "ML : Flash Cards",
+					"ttc": 1,
+					"id": 5,
+					"timestamp": 1703315059
+				},
+				{
+					"status": "incomplete",
+					"task": "br 2",
+					"ttc": 0.75,
+					"id": 6,
+					"timestamp": 1703315058
+				},
+				{
+					"status": "incomplete",
+					"task": "ML : Note Creation",
+					"ttc": 0.75,
+					"id": 7,
+					"timestamp": 1703315057
+				},
+				{
+					"status": "incomplete",
+					"task": "ML : Practice Probs",
+					"ttc": 1.5,
+					"id": 9,
+					"timestamp": 1703315054
+				},
+				{
+					"status": "incomplete",
+					"task": "br",
+					"ttc": 0.5,
+					"id": 10,
+					"timestamp": 1703315053
+				},
+				{
+					"status": "incomplete",
+					"task": "Cyber : Practice",
+					"ttc": 1,
+					"id": 11,
+					"timestamp": 1703315052
+				},
+				{
+					"status": "incomplete",
+					"task": "Calculator Custom Formulas",
+					"ttc": 0.75,
+					"id": 12,
+					"timestamp": 1703315051
+				}
+			],
+			id: 1,
+			expected: 0,
+		}
 	]
-	testCases.forEach(({ description, tasks, index, expected }) => {
+	testCases.forEach(({ description, tasks, id, expected }) => {
 		it(`Correctly calculates index for ${description} case`, () => {
-			expect(relativeSortIndex(tasks, sortFunction, index)).toBe(expected)
+			expect(relativeSortIndex(tasks, sortFunction, id)).toBe(expected)
 		})
 	})
 })

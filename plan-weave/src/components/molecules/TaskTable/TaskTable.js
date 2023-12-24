@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import TableHeader from '../../atoms/TableHeader/TableHeader'
 import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
@@ -33,7 +33,7 @@ const TaskTable = ({
 
 	// Services and State (destructured)
 	const { updateDnDConfig } = { ...services }
-	const { search, dnd, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, source, taskRowState } = { ...state }
+	const { globalTasks, search, dnd, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskTransition, taskRowState } = { ...state }
 	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
 
 	// Local State
@@ -56,25 +56,17 @@ const TaskTable = ({
 	// --- DnD Event, covers: DnD event (case: 4)
 	const onDragEnd = result => {
 		if (!result.destination) return // Drag was canceled or dropped outside the list
-		/*
-		const source = result.source.index
-		const destination = result.destination.index
-
-		setLocalTasks(rearrangeDnD(localTasks, source, destination))
-		setTimeout(() => { updateDnDConfig(rearrangeDnD(dnd, source, destination)) }, 0) // setTimeout used to eliminate UI flickering when dnd
-		*/
-		const source = result.source.index
-		const destination = result.destination.index
-
+		const [source, destination] = [result.source.index, result.destination.index]
 		setLocalTasks(rearrangeDnD(localTasks, source, destination))
 		setTimeout(() => { updateDnDConfig(rearrangeDnD(dnd, source, destination)) }, 0)
 	}
 
 	useEffect(() => {
-		console.log("source =", source)
-	    console.log("TaskTable's perspective = ", localTasks[source[0]])
-	}, [source])
-
+		if (!dnd || dnd.length === 0) return // dnd config should not be used unless you want bugs
+		const [source, destination] = [taskTransition[0], taskTransition[1]]
+		//setLocalTasks(rearrangeDnD(localTasks, source, destination))
+		setTimeout(() => { updateDnDConfig(rearrangeDnD(dnd, source, destination)) }, 0)
+	}, [taskTransition])
 
 	// Effects
 	const transformList = dnd => [
@@ -90,6 +82,7 @@ const TaskTable = ({
 			start,
 			transformList(correctedDnd)
 		))
+		console.log('taskList')
 	}, [taskList])
 
 	useEffect(() => {
@@ -104,17 +97,19 @@ const TaskTable = ({
 	}, [sortingAlgo])
 
 	// --- ETA + Waste Auto Calculation Feature
+	/*
 	const update = () => setLocalTasks(old => calculateWaste({ start: start, taskList: old, time: new Date() }) || old)
-	useEffect(() => update(), [timeRange, start, owl, dnd])
+	useEffect(() => update(), [timeRange, start, owl, dnd, taskTransition])
 	useEffect(() => {
 		if (taskUpdated) { update() }
-		const interval = setInterval(() => { if (!taskUpdated) update() }, 50)
+		const interval = setInterval(() => { if (!taskUpdated) update() }, 5000) // 50
 		return () => { if (interval) { clearInterval(interval); setTaskUpdated(false) } }
 	}, [taskList, localTasks]) // covers: waste update every 50ms (case: 6)
+	*/
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
-			<button onClick={() => console.log(localTasks[0])}>Task 0</button>
+			<button onClick={() => console.log(localTasks)}>Tasks</button>
 			<button onClick={() => console.log(services)}>Services TaskTable</button>
 			<TaskTableContainer maxwidth={maxwidth}>
 				<table>

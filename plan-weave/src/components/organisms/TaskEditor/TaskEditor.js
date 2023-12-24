@@ -46,7 +46,7 @@ const TaskEditor = ({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const services = createTaskEditorServices(store)
-	const reduxStore = useSelector(state => state?.tasks)
+	const reduxStore = useSelector(state => state?.taskEditor)
 	// --- Tasks and TaskControl State needed for proper functioning of Features, Passed down in Context, some obtained from Redux Store
 
 	// State for the Pagination feature
@@ -64,30 +64,34 @@ const TaskEditor = ({
 
 	// --- State Objects for Children
 
+	const globalTasks = useSelector(state => state?.globalTasks)
+
 	// State for TaskControl
 	const TaskControlState = {
-		timeRange: useSelector(state => state?.tasks?.timeRange),
-		owl: useSelector(state => state?.tasks?.owl),
-		isHighlighting: useSelector(state => state?.tasks?.highlighting),
+		globalTasks,
+		timeRange: useSelector(state => state?.taskEditor?.timeRange),
+		owl: useSelector(state => state?.taskEditor?.owl),
+		isHighlighting: useSelector(state => state?.taskEditor?.highlighting),
 		taskList: useSelector(selectNonHiddenTasks),
-		selectedTasks: useSelector(state => state?.tasks?.selectedTasks),
+		selectedTasks: useSelector(state => state?.taskEditor?.selectedTasks),
 		theme: useContext(ThemeContext),
 	}
 
 	// State for TaskTable 
 	const TaskTableState = {
-		search: useSelector(state => state?.tasks?.search),
-		dnd: useSelector(state => state?.tasks?.dndConfig),
-		timeRange: useSelector(state => state?.tasks?.timeRange),
-		page: useSelector(state => state?.tasks?.page), 
-		tasksPerPage: useSelector(state => state?.tasks?.tasksPerPage),
+		globalTasks,
+		search: useSelector(state => state?.taskEditor?.search),
+		dnd: useSelector(state => state?.taskEditor?.dndConfig),
+		timeRange: useSelector(state => state?.taskEditor?.timeRange),
+		page: useSelector(state => state?.taskEditor?.page),
+		tasksPerPage: useSelector(state => state?.taskEditor?.tasksPerPage),
 		taskList: useSelector(selectNonHiddenTasks),
-		sortingAlgo: useSelector(state => state?.tasks?.sortingAlgo),
-		owl: useSelector(state => state?.tasks?.owl),
-		source: useSelector(state => state?.tasks?.source),
+		sortingAlgo: useSelector(state => state?.taskEditor?.sortingAlgo),
+		owl: useSelector(state => state?.taskEditor?.owl),
+		taskTransition: useSelector(state => state?.taskEditor?.taskTransition),
 		taskRowState: {
-			isHighlighting: useSelector(state => state?.tasks?.highlighting), 
-			selectedTasks: useSelector(state => state?.tasks?.selectedTasks),
+			isHighlighting: useSelector(state => state?.taskEditor?.highlighting),
+			selectedTasks: useSelector(state => state?.taskEditor?.selectedTasks),
 		}
 	}
 
