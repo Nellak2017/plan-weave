@@ -415,6 +415,13 @@ export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
 }
 
 
+// (Date) other Date -> (Date) today Date with other's time
+export const dateToToday = (start) => {
+	const initOfToday = new Date().setHours(0, 0, 0, 0) // beginning of today in millis
+	const initOfStart = new Date(start).setHours(0, 0, 0, 0)
+	const timeSinceStart = start.getTime() - initOfStart // millis since start's start of day
+	return new Date(initOfToday + timeSinceStart) // start but with today's date
+}
 
 
 

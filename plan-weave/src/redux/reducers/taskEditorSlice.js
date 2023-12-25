@@ -1,8 +1,8 @@
 // reducers/taskReducer.js
 import { createSlice } from '@reduxjs/toolkit'
-import { parse } from 'date-fns'
+import { parse, parseISO } from 'date-fns'
 import { SORTING_METHODS } from '../../components/utils/constants.js'
-import { relativeSortIndex, rearrangeDnD } from '../../components/utils/helpers.js'
+import { relativeSortIndex, rearrangeDnD, dateToToday, hoursToMillis } from '../../components/utils/helpers.js'
 
 const initialState = {
 	search: '',
@@ -64,10 +64,41 @@ const taskEditorSlice = createSlice({
 			} else state.sortingAlgo = ''
 		},
 		updatePage: (state, action) => {
-			state.page = Math.abs(parseInt(action.payload, 10)) || 1 // default to 1 if bad values are provided
+			state.page = Math.abs(parseInt(action.payload, 10)) || 1 // default to 1 if invalid page given
+		},
+		prevPage: (state) => {
+			state.page = Math.abs(parseInt(state.page, 10) - 1) || 1 // default to 1 if subtracting 1 gives 0
+		},
+		nextPage: (state) => {
+			const len = state.tasks.length || 1 // if 0 length, then 1
+			const maxPage = Math.ceil(len / state.tasksPerPage)
+			const newPageNumber = Math.abs(parseInt(state.page, 10) + 1) || 1 // no matter what is done, it will always be atleast 1
+			state.page = newPageNumber > maxPage ? maxPage : newPageNumber
 		},
 		updateTasksPerPage: (state, action) => {
 			state.tasksPerPage = Math.abs(parseInt(action.payload, 10)) || 10 // default to 10 if bad values provided
+		},
+		refresh: (state) => {
+			/* 
+				1. update start to be for today and end to be for today if no owl, and tomorrow if owl
+				2. update every task in the task list to have timestamp for today but with it's hours
+			*/
+			const endPlusOne = old => new Date(dateToToday(parseISO(old['end'])).getTime() + hoursToMillis(24))
+			const owl = state.owl
+			const oldTimeRange = state.timeRange
+			const oldTasks = state.tasks
+			state.timeRange = {
+				start: dateToToday(parseISO(oldTimeRange['start'])).toISOString(),
+				end: owl
+					? endPlusOne(oldTimeRange).toISOString()
+					: dateToToday(parseISO(oldTimeRange['end'])).toISOString()
+			}
+			state.tasks = oldTasks.map(task => (
+				{
+					...task,
+					timestamp: dateToToday(new Date(task.timestamp)).getTime() / 1000 // timestamp in Epoch for now until ISO version update
+				}
+			))
 		},
 		updateDnD: (state, action) => {
 			const [source, destination] = action.payload
@@ -113,6 +144,9 @@ export const {
 	updateDnD,
 	updateSortingAlgorithm,
 	updatePage,
+	prevPage,
+	nextPage,
+	refresh,
 	updateTasksPerPage,
 	updateTasks, addTask, deleteTask, deleteTasks, editTask, completeTask } = taskEditorSlice.actions
 export default taskEditorSlice.reducer

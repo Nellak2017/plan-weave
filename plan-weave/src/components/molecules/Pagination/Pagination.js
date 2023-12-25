@@ -1,115 +1,68 @@
-import React, { useState, useMemo, useContext } from 'react'
+import React, { useState, useMemo } from 'react'
 import { THEMES } from '../../utils/constants'
-import { hoursToMillis, isInt } from '../../utils/helpers'
 import { PaginationContainer, PageChooserContainer } from '../Pagination/Pagination.elements'
 import NextButton from '../../atoms/NextButton/NextButton'
 import HoursInput from '../../atoms/HoursInput/HoursInput'
 import NumberPicker from '../../atoms/NumberPicker/NumberPicker'
 import { BiRecycle } from 'react-icons/bi'
-import { TaskEditorContext } from '../../organisms/TaskEditor/TaskEditor.js'
+import PropTypes from 'prop-types'
 
-// TODO: Review styles and add Size support for sub-components (see style todos in the relevant components)
-function Pagination({ variant = 'dark',
-	min = 1,
-	max, // optional, if not defined, then we calc with total
+// services: updatePage, prevPage, nextPage, refresh, tasksPerPageUpdate 
+// state: pageNumber, tasksPerPage, maxPage (Computed by Pagination)
+function Pagination({
+	services,
+	state,
+	variant = 'dark',
+	min = 1, // optional
 	hoursText, // optional, if defined it overrides the default of ${num} text
 	defaultNumber = 10,
 	options = [10, 20],
-	pickerText = 'Tasks per page',
+	pickerText = 'Tasks per page', // optional
 	maxWidth, // optional
-	size = 'l',
-	total = 9, // optional, if defined then we use this to find the max
-	onPageChange,
-	onTasksPerPageChange
+	size = 'l', // optional
 }) {
 	// --- Input verification
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
-	if (!total && !isInt(max)) max = 1
-	if (total && !isInt(max)) max = Math.ceil(total / (defaultNumber || 10))
 
-	// --- Context (for Refresh Feature)
-	const { setTimeRange, setTaskList, owl } = useContext(TaskEditorContext)
+	// --- Destructuring
+	const { updatePage, prevPage, nextPage, refresh, tasksPerPageUpdate } = services
+	const { pageNumber, tasksPerPage, taskList } = state
+	const maxPage = useMemo(() => Math.ceil(taskList.length / tasksPerPage) || 1, [taskList, tasksPerPage])
 
-	// --- State
-	// define local max here
-	const [tasksPerPage, setTasksPerPage] = useState(defaultNumber || 10)
-	const [pageNumber, setPageNumber] = useState(isInt(min) ? min : 1)
+	// --- Local State
+	const [localPageNumber, setLocalPageNumber] = useState(pageNumber)
 
-	const maxPage = useMemo(() => Math.ceil(total / tasksPerPage)) // re-calculate when anything changes
-
-	// --- Local Helpers
-	// (Date) other Date -> (Date) today Date with other's time
-	const dateToToday = (start) => {
-		const initOfToday = new Date().setHours(0, 0, 0, 0) // beginning of today in millis
-		const initOfStart = new Date(start).setHours(0, 0, 0, 0)
-		const timeSinceStart = start.getTime() - initOfStart // millis since start's start of day
-		return new Date(initOfToday + timeSinceStart) // start but with today's date
-	}
-
-	// --- Handlers
-	const handleTasksPerPage = e => {
-		const newValue = parseInt(e)
-		setTasksPerPage(newValue)
-
-		// Notify parent component about tasks per page change
-		if (onTasksPerPageChange) onTasksPerPageChange(newValue)
-	}
-
-	const handlePageNumber = e => {
-		const newValue = parseInt(e)
-		setPageNumber(newValue)
-
-		// Notify parent component about page number change
-		if (onPageChange) onPageChange(newValue)
-	}
-
-	const handleNextPage = () => {
-		const newPageNum = parseInt((pageNumber + 1)) <= parseInt(max) ? parseInt(pageNumber + 1) : parseInt(pageNumber)
-		setPageNumber(newPageNum)
-		if (onPageChange) onPageChange(newPageNum)
-	}
-	const handlePreviousPage = () => {
-		const newPageNum = parseInt((pageNumber - 1)) >= parseInt(min) ? parseInt(pageNumber - 1) : parseInt(pageNumber)
-		setPageNumber(newPageNum)
-		if (onPageChange) onPageChange(newPageNum)
-	}
-
-	const handleRefresh = () => {
-		/* 
-			1. update start to be for today and end to be for today if no owl, and tomorrow if owl
-			2. update every task in the task list to have timestamp for today but with it's hours
-		*/
-		const endPlusOne = old => new Date(dateToToday(old['end']).getTime() + hoursToMillis(24))
-
-		setTimeRange(old => ({ start: dateToToday(old['start']), end: owl ? endPlusOne(old) : dateToToday(old['end']) }))
-		setTaskList(old => old.map(task => ({ ...task , timestamp : dateToToday(new Date(task.timestamp)).getTime() / 1000 })))
-	}
+	// --- Handlers (not substantial enough to move to other file)
+	const handleTasksPerPage = e => tasksPerPageUpdate(parseInt(e) || 1)
+	const handlePageNumber = e => setLocalPageNumber(parseInt(e) || "")
+	const handleNextPage = () => { nextPage(); setLocalPageNumber(old => old < maxPage ? old + 1 : old) } 
+	const handlePrevPage = () => { prevPage(); setLocalPageNumber(old => old > min ? old - 1 : old) } 
 
 	return (
 		<PaginationContainer variant={variant} maxWidth={maxWidth}>
 			<BiRecycle
 				className='pagination-icon'
-				tabIndex={8}
+				tabIndex={0}
 				title={'Re-use tasks by making all tasks current'}
-				onClick={handleRefresh}
+				onClick={() => refresh()}
 			/>
 			<PageChooserContainer>
-				<NextButton variant={'left'} onClick={handlePreviousPage} size={size} tabIndex={9}/>
+				<NextButton variant={'left'} onClick={handlePrevPage} size={size} tabIndex={-1} />
 				<HoursInput
 					variant={variant}
 					placeholder={1}
 					text={hoursText || ` of ${maxPage}`}
 					maxwidth={35}
 					initialValue={1}
-					controlledValue={pageNumber}
+					controlledValue={localPageNumber}
 					step={1}
 					min={parseInt(min)}
 					max={parseInt(maxPage)}
-					integer={true}
 					onValueChange={handlePageNumber}
-					tabIndex={10}
+					onBlur={() => updatePage(localPageNumber)}
+					tabIndex={-1}
 				/>
-				<NextButton variant={'right'} onClick={handleNextPage} size={size} tabIndex={11}/>
+				<NextButton variant={'right'} onClick={handleNextPage} size={size} tabIndex={-1} />
 			</PageChooserContainer>
 			<NumberPicker
 				variant={variant}
@@ -118,10 +71,33 @@ function Pagination({ variant = 'dark',
 				pickerText={pickerText}
 				onValueChange={handleTasksPerPage}
 				controlledValue={tasksPerPage}
-				tabIndex={12}
+				tabIndex={0}
 			/>
 		</PaginationContainer>
 	)
+}
+
+Pagination.propTypes = {
+	services: PropTypes.shape({
+		updatePage: PropTypes.func,
+		prevPage: PropTypes.func,
+		nextPage: PropTypes.func,
+		refresh: PropTypes.func,
+		tasksPerPageUpdate: PropTypes.func,
+	}),
+	state: PropTypes.shape({
+		pageNumber: PropTypes.number,
+		tasksPerPage: PropTypes.number,
+		taskList: PropTypes.array,
+	}),
+	variant: PropTypes.string,
+	min: PropTypes.number,
+	hoursText: PropTypes.string,
+	defaultNumber: PropTypes.number,
+	options: PropTypes.arrayOf(PropTypes.number),
+	pickerText: PropTypes.string,
+	maxWidth: PropTypes.number,
+	size: PropTypes.string,
 }
 
 export default Pagination

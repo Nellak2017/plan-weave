@@ -3,8 +3,12 @@ import {
 	updateHighlighting,
 	updateSelectedTasks,
 	updateDnD,
-	updatePage,
 	updateTasks,
+	updatePage,
+	prevPage,
+	nextPage,
+	refresh,
+	updateTasksPerPage,
 } from "../../redux/reducers/taskEditorSlice.js"
 import {
 	updateTimeRangeThunk,
@@ -34,14 +38,14 @@ export const createTaskEditorServices = (store) => {
 			updateTasks: (tasks) => {
 				dispatch(updateTasks(tasks))
 			},
+			timeRange: (newStart, newEnd) => {
+				dispatch(updateTimeRangeThunk(newStart, newEnd))
+			}, // thunk to update start/end
 		},
 		taskControl: {
 			search: (newSearchValue) => {
 				dispatch(updateSearch(newSearchValue.trim()))
 			}, // reducer for updating search in the store associated with that section
-			timeRange: (newStart, newEnd) => {
-				dispatch(updateTimeRangeThunk(newStart, newEnd))
-			}, // thunk to update start/end
 			owl: (prev=false) => {
 				dispatch(updateOwlThunk(prev))
 			}, // thunk to update owl
@@ -72,18 +76,23 @@ export const createTaskEditorServices = (store) => {
 				}
 			},
 		},
-
 		pagination: {
-			updatePage: (page) => {
-				dispatch(updatePage(page))
-			}, // reducer to change displayed page, initially 1 always
-			/*
-			refresh: // thunk to apply refresh logic to all tasks
-			tasksPerPage: // thunk to change tasks per page, initially 10 unless defined otherwise by DB
-			*/
+			updatePage: (newPage) => {
+				dispatch(updatePage(newPage))
+			}, // reducer to change page to custom page
+			prevPage: () => {
+				dispatch(prevPage())
+			}, // reducer to change page to previous page 
+			nextPage: () => {
+				dispatch(nextPage())
+			}, // reducer to change page to next page 
+			refresh: () => {
+				dispatch(refresh())
+			}, // thunk to refresh the tasks 
+			tasksPerPageUpdate: (newTasksPerPage) => {
+				dispatch(updateTasksPerPage(newTasksPerPage))
+			}, // reducer to update number of tasks per page
 		},
-
 	}
-
 	return services
 }

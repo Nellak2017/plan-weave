@@ -37,6 +37,8 @@ function TaskRow({
 	const [localTtc, setLocalTtc] = useState(ttc)
 	const [isChecked, setIsChecked] = useState(status.toLowerCase().trim() === TASK_STATUSES.COMPLETED)
 
+	const [tab, setTab] = useState(false)
+
 	// --- Effects
 	// Should run when the highlighting stops to reset the checkmarks to what they should be
 	useEffect(() => { isHighlighting ? setIsChecked(false) : setIsChecked(status === TASK_STATUSES.COMPLETED) }, [isHighlighting])
@@ -51,7 +53,11 @@ function TaskRow({
 			style={{ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
 			maxwidth={maxwidth}
 			highlight={highlightTaskRow(isHighlighting, isChecked, old)}
-			onBlur={() => handleUpdateTask({ taskRow, id, taskObject, localTask, localTtc })}
+			onBlur={() => {
+				if (!tab) handleUpdateTask({ taskRow, id, taskObject, localTask, localTtc })
+				setTab(false)
+			}}
+			onKeyDown={e => { if (e.key === 'Tab') setTab(true) }} // Set to be true, so that tabbing in doesn't cause updates. (other approaches don't work perfectly)
 		>
 			{<SimpleRow
 				provided={provided || undefined}

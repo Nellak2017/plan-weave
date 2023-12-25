@@ -3,6 +3,7 @@ import {
 } from './HoursInput.elements'
 import { useState, useMemo } from 'react'
 import { THEMES } from '../../utils/constants'
+import PropTypes from 'prop-types'
 
 const HoursInput = ({
 	placeholder = '0',
@@ -13,17 +14,17 @@ const HoursInput = ({
 	initialValue,
 	controlledValue,
 	onValueChange,
+	onBlur,
 	step = .1,
 	min = 0,
 	max = 24,
-	integer
 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const [localValue, setLocalValue] = useState(initialValue)
 
 	// Use the controlledValue prop if it exists, otherwise, use localValue
-	const value = useMemo(() => controlledValue || localValue, [localValue])
+	const value = useMemo(() => controlledValue || localValue, [controlledValue,localValue])
 
 	const handleChange = e => {
 		const newValue = e.target.value
@@ -37,6 +38,8 @@ const HoursInput = ({
 	const handleBlur = () => {
 		let sanitizedValue = Math.max(min, Math.min(24, parseFloat(localValue) || min))
 		sanitizedValue = isNaN(sanitizedValue) ? '' : sanitizedValue.toFixed(1)
+
+		if (onBlur) onBlur() // From parent
 
 		setLocalValue(sanitizedValue)
 
@@ -53,16 +56,31 @@ const HoursInput = ({
 				type='text'
 				min={min}
 				max={max}
+				step={step}
 				inputMode='numeric'
 				pattern='[0-9]*'
-				//step={step}
 				onChange={handleChange}
 				onBlur={handleBlur}
-				value={integer ? parseInt(value) : value}
+				value={value}
 			/>
 			<span>{text}</span>
 		</HoursContainer>
 	)
 }
+
+HoursInput.propTypes = {
+	placeholder: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+	text: PropTypes.string,
+	variant: PropTypes.string,
+	maxwidth: PropTypes.number,
+	color: PropTypes.string,
+	initialValue: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+	controlledValue: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+	onValueChange: PropTypes.func,
+	onBlur: PropTypes.func,
+	step: PropTypes.number,
+	min: PropTypes.number,
+	max: PropTypes.number,
+  }
 
 export default HoursInput

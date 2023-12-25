@@ -1,312 +1,58 @@
-8/17/2023
-// Finish Polishing Current UI
-X Fix Implementation with Redux/Context (Not working in stories, some dual features buggy)
-	TaskEditor
-	TaskControl
-	TaskTable
-	TaskRow
-X Code Clean up, go through files and delete unnecessary comments, etc
+TaskEditor (Refactoring done by 12/25/2023, Full Task done by 12/27/2023)
+  X Refactor Pagination to use Redux + services pattern + decouple handlers from view logic
+  Media Queries
+  Test Coverage and JSDocs for all things (some helpers are not covered)
+  CompletedTimestamp into an ISO String
+  Full Task Schema
+  Full Task Component (and relevant 3rd parties like Calendar)
+  Refactor the spacing of stuff to accomodate Full Task 
+  Refactor TaskTable to have horizontal scroll if too large
+  Polish all components so Linter doesn't complain
+  Remove unnecessary logic in all of code base
+  (optional) add sort icons and that feature
+  (optional) add analytics support or research it
 
-8/17/2023
-// git push
-// Finish UI Controls
-X Search Filtering
+ViewEditor (edit threads, graph view, scheduled. 2-way binding like TaskEditor)
+  Discover how you will address task Scheduling, Periodicity, and all that
+  Discover the 3rd party library that will help you with Graph View and Calendars
+  Discover how to do Topological Sorting Algorithm and how To Represent Tasks in Graph
+  Make the sub-components' view using atomic style with respect to services pattern
+    ThreadsView Molecule (composed of other atoms)
+    GraphView Molecule (composed of other atoms)
+    ScheduleView Molecule (composed of other atoms)
+  Test any helpers or events using TDD approach
 
-8/18/2023
-// git push
-// Finish UI Controls
-X Start Time, End Time Task Auto Calculations
-	Alter first task to initial time
-	Alter each next task to be calculated from TTC
-	Gray out tasks that go beyond end time
+TaskView (1 way binding of information. Read-only. Efficiency over time, Matrix, Linear, Calendar, ...more in the future)
 
-// git push
-8/19/2023
-X Schema Validations for Input Options for Dropdown menu
+   Discover 3rd parties to help with Efficiency over time Graph and Calendar (Linear and Matrix may be done by hand using Tables with scrolling as you already made)
+   Make the Styled Components with respect to Service Pattern (mostly view only now)
+   Test the services, helpers, and events
+   Ensure component displays as expected, handle edge cases like missing data points
 
-// git push
-8/20/2023
-X Add CompletedTimeStamp, Hidden to Schema + Tests
-X Hidden Task Feature (If Task has hidden, then it won't be displayed)
-	X Later Make axios/API request to not select tasks that are hidden (I USE A SELECTOR FOR THIS PURPOSE)
-	(Don't display hidden tasks, even if accidentally selected)
-X Completed Field Disabling
-	X All fields are disabled except for completed/incompleted button and delete button
-X Completed Field Separate Sorting
-	X Completed Fields should be separated from non-completed and sorting rules applied differently, so that completed appear ontop always
+Settings (Very easy component to make, simplest)
 
-// git push
-8/21/2023
-X Tests + JSDOC
-	X isTimestampFromToday
-		X Tests
-	// git push
-	8/22/2023
-		X validateTask
-			X Add schema parameter for other schema type
-			X Tests
-		X pureTaskAttributeUpdate
-			X refactor using validateTask to simplify things
-			X Tests
-		X filterTaskList
-			X Tests
-	// git push
-	8/23/2023
-		X fix Start/End Time Auto Calculation to change on start/end/owl change
-		X debounce Clock
-		X highlightDefaults
-			X Tests 
-	// git push
-	8/24/2023
-		X updateTaskList
-			X Tests
+   Discover what settings I will let the user handle
+   Discover a nice layout for it (copying some other site if I have to)
+   Make the components for it using Service Architecture
+   Visually inspect it to ensure it works fine
 
-Timestamp editing feature
-	X When DnD, (old index, new index) => swap(task[old index]['timestamp'], task[new index]['timestamp']) 
-	X Basically swap the old task position's timestamp with the new one to preserve numerical stability
-	X Should not affect Completed tasks (otherwise it would mess up ordering in view)
-		X disable dnd for completed tasks
+--- Backend (Firebase for now)
 
-// git push
-8/25/2023 - 8/26/2023
+Verify Authentication Logic is Robust in Firebase
+Hook up Thunks to Backend Endpoints to update DB in Firebase
+Store User Information in Firebase effectively and display it using Next best practices
 
-X Delete Functionality
-	X Instead of Deleting from Master Task List, del User View
+Test the whole user flow in production by making an account, and doing the usual actions a user would do. 
+Test the whole user flow adversarily by trying to break it. 
 
-X Waste Calculations
+(optional) hook up analytics
+(optional) make a page that lets users submit complaints
 
-X Update Tasks
-	X When User Changes task field and clicks off, it will update the task in the db
+Fix any Lighthouse issues, make sure the site conforms to all best practices, make sure there is no console warnings, etc. Atleast 80/100 for all Lighthouse metrics on deployed site.
 
-9/2/2023
-X Delete Tasks Multiple Select
-	X Change Old prop to "highlight" : (old,selected)
-	X Test The Selecting thing
-	X Batch Delete Multiple Tasks
+Make sure the deployed site works even on another device and browser
 
-X pagination
-	Bottom Background (exactly same as TaskControl, except upside down)
-	Left,Right buttons
-	Center Input, [X] of Y, show Z per page
-	Add a Show Z per page in Store
-	Update TaskEditor to Show nth Range of [a, a+Z] items per page
-		Current Page useState
-		Sorting applies to Range selected only (because it is changing view not data)
-X Today's Tasks Title
-
-Sort icons for headers
-
-
-8/26/2023
-// git push
-// Authentication
-Look at other easy TODO items
-Figure out how to have Stories auto authenticated so I can test out the API 
-Implement Auth Page (static)
-	Google Auth
-	Email + Password
-
-8/27/2023
-// git push
-// Middleware and Firebase stuff
-
-Mock Service Worker Set up for each component that uses Redux
-Test Adding Tasks to Firebase with Thunks
-	Implement in TaskControl
-	Update Story
-	Solve the Update Task Id problem
-Delete API 
-	Implement in TaskControl, TaskRow
-	Update Stories
-	Add and Test "Hidden" field
-	Change TaskTable to not Display Tasks that have "Hidden" field
-	Verify that TaskEditor, TaskTable, and TaskRow use "Hidden" field properly
-	Dispatch all Delete Requests to update "Hidden" field to false
-Un-Delete API
-	Add Icon to "Display All Tasks" in TaskControl
-		Implement Listener
-	Add Un-Delete Icon instead of trash can on Deleted Tasks in TaskRow
-		Implement Listener
-	Update Stories
-	Dispatch all Un-Delete Requests to update "Hidden" field to true
-Update Task API
-	Implement in TaskRow
-	Update Story
-	Dispatch to redux/mock service worker
-
-8/28/2023
-// git push
-// Basic Template part 1
-
-Make Basic Template
-	Include TaskEditor Component
-	Make Nav
-		Make Atoms for Nav
-		Make User Profile Molecule (Dummy listeners for now)
-	Make Footer
-	Compose this into Basic Template for App page
-	Make Story for this
-
-8/29/2023
-// git push
-// Basic User Profile Page part 1
-
-Make Basic User page (with all user actions too, profile picture on left)
-
-8/29/2023
-// git push
-// Basic Home Part part 1
-
-Re-use Task Organizer's homepage, but alter it to fit your application
-
-8/29/2023
-// git push
-// Include all this into a basic site version 1
-
-Import all components and include into basic website
-Deploy
-Test Auth
-Test Functionality
-
-8/30/2023 - 9/4/2023
-// git push
-// Full Task
-
-Full Task Schema
-Full Task Schema Tests
-Full Task Component
-	Horizontal Scrolling
-	Task Display Toggle button (Toggles between Simple Display and Full task display)
-	Column Names 
-	Task Name Input (re-use)
-	Inefficiency Display (re-use)
-	Completion Time (re-use)
-	ETA display (re-use)
-	Parent Thread
-	Periodicity Dropdown (daily, weekly, monthly, yearly options with menu on press, and next menu after done messing with first menu)
-		None (no periodicities, just 1 time task)
-			if Scheduled then what date-time?
-		Every day, at what time? (0-24)
-		Every week, on what days? (M,T,W,TH,F,S,SU), on What Time? (0-24)
-		Every month, on what weeks? (1-4), on What days? (M,T,W,TH,F,S,SU), on What Time? (0-24)
-		Every year, on what months? (1-12), on What weeks? (1-4),.... (NOTE: you can't get all possible periodicities like this, only most)
-	Due Date (date-time Dropdown)
-	Blocking (True/False)
-	Time it took to complete it (Manual Override of automatic process, causes re-calculation of Inefficiency atleast)
-	Dependent Tasks
-	Task Id (Display, each task will have its own unique id that can be viewed, but not changed)
-		Creating Task -> New Task Id, either earliest open or just simply last + 1
-		Deleting Task -> Delete Task Id, either simply or update DB repr of open spaces on delete
-		Editing/Reading Task -> Don't change Id
-
-9/5/2023 
-// git push
-// Threads Component
-
-Thread Molecule
-Thread Organism
-	Map through Thread Molecules
-	x button hides the thread until refresh
-	+ button at end to add new thread (Maybe, might be weird to implement)
-
-// git push
-9/6/2023
-// Efficiency Component part 1
-
-Plot 3rd party
-	Style it to define min/max width, colors, etc.
-Test Plot with data points
-Make Time Frame Molecule (days, weeks, months, years, etc) (Should we call it time frame molecule if it is used with other views??)
-Combine Plot with Time Frame Molecule to make Efficiency Organism
-
-// git push
-9/7/2023
-// Efficiency Component part 2
-
-Make Data Structures / Algorithms to Process Raw Data into data points compatible with plot
-	Test them deeply
-	Make sure to account for the different ranges, like 1 day, 1 week, etc. 
-	Use Functional Principles to make the Pipeline
-
-// git push
-9/7/2023
-// Efficiency Component part 3
-
-Test the Buttons to change the view in the Efficiency Context Provider
-Ensure Component works as intended
-
-// git push
-9/8/2023
-// Dependency Graph part 1
-
-Re-use Efficiency Component Display styles to get frame
-Re-use Time Frame Molecule (name pending) for controlling dependency view
-Use Third Party library for dependency display
-Make Ds/Algos to Process Data compatible
-	Test it
-	Account for edge cases
-	Use Functional Principles
-
-// git push
-9/9/2023
-// Dependency Graph part 2
-
-Test the control panel (Time frame molecule)
-Ensure Component Works as intended
-
-// git push
-9/10/2023
-// User profile part 2
-
-Make the User Profile the way you would expect it to be, with lots of user controls, see other sites for inspiration
-
-// git push 
-9/11/2023
-// Settings Page
-
-Make the Settings Page how it is supposed to be, test it with the redux/ api stuff too, you know the drill
-
-// git push
-9/12/2023
-// Home Page Part 2
-
-Ensure Home page is how you want to to be like!
-
-// git push
-9/13/2023
-// Feedback page (minimalist)
-
-Create a simple feedback page with a form for users to fill out describing anything that needs changing or praise
-
-// git push
-9/14/2023
-// Media Queries
-
-Go through every component that needs it and make sure that it looks good on all display sizes
-
-// git push
-9/15/2023
-// Testing with other users (alpha testing)
-
-use dummy users in firebase to test authentication and to ensure that each user sees only their tasks
-write a few end-to-end tests to make sure that the site works as expected
-do code optimizations and clean up, ensure that it follows acessibility rules and make lighthouse go to 100% for all metrics
-focus on SEO optimizations and Make Header HTML perfect
-
-// git push
-9/14/2023
-// Release Site and Test with other real users (beta testing)
-
-Tell your friends you have the first version of the site ready and ask them to visit the site and give feedback
-Compile all feedback and look for patterns
-
-// git push
-9/15/2023
-// Add Google Analytics to your page
-
-Add Google Analytics to your page
-Look for patterns in the data
-So on and so forth
+Tell my friends about it and let them play with it to see what they like and dislike.
 
 
 
