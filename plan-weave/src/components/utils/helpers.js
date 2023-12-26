@@ -266,19 +266,19 @@ export const ordinalSet = (dnd) => {
  * // Example 1: Deleting a single index
  * const dnd = [1, 3, 2, 4, 5]
  * const result1 = deleteDnDEvent(dnd, [0, 0])
- * // Result: [2, 1, 3, 4]
+ * // Result: [1, 0, 2, 3]
  *
  * @example
  * // Example 2: Deleting a range of indices starting from 0
  * const dnd = [1, 3, 2, 4, 5]
  * const result2 = deleteDnDEvent(dnd, [0, 2])
- * // Result: [1, 2]
+ * // Result: [0, 1]
  *
  * @example
  * // Example 3: Deleting another range of indices starting from not 0
  * const dnd = [1, 3, 2, 4, 5]
  * const result3 = deleteDnDEvent(dnd, [2, 3])
- * // Result: [1, 2, 3]
+ * // Result: [0, 1, 2]
  */
 export const deleteDnDEvent = (dnd, indexRange) => {
 	if (!Array.isArray(dnd) || !Array.isArray(indexRange) || indexRange.length !== 2) {
@@ -389,7 +389,6 @@ export const relativeSortIndex = (tasks, sort, id, complete = TASK_STATUSES.COMP
 		: completed.length + sort(incompleted).indexOf(task) // Complete   --> Incomplete Case
 }
 
-
 /**
  * Determines the highlight style for a task row based on provided conditions.
  *
@@ -414,15 +413,34 @@ export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
 	else return ''
 }
 
-
-// (Date) other Date -> (Date) today Date with other's time
+/**
+ * Transforms a given date by setting its time to match today's date.
+ *
+ * @param {Date} start - The original date to be transformed.
+ * @throws {TypeError} Throws a TypeError if the input is not a valid Date.
+ * @returns {Date} A new date with the same time as the input but today's date.
+ * 
+ * * @example
+ * // Example 1: Transform a valid date to today's date
+ * const inputDate = new Date('2023-01-15T12:00:00Z')
+ * const transformedDate = dateToToday(inputDate)
+ * // Result: A new Date object with today's date and the same time as the input.
+ *
+ * @example
+ * // Example 2: Throw error for invalid input
+ * const invalidInput = 'abc'
+ * try {
+ *   const result = dateToToday(invalidInput) // Throws a TypeError
+ * } catch (error) {
+ *   console.error(error.message) // Output: `Invalid input. Expected a Date for dateToToday function.\n${start}`
+ * }
+ */
 export const dateToToday = (start) => {
+	if (!(start instanceof Date) || isNaN(start.getTime())) {
+		throw new TypeError(`Invalid input. Expected a Date for dateToToday function.\n${start}`)
+	}
 	const initOfToday = new Date().setHours(0, 0, 0, 0) // beginning of today in millis
 	const initOfStart = new Date(start).setHours(0, 0, 0, 0)
 	const timeSinceStart = start.getTime() - initOfStart // millis since start's start of day
 	return new Date(initOfToday + timeSinceStart) // start but with today's date
 }
-
-
-
-

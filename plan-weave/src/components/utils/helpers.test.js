@@ -6,7 +6,12 @@ import {
 	calculateWaste,
 	rearrangeDnD,
 	relativeSortIndex,
-	highlightTaskRow
+	highlightTaskRow,
+	ordinalSet,
+	deleteDnDEvent,
+	diagonalize,
+	calculateRange,
+	dateToToday
 } from './helpers'
 import { TASK_STATUSES } from './constants'
 import { format } from 'date-fns-tz'
@@ -484,5 +489,133 @@ describe('highlightTaskRow', () => {
 		expect(() => highlightTaskRow('string', true, false)).toThrow(TypeError)
 		expect(() => highlightTaskRow(true, 'string', false)).toThrow(TypeError)
 		expect(() => highlightTaskRow(true, true, 'string')).toThrow(TypeError)
+	})
+})
+
+describe('ordinalSet', () => {
+	const testCases = [
+		{
+			description: 'should return empty array for empty input',
+			input: [],
+			expected: [],
+		},
+		{
+			description: 'should assign ordinal values to unique numbers in the input array',
+			input: [1, 3, 2],
+			expected: [0, 2, 1],
+		},
+	]
+
+	testCases.forEach(({ description, input, expected }) => {
+		it(description, () => {
+			expect(ordinalSet(input)).toEqual(expected)
+		})
+	})
+})
+
+describe('deleteDnDEvent', () => {
+	const testCases = [
+		{
+			description: 'should delete a single index',
+			input: [[1, 3, 2, 4, 5], [0, 0]],
+			expected: [1, 0, 2, 3],
+		},
+		{
+			description: 'should delete a range of indices starting from 0',
+			input: [[1, 3, 2, 4, 5], [0, 2]],
+			expected: [0, 1],
+		},
+		{
+			description: 'should delete another range of indices starting from not 0',
+			input: [[1, 3, 2, 4, 5], [2, 3]],
+			expected: [0, 1, 2],
+		},
+	]
+
+	testCases.forEach(({ description, input, expected }) => {
+		it(description, () => {
+			expect(deleteDnDEvent(...input)).toEqual(expected)
+		})
+	})
+})
+
+describe('diagonalize', () => {
+	const testCases = [
+		{
+			description: 'Generates a new string not present in the original list',
+			input: ['apple', 'banana', 'cherry', 'glass'],
+			expected: 'bbft',
+		},
+		{
+			description: 'Handles empty string list',
+			input: [],
+			expected: '',
+		},
+		{
+			description: 'Throws error for invalid input',
+			input: 123,
+			expectedError: 'Invalid input. Expected an array of strings.',
+		},
+	]
+
+	testCases.forEach(({ description, input, expected, expectedError }) => {
+		it(description, () => {
+			if (expectedError) {
+				expect(() => diagonalize(input)).toThrow(expectedError)
+			} else {
+				expect(diagonalize(input)).toEqual(expected)
+			}
+		})
+	})
+})
+
+describe('calculateRange', () => {
+	const testCases = [
+		{
+			description: 'Calculates the range for a valid page and tasks per page',
+			input: [10, 3],
+			expected: [21, 30],
+		},
+		{
+			description: 'Handles invalid input with default range',
+			input: ['abc', 2],
+			expected: [0, undefined],
+		},
+		{
+			description: 'Handles invalid input with default range',
+			input: [10, 'xyz'],
+			expected: [0, undefined],
+		},
+	]
+
+	testCases.forEach(({ description, input, expected }) => {
+		it(description, () => {
+			expect(calculateRange(...input)).toEqual(expected)
+		})
+	})
+})
+
+describe('dateToToday', () => {
+	const testCases = [
+		{
+			description: 'Transforms a given date to today\'s date',
+			input: new Date('2023-01-15T12:00:00Z'),
+			expected: new Date(new Date().setHours(6, 0, 0, 0)),
+		},
+		{
+			description: 'Throws error for invalid input',
+			input: 'abc',
+			expectedError: /Invalid input\. Expected a Date for dateToToday function\.\n[^]+/,
+		},
+	]
+
+	testCases.forEach(({ description, input, expected, expectedError }) => {
+		it(description, () => {
+			if (expectedError) {
+				expect(() => dateToToday(input)).toThrow(expectedError)
+			} else {
+				expect(dateToToday(input)).toEqual(expected)
+			}
+		})
 	})
 })
