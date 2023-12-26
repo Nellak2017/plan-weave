@@ -9,13 +9,13 @@ import {
 import { makeLink, defaultLogin } from './Nav.helpers'
 import Button from '../../atoms/Button/Button.js'
 import Image from 'next/image'
-import logo from '../../../../public/Plan-Weave-Logo.png'
+import logo from '../../../../public/Plan-Weave-Logo-Square.png'
 import { BsArrowRightShort } from 'react-icons/bs'
 
 const defaultImage = ({
 	image = logo,
 	alt = 'Plan Weave Logo',
-	width = 70, height = 56,
+	width = 64, height = 61,
 	title = 'Organize your tasks with Plan Weave',
 	label = 'Organize your tasks with Plan Weave',
 }) => (
@@ -26,7 +26,7 @@ const defaultImage = ({
 		height={height}
 		title={title}
 		aria-label={label}
-		priority={true}
+		//priority={true}
 	/>
 )
 
@@ -38,7 +38,7 @@ const defaultMiddle = ({
 	title = 'Go to Plan Weave App',
 	label = 'Go to Plan Weave App',
 	handler,
-	index = 2 }) => (
+	index = 0 }) => (
 	<SiteTitle>
 		{makeLink({ text, link, title, label, handler, index })}
 	</SiteTitle>
@@ -49,7 +49,7 @@ const defaultSignUp = ({
 	title = 'Sign up',
 	label = 'Sign up for Plan-Weave',
 	handler,
-	index = 5,
+	index = 0,
 	Icon = BsArrowRightShort
 }) => (
 	<Button
@@ -57,7 +57,7 @@ const defaultSignUp = ({
 		role={'link'}
 		aria-label={label}
 		onClick={handler || (() => { })}
-		tabIndex={index}
+		tabIndex={0}
 	>
 		<p>{text}</p>
 		<Icon />

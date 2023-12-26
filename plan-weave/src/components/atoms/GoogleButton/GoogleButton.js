@@ -16,7 +16,7 @@ function GoogleButton({ signup = false, ...rest }) {
 				alt='Google Logo'
 				width={18}
 				height={18}
-				priority={true}
+				//priority={true}
 			/>
 			{`Sign ${signup ? 'up' : 'in'} with Google`}
 		</StyledGoogleButton>

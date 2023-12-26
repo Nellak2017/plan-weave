@@ -31,7 +31,7 @@ Source of All SVGs used for logo purposes: https://react-icons.github.io/react-i
 function InfoSection({
 	variant = 'dark', // img right if dark, img left if light
 	width = 555, height = 307, // dimensions of image
-	data = defaultData
+	data = defaultData, priority = false
 }) {
 	return (
 		<StyledInfoContainer variant={variant}>
@@ -59,7 +59,9 @@ function InfoSection({
 							height: 'auto',
 						}}
 						title={data?.topLine || 'Image not found'}
-						priority={true}
+						priority={priority}
+						placeholder="blur"
+						blurDataURL="URL"
 					/>
 				</Column>
 			</ColumnContainer>

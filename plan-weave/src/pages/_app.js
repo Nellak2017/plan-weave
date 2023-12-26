@@ -1,5 +1,6 @@
 import store from '../redux/store.js'
 import { Provider } from 'react-redux'
+import Head from 'next/head'
 
 import GlobalStyle from '../styles/globalStyles.js'
 import { ThemeProvider, StyleSheetManager } from 'styled-components'
@@ -12,6 +13,10 @@ import PropTypes from 'prop-types'
 function MyApp({ Component, pageProps }) {
   return (
     <StyleSheetManager shouldForwardProp={prop => isPropValid(prop)}>
+      <Head>
+        <title>Plan Weave</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </Head>
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <ToastContainer position="bottom-left" autoClose={3000} />

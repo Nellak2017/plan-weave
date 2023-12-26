@@ -31,7 +31,7 @@ export default function Home() {
     title = 'Log Out',
     label = 'Log Out of Plan-Weave',
     handler,
-    index = 4
+    index = 0
   }) => (makeLink({ text, link, title, label, handler, index }))
 
   return (
@@ -47,6 +47,7 @@ export default function Home() {
           key={section?.topLine || index}
           variant={index % 2 === 0 ? 'dark' : 'light'}
           data={section}
+          priority={true} // for optimization purpose
         />
       ))}
     </>

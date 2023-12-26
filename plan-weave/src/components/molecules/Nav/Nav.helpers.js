@@ -7,7 +7,7 @@ export const makeLink = ({
 	title = 'Go to Plan Weave App',
 	label = 'Go to Plan Weave App',
 	handler,
-	index = 3,
+	index = 0,
 }) => (
 	<Link
 		href={link}
@@ -26,7 +26,7 @@ export const defaultLogin = ({
 	text = 'Log in',
 	link = '/login',
 	title = 'Log in',
-	label = 'Login to Plan-Weave',
+	label = 'Log in to Plan-Weave',
 	handler,
-	index = 4
+	index = 0
 }) => (makeLink({text, link, title, label, handler, index}))

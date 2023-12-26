@@ -48,8 +48,8 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 					<Image
 						src={logo.src} //'/Plan-Weave-Logo.png'
 						alt='Plan Weave Logo'
-						width={125}
-						height={100}
+						width={128}
+						height={96}
 						className={'logo'}
 						title={'Go Home'}
 						onClick={() => handleHomePage(router)}

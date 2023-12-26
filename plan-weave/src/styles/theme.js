@@ -1137,6 +1137,12 @@ export const authFormPresets = {
       color: ${props => props.theme.colors.lightNeutral};
       background-color: ${props => props.theme.colors.lightNeutralLight};
       box-shadow: ${props => props.theme.elevations.small};
+      & a {
+        color: ${props => props.theme.colors.primary};
+      }
+      & a:hover {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
       & h2, h3, p, label {
         color: ${props => props.theme.colors.lightNeutral};
       }
@@ -1160,6 +1166,12 @@ export const authFormPresets = {
       color: ${props => props.theme.colors.lightNeutralLight};
       background-color: ${props => props.theme.colors.darkNeutralDark};
       box-shadow: ${props => props.theme.elevations.small};
+      & a {
+        color: ${props => props.theme.colors.primaryLightActive};
+      }
+      & a:hover {
+        color: ${props => props.theme.colors.primaryLightHover};
+      }
       & h2, h3, p, label {
         color: ${props => props.theme.colors.lightNeutralLight};
       }

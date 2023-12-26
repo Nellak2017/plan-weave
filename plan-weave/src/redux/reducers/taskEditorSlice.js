@@ -34,7 +34,6 @@ const taskEditorSlice = createSlice({
 
 		updateSearch: (state, action) => {
 			if (action.payload === state.search) return // if it is the same as before, don't update state!
-			console.log(action.payload)
 			state.search = action.payload.trim() // assuming action.payload is the new search value
 		},
 		updateTimeRange: (state, action) => {
