@@ -1,4 +1,4 @@
-import { simpleTaskSchema } from "./simpleTaskSchema"
+import { simpleTaskSchema, fillDefaultsForSimpleTask } from "./simpleTaskSchema"
 import { TASK_STATUSES } from '../../utils/constants'
 
 const timestamp = Math.floor((new Date()).getTime() / 1000)
@@ -233,6 +233,12 @@ describe('Simple Task Schema', () => {
 			timestamp: 'invalid-timestamp', // An invalid timestamp
 		},
 	]
+
+	it('Should work on valid Simple Tasks Generated with fillDefaults function', async () => {
+		const defaultTasks = fillDefaultsForSimpleTask({})
+		const result = await simpleTaskSchema.isValid(defaultTasks)
+		expect(result).toBe(true)
+	})
 
 	it.each(validTestCases)('Should work on valid task', async (testCase) => {
 		const result = await simpleTaskSchema.isValid(testCase)

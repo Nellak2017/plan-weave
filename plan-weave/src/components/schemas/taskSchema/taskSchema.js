@@ -30,7 +30,9 @@ export const taskSchema = Yup.object({
 	...simpleTaskSchema.fields,
 	// --- Full Task Exclusives
 	efficiency: Yup.number() // percentage
-		.default(0),
+		.default(0)
+		.min(0)
+		.max(100),
 	parentThread: Yup.string()
 		.max(50, 'Parent Thread must be at most 50 characters')
 		.default('')
@@ -61,8 +63,7 @@ export const taskSchema = Yup.object({
 		}))
 		.default([]),
 	weight: Yup.number()
-		.min(0)
-		.required(),
+		.min(0),
 }).default({})
 
 
@@ -75,16 +76,16 @@ export const fillDefaults = (obj) => {
 		task: ' ',
 		waste: 1,
 		ttc: 1,
-		eta: twelve,
+		eta: twelve.toISOString(),
 		id: new Date().getTime(),
 		status: TASK_STATUSES.INCOMPLETE,
-		timestamp: timestamp.seconds,
-		completedTimeStamp: timestamp.seconds + 1,
+		timestamp: timestamp,
+		completedTimeStamp: timestamp + 1,
 		hidden: false,
 
 		efficiency: 0,
 		parentThread: 'default',
-		dueDate: twelve,
+		dueDate: twelve.toISOString(),
 		dependencies: [],
 		weight: 1, // Idk what value range for this to be honest
 		...obj,

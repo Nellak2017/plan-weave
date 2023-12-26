@@ -3,6 +3,8 @@ import colors from '../../styles/theme'
 import { toast } from 'react-toastify'
 import { parseISO } from 'date-fns'
 
+const twelve = new Date(new Date().setHours(12, 0, 0, 0))
+
 export const MILLISECONDS_PER_HOUR = 60 * 60 * 1000
 export const MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * 24
 export const THEMES = ['light', 'dark']
@@ -62,6 +64,15 @@ export const DEFAULT_SIMPLE_TASK = {
 	id: new Date().getTime(), // guarantees unique ids down to the millisecond! IF and ONLY IF you do this logic in the caller as well!
 	timestamp: Math.floor((new Date().getTime()) / 1000)
 } // Used when adding a new simple task
+
+export const DEFAULT_FULL_TASK = {
+	...DEFAULT_SIMPLE_TASK,
+	efficiency: 0,
+	parentThread: 'default',
+	dueDate: twelve.toISOString(),
+	dependencies: [],
+	weight: 1,
+}
 
 export const DEFAULT_TASK_CONTROL_TOOL_TIPS = {
 	owlToolTip: 'Toggle Overnight Mode', addToolTip: 'Add a New Task',

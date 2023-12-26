@@ -3,7 +3,7 @@ TaskEditor (Refactoring done by 12/25/2023, Full Task done by 12/27/2023)
   X Test Coverage and JSDocs for all things (some helpers are not covered)
   X Polish all components so Linter doesn't complain
   X Full Task Schema
-  Full Task Schema Tests
+  X Full Task Schema Tests
   Add Schema prop for TaskRow so that it can handle the Full Task
   Full Task Component (and relevant 3rd parties like Calendar)
   Refactor TaskTable to have horizontal scroll if too large
