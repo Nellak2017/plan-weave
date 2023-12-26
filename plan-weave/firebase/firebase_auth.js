@@ -22,8 +22,6 @@ export const signUpWithEmail = async (email, password) => {
 
 		// If successful, it's a sign-up
 		const user = userCredential.user
-		console.log('User signed up successfully:', user)
-	
 		return user
 	} catch (e) {
 		console.error('Error signing up:', e.message)
@@ -39,7 +37,6 @@ export const signInWithEmail = async (email, password) => {
 		const user = userCredential.user
 
 		// Log the user in and redirect to the main app
-		console.log('User signed in:', user)
 		return user
 	} catch (e) {
 		console.error('Error signing in with email and password:', e)
