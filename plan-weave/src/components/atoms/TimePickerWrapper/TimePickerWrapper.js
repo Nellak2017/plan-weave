@@ -12,9 +12,7 @@ import { format, parse } from 'date-fns'
 import { AiOutlineClockCircle } from 'react-icons/ai'
 import { THEMES, CLOCK_DEBOUNCE } from '../../utils/constants'
 import { debounce } from 'lodash'
-/*
-  TODO: Possibly refactor this with XState FSM library if the code becomes unmanageable
-*/
+import PropTypes from 'prop-types'
 
 function TimePickerWrapper({
   variant,
@@ -27,7 +25,6 @@ function TimePickerWrapper({
   controlled = false, // Flag to indicate if time is controlled by the parent
   time: controlledTime, // Controlled time passed from the parent
   tabIndex, // used for selecting the icon
-  onKeyDown, // used for using enter key to press on icon
   title, // used to tell the user what clicking the icon will do whenever they hover over it (tool tip)
   testid // used for unit testing
 }) {
@@ -53,18 +50,12 @@ function TimePickerWrapper({
   // --- Clock FSM (implemented without State machines) Feature
   const handleTimeChange = newTime => {
     setTime(newTime)
-    onTimeChange && debouncedChangeHandler(newTime); // Pass the updated time back to the parent component
+    onTimeChange && debouncedChangeHandler(newTime) // Pass the updated time back to the parent component
   }
-  const toggleClock = () => {
-    setButtonClicked(true); setShowClock(!showClock); setView('hours'); //setTime(time) 
-  }
+  const toggleClock = () => { setButtonClicked(true); setShowClock(!showClock); setView('hours'); }
   const handleViewChange = changed => { setView(changed !== null ? changed : 'hours'); setShowClock(view !== 'minutes') }
   const handleBlur = () => {
-    if (!buttonClicked) {
-      setShowClock(false)
-      setView('hours')
-      //setTime(time)
-    }
+    if (!buttonClicked) { setShowClock(false); setView('hours') }
     setButtonClicked(false)
   }
 
@@ -100,6 +91,21 @@ function TimePickerWrapper({
       </TimePickerWrapperStyled>
     </LocalizationProvider>
   )
+}
+
+TimePickerWrapper.propTypes = {
+  variant: PropTypes.string,
+  defaultTime: PropTypes.string,
+  displayText: PropTypes.string,
+  ampm: PropTypes.bool,
+  verticalOffset: PropTypes.number,
+  horizontalOffset: PropTypes.number,
+  onTimeChange: PropTypes.func,
+  controlled: PropTypes.bool,
+  time: PropTypes.instanceOf(Date),
+  tabIndex: PropTypes.number,
+  title: PropTypes.string,
+  testid: PropTypes.string,
 }
 
 export default TimePickerWrapper

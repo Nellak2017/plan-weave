@@ -83,7 +83,7 @@ function Nav({
 	return (
 		<StyledNav variant={variant}>
 			<ContentContainer>
-				<Logo className='logo' tabIndex={1} onClick={handleLogo}>
+				<Logo className='logo' tabIndex={0} onClick={handleLogo}>
 					<NavLogo />
 				</Logo>
 

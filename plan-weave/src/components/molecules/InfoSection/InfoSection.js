@@ -9,6 +9,7 @@ import {
 	Column,
 	TextContainer,
 } from './InfoSection.elements.js'
+import PropTypes from 'prop-types'
 
 const defaultData = {
 	topLine: 'Plan Weave',
@@ -64,6 +65,22 @@ function InfoSection({
 			</ColumnContainer>
 		</StyledInfoContainer>
 	)
+}
+
+InfoSection.propTypes = {
+	variant: PropTypes.string,
+	width: PropTypes.number,
+	height: PropTypes.number,
+	data: PropTypes.shape({
+		topLine: PropTypes.string,
+		headline: PropTypes.string,
+		description: PropTypes.string,
+		buttonLabel: PropTypes.string,
+		img: PropTypes.shape({
+			src: PropTypes.string,
+			alt: PropTypes.string,
+		}),
+	}),
 }
 
 export default InfoSection

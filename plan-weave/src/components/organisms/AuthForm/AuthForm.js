@@ -18,13 +18,15 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 import logo from '../../../../public/Plan-Weave-Logo.png'
-import {
-	signInWithEmail,
-	signUpWithEmail,
-	signInWithGoogle
-} from '../../../../firebase/firebase_auth.js'
-import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import {
+	handleHomePage,
+	handleEmailChange,
+	handlePasswordChange,
+	handleSignInWithEmail,
+	handleSignInWithGoogle
+} from './AuthForm.handlers.js'
+import PropTypes from 'prop-types'
 
 function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 	const router = useRouter()
@@ -32,54 +34,17 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 	const [password, setPassword] = useState('')
 	const [loading, setLoading] = useState(false)
 
-	const handleHomePage = () => router.push('/')
-	const handleEmailChange = e => setEmail(e.target.value)
-	const handlePasswordChange = e => setPassword(e.target.value)
-
-	const handleSignInWithEmail = async e => {
-		e.preventDefault()
-		setLoading(true)
-		console.log('sign-in with email pressed')
-
-		// Firebase email auth here
-		try {
-			signup ? await signUpWithEmail(email, password) : await signInWithEmail(email, password) // you can assign to variable to use
-			router.push('/plan-weave')
-		} catch (e) {
-			console.error(e.message)
-			toast.error(e.message.replace("FirebaseError: Firebase: ", ""), { autoClose: 5000 })
-		} finally {
-			setEmail('')
-			setPassword('')
-			setLoading(false)
-		}
-	}
-
-	const handleSignInWithGoogle = async e => {
-		e.preventDefault()
-		setLoading(true)
-		console.log('sign-in with google pressed')
-
-		// Google Auth here
-		try {
-			await signInWithGoogle() // you can assign to variable to use
-			router.push('/plan-weave')
-		} catch (e) {
-			console.error(e.message)
-			toast.error('Error Logging In With Google Auth', { autoClose: 5000 })
-		} finally {
-			setEmail('')
-			setPassword('')
-			setLoading(false)
-		}
-	}
+	const emailServices = { setLoading, setEmail, setPassword }
+	const emailState = { signup, router, email, password }
+	const googleServices = { setLoading, setEmail, setPassword }
+	const googleState = { router }
 
 	if (loading) return (<Spinner />)
 
 	return (
 		<CenteredContainer>
 			<AuthContainer variant={variant} maxwidth={maxwidth}>
-				<StyledAuthForm id='email-form' variant={variant} maxwidth={maxwidth} onSubmit={handleSignInWithEmail} method='POST'>
+				<StyledAuthForm id='email-form' variant={variant} maxwidth={maxwidth} onSubmit={e => handleSignInWithEmail(e, emailServices, emailState)} method='POST'>
 					<Image
 						src={logo.src} //'/Plan-Weave-Logo.png'
 						alt='Plan Weave Logo'
@@ -87,10 +52,10 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 						height={100}
 						className={'logo'}
 						title={'Go Home'}
-						onClick={handleHomePage}
+						onClick={() => handleHomePage(router)}
 						priority={true}
 					/>
-					<h2>{`Sign ${signup ? 'Up' : 'In'}`}</h2>	
+					<h2>{`Sign ${signup ? 'Up' : 'In'}`}</h2>
 					<SubtitleContainer>
 						<h3>
 							<p>{`${signup ? "H" : "Don't h"}ave an account?`}</p>
@@ -104,7 +69,7 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 							type='email'
 							id='email'
 							value={email}
-							onChange={handleEmailChange}
+							onChange={e => handleEmailChange(e, setEmail)}
 							placeholder='email@example.com'
 							autoComplete='username'
 						/>
@@ -116,7 +81,7 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 							type='password'
 							id='password'
 							value={password}
-							onChange={handlePasswordChange}
+							onChange={e => handlePasswordChange(e, setPassword)}
 							placeholder='Enter your password'
 							autoComplete='current-password'
 						/>
@@ -133,11 +98,17 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 					<Line />
 				</OrSeparator>
 				<SignInContainer id='google-auth-container'>
-					<GoogleButton name='google-auth' type='button' onClick={handleSignInWithGoogle} signup={signup} />
+					<GoogleButton name='google-auth' type='button' onClick={e => handleSignInWithGoogle(e, googleServices, googleState)} signup={signup} />
 				</SignInContainer>
 			</AuthContainer>
 		</CenteredContainer>
 	)
+}
+
+AuthForm.propTypes = {
+	variant: PropTypes.string,
+	maxwidth: PropTypes.number,
+	signup: PropTypes.bool,
 }
 
 export default AuthForm

@@ -2,6 +2,7 @@ import React from 'react'
 import { StyledGoogleButton } from './GoogleButton.elements'
 import Image from 'next/image'
 import GoogleLogo from '../../../../public/google-logo.png'
+import PropTypes from 'prop-types'
 
 // Note: Light/Dark Variants are disallowed, it must comply with branding guidelines
 function GoogleButton({ signup = false, ...rest }) {
@@ -20,6 +21,10 @@ function GoogleButton({ signup = false, ...rest }) {
 			{`Sign ${signup ? 'up' : 'in'} with Google`}
 		</StyledGoogleButton>
 	)
+}
+
+GoogleButton.propTypes = {
+	signup: PropTypes.bool,
 }
 
 export default GoogleButton

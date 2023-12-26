@@ -2,12 +2,13 @@ import React, { useState } from 'react'
 import { SearchBarStyled } from './SearchBar.elements'
 import { MdSearch } from 'react-icons/md'
 import { THEMES } from '../../utils/constants'
+import PropTypes from 'prop-types'
 
 // Icon is placed AFTER input but displayed before 
 // because of ~ sibling selector limitations (SMH)
 // services = {search}
 function SearchBar({
-	services, 
+	services,
 	variant,
 	placeholder = "Search for a Task",
 	maxwidth = 240,
@@ -20,7 +21,7 @@ function SearchBar({
 
 	const handleSearchChange = e => {
 		const newValue = e.target.value.trimStart() // remove left whitespace
-		services?.search(newValue) 
+		services?.search(newValue)
 		setSearchValue(newValue)
 		// Call the onChange function from props to pass the value to the parent
 		if (onChange) onChange(newValue)
@@ -38,6 +39,15 @@ function SearchBar({
 			<MdSearch size={32} />
 		</SearchBarStyled>
 	)
+}
+
+SearchBar.propTypes = {
+	services: PropTypes.object,
+	variant: PropTypes.string,
+	placeholder: PropTypes.string,
+	maxwidth: PropTypes.number,
+	tabIndex: PropTypes.number,
+	onChange: PropTypes.func,
 }
 
 export default SearchBar

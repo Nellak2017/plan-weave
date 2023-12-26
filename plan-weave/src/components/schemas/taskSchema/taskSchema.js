@@ -1,99 +1,56 @@
 import * as Yup from 'yup'
+import { TASK_STATUSES } from '../../utils/constants.js'
+import { simpleTaskSchema } from '../simpleTaskSchema/simpleTaskSchema.js'
 
-// This schema is for the Full Task
-// TODO: Add in the remaining fields like Periodicity and stuff
-// TODO: Rename the fields to be consistent with simple task
-// TODO: Add id field
-// TODO: Refactor this schema to be consistent in rules to Simple Task Schema
-/* 
-Legend: 
+const timestamp = Math.floor((new Date()).getTime() / 1000)
+const isoStringRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|[+-]\d{2}:\d{2})$/
+const twelve = new Date(new Date().setHours(12, 0, 0, 0))
 
-name, 
-efficiency,
-eta,
-ata,
-parentThread,
-dueDate,
-dependencies,
-value
-*/
+/**
+ * Schema for a full task with validation rules.
+ * @typedef {Object} TaskSchema
+ * @property {Yup.StringSchema} task - Validation schema for the task name.
+ * @property {Yup.NumberSchema} waste - Validation schema for the waste value.
+ * @property {Yup.NumberSchema} ttc - Validation schema for the time-to-complete value.
+ * @property {Yup.StringSchema} eta - Validation schema for the estimated time of arrival.
+ * @property {Yup.NumberSchema} id - Validation schema for the task ID.
+ * @property {Yup.StringSchema} status - Validation schema for the task status.
+ * @property {Yup.NumberSchema} timeStamp - Validation schema for the usual timestamp.
+ * @property {Yup.NumberSchema} completedTimeStamp - Validation schema for the completed timestamp.
+ * @property {Yup.BooleanSchema} hidden - Validation schema for the hidden flag.
+ * 
+ * @property {Yup.NumberSchema} efficiency - Validation schema for the efficiency percentage.
+ * @property {Yup.StringSchema} parentThread - Validation schema for the parentThread string.
+ * @property {Yup.StringSchema} dueDate - Validation schema for the due date.
+ * @property {Yup.ArraySchema} dependencies - Validation schema for the dependency list.
+ * @property {Yup.NumberSchema} weight - Validation schema for the weight value.
+ */
 
 export const taskSchema = Yup.object({
-	name: Yup.string()
-		.max(50, 'Name must be at most 50 characters')
-		.required('Name is required')
-		.test('is-string', 'Name must be a string', (value) => {
-			return typeof value === 'string'
-		}),
-	efficiency: Yup.number()
-		.nullable()
-		.when(['eta', 'ata'], {
-			is: (eta, ata) => eta !== null && ata !== null && eta !== 0 && ata !== 0,
-			then: () => Yup.number()
-				.min(0)
-				.max(1)
-				.test(
-					'is-calculated-efficiency',
-					'Efficiency must be equal to eta / ata, when eta / ata are not null and > 0',
-					function (value) {
-						const eta = this.resolve(Yup.ref('eta'))
-						const ata = this.resolve(Yup.ref('ata'))
-						if (eta && ata && eta !== 0 && ata !== 0) {
-							return value === eta / ata
-						}
-						return true
-					}
-				),
-			otherwise: () => Yup.number().nullable()
-				.test(
-					'is-non-null-efficiency',
-					'Efficiency must be null when both eta and ata are null',
-					function (value) {
-						const eta = this.resolve(Yup.ref('eta'))
-						const ata = this.resolve(Yup.ref('ata'))
-						if (eta === null && ata === null && value !== null) {
-							return false
-						}
-						return true
-					}
-				),
-		})
-		.default(null),
-	eta: Yup.number()
-		.nullable()
-		.min(0.01)
-		.default(null)
+	...simpleTaskSchema.fields,
+	// --- Full Task Exclusives
+	efficiency: Yup.number() // percentage
+		.default(0),
+	parentThread: Yup.string()
+		.max(50, 'Parent Thread must be at most 50 characters')
+		.default('')
 		.transform((value, originalValue) => {
-			if (originalValue === '') {
-				return null;
+			if (originalValue === '' || originalValue === null) {
+				return ' '
 			}
-			return value;
+			return value
 		}),
-	ata: Yup.number()
-		.nullable()
-		.min(0.01)
-		.default(null)
+	dueDate: Yup.string()
+		.typeError('DueDate must be a valid ISO string')
+		.matches(isoStringRegex, 'DueDate must be a valid ISO String, it failed the regex test')
+		.default(() => twelve.toISOString())
 		.transform((value, originalValue) => {
-			if (originalValue === '') {
-				return null;
+			if (!originalValue) return twelve.toISOString()
+			else if (typeof originalValue === 'number') {
+				const date = new Date(originalValue * 1000)
+				return date.toISOString()
 			}
-			return value;
-		}),
-	parentThread: Yup.lazy((value) => {
-		if (!value) {
-			return Yup.mixed().nullable()
-		}
-		return Yup.object().shape({
-			name: Yup.string()
-				.required(),
-		})
-	}),
-	dueDate: Yup.date().default(() => new Date())
-		.transform((value, originalValue) => {
-			if (originalValue === '') {
-				return new Date();
-			}
-			return value;
+			return value
 		}),
 	dependencies: Yup.array()
 		.of(Yup.lazy((value) => {
@@ -103,25 +60,35 @@ export const taskSchema = Yup.object({
 			return taskSchema
 		}))
 		.default([]),
-	value: Yup.number()
+	weight: Yup.number()
 		.min(0)
 		.required(),
 }).default({})
 
 
+/**
+ * Fill default values for a simple task, optionally overridden by provided object.
+ * @type {FillDefaults}
+ */
 export const fillDefaults = (obj) => {
-	const filledObj = taskSchema.cast(obj)
+	const objWithDefaults = {
+		task: ' ',
+		waste: 1,
+		ttc: 1,
+		eta: twelve,
+		id: new Date().getTime(),
+		status: TASK_STATUSES.INCOMPLETE,
+		timestamp: timestamp.seconds,
+		completedTimeStamp: timestamp.seconds + 1,
+		hidden: false,
 
-	if (filledObj.eta && filledObj.ata) {
-		const efficiency = filledObj.eta / filledObj.ata
-		filledObj.efficiency = efficiency
-	} else {
-		filledObj.efficiency = null
+		efficiency: 0,
+		parentThread: 'default',
+		dueDate: twelve,
+		dependencies: [],
+		weight: 1, // Idk what value range for this to be honest
+		...obj,
 	}
 
-	if (!filledObj.parentThread) {
-		filledObj.parentThread = null
-	}
-
-	return filledObj
+	return objWithDefaults
 }

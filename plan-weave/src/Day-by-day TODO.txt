@@ -1,14 +1,17 @@
 TaskEditor (Refactoring done by 12/25/2023, Full Task done by 12/27/2023)
   X Refactor Pagination to use Redux + services pattern + decouple handlers from view logic
   X Test Coverage and JSDocs for all things (some helpers are not covered)
-  Media Queries
-  Full Task Schema
+  X Polish all components so Linter doesn't complain
+  X Full Task Schema
+  Full Task Schema Tests
+  Add Schema prop for TaskRow so that it can handle the Full Task
   Full Task Component (and relevant 3rd parties like Calendar)
-  Refactor the spacing of stuff to accomodate Full Task 
   Refactor TaskTable to have horizontal scroll if too large
-  Polish all components so Linter doesn't complain
+  Refactor the spacing of stuff to accomodate Full Task 
   Remove unnecessary logic in all of code base
   Add docs to Github, and make front page very pretty
+  Media Queries
+  Validate incoming local tasks with schema: validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks, start) })
   (optional) add sort icons and that feature
   (optional) add analytics support or research it
   (optional) CompletedTimestamp into an ISO String

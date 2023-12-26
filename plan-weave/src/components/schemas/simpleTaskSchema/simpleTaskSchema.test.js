@@ -1,9 +1,7 @@
-import { simpleTaskSchema, fillDefaultsForSimpleTask } from "./simpleTaskSchema"
+import { simpleTaskSchema } from "./simpleTaskSchema"
 import { TASK_STATUSES } from '../../utils/constants'
-import { Timestamp } from 'firebase/firestore'
 
-const timestamp = Timestamp.fromDate(new Date()).seconds
-
+const timestamp = Math.floor((new Date()).getTime() / 1000)
 const fourteenThirty = new Date(new Date().setHours(14, 30, 0, 0)).toISOString()
 const nineFifteen = new Date(new Date().setHours(9, 15, 0, 0)).toISOString()
 const twelve = new Date(new Date().setHours(12, 0, 0, 0)).toISOString()
@@ -187,18 +185,6 @@ describe('Simple Task Schema', () => {
 		// Add other invalid statuses here
 	]
 
-	// ...................................
-	const validTimeStrings = [
-		'00:00', '01:30', '12:45', '23:59',
-		// Add other valid time strings here
-	]
-
-	const invalidHours = ['-1', '25', 'abc', '123']
-
-	const invalidMinutes = ['-1', '60', 'abc', '123']
-
-	const missingColonTimes = ['1200', '0100', '1230', '0500']
-
 	const invalidLengthTestCases = [
 		{
 			task: 'x'.repeat(51), // 51 characters
@@ -276,31 +262,6 @@ describe('Simple Task Schema', () => {
 		expect(result).toBe(false)
 	})
 
-	/*
-	it.each(validTimeStrings)('Should accept valid time string', async (eta) => {
-		const validTaskWithEta = { ...validTask, eta }
-		const result = await simpleTaskSchema.isValid(validTaskWithEta)
-		expect(result).toBe(true)
-	})
-
-	it.each(invalidHours)('Should reject time string with invalid hours', async (hour) => {
-		const invalidTask = { ...validTask, eta: `${hour}:00` }
-		const result = await simpleTaskSchema.isValid(invalidTask)
-		expect(result).toBe(false)
-	})
-
-	it.each(invalidMinutes)('Should reject time string with invalid minutes', async (minute) => {
-		const invalidTask = { ...validTask, eta: `12:${minute}` }
-		const result = await simpleTaskSchema.isValid(invalidTask)
-		expect(result).toBe(false)
-	})
-
-	it.each(missingColonTimes)('Should reject time string without colon', async (time) => {
-		const invalidTask = { ...validTask, eta: time }
-		const result = await simpleTaskSchema.isValid(invalidTask)
-		expect(result).toBe(false)
-	})
-	*/
 	it.each(invalidLengthTestCases)('Should reject task with incorrect length', async (testCase) => {
 		const result = await simpleTaskSchema.isValid(testCase)
 		expect(result).toBe(false)

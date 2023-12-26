@@ -1,9 +1,8 @@
 import * as Yup from 'yup'
 import { TASK_STATUSES } from '../../utils/constants'
-import { Timestamp } from 'firebase/firestore'
 
-const timestamp = Timestamp.fromDate(new Date()).seconds
-const isoStringRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|[+-]\d{2}:\d{2})$/;
+const timestamp = Math.floor((new Date()).getTime() / 1000)
+const isoStringRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|[+-]\d{2}:\d{2})$/
 const twelve = new Date(new Date().setHours(12, 0, 0, 0))
 
 // This schema is for the Simple Task
@@ -109,7 +108,6 @@ export const simpleTaskSchema = Yup.object({
 		}),
 }).default({})
 
-// NOTE: Avoid using default id, as it will not be unique
 /**
  * Fill default values for a simple task, optionally overridden by provided object.
  * @type {FillDefaultsForSimpleTask}
@@ -120,7 +118,7 @@ export const fillDefaultsForSimpleTask = (obj) => {
 		waste: 1,
 		ttc: 1,
 		eta: twelve,
-		id: 1,
+		id: new Date().getTime(),
 		status: TASK_STATUSES.INCOMPLETE,
 		timestamp: timestamp.seconds,
 		completedTimeStamp: timestamp.seconds + 1,

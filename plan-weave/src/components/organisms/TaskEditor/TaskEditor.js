@@ -7,29 +7,10 @@ import TaskTable from '../../molecules/TaskTable/TaskTable'
 import Pagination from '../../molecules/Pagination/Pagination'
 import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
 import PropTypes from 'prop-types'
-
 import store from '../../../redux/store.js'
 import { createTaskEditorServices } from '../../../services/PlanWeavePage/TaskEditorServices'
 import { ThemeContext } from 'styled-components' // needed for theme object
-/*
-	Easy: 	
-		TODO: Validate incoming local tasks with schema: validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks, start) })
-		TODO: Add Test coverage to new helpers and extract all helper functions to helper.js
-		TODO: Fine tune the spacing of the row items to make it more natural. Especially the icons.
 
-	Medium:
-		TODO: Refator CompletedTimestamp to be an ISO String (Including all changes in code base)
-		TODO: Add Schema prop for TaskRow so that it can handle the Full Task
-		TODO: Sort icons
-		TODO: Media Queries
-		
-	Hard: 
-		TODO: Solve the Pagination Problem (The one where you efficiently use pagination with memos and stuff)
-		TODO: Solve the Refresh Problem (If you refresh, it alters components inline potentially harming Analytics. 
-			  What should be done is sent tasks to store and hide them, then generate a copy based on old)
-		TODO: Full Task Schema + Tests
-
-*/
 const TaskEditor = ({
 	services = createTaskEditorServices(store),
 	variant = 'dark',

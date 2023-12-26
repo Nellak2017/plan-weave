@@ -6,11 +6,7 @@ import {
 } from './DropDownButton.elements'
 import { AiFillCaretDown } from 'react-icons/ai'
 import { useState } from 'react'
-
-/* 
-TODO:
-- [ ] Add Support for on Enter Pressed, open the Drop-down menu
-*/
+import PropTypes from 'prop-types'
 
 function DropDownButton({ size = 's', color = 'primary', options, children = 'Auto Sort', tabIndex, ...rest }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -21,10 +17,9 @@ function DropDownButton({ size = 's', color = 'primary', options, children = 'Au
     setIsOpen(false) // Close the dropdown menu
   }
   return (
-    <DropdownContainer tabIndex={tabIndex}>
+    <DropdownContainer tabIndex={tabIndex} onKeyDown={e => { if (e.key === 'Enter') { handleToggle() } }}>
       <DropDownButtonStyled
         onClick={handleToggle}
-        onKeyDown={e => { if (e.key === 'Enter') { handleToggle() } }}
         size={size}
         color={color} {...rest}
         onBlur={() => setIsOpen(false)} // close if clicked off
@@ -35,8 +30,8 @@ function DropDownButton({ size = 's', color = 'primary', options, children = 'Au
       <DropdownMenu open={isOpen}>
         {options?.map((option, index) => (
           <DropdownMenuItem
-            key={index}
-            onMouseDown={ e => handleOptionClick(e, option?.listener)}
+            key={option?.name || `unique: ${index}`}
+            onMouseDown={e => handleOptionClick(e, option?.listener)}
           >
             {option?.name}
           </DropdownMenuItem>
@@ -44,6 +39,19 @@ function DropDownButton({ size = 's', color = 'primary', options, children = 'Au
       </DropdownMenu>
     </DropdownContainer>
   )
+}
+
+DropDownButton.propTypes = {
+  size: PropTypes.string,
+  color: PropTypes.string,
+  options: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string,
+      listener: PropTypes.func,
+    })
+  ),
+  children: PropTypes.node,
+  tabIndex: PropTypes.number,
 }
 
 export default DropDownButton
