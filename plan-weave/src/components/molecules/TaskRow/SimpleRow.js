@@ -18,16 +18,13 @@ import { format, parseISO } from 'date-fns'
 
 // Task View Logic (Simple, Full) (Just Simple for now)
 const SimpleRow = ({
-	provided,
-	taskObject,
+	services,
+	state,
 	variant,
-	isChecked,
-	setLocalTask,
-	localTask,
-	localTtc,
-	setLocalTtc,
-	handleCheckBoxClicked,
+	provided,
 }) => {
+	const { setLocalTask, setLocalTtc, handleCheckBoxClicked } = services
+	const { taskObject, isChecked, localTask, localTtc } = state
 
 	const { task, waste, ttc, eta, status, index } = { ...taskObject }
 	const { dnd: dndTooltip, completed: completedTooltip, incomplete: incompleteTooltip, task: taskTooltip,
@@ -86,7 +83,14 @@ const SimpleRow = ({
 							hourText2: 'hours'
 						}) :
 						'0 minutes'}</pre>
-					: <HoursInput onValueChange={value => setLocalTtc(parseFloat(value))} value={localTtc} initialValue={localTtc && localTtc > .01 ? localTtc : 1} variant={variant} placeholder='hours' text='hours' />
+					: <HoursInput
+						onValueChange={value => setLocalTtc(parseFloat(value))}
+						value={localTtc}
+						initialValue={localTtc && localTtc > .01 ? localTtc : 1}
+						variant={variant}
+						placeholder='hours'
+						text='hours'
+					/>
 				}
 			</TimeContainer>
 			<TimeContainer title={etaTooltip}>

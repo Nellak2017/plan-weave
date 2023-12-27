@@ -1,5 +1,5 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
-import { getTime, formatISO } from 'date-fns'
+import { getTime, formatISO, parseISO } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
 
 // This file contains many helpers used through out the application
@@ -476,5 +476,18 @@ export const calculateEfficiency = (startTime, endTime, ttcHours) => {
 }
 
 export const isValidDate = (date) => {
-    return (new Date(date) !== "Invalid Date") && !isNaN(new Date(date))
+    return (new Date(date) != "Invalid Date") && !isNaN(new Date(date))
+}
+
+// Used in TodoList to simplify things and make it clearer
+export const isTaskOld = (timeRange, task) => {
+	const { start, end } = { ...timeRange }
+		? { start: parseISO(timeRange?.start), end: parseISO(timeRange?.end) }
+		: { 0: new Date(new Date().setHours(0, 0, 0, 0)), 1: new Date(new Date().setHours(24, 59, 59, 59)) }
+
+	const epochDiff = (end - start) / 1000 // seconds between end and start
+	const epochTimeSinceStart = (start.getTime() - new Date(start).setHours(0, 0, 0, 0)) / 1000 // seconds between 00:00 and start
+	const epochTotal = epochDiff >= 0 ? epochDiff + epochTimeSinceStart : epochTimeSinceStart // seconds in our modified day. If negative, then default to full day
+	const epochETA = parseISO(task?.eta)?.getTime() / 1000
+	return !isTimestampFromToday(start, epochETA, epochTotal)
 }

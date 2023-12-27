@@ -24,7 +24,7 @@ function TaskRow({
 	old = false
 }) {
 	// --- Destructuring
-	const { task, waste, ttc, eta, status, id, timestamp, dueDate } = { ...taskObject }
+	const { task, waste, ttc, eta, status, id, timestamp, completedTimeStamp, hidden, efficiency, parentThread, dependencies, weight, dueDate } = { ...taskObject }
 	const { taskRow } = { ...services }
 	const { isHighlighting, selectedTasks, fullTask } = { ...state }
 	const { delete: deleteTooltip } = TASK_ROW_TOOLTIPS
@@ -37,12 +37,20 @@ function TaskRow({
 	if (id === undefined || id === null || isNaN(id) || id < 0) console.error(`Id is not a valid number for task index = ${index}, id = ${id}`)
 
 	// --- Local State 
+	const [tab, setTab] = useState(false) // Used to prevent updating a task on Tab Event
+
 	const [localTask, setLocalTask] = useState(task)
 	const [localTtc, setLocalTtc] = useState(ttc)
 	const [isChecked, setIsChecked] = useState(status.toLowerCase().trim() === TASK_STATUSES.COMPLETED)
 
-	const [tab, setTab] = useState(false)
+	const [localDueDate, setLocalDueDate] = useState(dueDate)
+	const [localWeight, setLocalWeight] = useState(weight)
+	const [localThread, setLocalThread] = useState(parentThread)
+
+	// --- Memoized Constants
 	const iconSize = useMemo(() => 36, [])
+	const simpleRowServices = useMemo(() => ({ setLocalTask, setLocalTtc, handleCheckBoxClicked: () => handleCheckBoxClicked({ services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id }) }), [])
+	const simpleRowState = useMemo(() => ({ taskObject: { task, waste, ttc, eta, status, id, timestamp, index }, isChecked, localTask, localTtc }), [])
 
 	// --- Effects
 	// Should run when the highlighting stops to reset the checkmarks to what they should be
@@ -67,15 +75,10 @@ function TaskRow({
 			{!fullTask &&
 				<>
 					<SimpleRow
-						provided={provided || undefined}
-						taskObject={{ task, waste, ttc, eta, status, id, timestamp, index }} // eta was used previously
+						services={simpleRowServices}
+						state={simpleRowState}
 						variant={variant}
-						isChecked={isChecked}
-						setLocalTask={setLocalTask}
-						localTask={localTask}
-						localTtc={localTtc}
-						setLocalTtc={setLocalTtc}
-						handleCheckBoxClicked={() => handleCheckBoxClicked({ services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id })}
+						provided={provided || undefined}
 					/>
 					<TrashContainer>
 						<BiTrash title={deleteTooltip} onClick={() => taskRow?.delete(id)} size={iconSize} />
@@ -85,19 +88,23 @@ function TaskRow({
 			}
 			{fullTask &&
 				<>
-					<button onClick={() => console.log(taskObject)}>taskObject</button>
+					{/*<button onClick={() => console.log(taskObject)}>taskObject</button>*/}
 					<FullRow
 						simpleTaskProps={{
-							provided,
-							taskObject: { task, waste, ttc, eta, status, id, timestamp, index, dueDate }, 
-							variant,
-							isChecked,
-							setLocalTask,
-							localTask,
-							localTtc,
-							setLocalTtc,
-							handleCheckBoxClicked: () => handleCheckBoxClicked({ services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id }),
-							handleDeleteTask: () => taskRow?.delete(id),
+							...simpleRowServices,
+							...simpleRowState,
+							variant: variant,
+							provided: provided || undefined,
+						}}
+						state={{
+							newFields: { completedTimeStamp, hidden, efficiency, parentThread, dueDate, dependencies, weight }
+						}}
+						services={{
+							newServices: {
+								setLocalDueDate,
+								setLocalWeight,
+								setLocalThread
+							}
 						}}
 					/>
 					<TrashContainer>
