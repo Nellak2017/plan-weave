@@ -3,6 +3,14 @@ import { space, layout, typography } from 'styled-system'
 import { getPresetCSS, taskTablePresets } from '../../../styles/theme'
 
 export const TaskTableContainer = styled.div`
+
+	display: block;
+	max-width: -moz-fit-content;
+	max-width: fit-content;
+	margin: 0 auto;
+	overflow-x: auto;
+	white-space: nowrap;	
+
 	table {
 		width: 100%;
 		max-width: ${props => props.maxwidth}px;
@@ -12,12 +20,12 @@ export const TaskTableContainer = styled.div`
   	}
 
 	tr {
-		width: ${props => props.maxwidth}px !important;
 		max-width: ${props => props.maxwidth}px; // added to make the squeezing stop when dnd
 	}
 
 	td, th {
 		border-bottom: 1px solid ${props => props.theme.colors.lightNeutralLight}50;
+		min-width: 32px;
 	}
 
 	td {

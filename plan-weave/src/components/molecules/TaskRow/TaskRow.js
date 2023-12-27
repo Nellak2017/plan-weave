@@ -1,13 +1,16 @@
 import { useState, useEffect, useMemo } from 'react'
-import { TaskRowStyled } from './TaskRow.elements.js'
+import { TaskRowStyled, TrashContainer } from './TaskRow.elements.js'
 import SimpleRow from './SimpleRow.js'
+import FullRow from './FullRow.js'
 import { Draggable } from 'react-beautiful-dnd'
-import { THEMES, TASK_STATUSES } from '../../utils/constants.js'
+import { THEMES, TASK_STATUSES, TASK_ROW_TOOLTIPS } from '../../utils/constants.js'
 import 'react-toastify/dist/ReactToastify.css'
 import { highlightTaskRow } from '../../utils/helpers'
 import { parseISO } from 'date-fns'
 import { handleCheckBoxClicked, handleUpdateTask } from './TaskRow.events.js'
 import PropTypes from 'prop-types'
+
+import { BiTrash } from 'react-icons/bi'
 
 // services: {...others, updateSelectedTasks}
 // state: {isHighlighting, selectedTasks}
@@ -21,9 +24,10 @@ function TaskRow({
 	old = false
 }) {
 	// --- Destructuring
-	const { task, waste, ttc, eta, status, id, timestamp } = { ...taskObject }
+	const { task, waste, ttc, eta, status, id, timestamp, dueDate } = { ...taskObject }
 	const { taskRow } = { ...services }
-	const { isHighlighting, selectedTasks } = { ...state }
+	const { isHighlighting, selectedTasks, fullTask } = { ...state }
+	const { delete: deleteTooltip } = TASK_ROW_TOOLTIPS
 	const newETA = useMemo(() => parseISO(eta), [eta]) // Converts eta from ISO -> Date
 
 	// --- Input Checks
@@ -38,6 +42,7 @@ function TaskRow({
 	const [isChecked, setIsChecked] = useState(status.toLowerCase().trim() === TASK_STATUSES.COMPLETED)
 
 	const [tab, setTab] = useState(false)
+	const iconSize = useMemo(() => 36, [])
 
 	// --- Effects
 	// Should run when the highlighting stops to reset the checkmarks to what they should be
@@ -59,18 +64,46 @@ function TaskRow({
 			}}
 			onKeyDown={e => { if (e.key === 'Tab') setTab(true) }} // Set to be true, so that tabbing in doesn't cause updates. (other approaches don't work perfectly)
 		>
-			{<SimpleRow
-				provided={provided || undefined}
-				taskObject={{ task, waste, ttc, eta, status, id, timestamp, index }} // eta was used previously
-				variant={variant}
-				isChecked={isChecked}
-				setLocalTask={setLocalTask}
-				localTask={localTask}
-				localTtc={localTtc}
-				setLocalTtc={setLocalTtc}
-				handleCheckBoxClicked={() => handleCheckBoxClicked({ services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id })}
-				handleDeleteTask={() => taskRow?.delete(id)}
-			/>}
+			{!fullTask &&
+				<>
+					<SimpleRow
+						provided={provided || undefined}
+						taskObject={{ task, waste, ttc, eta, status, id, timestamp, index }} // eta was used previously
+						variant={variant}
+						isChecked={isChecked}
+						setLocalTask={setLocalTask}
+						localTask={localTask}
+						localTtc={localTtc}
+						setLocalTtc={setLocalTtc}
+						handleCheckBoxClicked={() => handleCheckBoxClicked({ services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id })}
+					/>
+					<TrashContainer>
+						<BiTrash title={deleteTooltip} onClick={() => taskRow?.delete(id)} size={iconSize} />
+					</TrashContainer>
+				</>
+
+			}
+			{fullTask &&
+				<>
+					<button onClick={() => console.log(taskObject)}>taskObject</button>
+					<FullRow
+						simpleTaskProps={{
+							provided,
+							taskObject: { task, waste, ttc, eta, status, id, timestamp, index, dueDate }, 
+							variant,
+							isChecked,
+							setLocalTask,
+							localTask,
+							localTtc,
+							setLocalTtc,
+							handleCheckBoxClicked: () => handleCheckBoxClicked({ services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id }),
+							handleDeleteTask: () => taskRow?.delete(id),
+						}}
+					/>
+					<TrashContainer>
+						<BiTrash title={deleteTooltip} onClick={() => taskRow?.delete(id)} size={iconSize} />
+					</TrashContainer>
+				</>}
 		</TaskRowStyled>
 	)
 

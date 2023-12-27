@@ -41,7 +41,6 @@ export const LoginContainer = styled.span`
 	align-items: center;
 	column-gap: ${props => props.theme.spaces.medium};
 	height: 100%;
-	width: 240px;
 
 	a {
 		display: inline-flex;

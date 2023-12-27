@@ -30,6 +30,7 @@ import {
 	endTimeChangeEvent,
 } from './TaskControl.events.js'
 import { useInterval } from '../../../hooks/useInterval.js'
+import { IoIosInformationCircleOutline } from "react-icons/io";
 
 // services are: search, timeRange, owl, addTask, deleteMany, highlighting, updateSelectedTasks, sort
 // state is: timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme
@@ -43,15 +44,14 @@ function TaskControl({
 	owlSize = '32px',
 	clock1Text = '', clock2Text = '',
 	coords = { y0: 0, y1: 0, x0: 0, x1: -36 },
-	toolTips = DEFAULT_TASK_CONTROL_TOOL_TIPS,
 	...rest }) {
 
 	// Input Validation and Destructuring
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	const { y0, y1, x0, x1 } = { ...coords }
-	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip } = { ...toolTips }
-	const { search, sort } = { ...services }
-	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme } = { ...state }
+	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip, fullTaskToggleTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
+	const { search, sort, fullToggle } = { ...services }
+	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme, fullTask } = { ...state }
 	const startTime = useMemo(() => parseISO(timeRange?.start), [timeRange])
 	const endTime = useMemo(() => parseISO(timeRange?.end), [timeRange])
 
@@ -130,6 +130,15 @@ function TaskControl({
 						onKeyDown={e => { if (e.key === 'Enter') { addEvent(services) } }}
 						size={owlSize}
 						data-testid={'add-button'}
+					/>
+					<IoIosInformationCircleOutline 
+						tabIndex={0}
+						title={fullTaskToggleTip}
+						style={fullTask && { color: theme.colors.primary }}
+						onClick={() => fullToggle()}
+						onKeyDown={e => { if (e.key === 'Enter') { fullToggle() } }}
+						size={owlSize}
+						data-testid={'full-task-toggle-button'}
 					/>
 					<BiTrash
 						tabIndex={0}

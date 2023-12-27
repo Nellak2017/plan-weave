@@ -11,7 +11,8 @@ import {
 	deleteDnDEvent,
 	diagonalize,
 	calculateRange,
-	dateToToday
+	dateToToday,
+	calculateEfficiency,
 } from './helpers'
 import { TASK_STATUSES } from './constants'
 import { format } from 'date-fns-tz'
@@ -615,6 +616,36 @@ describe('dateToToday', () => {
 				expect(() => dateToToday(input)).toThrow(expectedError)
 			} else {
 				expect(dateToToday(input)).toEqual(expected)
+			}
+		})
+	})
+})
+
+describe('calculateEfficiency', () => {
+	const testCases = [
+		// Example 1
+		{ startTime: 0, endTime: 7200, etaHours: 2.5, expected: 1.25 },
+
+		// Example 2
+		{ startTime: 0, endTime: 11250, etaHours: 2.5, expected: .80 },
+
+		// Example 3
+		{ startTime: 0, endTime: 1, etaHours: 24, expected: 86400.00 },
+
+		// Additional cases
+		{ startTime: 0, endTime: 3600, etaHours: 1, expected: 1.00 }, // 100% efficiency
+		{ startTime: 0, endTime: 7200, etaHours: 0, expected: new RangeError('All input should be in the Range [0, 86400].\nstartTime = 0\nendTime = 7200\netaHours = 0') }, // Invalid eta
+		{ startTime: 0, endTime: -100, etaHours: 2, expected: new RangeError('All input should be in the Range [0, 86400].\nstartTime = 0\nendTime = -100\netaHours = 2') }, // Negative end time
+		{ startTime: 'invalid', endTime: 7200, etaHours: 2, expected: new TypeError('All input parameters must be numbers.') }, // Invalid start time
+		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: new RangeError('Start Time should be less than End Time.\nStart Time = 7200\nEnd Time = 3600') }, // Start time greater than end time
+	]
+
+	testCases.forEach(({ startTime, endTime, etaHours, expected }) => {
+		test(`calculateEfficiency(${startTime}, ${endTime}, ${etaHours}) should return ${expected}`, () => {
+			if (expected instanceof Error) {
+				expect(() => calculateEfficiency(startTime, endTime, etaHours)).toThrow(expected)
+			} else {
+				expect(calculateEfficiency(startTime, endTime, etaHours)).toBeCloseTo(expected, 5) // Use toBeCloseTo for floating-point numbers
 			}
 		})
 	})

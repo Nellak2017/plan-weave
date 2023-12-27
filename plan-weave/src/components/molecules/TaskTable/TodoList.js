@@ -1,9 +1,11 @@
 import React from "react"
 import { parseISO } from 'date-fns'
-import { isTimestampFromToday } from '../../utils/helpers'
+import { isTimestampFromToday, validateTask } from '../../utils/helpers'
+import { taskSchema, fillDefaults } from "../../schemas/taskSchema/taskSchema"
 import TaskRow from '../TaskRow/TaskRow'
 
-// --- Extracted view logic for Task Table
+// TODO: Refactor this into smaller helpers to reduce code noise
+// --- Extracted view logic for Task Table (Covers both Simple and Full Tasks)
 export const todoList = (services, state, taskList, startRange, endRange, timeRange, variant = 'dark') => {
 	if (!taskList) return []
 
@@ -19,21 +21,14 @@ export const todoList = (services, state, taskList, startRange, endRange, timeRa
 	return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
 		const epochETA = parseISO(task?.eta)?.getTime() / 1000
 		const isOld = !isTimestampFromToday(start, epochETA, epochTotal)
-		
+		const validatedFullTasks = validateTask({ task, schema: taskSchema, schemaDefaultFx: fillDefaults })
+
 		return <TaskRow
 			services={services}
 			state={state}
 			key={`task-${task.id}`}
 			variant={variant}
-			taskObject={{
-				task: task.task,
-				waste: task.waste,
-				ttc: task.ttc,
-				eta: task.eta,
-				id: task.id,
-				status: task.status,
-				timestamp: task.timestamp,
-			}}
+			taskObject={validatedFullTasks}
 			index={idx}
 			old={isOld}
 		/>

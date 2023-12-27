@@ -40,10 +40,15 @@ function MyApp({ Component, pageProps }) {
         <title>Plan Weave</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>{`
+          :root {
+            --font-poppins: ${poppins.style.fontFamily};
+            --font-courier-prime: ${courierPrime.style.fontFamily};
+            --font-roboto: ${roboto.style.fontFamily};
+          }
           html {
             height: 100vh;
             width: 100vw;
-            font-family: ${poppins.style.fontFamily}, 'Source Sans Pro', 'sans-serif';
+            font-family: ${poppins.style.fontFamily}, ${courierPrime.style.fontFamily}, ${roboto.style.fontFamily}, 'Source Sans Pro', 'sans-serif';
           }
         `}</style>
       </Head>

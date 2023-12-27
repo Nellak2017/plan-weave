@@ -1,10 +1,7 @@
-import styled, {css} from "styled-components"
+import styled from "styled-components"
 import {
 	MdDragIndicator,
-	MdOutlineCheckBoxOutlineBlank,
-	MdOutlineCheckBox
 } from 'react-icons/md'
-import { AiOutlineEllipsis } from 'react-icons/ai'
 import { space, layout, typography } from 'styled-system'
 import { getPresetCSS, taskRowPresets } from '../../../styles/theme.js'
 
@@ -24,6 +21,14 @@ export const TaskRowStyled = styled.tr`
 		cursor: pointer;
 		color: ${props => props.theme.colors.primary};
 	}
+
+	td {
+		display: table-cell;
+		vertical-align: middle;
+		svg {
+			vertical-align: middle;
+		}
+	}
 `
 
 export const DragIndicator = styled(MdDragIndicator)`
@@ -35,26 +40,75 @@ export const DragIndicator = styled(MdDragIndicator)`
 // Containers
 
 export const TaskContainer = styled.td`
-	display: table-cell;
-	width: 400px;
+	width: 375px;
 	padding: ${props => props.theme.spaces.small};
+	p, pre {
+		font-size: ${props => props.theme.fontSizes.medium};
+	}
+	input {
+		vertical-align: middle;
+		min-width: 200px;
+		max-width: 360px;
+		width: 100%;
+	}
+`
+
+export const WasteContainer = styled.td`
+	padding: ${props => props.theme.spaces.small};
+	max-width: 170px;
+	min-width: 100px;
+	text-align: left;
+	input {
+		min-width: 40px;
+	}
 	p, pre {
 		font-size: ${props => props.theme.fontSizes.medium};
 	}
 `
 
+
 export const TimeContainer = styled.td`
-	display: table-cell;
 	padding: ${props => props.theme.spaces.small};
-	width: 100px;
+	max-width: 200px;
+	min-width: 100px;
 	text-align: left;
+	input {
+		width: 40px;
+		padding-left: 0;
+		padding-right: 0;
+	}
 	p, pre {
 		font-size: ${props => props.theme.fontSizes.medium};
 	}
 `
 export const IconContainer = styled.td`
-	display: table-cell;
-	padding: 5px 10px 5px 0px;
-	vertical-align: 'middle';
-	width: 32px;
+	
+`
+export const TrashContainer = styled.td`
+	padding-right: 5px;
+`
+export const DragContainer = styled.td`
+	padding-left: 0px;
+	max-width: 32px;
+`
+
+// Full Task Exclusives
+
+export const DueContainer = styled.td`
+	min-width: 50px;
+	padding: ${props => props.theme.spaces.small};
+`
+
+export const WeightContainer = styled.td`
+	padding: ${props => props.theme.spaces.small};
+	padding-left: 25px;
+	input {
+		width: 40px;
+		padding-left: 0;
+		padding-right: 0;
+	}
+`
+
+export const ThreadContainer = styled.td`
+	padding: ${props => props.theme.spaces.small};
 `

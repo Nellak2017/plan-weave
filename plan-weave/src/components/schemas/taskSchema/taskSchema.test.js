@@ -62,12 +62,12 @@ describe('Task Schema', () => {
 			},
 			expectValid: true,
 		},
-		// Error case: Invalid efficiency (greater than 100)
+		// Error case: Invalid efficiency (greater than 86400) (one day)
 		{
-			description: 'Invalid efficiency value (greater than 100)',
+			description: 'Invalid efficiency value (greater than 86400) (one day in seconds)',
 			input: {
 				...fillDefaults(),
-				efficiency: 150,
+				efficiency: 86400 + 1,
 			},
 			expectValid: false,
 		},

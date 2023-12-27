@@ -9,6 +9,7 @@ import {
 	nextPage,
 	refresh,
 	updateTasksPerPage,
+	fullToggle,
 } from "../../redux/reducers/taskEditorSlice.js"
 import {
 	updateTimeRangeThunk,
@@ -54,14 +55,16 @@ export const createTaskEditorServices = (store) => {
 			}, // reducer to update highlighting bool for delete many tasks
 			addTask: (task) => {
 				dispatch(addNewTaskThunk(task))
-			}, // thunk to add task
+			}, // thunk to add task (simple or full)
 			deleteMany: (selectedIds) => {
 				dispatch(removeTasksThunk(selectedIds))
 			}, // thunk to delete many
 			sort: (sortingAlgo) => {
 				dispatch(updateSortingAlgorithmThunk(sortingAlgo))
-			} // thunk to update sorting method
-
+			}, // thunk to update sorting method
+			fullToggle: () => {
+				dispatch(fullToggle())
+			} // reducer to toggle between full and simple tasks
 		},
 		taskTable: {
 			taskRow: {

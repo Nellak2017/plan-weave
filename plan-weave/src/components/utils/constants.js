@@ -46,7 +46,7 @@ export const OPTION_NOTIFICATIONS = {
 
 export const SIMPLE_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA']
 
-// FULL_TASK_HEADERS
+export const FULL_TASK_HEADERS = [...SIMPLE_TASK_HEADERS, 'Due', 'Weight', 'Thread']
 
 export const DEFAULT_SIMPLE_TASKS = [
 	{ status: 'completed', task: 'Example Task 1', waste: 2, ttc: 5, eta: '15:30', id: 1 },
@@ -76,7 +76,8 @@ export const DEFAULT_FULL_TASK = {
 
 export const DEFAULT_TASK_CONTROL_TOOL_TIPS = {
 	owlToolTip: 'Toggle Overnight Mode', addToolTip: 'Add a New Task',
-	deleteToolTip: 'Delete selected', dropDownToolTip: 'Select Sorting Method'
+	deleteToolTip: 'Delete selected', dropDownToolTip: 'Select Sorting Method',
+	fullTaskToggleTip: 'Toggle Full Task View'
 }
 
 export const CLOCK_DEBOUNCE = 20 // measured in ms

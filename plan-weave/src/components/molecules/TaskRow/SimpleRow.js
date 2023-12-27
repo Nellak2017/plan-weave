@@ -5,12 +5,13 @@ import {
 	MdOutlineCheckBoxOutlineBlank,
 	MdOutlineCheckBox
 } from 'react-icons/md'
-import { BiTrash } from 'react-icons/bi'
 import {
 	DragIndicator,
 	TaskContainer,
+	WasteContainer,
 	TimeContainer,
-	IconContainer
+	IconContainer,
+	DragContainer, // last in row
 } from './TaskRow.elements.js'
 import { formatTimeLeft } from '../../utils/helpers.js'
 import { format, parseISO } from 'date-fns'
@@ -26,23 +27,22 @@ const SimpleRow = ({
 	localTtc,
 	setLocalTtc,
 	handleCheckBoxClicked,
-	handleDeleteTask,
-	tooltips = TASK_ROW_TOOLTIPS
 }) => {
 
 	const { task, waste, ttc, eta, status, index } = { ...taskObject }
 	const { dnd: dndTooltip, completed: completedTooltip, incomplete: incompleteTooltip, task: taskTooltip,
-		waste: wasteTooltip, ttc: ttcTooltip, eta: etaTooltip, delete: deleteTooltip } = { ...tooltips }
+		waste: wasteTooltip, ttc: ttcTooltip, eta: etaTooltip } = TASK_ROW_TOOLTIPS
 
+	const iconSize = 36
 	return (
 		<>
-			<IconContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''}>
-				<DragIndicator size={32} />
-			</IconContainer>
+			<DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''}>
+				<DragIndicator size={iconSize} />
+			</DragContainer>
 			<IconContainer title={isChecked ? completedTooltip : incompleteTooltip}>
 				{isChecked
-					? (<MdOutlineCheckBox size={32} onClick={handleCheckBoxClicked} />)
-					: (<MdOutlineCheckBoxOutlineBlank size={32} onClick={handleCheckBoxClicked} />)
+					? (<MdOutlineCheckBox size={iconSize} onClick={handleCheckBoxClicked} />)
+					: (<MdOutlineCheckBoxOutlineBlank size={iconSize} onClick={handleCheckBoxClicked} />)
 				}
 			</IconContainer>
 			<TaskContainer title={taskTooltip}>
@@ -51,7 +51,7 @@ const SimpleRow = ({
 					: <TaskInput onChange={e => setLocalTask(e.target.value)} value={localTask} variant={variant} />
 				}
 			</TaskContainer>
-			<TimeContainer title={wasteTooltip} style={{ width: '200px' }}>
+			<WasteContainer title={wasteTooltip} style={{ width: '200px' }}>
 				<p>
 					{(() => {
 						// This function displays the waste for the positive, 0, and negative cases
@@ -75,8 +75,8 @@ const SimpleRow = ({
 					})()
 					}
 				</p>
-			</TimeContainer>
-			<TimeContainer style={{ width: '120px' }} title={ttcTooltip}>
+			</WasteContainer>
+			<TimeContainer title={ttcTooltip}>
 				{status === TASK_STATUSES.COMPLETED ?
 					<pre>{ttc && !isNaN(ttc) && ttc > 0 ?
 						formatTimeLeft({
@@ -89,7 +89,7 @@ const SimpleRow = ({
 					: <HoursInput onValueChange={value => setLocalTtc(parseFloat(value))} value={localTtc} initialValue={localTtc && localTtc > .01 ? localTtc : 1} variant={variant} placeholder='hours' text='hours' />
 				}
 			</TimeContainer>
-			<TimeContainer style={{ width: '40px' }} title={etaTooltip}>
+			<TimeContainer title={etaTooltip}>
 				<p aria-label={`eta for task ${index}`}>
 					{eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime())
 						? format(parseISO(eta), "HH:mm")
@@ -97,9 +97,6 @@ const SimpleRow = ({
 					}
 				</p>
 			</TimeContainer>
-			<IconContainer>
-				<BiTrash title={deleteTooltip} onClick={handleDeleteTask} size={32} />
-			</IconContainer>
 		</>)
 }
 

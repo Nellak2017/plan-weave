@@ -143,6 +143,14 @@ export const filterTaskList = ({ filter, list, attribute }) => {
 }
 
 /**
+ * Converts hours to seconds.
+ * 
+ * @param {number} hours - The number of hours to convert.
+ * @returns {number} - The equivalent seconds.
+ */
+export const hoursToSeconds = hours => hours * 60 * 60
+
+/**
  * Converts hours to milliseconds.
  * 
  * @param {number} hours - The number of hours to convert.
@@ -443,4 +451,30 @@ export const dateToToday = (start) => {
 	const initOfStart = new Date(start).setHours(0, 0, 0, 0)
 	const timeSinceStart = start.getTime() - initOfStart // millis since start's start of day
 	return new Date(initOfToday + timeSinceStart) // start but with today's date
+}
+
+/**
+ * Calculate efficiency based on start time, end time, and estimated time of arrival (ETA).
+ *
+ * @param {number} startTime - The start time in seconds (epoch).
+ * @param {number} endTime - The end time in seconds (epoch).
+ * @param {number} ttcHours - The estimated time to complete the task in hours.
+ * @returns {number} Efficiency as a percentage (0 to 86400).
+ * @throws {TypeError} If any of the input parameters is not a number.
+ * @throws {RangeError} If any of the input is a number, but not in the range [0, 86400]
+ */
+export const calculateEfficiency = (startTime, endTime, ttcHours) => {
+	if (typeof startTime !== 'number' || typeof endTime !== 'number' || typeof ttcHours !== 'number') {
+		throw new TypeError('All input parameters must be numbers.')
+	}
+	if (startTime < 0 || startTime > 86400 || endTime < 0 || endTime > 86400 || ttcHours <= 0 || ttcHours > 86400) {
+		throw new RangeError(`All input should be in the Range [0, 86400].\nstartTime = ${startTime}\nendTime = ${endTime}\netaHours = ${ttcHours}`)
+	}
+	if (startTime > endTime) throw new RangeError(`Start Time should be less than End Time.\nStart Time = ${startTime}\nEnd Time = ${endTime}`)
+
+	return hoursToSeconds(ttcHours) / (endTime - startTime) // efficiency = eta / (end - start)
+}
+
+export const isValidDate = (date) => {
+    return (new Date(date) !== "Invalid Date") && !isNaN(new Date(date))
 }

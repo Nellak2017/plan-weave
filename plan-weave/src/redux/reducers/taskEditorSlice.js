@@ -17,7 +17,8 @@ const initialState = {
 	page: 1, // what page the user is currently on. Starts at 1
 	tasksPerPage: 10,
 	taskTransition: [0, 0], // Used to keep dnd config in sync when completing/incompleting a task
-	tasks: []
+	tasks: [],
+	fullTask: true, // Used to show Full tasks or Simple Tasks
 }
 // Extracted because CompleteTask Reducer uses this logic
 const editTaskReducer = (state, action) => {
@@ -104,6 +105,9 @@ const taskEditorSlice = createSlice({
 			const taskList = Array.from(state.tasks)
 			state.tasks = rearrangeDnD(taskList, source, destination)
 		}, // given source, destination, it automatically updates local redux tasks
+		fullToggle: (state) => {
+			state.fullTask = !state.fullTask
+		},
 
 
 		updateTasks: (state, action) => {
@@ -147,5 +151,6 @@ export const {
 	nextPage,
 	refresh,
 	updateTasksPerPage,
+	fullToggle,
 	updateTasks, addTask, deleteTask, deleteTasks, editTask, completeTask } = taskEditorSlice.actions
 export default taskEditorSlice.reducer

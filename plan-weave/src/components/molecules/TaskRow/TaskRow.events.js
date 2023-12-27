@@ -1,4 +1,4 @@
-import { validateTask, millisToHours } from '../../utils/helpers'
+import { validateTask, millisToHours, calculateEfficiency } from '../../utils/helpers'
 import { TASK_STATUSES } from '../../utils/constants.js'
 import { parseISO } from 'date-fns'
 
@@ -26,7 +26,13 @@ export const handleCheckBoxClicked = ({ services, taskObject, setIsChecked, isCh
 		waste: millisToHours(currentTime.getTime() - newETA.getTime()), // millisToHours(currentTime.getTime() - eta.getTime())
 		ttc: localTtc,
 		eta: isChecked && newETA instanceof Date ? newETA.toISOString() : currentTime.toISOString(), 
-		completedTimeStamp: currentTime.getTime() / 1000 // epoch in seconds, NOT millis
+		completedTimeStamp: currentTime.getTime() / 1000, // epoch in seconds, NOT millis
+	
+		// efficiency: calculateEfficiency(timestamp, completedTimeStamp, localTtc)
+		// parentThread: localThread
+		// dueDate: localDueDate
+		// dependencies: localDependencies
+		// weight: localWeight
 	}
 	taskRow?.complete(id, updatedTask, index)
 }
@@ -38,6 +44,12 @@ export const handleUpdateTask = ({ taskRow, id, taskObject, localTask, localTtc 
 			? parseISO(taskObject.eta).getTime() / 1000
 			: new Date().getTime() / 1000,
 		task: localTask,
-		ttc: localTtc
+		ttc: localTtc,
+
+		// efficiency: calculateEfficiency(timestamp, completedTimeStamp, localTtc)
+		// parentThread: localThread
+		// dueDate: localDueDate
+		// dependencies: localDependencies
+		// weight: localWeight
 	})
 }

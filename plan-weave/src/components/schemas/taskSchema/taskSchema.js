@@ -29,10 +29,10 @@ const twelve = new Date(new Date().setHours(12, 0, 0, 0))
 export const taskSchema = Yup.object({
 	...simpleTaskSchema.fields,
 	// --- Full Task Exclusives
-	efficiency: Yup.number() // percentage
+	efficiency: Yup.number() // Percentage as raw number. Ex: 1 = 100%
 		.default(0)
 		.min(0)
-		.max(100),
+		.max(86400),
 	parentThread: Yup.string()
 		.max(50, 'Parent Thread must be at most 50 characters')
 		.default('')

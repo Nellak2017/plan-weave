@@ -10,8 +10,11 @@ import {
 
 export const HoursInputStyled = styled.input`
 	outline: 1px solid ${props => props.theme.colors.lightNeutralLight};
+	line-height: 25px;
+	text-align: center;
+	font-family: var(--font-poppins), sans-serif;
 	border-radius: 10px;
-	font-size: ${props => props.theme.fontSizes.smaller};
+	font-size: ${props => props.theme.fontSizes.small};
 	padding: ${props => props.theme.spaces.smaller} ${props => props.theme.spaces.small};
 	width: 100%;
 	max-width: ${props => (props.maxwidth ? props.maxwidth + 'px' : '100%')};

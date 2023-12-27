@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasks } from '../../../redux/selectors'
-import { THEMES, SIMPLE_TASK_HEADERS } from '../../utils/constants'
+import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS } from '../../utils/constants'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import Pagination from '../../molecules/Pagination/Pagination'
@@ -23,6 +23,7 @@ const TaskEditor = ({
 	// --- State Objects for Children
 	const globalTasks = useSelector(state => state?.globalTasks)
 	const taskList = useSelector(selectNonHiddenTasks)
+	const fullTask = useSelector(state => state?.taskEditor?.fullTask)
 
 	// State for TaskControl
 	const TaskControlState = {
@@ -33,6 +34,7 @@ const TaskEditor = ({
 		taskList,
 		selectedTasks: useSelector(state => state?.taskEditor?.selectedTasks),
 		theme: useContext(ThemeContext),
+		fullTask,
 	}
 
 	// State for TaskTable 
@@ -50,7 +52,8 @@ const TaskEditor = ({
 		taskRowState: {
 			isHighlighting: useSelector(state => state?.taskEditor?.highlighting),
 			selectedTasks: useSelector(state => state?.taskEditor?.selectedTasks),
-		}
+			fullTask,
+		},
 	}
 
 	// State for Pagination
@@ -64,6 +67,7 @@ const TaskEditor = ({
 
 	return (
 		<TaskEditorContainer variant={variant}>
+			<button onClick={() => console.log(taskList)}>Local Tasks</button>
 			<h1>{title}</h1>
 			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 				<TaskControl
@@ -83,7 +87,7 @@ const TaskEditor = ({
 					}}
 					state={TaskTableState}
 					variant={variant}
-					headerLabels={SIMPLE_TASK_HEADERS}
+					headerLabels={fullTask ? FULL_TASK_HEADERS : SIMPLE_TASK_HEADERS}
 					maxwidth={maxwidth}
 				/>
 				<Pagination

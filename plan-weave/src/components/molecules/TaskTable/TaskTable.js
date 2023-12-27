@@ -5,7 +5,7 @@ import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import 'react-toastify/dist/ReactToastify.css'
 import { THEMES, SORTING_METHODS } from '../../utils/constants'
 import { filterTaskList, completedOnTopSorted } from '../../utils/helpers'
-import { calculateWaste, calculateRange } from '../../utils/helpers.js'
+import { calculateWaste, calculateRange, transformAll } from '../../utils/helpers.js'
 import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
 import PropTypes from 'prop-types'
@@ -37,7 +37,12 @@ const TaskTable = ({
 		const transforms = [t => calculateWaste({ start, taskList: t, time: new Date() })]
 		updateTasks(completedOnTopSorted(globalTasks?.tasks, [], start, transforms, SORTING_METHODS[sortingAlgo]))
 	}, [sortingAlgo])
-	const update = () => { if (taskList.length > 0) updateTasks(calculateWaste({ start, taskList, time: new Date() }) || taskList) }
+	const update = () => { 
+		const transforms = [
+			t => calculateWaste({ start, taskList: t, time: new Date() }),
+			// t => calculateEfficiencyList({taskList: t, ...other stuff})
+		]
+		if (taskList.length > 0) updateTasks(transformAll(taskList, transforms) || taskList) }
 	useInterval(() => update(), 50, [timeRange, owl, taskList])
 
 	return (
