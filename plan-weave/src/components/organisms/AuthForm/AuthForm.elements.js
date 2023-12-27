@@ -105,10 +105,6 @@ export const SubtitleContainer = styled.div`
 	display: flex;
 	column-gap: ${props => props.theme.spaces.small};
 	a {
-		//color: ${props => props.theme.colors.primaryLightActive};
 		text-decoration: underline;
-	}
-	a:hover {
-		//color: ${props => props.theme.colors.primaryLightHover};
 	}
 `

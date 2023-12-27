@@ -5,7 +5,6 @@ import { getPresetCSS, navPresets } from '../../../styles/theme'
 export const StyledNav = styled.nav`
 	margin: 0;
 	padding: 0 ${props => props.theme.spaces.small};
-	height: ${props => props.theme.fontSizes.extraLarge};
 
 	display: flex;
 	align-items: center;
@@ -42,6 +41,7 @@ export const LoginContainer = styled.span`
 	align-items: center;
 	column-gap: ${props => props.theme.spaces.medium};
 	height: 100%;
+	width: 240px;
 
 	a {
 		display: inline-flex;

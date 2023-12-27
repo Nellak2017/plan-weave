@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 function Button({ size = 's', variant = 'standardButton', children, ...rest }) {
 	return (
-		<ButtonStyled size={size} variant={variant} {...rest}>
+		<ButtonStyled $size={size} variant={variant} {...rest}>
 			{children}
 		</ButtonStyled>
 	)

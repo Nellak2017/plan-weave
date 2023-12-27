@@ -9,6 +9,9 @@ export const StyledInfoContainer = styled.section`
 	justify-content: center;
 	flex-wrap: wrap;
 	height: 720px;
+	width: 100vw;
+	margin: 0;
+	padding: 0;
 
 	${space};
 	${layout};
@@ -20,7 +23,6 @@ export const StyledInfoContainer = styled.section`
 export const ColumnContainer = styled.div`
 	display: flex;
 	align-items: center;
-
 	@media screen and (max-width:${props => props.theme.breakpoints.md}){
         flex-direction: column;
 		row-gap: ${props => props.theme.spaces.medium};

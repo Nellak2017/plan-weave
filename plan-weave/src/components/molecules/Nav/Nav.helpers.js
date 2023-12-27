@@ -8,6 +8,7 @@ export const makeLink = ({
 	label = 'Go to Plan Weave App',
 	handler,
 	index = 0,
+	...props
 }) => (
 	<Link
 		href={link}
@@ -17,6 +18,7 @@ export const makeLink = ({
 		onClick={handler}
 		onKeyDown={e => { if (e.key === 'Enter') { if (handler){handler()} } }}
 		tabIndex={index}
+		{...props}
 	>
 		{text}
 	</Link>
@@ -28,5 +30,6 @@ export const defaultLogin = ({
 	title = 'Log in',
 	label = 'Log in to Plan-Weave',
 	handler,
-	index = 0
-}) => (makeLink({text, link, title, label, handler, index}))
+	index = 0,
+	...props
+}) => (makeLink({text, link, title, label, handler, index, ...props}))

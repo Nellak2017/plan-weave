@@ -31,8 +31,9 @@ export default function Home() {
     title = 'Log Out',
     label = 'Log Out of Plan-Weave',
     handler,
-    index = 0
-  }) => (makeLink({ text, link, title, label, handler, index }))
+    index = 0,
+    ...props
+  }) => (makeLink({ text, link, title, label, handler, index, ...props }))
 
   return (
     <>

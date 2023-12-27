@@ -6,8 +6,7 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-size: ${props => props.theme.fontSizes.smaller};
-    font-family: 'Poppins', 'Source Sans Pro', 'sans-serif';
+    //font-size: ${props => props.theme.fontSizes.smaller};
     ::-moz-selection { /* Code for Firefox */
         color: ${props => props.theme.colors.lightNeutralLight};
         background: ${props => props.theme.colors.primary};
@@ -24,8 +23,8 @@ a {
 }
 
 body {
-    padding: 0;
-    margin: 0;
+    padding: 0!important;
+    margin: 0!important;
     background-color: ${props => props.theme.colors.body};
     color: ${props => props.theme.colors.defaultFontColor};
 }

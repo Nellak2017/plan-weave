@@ -26,7 +26,7 @@ const defaultImage = ({
 		height={height}
 		title={title}
 		aria-label={label}
-		//priority={true}
+		priority={true}
 	/>
 )
 
@@ -91,8 +91,8 @@ function Nav({
 
 				<LoginContainer>
 					<AppComponent handler={handleApp} />
-					<LoginComponent handler={handleLogIn} />
-					<SignUpComponent handler={handleSignUp} />
+					<LoginComponent style={{ width: '62px' }} handler={handleLogIn} />
+					<SignUpComponent style={{ width: '32px' }} handler={handleSignUp} />
 				</LoginContainer>
 			</ContentContainer>
 		</StyledNav>
