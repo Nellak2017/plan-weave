@@ -10,11 +10,9 @@ function FullRow({
 	state,
 }) {
 	const { provided, taskObject, variant, isChecked, setLocalTask, localTask, localTtc, setLocalTtc, handleCheckBoxClicked } = simpleTaskProps
-	const { newServices } = services || {}
-	const { setLocalDueDate, setLocalWeight, setLocalThread } = newServices || {}
-	const { newFields } = state || {}
-	const { dueDate, localWeight } = newFields || {}
-	const fullTask = { ...taskObject, ...newFields }
+	const { setLocalDueDate, setLocalWeight, setLocalThread } = services || {}
+	const { localThread, localDueDate, localDependencies, localWeight } = state || {}
+	const fullTask = { ...taskObject, ...state }
 	return (
 		<>
 			<SimpleRow
@@ -25,8 +23,8 @@ function FullRow({
 			/>
 			<DueContainer>
 				{
-					dueDate ? format(parseISO(dueDate), 'd-MMM @ HH:mm') : "invalid"
-					//<button onClick={() => console.log(fullTask)}>localTask</button>
+					localDueDate ? format(parseISO(localDueDate), 'd-MMM @ HH:mm') : "invalid"
+					
 					// TODO: Get a Date-time picker and implement it here
 				}
 			</DueContainer>
@@ -44,7 +42,9 @@ function FullRow({
 			</WeightContainer>
 			<ThreadContainer>
 				{
-				'thread'
+				//'thread'
+				//<button onClick={() => console.log(fullTask)}>{'Show Full Task'}</button>
+				localThread
 				// TODO: Create Thread Chooser Component (Input with drop down options as searching, that filters over available threads)
 				}
 			</ThreadContainer>

@@ -870,6 +870,30 @@ export const numberPickerPresets = {
   color: colorPreset
 }
 
+export const dateTimePickerPresets = {
+  variant: {
+    light: css`
+      & svg, input, label {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+      & input:hover, div:hover {
+        color: ${props => props.theme.colors.darkNeutralDark};
+        background: ${props => props.theme.colors.lightNeutralLight};
+      }
+    `,
+    dark: css`
+      & svg, input, label {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
+      & input:hover, div:hover {
+        color: ${props => props.theme.colors.lightNeutralLight};
+        background: ${props => props.theme.colors.darkNeutralHover};
+      }
+    `
+  },
+  color: colorPreset
+}
+
 // ------
 // --- Molecules ---
 

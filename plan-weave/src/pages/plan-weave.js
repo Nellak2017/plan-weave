@@ -22,7 +22,9 @@ function PlanWeave() {
 	const [user, loading, error] = useAuthState(auth)
 
 	// When auth state changes, push to homepage
-	useEffect(() => { if (!user) router.push('/') }, [user])
+	useEffect(() => { 
+		if (user === null && !loading) router.push('/') 
+	}, [user, router])
 
 	const handleLogout = async () => {
 		try {

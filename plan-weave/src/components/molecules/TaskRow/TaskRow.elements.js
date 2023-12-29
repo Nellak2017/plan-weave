@@ -79,6 +79,7 @@ export const TimeContainer = styled.td`
 	}
 	p, pre {
 		font-size: ${props => props.theme.fontSizes.medium};
+		font-family: var(--font-poppins);
 	}
 `
 export const IconContainer = styled.td`

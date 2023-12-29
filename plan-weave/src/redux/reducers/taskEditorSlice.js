@@ -7,8 +7,8 @@ import { relativeSortIndex, rearrangeDnD, dateToToday, hoursToMillis } from '../
 const initialState = {
 	search: '',
 	timeRange: {
-		start: parse('00:00', 'HH:mm', new Date()).toISOString(), // Initial Start Date 
-		end: parse('17:00', 'HH:mm', new Date()).toISOString(), // Initial End Date
+		start: parse('18:00', 'HH:mm', new Date()).toISOString(), // Initial Start Date 
+		end: parse('01:00', 'HH:mm', new Date()).toISOString(), // Initial End Date
 	},
 	owl: true,
 	highlighting: false,
@@ -18,7 +18,7 @@ const initialState = {
 	tasksPerPage: 10,
 	taskTransition: [0, 0], // Used to keep dnd config in sync when completing/incompleting a task
 	tasks: [],
-	fullTask: true, // Used to show Full tasks or Simple Tasks
+	fullTask: false, // Used to show Full tasks or Simple Tasks
 }
 // Extracted because CompleteTask Reducer uses this logic
 const editTaskReducer = (state, action) => {

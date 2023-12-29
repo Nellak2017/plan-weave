@@ -46,11 +46,20 @@ function TaskRow({
 	const [localDueDate, setLocalDueDate] = useState(dueDate)
 	const [localWeight, setLocalWeight] = useState(weight)
 	const [localThread, setLocalThread] = useState(parentThread)
+	const [localDependencies, setLocalDependencies] = useState(dependencies)
 
-	// --- Memoized Constants
+	// --- Memoized Variables
 	const iconSize = useMemo(() => 36, [])
-	const simpleRowServices = useMemo(() => ({ setLocalTask, setLocalTtc, handleCheckBoxClicked: () => handleCheckBoxClicked({ services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id }) }), [])
-	const simpleRowState = useMemo(() => ({ taskObject: { task, waste, ttc, eta, status, id, timestamp, index }, isChecked, localTask, localTtc }), [])
+	const simpleRowServices = useMemo(() => (
+		{
+			setLocalTask, setLocalTtc,
+			handleCheckBoxClicked:
+				() => handleCheckBoxClicked({ services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id })
+		})
+		, [services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id])
+	const simpleRowState = useMemo(() => (
+		{ taskObject: { task, waste, ttc, eta, status, id, timestamp, index }, isChecked, localTask, localTtc })
+		, [task, waste, ttc, eta, status, id, timestamp, index, isChecked, localTask, localTtc])
 
 	// --- Effects
 	// Should run when the highlighting stops to reset the checkmarks to what they should be
@@ -97,14 +106,20 @@ function TaskRow({
 							provided: provided || undefined,
 						}}
 						state={{
-							newFields: { completedTimeStamp, hidden, efficiency, parentThread, dueDate, dependencies, weight }
+							completedTimeStamp,
+							hidden,
+							efficiency,
+
+							localThread,
+							localDueDate,
+							localDependencies,
+							localWeight,
 						}}
 						services={{
-							newServices: {
-								setLocalDueDate,
-								setLocalWeight,
-								setLocalThread
-							}
+							setLocalThread,
+							setLocalDueDate,
+							setLocalDependencies,
+							setLocalWeight,
 						}}
 					/>
 					<TrashContainer>
