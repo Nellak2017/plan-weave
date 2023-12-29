@@ -3,6 +3,7 @@ import SimpleRow from './SimpleRow.js'
 import { DueContainer, WeightContainer, ThreadContainer } from './TaskRow.elements.js'
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from 'date-fns'
+import DateTimePickerWrapper from '../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js'
 
 function FullRow({
 	simpleTaskProps,
@@ -23,9 +24,17 @@ function FullRow({
 			/>
 			<DueContainer>
 				{
-					localDueDate ? format(parseISO(localDueDate), 'd-MMM @ HH:mm') : "invalid"
-					
-					// TODO: Get a Date-time picker and implement it here
+					//localDueDate ? format(parseISO(localDueDate), 'd-MMM @ HH:mm') : "invalid"
+					<DateTimePickerWrapper 
+						variant={variant}
+						services={{
+							onTimeChange: (newDateTime) => setLocalDueDate(newDateTime.toISOString())
+						}}
+						state={{
+							defaultTime: format(parseISO(localDueDate), 'HH:mm')
+						}}
+					/>
+					// TODO: Verify that this picker is doing what it is supposed to do by updating the store and local due date
 				}
 			</DueContainer>
 			<WeightContainer>

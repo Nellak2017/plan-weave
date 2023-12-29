@@ -96,7 +96,10 @@ export const DragContainer = styled.td`
 // Full Task Exclusives
 
 export const DueContainer = styled.td`
-	min-width: 50px;
+	min-width: 160px;
+	input {
+		width: 160px;
+	}
 	padding: ${props => props.theme.spaces.small};
 `
 

@@ -18,7 +18,7 @@ const initialState = {
 	tasksPerPage: 10,
 	taskTransition: [0, 0], // Used to keep dnd config in sync when completing/incompleting a task
 	tasks: [],
-	fullTask: false, // Used to show Full tasks or Simple Tasks
+	fullTask: true, // Used to show Full tasks or Simple Tasks
 }
 // Extracted because CompleteTask Reducer uses this logic
 const editTaskReducer = (state, action) => {
