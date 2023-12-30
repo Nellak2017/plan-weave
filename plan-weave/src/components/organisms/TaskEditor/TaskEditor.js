@@ -139,3 +139,4 @@ TaskEditor.propTypes = {
 }
 
 export default TaskEditor
+

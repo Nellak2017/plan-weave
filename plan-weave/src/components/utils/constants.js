@@ -46,7 +46,7 @@ export const OPTION_NOTIFICATIONS = {
 
 export const SIMPLE_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA']
 
-export const FULL_TASK_HEADERS = [...SIMPLE_TASK_HEADERS, 'Due', 'Weight', 'Thread']
+export const FULL_TASK_HEADERS = [...SIMPLE_TASK_HEADERS, 'Eff.%','Due', 'Weight', 'Thread', 'Predecessors']
 
 export const DEFAULT_SIMPLE_TASKS = [
 	{ status: 'completed', task: 'Example Task 1', waste: 2, ttc: 5, eta: '15:30', id: 1 },
@@ -91,4 +91,10 @@ export const TASK_ROW_TOOLTIPS = {
 	ttc: 'Time To Complete Task',
 	eta: 'Estimated Time to Finish Task',
 	delete: 'Delete this task',
+
+	efficiency: 'Task Efficiency',
+	due: 'Task Due Date',
+	weight: 'Task Weight/Importance',
+	thread: 'Task Thread/Group',
+	dependencies: 'Task Predecessors. What needs to be done Before this?'
 }

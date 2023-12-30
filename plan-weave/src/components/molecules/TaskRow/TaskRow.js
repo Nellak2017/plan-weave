@@ -50,13 +50,35 @@ function TaskRow({
 
 	// --- Memoized Variables
 	const iconSize = useMemo(() => 36, [])
+
+	// Handler Services/State
+	const handleCheckBoxServices = useMemo(() => ({ ...services, setIsChecked }), [services, setIsChecked])
+	const handleCheckBoxState = useMemo(() => ({
+		taskObject, isChecked, isHighlighting, selectedTasks, index, newETA, id,
+		localTask,
+		localTtc,
+
+		localDueDate,
+		localWeight,
+		localThread,
+		localDependencies,
+	}), [taskObject, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id, localDueDate])
+	const handleUpdateTaskServices = useMemo(() => ({ taskRow }), [taskRow])
+	const handleUpdateTaskState = useMemo(() => ({
+		id, taskObject,
+		localTask, 
+		localTtc, 
+		
+		localDueDate,
+		localWeight,
+		localThread,
+		localDependencies,
+	}), [id, taskObject, localTask, localTtc, localDueDate])
+
+	// Simple Row Services/State
 	const simpleRowServices = useMemo(() => (
-		{
-			setLocalTask, setLocalTtc,
-			handleCheckBoxClicked:
-				() => handleCheckBoxClicked({ services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id })
-		})
-		, [services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id])
+		{ setLocalTask, setLocalTtc, handleCheckBoxClicked: () => handleCheckBoxClicked({ services: handleCheckBoxServices, state: handleCheckBoxState }) })
+		, [handleCheckBoxServices, handleCheckBoxState])
 	const simpleRowState = useMemo(() => (
 		{ taskObject: { task, waste, ttc, eta, status, id, timestamp, index }, isChecked, localTask, localTtc })
 		, [task, waste, ttc, eta, status, id, timestamp, index, isChecked, localTask, localTtc])
@@ -76,7 +98,7 @@ function TaskRow({
 			maxwidth={maxwidth}
 			highlight={highlightTaskRow(isHighlighting, isChecked, old)}
 			onBlur={() => {
-				if (!tab) handleUpdateTask({ taskRow, id, taskObject, localTask, localTtc })
+				if (!tab) handleUpdateTask({ services: handleUpdateTaskServices, state: handleUpdateTaskState })
 				setTab(false)
 			}}
 			onKeyDown={e => { if (e.key === 'Tab') setTab(true) }} // Set to be true, so that tabbing in doesn't cause updates. (other approaches don't work perfectly)
@@ -97,7 +119,7 @@ function TaskRow({
 			}
 			{fullTask &&
 				<>
-					{/*<button onClick={() => console.log(taskObject)}>taskObject</button>*/}
+					{/*<button onClick={() => console.log(handleCheckBoxServices)}>handleCheckBoxServices</button>*/}
 					<FullRow
 						simpleTaskProps={{
 							...simpleRowServices,

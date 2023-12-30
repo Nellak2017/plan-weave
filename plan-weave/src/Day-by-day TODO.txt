@@ -1,4 +1,4 @@
-TaskEditor (Refactoring done by 12/25/2023, Full Task done by 12/28/2023)
+TaskEditor (Refactoring done by 12/25/2023, Full Task done by 12/30/2023)
   X Refactor Pagination to use Redux + services pattern + decouple handlers from view logic
   X Test Coverage and JSDocs for all things (some helpers are not covered)
   X Polish all components so Linter doesn't complain
@@ -24,16 +24,6 @@ TaskEditor (Refactoring done by 12/25/2023, Full Task done by 12/28/2023)
   (optional) add analytics support or research it
   (optional) CompletedTimestamp into an ISO String
 
-ViewEditor (edit threads, graph view, scheduled. 2-way binding like TaskEditor)
-  Discover how you will address task Scheduling, Periodicity, and all that
-  Discover the 3rd party library that will help you with Graph View and Calendars
-  Discover how to do Topological Sorting Algorithm and how To Represent Tasks in Graph
-  Make the sub-components' view using atomic style with respect to services pattern
-    ThreadsView Molecule (composed of other atoms)
-    GraphView Molecule (composed of other atoms)
-    ScheduleView Molecule (composed of other atoms)
-  Test any helpers or events using TDD approach
-
 TaskView (1 way binding of information. Read-only. Efficiency over time, Matrix, Linear, Calendar, ...more in the future)
 
    Discover 3rd parties to help with Efficiency over time Graph and Calendar (Linear and Matrix may be done by hand using Tables with scrolling as you already made)
@@ -47,6 +37,16 @@ Settings (Very easy component to make, simplest)
    Discover a nice layout for it (copying some other site if I have to)
    Make the components for it using Service Architecture
    Visually inspect it to ensure it works fine
+
+ViewEditor (edit threads, graph view, scheduled. 2-way binding like TaskEditor)
+  Discover how you will address task Scheduling, Periodicity, and all that
+  Discover the 3rd party library that will help you with Graph View and Calendars
+  Discover how to do Topological Sorting Algorithm and how To Represent Tasks in Graph
+  Make the sub-components' view using atomic style with respect to services pattern
+    ThreadsView Molecule (composed of other atoms)
+    GraphView Molecule (composed of other atoms)
+    ScheduleView Molecule (composed of other atoms)
+  Test any helpers or events using TDD approach
 
 --- Backend (Firebase for now)
 

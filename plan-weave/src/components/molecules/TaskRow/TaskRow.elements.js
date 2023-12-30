@@ -95,6 +95,17 @@ export const DragContainer = styled.td`
 
 // Full Task Exclusives
 
+export const EfficiencyContainer = styled.td`
+	width: 50px;
+	font-size: ${props => props.theme.fontSizes.medium};
+	& p {
+		display: inline-flex;
+		width: 100%;
+		align-items: center;
+		justify-content: center;
+	}
+`
+
 export const DueContainer = styled.td`
 	min-width: 160px;
 	input {
@@ -114,5 +125,9 @@ export const WeightContainer = styled.td`
 `
 
 export const ThreadContainer = styled.td`
+	padding: ${props => props.theme.spaces.small};
+`
+
+export const DependencyContainer = styled.td`
 	padding: ${props => props.theme.spaces.small};
 `

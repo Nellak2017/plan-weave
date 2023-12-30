@@ -467,12 +467,12 @@ export const calculateEfficiency = (startTime, endTime, ttcHours) => {
 	if (typeof startTime !== 'number' || typeof endTime !== 'number' || typeof ttcHours !== 'number') {
 		throw new TypeError('All input parameters must be numbers.')
 	}
-	if (startTime < 0 || startTime > 86400 || endTime < 0 || endTime > 86400 || ttcHours <= 0 || ttcHours > 86400) {
-		throw new RangeError(`All input should be in the Range [0, 86400].\nstartTime = ${startTime}\nendTime = ${endTime}\netaHours = ${ttcHours}`)
+	if (startTime < 0 || (endTime - startTime) > 86400 || endTime < 0 || ttcHours <= 0 || ttcHours > 86400) {
+		throw new RangeError(`Start/End Time should be in the Range [startTime, startTime + 86400]. etaHours should be in range [0, 86400].\nstartTime = ${startTime}\nendTime = ${endTime}\netaHours = ${ttcHours}`)
 	}
 	if (startTime > endTime) throw new RangeError(`Start Time should be less than End Time.\nStart Time = ${startTime}\nEnd Time = ${endTime}`)
 
-	return hoursToSeconds(ttcHours) / (endTime - startTime) // efficiency = eta / (end - start)
+	return hoursToSeconds(ttcHours) / (endTime - startTime) // efficiency = (ttc) seconds / (end - start) seconds
 }
 
 export const isValidDate = (date) => {
@@ -491,3 +491,5 @@ export const isTaskOld = (timeRange, task) => {
 	const epochETA = parseISO(task?.eta)?.getTime() / 1000
 	return !isTimestampFromToday(start, epochETA, epochTotal)
 }
+
+// TODO: Make a calculateEfficiencyList function that calculates efficiency for all incomplete tasks and returns the updated task list

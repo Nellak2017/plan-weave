@@ -2,8 +2,16 @@ import { validateTask, millisToHours, calculateEfficiency } from '../../utils/he
 import { TASK_STATUSES } from '../../utils/constants.js'
 import { parseISO } from 'date-fns'
 
-export const handleCheckBoxClicked = ({ services, taskObject, setIsChecked, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id }) => {
-	const { updateSelectedTasks, taskRow } = services
+// services = (updateSelectedTasks, taskRow), setIsChecked
+// state = taskObject, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id, localDueDate
+export const handleCheckBoxClicked = ({
+	services,
+	state
+}) => {
+	const { updateSelectedTasks, taskRow, setIsChecked } = services
+	const { taskObject, isChecked, isHighlighting, selectedTasks, index, newETA, id,
+		localTask, localTtc,
+		localDueDate, localWeight, localThread, localDependencies } = state
 	// Change the Checkmark first before all so we don't forget!
 	setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
 
@@ -19,25 +27,32 @@ export const handleCheckBoxClicked = ({ services, taskObject, setIsChecked, isCh
 
 	// Waste Feature 
 	const currentTime = new Date()
+	const completedTimeStamp = currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 	const updatedTask = {
 		...validateTask({ task: taskObject }),
 		status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
 		task: localTask,
 		waste: millisToHours(currentTime.getTime() - newETA.getTime()), // millisToHours(currentTime.getTime() - eta.getTime())
 		ttc: localTtc,
-		eta: isChecked && newETA instanceof Date ? newETA.toISOString() : currentTime.toISOString(), 
-		completedTimeStamp: currentTime.getTime() / 1000, // epoch in seconds, NOT millis
-	
-		// efficiency: calculateEfficiency(timestamp, completedTimeStamp, localTtc)
-		// parentThread: localThread
-		// dueDate: localDueDate
+		eta: isChecked && newETA instanceof Date ? newETA.toISOString() : currentTime.toISOString(),
+		completedTimeStamp, 
+
+		efficiency: calculateEfficiency(taskObject?.timestamp || completedTimeStamp, completedTimeStamp, localTtc),
+		dueDate: localDueDate,
+		weight: parseFloat(localWeight) || 1,
 		// dependencies: localDependencies
-		// weight: localWeight
+		// parentThread: localThread
 	}
 	taskRow?.complete(id, updatedTask, index)
 }
 
-export const handleUpdateTask = ({ taskRow, id, taskObject, localTask, localTtc }) => {
+// services: taskRow
+// state: id, taskObject, localTask, localTtc, localDueDate
+export const handleUpdateTask = ({ services, state }) => {
+	const { taskRow } = services
+	const { id, taskObject, localTask, localTtc,
+		localDueDate, localWeight, localThread, localDependencies } = state
+
 	taskRow?.update(id, {
 		...taskObject,
 		eta: parseISO(taskObject?.eta) && parseISO(taskObject.eta) instanceof Date
@@ -46,10 +61,9 @@ export const handleUpdateTask = ({ taskRow, id, taskObject, localTask, localTtc 
 		task: localTask,
 		ttc: localTtc,
 
-		// efficiency: calculateEfficiency(timestamp, completedTimeStamp, localTtc)
+		dueDate: localDueDate,
+		weight: parseFloat(localWeight) || 1,
 		// parentThread: localThread
-		// dueDate: localDueDate
 		// dependencies: localDependencies
-		// weight: localWeight
 	})
 }
