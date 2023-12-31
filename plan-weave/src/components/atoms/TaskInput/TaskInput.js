@@ -1,12 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { TaskInputStyled } from './TaskInput.elements'
 import PropTypes from 'prop-types'
 
-const TaskInput = ({ placeholder = 'Task Name', maxwidth, initialValue, ...rest }) => {
+const TaskInput = ({ placeholder = 'Task Name', maxwidth, initialValue, controlledValue, ...rest }) => {
   const [inputValue, setInputValue] = useState(initialValue)
+  const valueToUse = useMemo(() => controlledValue !== undefined ? controlledValue : inputValue, [controlledValue, inputValue])
   return <TaskInputStyled
     type='text'
-    value={inputValue}
+    value={valueToUse}
     onChange={e => setInputValue(e.target.value)}
     maxwidth={maxwidth}
     placeholder={placeholder}
@@ -17,6 +18,7 @@ TaskInput.propTypes = {
   placeholder: PropTypes.string,
   maxwidth: PropTypes.number,
   initialValue: PropTypes.string,
+  controlledValue: PropTypes.string,
 }
 
 export default TaskInput

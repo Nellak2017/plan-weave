@@ -1,6 +1,7 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
 import { getTime, formatISO, parseISO } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
+import * as Yup from 'yup'
 
 // This file contains many helpers used through out the application
 
@@ -123,6 +124,19 @@ export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx 
 		})
 		validateTransformation(updatedTask, schema, customErrorMessage)
 		return updatedTask
+	}
+}
+
+// Validates a particular task field against the schema
+// Example: Validate({ field: 'parentThread', payload: "t", schema: fullTaskSchema }) => {valid: false, error: 'Parent Thread must be atleast 2 characters'}
+export const validateTaskField = ({ field, payload, schema = simpleTaskSchema }) => {
+	try {
+		const fieldSchema = Yup.reach(schema, field)
+		fieldSchema.validateSync(payload, { abortEarly: false })
+		return { valid: true, error: null }
+	} catch (e) {
+		console.error(e)
+		return { valid: false, error: e.errors }
 	}
 }
 
@@ -413,7 +427,7 @@ export const relativeSortIndex = (tasks, sort, id, complete = TASK_STATUSES.COMP
  */
 export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
 	if (typeof isHighlighting !== 'boolean' || typeof isChecked !== 'boolean' || typeof isOld !== 'boolean') {
-		throw new TypeError('All parameters must be of type boolean')
+		throw new TypeError(`All parameters must be of type boolean.\nisHighlighting = ${isHighlighting}\nisChecked = ${isChecked}\nisOld = ${isOld}`)
 	}
 
 	if (isHighlighting && isChecked) return 'selected'
@@ -476,7 +490,7 @@ export const calculateEfficiency = (startTime, endTime, ttcHours) => {
 }
 
 export const isValidDate = (date) => {
-    return (new Date(date) != "Invalid Date") && !isNaN(new Date(date))
+	return (new Date(date) != "Invalid Date") && !isNaN(new Date(date))
 }
 
 // Used in TodoList to simplify things and make it clearer

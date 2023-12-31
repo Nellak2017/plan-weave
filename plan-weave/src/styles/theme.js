@@ -894,6 +894,14 @@ export const dateTimePickerPresets = {
   color: colorPreset
 }
 
+export const selectWrapperPresets = {
+  variant: {
+    light: css``,
+    dark: css``,
+  },
+  color: colorPreset
+}
+
 // ------
 // --- Molecules ---
 

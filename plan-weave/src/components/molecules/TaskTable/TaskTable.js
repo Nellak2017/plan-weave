@@ -23,10 +23,10 @@ const TaskTable = ({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	// --- Services and State (destructured)
-	const { updateTasks, updateDnD } = { ...services }
-	const { globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState } = { ...state }
+	const { updateTasks, updateDnD } = services || {}
+	const { globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState } = state || {}
 	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
-	const filteredTasks = useMemo(() => filterTaskList({ list: taskList, filter: search.trim(), attribute: 'task' }), [taskList, search])
+	const filteredTasks = useMemo(() => filterTaskList({ list: taskList, filter: search?.trim(), attribute: 'task' }), [taskList, search])
 	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page), [tasksPerPage, page])
 
 	// --- DnD Event
@@ -35,14 +35,14 @@ const TaskTable = ({
 	// --- Effects
 	useEffect(() => {
 		const transforms = [t => calculateWaste({ start, taskList: t, time: new Date() })]
-		updateTasks(completedOnTopSorted(globalTasks?.tasks, [], start, transforms, SORTING_METHODS[sortingAlgo]))
+		if (updateTasks) updateTasks(completedOnTopSorted(globalTasks?.tasks, [], start, transforms, SORTING_METHODS[sortingAlgo]))
 	}, [sortingAlgo])
 	const update = () => { 
 		const transforms = [
 			t => calculateWaste({ start, taskList: t, time: new Date() }),
 			// t => calculateEfficiencyList({taskList: t, ...other stuff})
 		]
-		if (taskList.length > 0) updateTasks(transformAll(taskList, transforms) || taskList) }
+		if (taskList?.length > 0) updateTasks(transformAll(taskList, transforms) || taskList) }
 	useInterval(() => update(), 50, [timeRange, owl, taskList])
 
 	return (

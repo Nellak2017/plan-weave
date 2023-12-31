@@ -4,14 +4,11 @@ import { parseISO } from 'date-fns'
 
 // services = (updateSelectedTasks, taskRow), setIsChecked
 // state = taskObject, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id, localDueDate
-export const handleCheckBoxClicked = ({
-	services,
-	state
-}) => {
-	const { updateSelectedTasks, taskRow, setIsChecked } = services
+export const handleCheckBoxClicked = ({ services, state }) => {
+	const { updateSelectedTasks, taskRow, setIsChecked } = services || {}
 	const { taskObject, isChecked, isHighlighting, selectedTasks, index, newETA, id,
 		localTask, localTtc,
-		localDueDate, localWeight, localThread, localDependencies } = state
+		localDueDate, localWeight, localThread, localDependencies } = state || {}
 	// Change the Checkmark first before all so we don't forget!
 	setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
 
@@ -35,7 +32,7 @@ export const handleCheckBoxClicked = ({
 		waste: millisToHours(currentTime.getTime() - newETA.getTime()), // millisToHours(currentTime.getTime() - eta.getTime())
 		ttc: localTtc,
 		eta: isChecked && newETA instanceof Date ? newETA.toISOString() : currentTime.toISOString(),
-		completedTimeStamp, 
+		completedTimeStamp,
 
 		efficiency: calculateEfficiency(taskObject?.timestamp || completedTimeStamp, completedTimeStamp, localTtc),
 		dueDate: localDueDate,
@@ -49,9 +46,9 @@ export const handleCheckBoxClicked = ({
 // services: taskRow
 // state: id, taskObject, localTask, localTtc, localDueDate
 export const handleUpdateTask = ({ services, state }) => {
-	const { taskRow } = services
+	const { taskRow } = services || {}
 	const { id, taskObject, localTask, localTtc,
-		localDueDate, localWeight, localThread, localDependencies } = state
+		localDueDate, localWeight, localThread, localDependencies } = state || {}
 
 	taskRow?.update(id, {
 		...taskObject,

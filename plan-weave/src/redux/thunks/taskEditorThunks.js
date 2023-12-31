@@ -18,6 +18,50 @@ import {
   editGlobalTask,
 } from '../reducers/globalTasksSlice.js'
 
+import {
+  updateGlobalThreads,
+	addGlobalThread,
+	deleteGlobalThread,
+	deleteGlobalThreads,
+} from '../reducers/globalThreadsSlice.js'
+
+// --- Thunks for manipulating all the Threads
+export const updateGlobalThreadsThunk = (threads) => (dispatch) => {
+  try {
+    dispatch(updateGlobalThreads(threads))
+  } catch (e) {
+    console.error(e)
+    toast.error('Failed to update global threads')
+  }
+}
+
+export const addGlobalThreadThunk = (thread) => (dispatch) => {
+  try {
+    dispatch(addGlobalThread(thread))
+  } catch (e) {
+    console.error(e)
+    toast.error('Failed to add global thread')
+  }
+}
+
+export const deleteGlobalThreadThunk = (thread) => (dispatch) => {
+  try {
+    dispatch(deleteGlobalThread(thread))
+  } catch (e) {
+    console.error(e)
+    toast.error('Failed to delete global thread')
+  }
+}
+
+export const deleteGlobalThreadsThunk = (threads) => (dispatch) => {
+  try {
+    dispatch(deleteGlobalThreads(threads))
+  } catch (e) {
+    console.error(e)
+    toast.error('Failed to delete global threads')
+  }
+}
+
 // Thunks for misc other
 export const updateTimeRangeThunk = (start, end) => (dispatch) => {
   try {

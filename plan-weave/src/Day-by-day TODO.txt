@@ -11,15 +11,19 @@ TaskEditor (Refactoring done by 12/25/2023, Full Task done by 12/30/2023)
   X Refactor the spacing of stuff to accomodate Full Task
   X Validate incoming local tasks with schema: validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks, start) })
   Full Task Components (and relevant 3rd parties like Calendar)
-	Due Calendar Component
-	Thread Input Dropdown Component
-	Put Efficiency In there Too! (Column and Update every interval (half second))
+	X Due Calendar Component
+	X Weight Column
+	X Efficiency Column
+	X Thread Input Dropdown Component
+	Efficiency update every interval
+	(optional) Thread Input delete button for dropdown thread options
+	
   Remove unnecessary logic in all of code base
   Add docs to Github, and make front page very pretty
-  Media Queries
   Fix Overnight bug on refresh (sets it to be 24 hours more when it shouldnt)
   Fix the going to homepage on refresh bug (App page)
-  
+  Media Queries
+
   (optional) add sort icons and that feature
   (optional) add analytics support or research it
   (optional) CompletedTimestamp into an ISO String

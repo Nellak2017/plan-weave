@@ -34,6 +34,7 @@ export const taskSchema = Yup.object({
 		.min(0)
 		.max(86400),
 	parentThread: Yup.string()
+		.min(2, 'Parent Thread must be atleast 2 characters')
 		.max(50, 'Parent Thread must be at most 50 characters')
 		.default('')
 		.transform((value, originalValue) => {

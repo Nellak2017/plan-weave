@@ -31,7 +31,7 @@ describe('Task Schema', () => {
 				completedTimeStamp: 1,
 				hidden: false,
 				efficiency: 0,
-				parentThread: ' ',
+				parentThread: 'aa', // minimum 2 characters
 				dueDate: twelve.toISOString(),
 				dependencies: [],
 				weight: 0,

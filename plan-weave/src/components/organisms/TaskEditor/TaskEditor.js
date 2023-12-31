@@ -25,6 +25,8 @@ const TaskEditor = ({
 	const taskList = useSelector(selectNonHiddenTasks)
 	const fullTask = useSelector(state => state?.taskEditor?.fullTask)
 
+	const threads = useSelector(state => state?.globalThreads?.threads)
+
 	// State for TaskControl
 	const TaskControlState = {
 		globalTasks,
@@ -53,6 +55,7 @@ const TaskEditor = ({
 			isHighlighting: useSelector(state => state?.taskEditor?.highlighting),
 			selectedTasks: useSelector(state => state?.taskEditor?.selectedTasks),
 			fullTask,
+			availableThreads: useSelector(state => state?.globalThreads?.threads)
 		},
 	}
 
@@ -68,6 +71,7 @@ const TaskEditor = ({
 	return (
 		<TaskEditorContainer variant={variant}>
 			<button onClick={() => console.log(taskList)}>Local Tasks</button>
+			<button onClick={() => console.log(threads)}>Threads</button>
 			<h1>{title}</h1>
 			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 				<TaskControl

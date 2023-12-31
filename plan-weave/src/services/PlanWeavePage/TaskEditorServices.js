@@ -19,7 +19,9 @@ import {
 	removeTasksThunk,
 	updateTaskThunk,
 	updateSortingAlgorithmThunk,
-	completedTaskThunk
+	completedTaskThunk,
+
+	addGlobalThreadThunk,
 } from "../../redux/thunks/taskEditorThunks.js"
 
 
@@ -42,6 +44,9 @@ export const createTaskEditorServices = (store) => {
 			timeRange: (newStart, newEnd) => {
 				dispatch(updateTimeRangeThunk(newStart, newEnd))
 			}, // thunk to update start/end
+			addThread: (thread) => {
+				dispatch(addGlobalThreadThunk(thread))
+			}, // thunk to update global threads with the new one
 		},
 		taskControl: {
 			search: (newSearchValue) => {

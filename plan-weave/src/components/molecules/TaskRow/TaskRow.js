@@ -25,8 +25,8 @@ function TaskRow({
 }) {
 	// --- Destructuring
 	const { task, waste, ttc, eta, status, id, timestamp, completedTimeStamp, hidden, efficiency, parentThread, dependencies, weight, dueDate } = { ...taskObject }
-	const { taskRow } = { ...services }
-	const { isHighlighting, selectedTasks, fullTask } = { ...state }
+	const { taskRow, addThread } = services || {}
+	const { isHighlighting, selectedTasks, fullTask, availableThreads } = state || {isHighlighting: false}
 	const { delete: deleteTooltip } = TASK_ROW_TOOLTIPS
 	const newETA = useMemo(() => parseISO(eta), [eta]) // Converts eta from ISO -> Date
 
@@ -103,6 +103,7 @@ function TaskRow({
 			}}
 			onKeyDown={e => { if (e.key === 'Tab') setTab(true) }} // Set to be true, so that tabbing in doesn't cause updates. (other approaches don't work perfectly)
 		>
+			{/*<button onClick={() => console.log(state)}>state</button>*/}
 			{!fullTask &&
 				<>
 					<SimpleRow
@@ -119,7 +120,6 @@ function TaskRow({
 			}
 			{fullTask &&
 				<>
-					{/*<button onClick={() => console.log(handleCheckBoxServices)}>handleCheckBoxServices</button>*/}
 					<FullRow
 						simpleTaskProps={{
 							...simpleRowServices,
@@ -132,6 +132,8 @@ function TaskRow({
 							hidden,
 							efficiency,
 
+							availableThreads,
+
 							localThread,
 							localDueDate,
 							localDependencies,
@@ -142,6 +144,8 @@ function TaskRow({
 							setLocalDueDate,
 							setLocalDependencies,
 							setLocalWeight,
+
+							addThread,
 						}}
 					/>
 					<TrashContainer>

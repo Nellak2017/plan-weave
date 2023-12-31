@@ -50,10 +50,10 @@ function TaskControl({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	const { y0, y1, x0, x1 } = { ...coords }
 	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip, fullTaskToggleTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
-	const { search, sort, fullToggle } = { ...services }
-	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme, fullTask } = { ...state }
-	const startTime = useMemo(() => parseISO(timeRange?.start), [timeRange])
-	const endTime = useMemo(() => parseISO(timeRange?.end), [timeRange])
+	const { search, sort, fullToggle } = services || {}
+	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme, fullTask } = state || {}
+	const startTime = useMemo(() => timeRange?.start ? parseISO(timeRange?.start) : new Date(), [timeRange])
+	const endTime = useMemo(() => timeRange?.end ? parseISO(timeRange?.end) : new Date(), [timeRange])
 
 	// Local State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object

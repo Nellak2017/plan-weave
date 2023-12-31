@@ -25,9 +25,9 @@ function Pagination({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	// --- Destructuring
-	const { updatePage, prevPage, nextPage, refresh, tasksPerPageUpdate } = services
-	const { pageNumber, tasksPerPage, taskList } = state
-	const maxPage = useMemo(() => Math.ceil(taskList.length / tasksPerPage) || 1, [taskList, tasksPerPage])
+	const { updatePage, prevPage, nextPage, refresh, tasksPerPageUpdate } = services || {}
+	const { pageNumber, tasksPerPage, taskList } = state || {}
+	const maxPage = useMemo(() => Math.ceil(taskList?.length / tasksPerPage) || 1, [taskList, tasksPerPage])
 
 	// --- Local State
 	const [localPageNumber, setLocalPageNumber] = useState(pageNumber)
