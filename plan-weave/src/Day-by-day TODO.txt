@@ -17,11 +17,12 @@ TaskEditor (Refactoring done by 12/25/2023, Full Task done by 1/9/2023)
   X Thread Input Dropdown Component
   X Efficiency Calculation Bug fix
   X Efficiency update every interval
+  X Fix Overnight bug on refresh (sets it to be 24 hours more when it shouldnt when you do: /plan-weave -> / -> /plan-weave)
+  Add docs to Github, and make front page very pretty
+  
   Predecessor Component  
 	Thread Input delete button for dropdown thread options
 	Remove unnecessary logic in all of code base
-  Add docs to Github, and make front page very pretty
-  Fix Overnight bug on refresh (sets it to be 24 hours more when it shouldnt when you do: /plan-weave -> / -> /plan-weave)
   
   (later) Media Queries
   (optional) Refactor Re-used Dropdown logic into a wrapper component with options for delete and other important props

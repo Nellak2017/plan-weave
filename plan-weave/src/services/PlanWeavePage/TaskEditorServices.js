@@ -10,6 +10,7 @@ import {
 	refresh,
 	updateTasksPerPage,
 	fullToggle,
+	updateFirstLoad,
 } from "../../redux/reducers/taskEditorSlice.js"
 import {
 	updateTimeRangeThunk,
@@ -47,6 +48,9 @@ export const createTaskEditorServices = (store) => {
 			addThread: (thread) => {
 				dispatch(addGlobalThreadThunk(thread))
 			}, // thunk to update global threads with the new one
+			updateFirstLoad: (isFirstLoad) => {
+				dispatch(updateFirstLoad(isFirstLoad))
+			} // Reducer to verify it is first load of TaskEditor, for the life of the application
 		},
 		taskControl: {
 			search: (newSearchValue) => {

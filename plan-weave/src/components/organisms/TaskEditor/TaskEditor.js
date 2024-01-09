@@ -24,7 +24,6 @@ const TaskEditor = ({
 	const globalTasks = useSelector(state => state?.globalTasks)
 	const taskList = useSelector(selectNonHiddenTasks)
 	const fullTask = useSelector(state => state?.taskEditor?.fullTask)
-
 	const threads = useSelector(state => state?.globalThreads?.threads)
 
 	// State for TaskControl
@@ -37,6 +36,7 @@ const TaskEditor = ({
 		selectedTasks: useSelector(state => state?.taskEditor?.selectedTasks),
 		theme: useContext(ThemeContext),
 		fullTask,
+		firstLoad: useSelector(state => state?.taskEditor?.firstLoad),
 	}
 
 	// State for TaskTable 

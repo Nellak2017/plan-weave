@@ -19,6 +19,7 @@ const initialState = {
 	taskTransition: [0, 0], // Used to keep dnd config in sync when completing/incompleting a task
 	tasks: [],
 	fullTask: true, // Used to show Full tasks or Simple Tasks
+	firstLoad: true, // Used to guard against setting endtime multiple times
 }
 // Extracted because CompleteTask Reducer uses this logic
 const editTaskReducer = (state, action) => {
@@ -108,6 +109,9 @@ const taskEditorSlice = createSlice({
 		fullToggle: (state) => {
 			state.fullTask = !state.fullTask
 		},
+		updateFirstLoad: (state, action) => {
+			state.firstLoad = !!action.payload // coerce to Boolean
+		},
 
 
 		updateTasks: (state, action) => {
@@ -152,5 +156,6 @@ export const {
 	refresh,
 	updateTasksPerPage,
 	fullToggle,
+	updateFirstLoad,
 	updateTasks, addTask, deleteTask, deleteTasks, editTask, completeTask } = taskEditorSlice.actions
 export default taskEditorSlice.reducer

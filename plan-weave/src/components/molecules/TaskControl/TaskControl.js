@@ -32,8 +32,8 @@ import {
 import { useInterval } from '../../../hooks/useInterval.js'
 import { IoIosInformationCircleOutline } from "react-icons/io";
 
-// services are: search, timeRange, owl, addTask, deleteMany, highlighting, updateSelectedTasks, sort
-// state is: timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme
+// services are: search, timeRange, owl, addTask, deleteMany, highlighting, updateSelectedTasks, sort, updateFirstLoad
+// state is: timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme, firstLoad
 function TaskControl({
 	services,
 	state,
@@ -50,8 +50,8 @@ function TaskControl({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 	const { y0, y1, x0, x1 } = { ...coords }
 	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip, fullTaskToggleTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
-	const { search, sort, fullToggle } = services || {}
-	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme, fullTask } = state || {}
+	const { search, sort, fullToggle, updateFirstLoad } = services || {}
+	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme, fullTask, firstLoad } = state || {}
 	const startTime = useMemo(() => timeRange?.start ? parseISO(timeRange?.start) : new Date(), [timeRange])
 	const endTime = useMemo(() => timeRange?.end ? parseISO(timeRange?.end) : new Date(), [timeRange])
 
@@ -69,8 +69,14 @@ function TaskControl({
 	// Effects
 	useEffect(() => checkTimeRange(services, toast, endTime, startTime, owl), [owl])
 	useInterval(() => setCurrentTime(new Date()), 1000, [currentTime])
-	useEffect(() => { if (owl) shiftEndTime(services, 24, startTime, endTime, 2 * 24) }, [] )
-		
+	useEffect(() => {
+		if (!firstLoad) return // early return
+		updateFirstLoad(false) // To prevent the increment when user changes page bug
+		if (owl) {
+			shiftEndTime(services, 24, startTime, endTime, 2 * 24)
+		}
+	}, []) 
+	
 	return (
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
 			<TopContainer>
@@ -131,7 +137,7 @@ function TaskControl({
 						size={owlSize}
 						data-testid={'add-button'}
 					/>
-					<IoIosInformationCircleOutline 
+					<IoIosInformationCircleOutline
 						tabIndex={0}
 						title={fullTaskToggleTip}
 						style={fullTask && { color: theme.colors.primary }}
