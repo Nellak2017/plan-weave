@@ -18,6 +18,7 @@ function TaskRow({
 	services,
 	state,
 	taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Date(), status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: Math.floor((new Date()).getTime() / 1000) },
+	prevCompletedTask, // Used for Efficiency Calculations
 	variant = 'dark',
 	maxwidth = 818,
 	index,
@@ -54,7 +55,8 @@ function TaskRow({
 	// Handler Services/State
 	const handleCheckBoxServices = useMemo(() => ({ ...services, setIsChecked }), [services, setIsChecked])
 	const handleCheckBoxState = useMemo(() => ({
-		taskObject, isChecked, isHighlighting, selectedTasks, index, newETA, id,
+		taskObject, prevCompletedTask, 
+		isChecked, isHighlighting, selectedTasks, index, newETA, id,
 		localTask,
 		localTtc,
 
@@ -62,7 +64,7 @@ function TaskRow({
 		localWeight,
 		localThread,
 		localDependencies,
-	}), [taskObject, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id, localDueDate])
+	}), [taskObject, prevCompletedTask, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id, localDueDate])
 	const handleUpdateTaskServices = useMemo(() => ({ taskRow }), [taskRow])
 	const handleUpdateTaskState = useMemo(() => ({
 		id, taskObject,

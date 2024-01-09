@@ -1,12 +1,13 @@
-import { validateTask, millisToHours, calculateEfficiency } from '../../utils/helpers'
+import { validateTask, millisToHours, calculateEfficiency, correctEfficiencyCase } from '../../utils/helpers'
 import { TASK_STATUSES } from '../../utils/constants.js'
 import { parseISO } from 'date-fns'
 
 // services = (updateSelectedTasks, taskRow), setIsChecked
-// state = taskObject, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id, localDueDate
+// state = taskObject, prevCompletedTask, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id, localDueDate
 export const handleCheckBoxClicked = ({ services, state }) => {
 	const { updateSelectedTasks, taskRow, setIsChecked } = services || {}
-	const { taskObject, isChecked, isHighlighting, selectedTasks, index, newETA, id,
+	const { taskObject, prevCompletedTask,
+		isChecked, isHighlighting, selectedTasks, index, newETA, id,
 		localTask, localTtc,
 		localDueDate, localWeight, localThread, localDependencies } = state || {}
 	// Change the Checkmark first before all so we don't forget!
@@ -25,6 +26,8 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 	// Waste Feature 
 	const currentTime = new Date()
 	const completedTimeStamp = currentTime.getTime() / 1000 // epoch in seconds, NOT millis
+	// efficiency = first task ? calcEff(timestamp,completedTimeStamp,localTtc) : calcEff(completedTimeStamp[n-1],completedTimeStamp,localTtc)
+	
 	const updatedTask = {
 		...validateTask({ task: taskObject }),
 		status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
@@ -34,7 +37,7 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 		eta: isChecked && newETA instanceof Date ? newETA.toISOString() : currentTime.toISOString(),
 		completedTimeStamp,
 
-		efficiency: calculateEfficiency(taskObject?.timestamp || completedTimeStamp, completedTimeStamp, localTtc),
+		efficiency: correctEfficiencyCase(prevCompletedTask, taskObject, completedTimeStamp, localTtc),
 		dueDate: localDueDate,
 		weight: parseFloat(localWeight) || 1,
 		// dependencies: localDependencies

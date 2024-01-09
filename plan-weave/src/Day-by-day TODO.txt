@@ -1,4 +1,4 @@
-TaskEditor (Refactoring done by 12/25/2023, Full Task done by 12/30/2023)
+TaskEditor (Refactoring done by 12/25/2023, Full Task done by 1/9/2023)
   X Refactor Pagination to use Redux + services pattern + decouple handlers from view logic
   X Test Coverage and JSDocs for all things (some helpers are not covered)
   X Polish all components so Linter doesn't complain
@@ -10,18 +10,20 @@ TaskEditor (Refactoring done by 12/25/2023, Full Task done by 12/30/2023)
   X Refactor TaskTable to have horizontal scroll if too large
   X Refactor the spacing of stuff to accomodate Full Task
   X Validate incoming local tasks with schema: validateTasks({ taskList: completedOnTopSorted(tasksFromRedux, tasks, start) })
-  Full Task Components (and relevant 3rd parties like Calendar)
-	X Due Calendar Component
-	X Weight Column
-	X Efficiency Column
-	X Thread Input Dropdown Component
-	Efficiency update every interval
-	(optional) Thread Input delete button for dropdown thread options
+  X Fix the going to homepage on refresh bug (App page)
+  X Due Calendar Component
+  X Weight Column
+  X Efficiency Column
+  X Thread Input Dropdown Component
+  X Efficiency Calculation Bug fix
+	Refactor Re-used Dropdown logic into a wrapper component with options for delete and other important props
+  Predecessor Component  
+  Efficiency update every interval
+	Thread Input delete button for dropdown thread options
 	
   Remove unnecessary logic in all of code base
   Add docs to Github, and make front page very pretty
-  Fix Overnight bug on refresh (sets it to be 24 hours more when it shouldnt)
-  Fix the going to homepage on refresh bug (App page)
+  Fix Overnight bug on refresh (sets it to be 24 hours more when it shouldnt when you do: /plan-weave -> / -> /plan-weave)
   Media Queries
 
   (optional) add sort icons and that feature
@@ -30,8 +32,14 @@ TaskEditor (Refactoring done by 12/25/2023, Full Task done by 12/30/2023)
 
 TaskView (1 way binding of information. Read-only. Efficiency over time, Matrix, Linear, Calendar, ...more in the future)
 
+   Discover best way to deal with tasks over time (not just single day). Derive the Logic for it.
    Discover 3rd parties to help with Efficiency over time Graph and Calendar (Linear and Matrix may be done by hand using Tables with scrolling as you already made)
-   Make the Styled Components with respect to Service Pattern (mostly view only now)
+   Efficiency over time component
+   
+   Matrix component
+   Linear List component
+
+   Calendar component
    Test the services, helpers, and events
    Ensure component displays as expected, handle edge cases like missing data points
 
@@ -42,6 +50,7 @@ Settings (Very easy component to make, simplest)
    Make the components for it using Service Architecture
    Visually inspect it to ensure it works fine
 
+// Possibly circle back to this one later, get backend done first before this...
 ViewEditor (edit threads, graph view, scheduled. 2-way binding like TaskEditor)
   Discover how you will address task Scheduling, Periodicity, and all that
   Discover the 3rd party library that will help you with Graph View and Calendars
@@ -57,17 +66,15 @@ ViewEditor (edit threads, graph view, scheduled. 2-way binding like TaskEditor)
 Verify Authentication Logic is Robust in Firebase
 Hook up Thunks to Backend Endpoints to update DB in Firebase
 Store User Information in Firebase effectively and display it using Next best practices
-
 Test the whole user flow in production by making an account, and doing the usual actions a user would do. 
 Test the whole user flow adversarily by trying to break it. 
 
 (optional) hook up analytics
 (optional) make a page that lets users submit complaints
 
+--- QA and Marketing
 Fix any Lighthouse issues, make sure the site conforms to all best practices, make sure there is no console warnings, etc. Atleast 80/100 for all Lighthouse metrics on deployed site.
-
 Make sure the deployed site works even on another device and browser
-
 Tell my friends about it and let them play with it to see what they like and dislike.
 
 

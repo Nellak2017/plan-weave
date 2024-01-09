@@ -7,7 +7,7 @@ import { relativeSortIndex, rearrangeDnD, dateToToday, hoursToMillis } from '../
 const initialState = {
 	search: '',
 	timeRange: {
-		start: parse('18:00', 'HH:mm', new Date()).toISOString(), // Initial Start Date 
+		start: parse('14:20', 'HH:mm', new Date()).toISOString(), // Initial Start Date 
 		end: parse('01:00', 'HH:mm', new Date()).toISOString(), // Initial End Date
 	},
 	owl: true,

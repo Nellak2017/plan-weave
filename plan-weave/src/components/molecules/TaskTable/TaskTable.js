@@ -43,7 +43,7 @@ const TaskTable = ({
 			// t => calculateEfficiencyList({taskList: t, ...other stuff})
 		]
 		if (taskList?.length > 0) updateTasks(transformAll(taskList, transforms) || taskList) }
-	useInterval(() => update(), 50, [timeRange, owl, taskList])
+	useInterval(() => update(), 50, [timeRange, owl, taskList]) // TODO: 50 ms
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>

@@ -5,15 +5,15 @@ const due = '2023-12-27T21:00:00.000Z'
 const initialState = {
 	tasks: [
 
-		{ status: 'incomplete', task: 'Gym - 500 calories', ttc: 1, id: 1, timestamp: timestamp, dueDate: due },
-		{ status: 'incomplete', task: 'Shower +', ttc: .5, id: 2, timestamp: timestamp - 1, dueDate: due },
-		{ status: 'incomplete', task: 'Shave', ttc: .5, id: 3, timestamp: timestamp - 2, dueDate: due },
-		{ status: 'incomplete', task: 'GI Semester Paperwork', ttc: 2, id: 4, timestamp: timestamp - 3, dueDate: due },
-		{ status: 'incomplete', task: 'Clojure Study', ttc: 1.5, id: 5, timestamp: timestamp - 4, dueDate: due },
-		{ status: 'incomplete', task: 'Driving Sim', ttc: 2, id: 6, timestamp: timestamp - 5, dueDate: due },
-		{ status: 'incomplete', task: 'Plan Weave', ttc: 3.5, id: 7, timestamp: timestamp - 6, dueDate: due },
+		{ status: 'incomplete', task: 'Eat', ttc: 1, id: 1, timestamp: timestamp, dueDate: due },
+		{ status: 'incomplete', task: 'Meal Prep', ttc: .1, id: 2, timestamp: timestamp - 1, dueDate: due },
+		{ status: 'incomplete', task: 'Shower+', ttc: .5, id: 3, timestamp: timestamp - 2, dueDate: due },
+		{ status: 'incomplete', task: 'Clean', ttc: 1, id: 4, timestamp: timestamp - 3, dueDate: due },
+		{ status: 'incomplete', task: 'Driving Practice', ttc: 1.5, id: 5, timestamp: timestamp - 4, dueDate: due },
+		{ status: 'incomplete', task: 'Plan Weave', ttc: 2, id: 6, timestamp: timestamp - 5, dueDate: due },
+		{ status: 'incomplete', task: 'Walk', ttc: 1, id: 7, timestamp: timestamp - 6, dueDate: due },
+		{ status: 'incomplete', task: 'Clojure / Backend study', ttc: 1.5, id: 9, timestamp: timestamp - 9, dueDate: due },
 		/*
-		{ status: 'incomplete', task: 'ML : Practice Probs', ttc: 1.5, id: 9, timestamp: timestamp - 9, dueDate: due },
 		{ status: 'incomplete', task: 'br', ttc: .5, id: 10, timestamp: timestamp - 10, dueDate: due },
 		{ status: 'incomplete', task: 'Cyber : Practice', ttc: 1, id: 11, timestamp: timestamp - 11, dueDate: due },
 		{ status: 'incomplete', task: 'Calculator Custom Formulas', ttc: .75, id: 12, timestamp: timestamp - 12, dueDate: due },

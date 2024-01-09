@@ -506,4 +506,41 @@ export const isTaskOld = (timeRange, task) => {
 	return !isTimestampFromToday(start, epochETA, epochTotal)
 }
 
+// TODO: JSDOCS and Unit Test this function below
+// helper to find last completed Task or null if there is none
+// Used by TodoList to help with calculating efficiency
+export const findLastCompletedTask = tasks => {
+	const lastTasks = tasks.filter(task => task?.status === TASK_STATUSES.COMPLETED)
+	const len = lastTasks?.length
+	return len > 0 ? lastTasks[len - 1] : null
+}
+
+
+// TODO: JSDOCS for this function below
+// Chooses the correct calculateEfficiency function for each case
+export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTimeStamp, localTtc) => {
+	const { status, eta } = taskObject
+	const prevEta = prevCompletedTask?.eta
+
+	const epochETA = getTime(parseISO(eta)) / 1000 // converts ISO eta to epoch
+	const prevEpochETA = getTime(parseISO(prevEta)) / 1000 // converts ISO prev eta to epoch
+
+	// No Completed Tasks
+	if (!prevCompletedTask) return calculateEfficiency(epochETA, completedTimeStamp, localTtc)
+
+	// Incomplete -> Completed Case
+	if (status === TASK_STATUSES.INCOMPLETE) return calculateEfficiency(prevEpochETA, completedTimeStamp, localTtc)
+
+	// Completed -> Incomplete Case (And the else Case)
+	return undefined
+}
+
+
 // TODO: Make a calculateEfficiencyList function that calculates efficiency for all incomplete tasks and returns the updated task list
+
+
+
+
+
+
+
