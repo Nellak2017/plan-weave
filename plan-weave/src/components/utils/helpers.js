@@ -2,6 +2,7 @@ import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTa
 import { getTime, formatISO, parseISO } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
 import * as Yup from 'yup'
+import { isEqual as lodashIsEqual } from 'lodash'
 
 // This file contains many helpers used through out the application
 
@@ -140,7 +141,6 @@ export const validateTaskField = ({ field, payload, schema = simpleTaskSchema })
 	}
 }
 
-// Search Filter Function
 /**
  * Filters a list of items based on a given attribute and filter string.
  * 
@@ -479,7 +479,7 @@ export const dateToToday = (start) => {
  */
 export const calculateEfficiency = (startTime, endTime, ttcHours) => {
 	if (typeof startTime !== 'number' || typeof endTime !== 'number' || typeof ttcHours !== 'number') {
-		throw new TypeError('All input parameters must be numbers.')
+		throw new TypeError(`All input parameters must be numbers.\nstartTime = ${startTime}\nendTime = ${endTime}\nttcHours = ${ttcHours}`)
 	}
 	if (startTime < 0 || (endTime - startTime) > 86400 || endTime < 0 || ttcHours <= 0 || ttcHours > 86400) {
 		throw new RangeError(`Start/End Time should be in the Range [startTime, startTime + 86400]. etaHours should be in range [0, 86400].\nstartTime = ${startTime}\nendTime = ${endTime}\netaHours = ${ttcHours}`)
@@ -493,7 +493,14 @@ export const isValidDate = (date) => {
 	return (new Date(date) != "Invalid Date") && !isNaN(new Date(date))
 }
 
-// Used in TodoList to simplify things and make it clearer
+/**
+ * Checks if a task is considered old based on a given time range.
+ * Used in TodoList to simplify things and make it clearer.
+ * 
+ * @param {Object} timeRange - The time range object with 'start' and 'end' properties in ISO format.
+ * @param {Object} task - The task object with 'eta' property in ISO format.
+ * @returns {boolean} - True if the task is old, false otherwise.
+ */
 export const isTaskOld = (timeRange, task) => {
 	const { start, end } = { ...timeRange }
 		? { start: parseISO(timeRange?.start), end: parseISO(timeRange?.end) }
@@ -506,18 +513,41 @@ export const isTaskOld = (timeRange, task) => {
 	return !isTimestampFromToday(start, epochETA, epochTotal)
 }
 
-// TODO: JSDOCS and Unit Test this function below
-// helper to find last completed Task or null if there is none
-// Used by TodoList to help with calculating efficiency
+/**
+ * Finds the last completed task in a given list of tasks, or null if there is none.
+ * Used by TodoList to help with calculating efficiency.
+ * 
+ * @param {Array} tasks - The list of tasks.
+ * @returns {Object|null} - The last completed task or null if there is none.
+ */
 export const findLastCompletedTask = tasks => {
-	const lastTasks = tasks.filter(task => task?.status === TASK_STATUSES.COMPLETED)
-	const len = lastTasks?.length
-	return len > 0 ? lastTasks[len - 1] : null
+	const completedTasks = tasks.filter(task => task?.status === TASK_STATUSES.COMPLETED)
+	const len = completedTasks?.length
+	return len > 0 ? completedTasks[len - 1] : null
 }
 
+/**
+ * Finds the first incomplete task in a given list of tasks or null if there is none.
+ * Used by calculateEfficiencyList for the interval calculation of efficiency.
+ * 
+ * @param {Array} tasks - The list of tasks.
+ * @returns {Object|null} - The first incomplete task or null if there is none.
+ */
+export const findFirstIncompleteTask = tasks => {
+	const incompleteTasks = tasks.filter(task => task?.status === TASK_STATUSES.INCOMPLETE)
+	const len = incompleteTasks?.length
+	return len > 0 ? incompleteTasks[0] : null
+}
 
-// TODO: JSDOCS for this function below
-// Chooses the correct calculateEfficiency function for each case
+/**
+ * Chooses the correct calculateEfficiency function based on the given parameters.
+ *
+ * @param {number} prevCompletedTask - The previous completed task information.
+ * @param {object} taskObject - The current task information, including status and ETA.
+ * @param {string} completedTimeStamp - The timestamp when the task was completed in ISO format.
+ * @param {number} localTtc - The local time to complete for the task.
+ * @returns {number|undefined} - The calculated efficiency or undefined if the case is not handled.
+ */
 export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTimeStamp, localTtc) => {
 	const { status, eta } = taskObject
 	const prevEta = prevCompletedTask?.eta
@@ -535,11 +565,46 @@ export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTi
 	return undefined
 }
 
+/**
+ * Calculates efficiency for the tasks in the given list, considering the completion status of tasks.
+ *
+ * @param {Array} taskList - The list of tasks to calculate efficiency for.
+ * @returns {Array} - A new array of tasks with updated efficiency for the first incomplete task.
+ *
+ * @throws {Error} - Throws an error if the efficiency calculation function is not provided.
+ *
+ * @example
+ * const taskList = [
+ *   { task: 'Task 1', status: 'completed', efficiency: 100, eta: '2023-01-01T12:00:00.000Z', completedTimeStamp: 1641058800, ttc: 2 },
+ *   { task: 'Task 2', status: 'incomplete', efficiency: null, eta: '2023-01-02T12:00:00.000Z', completedTimeStamp: null, ttc: 4 },
+ *   // ... more tasks
+ * ]
+ * const updatedTaskList = calculateEfficiencyList(taskList)
+ */
+export const calculateEfficiencyList = taskList => {
+	// 1. Figure out what task is first incomplete and assume completedTimestamp to be current moment
+	const firstIncomplete = findFirstIncompleteTask(taskList)
+	const { ttc, eta } = { ...firstIncomplete }
+	const firstIncompleteEta = getTime(parseISO(eta)) / 1000
+	const completedTimeStamp = getTime(new Date()) / 1000 // We assume the incomplete task is being completed at this instant
 
-// TODO: Make a calculateEfficiencyList function that calculates efficiency for all incomplete tasks and returns the updated task list
+	// 2. Figure out last complete task
+	const lastComplete = findLastCompletedTask(taskList)
+	const lastCompleteEta = getTime(parseISO(lastComplete?.eta)) / 1000
 
+	// 3. for the first incomplete task, calculate its efficiency by: 
+	const firstIncompleteTaskCalculated = lastComplete
+		? calculateEfficiency(lastCompleteEta, completedTimeStamp, ttc)
+		: calculateEfficiency(firstIncompleteEta, completedTimeStamp, ttc)
 
-
+	// 4. return a copy of taskList with the first incomplete task being firstIncompleteTaskCalculated
+	return taskList.map(task =>
+		lodashIsEqual(task, firstIncomplete)
+			? { ...task, efficiency: firstIncompleteTaskCalculated }
+			: { ...task, efficiency: task.status === TASK_STATUSES.COMPLETED ? task?.efficiency : undefined } 
+			// nested ternary here to make dnd eff% reset non-first incomplete tasks to '-' and not affect complete tasks at all
+	)
+}
 
 
 

@@ -16,16 +16,15 @@ TaskEditor (Refactoring done by 12/25/2023, Full Task done by 1/9/2023)
   X Efficiency Column
   X Thread Input Dropdown Component
   X Efficiency Calculation Bug fix
-	Refactor Re-used Dropdown logic into a wrapper component with options for delete and other important props
+  X Efficiency update every interval
   Predecessor Component  
-  Efficiency update every interval
 	Thread Input delete button for dropdown thread options
-	
-  Remove unnecessary logic in all of code base
+	Remove unnecessary logic in all of code base
   Add docs to Github, and make front page very pretty
   Fix Overnight bug on refresh (sets it to be 24 hours more when it shouldnt when you do: /plan-weave -> / -> /plan-weave)
-  Media Queries
-
+  
+  (later) Media Queries
+  (optional) Refactor Re-used Dropdown logic into a wrapper component with options for delete and other important props
   (optional) add sort icons and that feature
   (optional) add analytics support or research it
   (optional) CompletedTimestamp into an ISO String
@@ -35,11 +34,10 @@ TaskView (1 way binding of information. Read-only. Efficiency over time, Matrix,
    Discover best way to deal with tasks over time (not just single day). Derive the Logic for it.
    Discover 3rd parties to help with Efficiency over time Graph and Calendar (Linear and Matrix may be done by hand using Tables with scrolling as you already made)
    Efficiency over time component
-   
-   Matrix component
    Linear List component
-
-   Calendar component
+   
+   (later) Matrix component
+   (later) Calendar component
    Test the services, helpers, and events
    Ensure component displays as expected, handle edge cases like missing data points
 

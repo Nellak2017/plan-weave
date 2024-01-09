@@ -4,8 +4,14 @@ import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import 'react-toastify/dist/ReactToastify.css'
 import { THEMES, SORTING_METHODS } from '../../utils/constants'
-import { filterTaskList, completedOnTopSorted } from '../../utils/helpers'
-import { calculateWaste, calculateRange, transformAll } from '../../utils/helpers.js'
+import {
+	filterTaskList,
+	completedOnTopSorted,
+	calculateEfficiencyList,
+	calculateWaste,
+	calculateRange,
+	transformAll
+} from '../../utils/helpers.js'
 import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
 import PropTypes from 'prop-types'
@@ -37,13 +43,14 @@ const TaskTable = ({
 		const transforms = [t => calculateWaste({ start, taskList: t, time: new Date() })]
 		if (updateTasks) updateTasks(completedOnTopSorted(globalTasks?.tasks, [], start, transforms, SORTING_METHODS[sortingAlgo]))
 	}, [sortingAlgo])
-	const update = () => { 
+	const update = () => {
 		const transforms = [
 			t => calculateWaste({ start, taskList: t, time: new Date() }),
-			// t => calculateEfficiencyList({taskList: t, ...other stuff})
+			t => calculateEfficiencyList(t)
 		]
-		if (taskList?.length > 0) updateTasks(transformAll(taskList, transforms) || taskList) }
-	useInterval(() => update(), 50, [timeRange, owl, taskList]) // TODO: 50 ms
+		if (taskList?.length > 0) updateTasks(transformAll(taskList, transforms) || taskList)
+	}
+	useInterval(() => update(), 33, [timeRange, owl, taskList]) // 33 is 30 fps
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
