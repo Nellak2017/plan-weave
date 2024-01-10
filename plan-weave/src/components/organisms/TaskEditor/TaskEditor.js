@@ -56,9 +56,9 @@ const TaskEditor = ({
 			isHighlighting: useSelector(state => state?.taskEditor?.highlighting),
 			selectedTasks: useSelector(state => state?.taskEditor?.selectedTasks),
 			fullTask,
-			availableThreads: useSelector(state => state?.globalThreads?.threads)
+			availableThreads: useSelector(state => state?.globalThreads?.threads),
+			userId,
 		},
-		userId,
 	}
 
 	// State for Pagination

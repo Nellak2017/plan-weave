@@ -1,4 +1,4 @@
-import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore'
+import { getFirestore, collection, addDoc, setDoc, query, doc, getDocs, where } from 'firebase/firestore'
 import { fillDefaults } from '../src/components/schemas/taskSchema/taskSchema.js'
 import app from '../firebase/config.js'
 import { toast } from 'react-toastify'
@@ -35,22 +35,36 @@ export async function addTask(task, userId) {
 	}
 	try {
 		const TaskCollection = getTaskCollection(userId)
-		await addDoc(collection(db, TaskCollection), fillDefaults(task))
+		const taskDocRef = doc(db, TaskCollection, task.id.toString()) // Assuming task.id is a number
+		await setDoc(taskDocRef, fillDefaults(task))
 	} catch (e) {
 		console.error(e)
 		toast.error('Failed to add tasks')
 	}
 }
+// TODO: Refactor this to eliminate the add/update task function redundancy
+export async function updateTask(updatedTask, userId) {
+	if (!updatedTask || !userId) {
+		console.error('Invalid updated task or userId when trying to update task. Failed to update task')
+		toast.error('Failed to update task')
+		throw new Error('Invalid updated task or userId when trying to update task. Failed to update task')
+	}
+	try {
+		const TaskCollection = getTaskCollection(userId)
+		const taskDocRef = doc(db, TaskCollection, updatedTask.id.toString()) // Assuming task.id is a number
+		await setDoc(taskDocRef, fillDefaults(updatedTask))
+	} catch (e) {
+		console.error(e)
+		toast.error('Failed to update task')
+	}
+}
 
 // Converts tasks from Firebase version to Redux version
-// Currently only messes with Firebase timestamps
+// Was messing with Firebase timestamps, now just uses numbers
 export function serialize(tasks) {
 	const processedTasks = tasks?.map(task => {
 		return {
-			...task,
-			timestamp: task?.timestamp?.seconds
-				? task?.timestamp?.seconds
-				: timestamp
+			...task
 		}
 	})
 	return processedTasks

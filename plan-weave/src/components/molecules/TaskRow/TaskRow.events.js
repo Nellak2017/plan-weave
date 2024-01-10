@@ -9,7 +9,8 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 	const { taskObject, prevCompletedTask,
 		isChecked, isHighlighting, selectedTasks, index, newETA, id,
 		localTask, localTtc,
-		localDueDate, localWeight, localThread, localDependencies } = state || {}
+		localDueDate, localWeight, localThread, localDependencies,
+		userId } = state || {}
 	// Change the Checkmark first before all so we don't forget!
 	setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
 
@@ -51,7 +52,8 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 export const handleUpdateTask = ({ services, state }) => {
 	const { taskRow } = services || {}
 	const { id, taskObject, localTask, localTtc,
-		localDueDate, localWeight, localThread, localDependencies } = state || {}
+		localDueDate, localWeight, localThread, localDependencies,
+		userId } = state || {}
 
 	taskRow?.update(id, {
 		...taskObject,
@@ -65,5 +67,5 @@ export const handleUpdateTask = ({ services, state }) => {
 		weight: parseFloat(localWeight) || 1,
 		dependencies: localDependencies,
 		parentThread: localThread
-	})
+	}, userId)
 }

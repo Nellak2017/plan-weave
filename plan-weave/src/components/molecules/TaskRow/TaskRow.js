@@ -28,7 +28,7 @@ function TaskRow({
 	// --- Destructuring
 	const { task, waste, ttc, eta, status, id, timestamp, completedTimeStamp, hidden, efficiency, parentThread, dependencies, weight, dueDate } = { ...taskObject }
 	const { taskRow, addThread } = services || {}
-	const { isHighlighting, selectedTasks, fullTask, availableThreads } = state || { isHighlighting: false }
+	const { isHighlighting, selectedTasks, fullTask, availableThreads, userId } = state || { isHighlighting: false }
 	const { delete: deleteTooltip } = TASK_ROW_TOOLTIPS
 	const newETA = useMemo(() => parseISO(eta), [eta]) // Converts eta from ISO -> Date
 
@@ -65,7 +65,8 @@ function TaskRow({
 		localWeight,
 		localThread,
 		localDependencies,
-	}), [taskObject, prevCompletedTask, isChecked, isHighlighting, selectedTasks, index, newETA, id, localTask, localTtc, localDueDate, localWeight, localThread, localDependencies])
+		userId,
+	}), [taskObject, prevCompletedTask, isChecked, isHighlighting, selectedTasks, index, newETA, id, localTask, localTtc, localDueDate, localWeight, localThread, localDependencies, userId])
 	const handleUpdateTaskServices = useMemo(() => ({ taskRow }), [taskRow])
 	const handleUpdateTaskState = useMemo(() => ({
 		id, taskObject,
@@ -76,7 +77,8 @@ function TaskRow({
 		localWeight,
 		localThread,
 		localDependencies,
-	}), [id, taskObject, localTask, localTtc, localDueDate, localWeight, localThread, localDependencies])
+		userId,
+	}), [id, taskObject, localTask, localTtc, localDueDate, localWeight, localThread, localDependencies, userId])
 
 	// Simple Row Services/State
 	const simpleRowServices = useMemo(() => (

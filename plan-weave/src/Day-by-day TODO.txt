@@ -62,8 +62,12 @@ ViewEditor (edit threads, graph view, scheduled. 2-way binding like TaskEditor)
 
 --- Backend (Firebase for now)
 
-Verify Authentication Logic is Robust in Firebase
+X Verify Authentication Logic is Robust in Firebase
 Hook up Thunks to Backend Endpoints to update DB in Firebase
+  X Read
+  X Add
+  Update
+  Delete
 Store User Information in Firebase effectively and display it using Next best practices
 Test the whole user flow in production by making an account, and doing the usual actions a user would do. 
 Test the whole user flow adversarily by trying to break it. 

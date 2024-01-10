@@ -83,8 +83,8 @@ export const createTaskEditorServices = (store) => {
 				delete: (id) => {
 					dispatch(removeTaskThunk(id))
 				},
-				update: (id, newTask) => {
-					dispatch(updateTaskThunk(id, newTask))
+				update: (id, newTask, userId) => {
+					dispatch(updateTaskThunk(id, newTask, userId))
 				}
 			},
 		},
