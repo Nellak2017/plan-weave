@@ -30,7 +30,6 @@ function PlanWeave() {
 		try {
 			const tasks = await fetchTasksFromFirebase(userId)
 			const processedTasks = serialize(tasks)
-			console.log(processedTasks)
 			dispatch(initialTaskUpdate(processedTasks))
 		} catch (e) {
 			console.error('Error fetching tasks: ', e)

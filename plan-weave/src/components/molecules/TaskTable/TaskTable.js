@@ -49,7 +49,7 @@ const TaskTable = ({
 	const update = () => {
 		const transforms = [
 			t => calculateWaste({ start, taskList: t, time: new Date() }),
-			t => calculateEfficiencyList(t)
+			t => calculateEfficiencyList(t, start)
 		]
 		if (taskList?.length > 0) updateTasks(transformAll(taskList, transforms) || taskList)
 	}

@@ -25,7 +25,10 @@ export const setOverNight = (services, owl, startTime, endTime) => {
 }
 
 // Events
-export const addEvent = services => { services?.addTask({ ...DEFAULT_SIMPLE_TASK, id: new Date().getTime() }) }
+export const addEvent = services => {
+	// TODO: have (services, userId) so that you can add per User
+	services?.addTask({ ...DEFAULT_SIMPLE_TASK, id: new Date().getTime() })
+}
 
 export const deleteEvent = (services, toast, setIsDeleteClicked, isHighlighting, taskList) => {
 	if (!isHighlighting) {

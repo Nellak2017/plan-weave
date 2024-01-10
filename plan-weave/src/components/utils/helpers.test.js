@@ -637,7 +637,7 @@ describe('calculateEfficiency', () => {
 		{ startTime: 0, endTime: 7200, etaHours: 0, expected: new RangeError(/.*/) }, // Invalid eta
 		{ startTime: 0, endTime: -100, etaHours: 2, expected: new RangeError(/.*/) }, // Negative end time
 		{ startTime: 'invalid', endTime: 7200, etaHours: 2, expected: new TypeError(/.*/) }, // Invalid start time
-		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: new RangeError(/.*/) }, // Start time greater than end time
+		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: 1.00 }, // Start time greater than end time Domain Extension
 	]
 
 	testCases.forEach(({ startTime, endTime, etaHours, expected }) => {

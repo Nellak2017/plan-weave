@@ -25,6 +25,8 @@ import {
 	deleteGlobalThreads,
 } from '../reducers/globalThreadsSlice.js'
 
+import { addTask as addTaskAPI} from '../../../firebase/firebase_controller.js'
+
 // --- Thunks for manipulating all the Threads
 export const updateGlobalThreadsThunk = (threads) => (dispatch) => {
   try {
