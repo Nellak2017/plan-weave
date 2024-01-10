@@ -11,5 +11,5 @@ export const selectNonHiddenTasks = createSelector(
 			...task,
 			//eta: new Date(task?.eta ? task?.eta * 1000 : new Date().getTime()), // convert epoch to Date if you can, else just use current time
 		})) || []
-
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 )

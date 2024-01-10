@@ -75,6 +75,7 @@ function TaskControl({
 		if (owl) {
 			shiftEndTime(services, 24, startTime, endTime, 2 * 24)
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 
 	return (

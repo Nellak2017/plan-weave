@@ -44,6 +44,7 @@ const TaskTable = ({
 	useEffect(() => {
 		const transforms = [t => calculateWaste({ start, taskList: t, time: new Date() })]
 		if (updateTasks) updateTasks(completedOnTopSorted(globalTasks?.tasks, [], start, transforms, SORTING_METHODS[sortingAlgo]))
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [sortingAlgo])
 	const update = () => {
 		const transforms = [
