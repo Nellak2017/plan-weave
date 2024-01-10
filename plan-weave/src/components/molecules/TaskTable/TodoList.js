@@ -4,7 +4,16 @@ import { taskSchema, fillDefaults } from "../../schemas/taskSchema/taskSchema"
 import TaskRow from '../TaskRow/TaskRow'
 
 // --- Extracted view logic for Task Table (Covers both Simple and Full Tasks)
-export const todoList = (services, state, taskList, startRange, endRange, timeRange, options, variant = 'dark') => {
+export const todoList = ({
+	services,
+	state,
+	taskList,
+	startRange,
+	endRange,
+	timeRange,
+	options,
+	variant = 'dark'
+}) => {
 	if (!taskList) return []
 
 	const lastCompletedTask = findLastCompletedTask(taskList)

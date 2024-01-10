@@ -6,7 +6,6 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers'
-import { TextField } from '@mui/material'
 import { parse } from 'date-fns'
 import { THEMES } from '../../utils/constants'
 
@@ -56,6 +55,18 @@ function DateTimePickerWrapper({
 			</PickerContainer>
 		</LocalizationProvider>
 	)
+}
+
+DateTimePickerWrapper.propTypes = {
+	variant: PropTypes.string,
+	services: PropTypes.shape({
+		onTimeChange: PropTypes.func,
+	}),
+	state: PropTypes.shape({
+		label: PropTypes.string,
+		defaultTime: PropTypes.string,
+		defaultDate: PropTypes.instanceOf(Date),
+	}),
 }
 
 export default DateTimePickerWrapper

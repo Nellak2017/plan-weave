@@ -62,7 +62,7 @@ const TaskTable = ({
 					<Droppable droppableId="taskTable" type="TASK">
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
-								{todoList(services, taskRowState, filteredTasks, startRange, endRange, timeRange, options, variant)}
+								{todoList({ services, state: taskRowState, taskList: filteredTasks, startRange, endRange, timeRange, options, variant })}
 								{provided.placeholder}
 							</tbody>
 						)}

@@ -14,7 +14,7 @@ import { TASK_ROW_TOOLTIPS } from '../../utils/constants.js'
 import Select from '../../atoms/Select/Select.js'
 import { validateTaskField } from '../../utils/helpers.js'
 import { taskSchema } from '../../schemas/taskSchema/taskSchema.js'
-
+import PropTypes from 'prop-types'
 import ReactSelectWrapper from '../../atoms/ReactSelectWrapper/ReactSelectWrapper.js'
 
 function FullRow({
@@ -27,6 +27,8 @@ function FullRow({
 	const { availableThreads, localThread, localDueDate, localDependencies, localWeight, options } = state || {}
 	const { efficiency: efficencyToolTip, due: dueToolTip, weight: weightToolTip, thread: threadToolTip, dependencies: dependencyToolTip } = TASK_ROW_TOOLTIPS
 	const fullTask = { ...taskObject, ...state }
+
+	const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
 	return (
 		<>
 			<SimpleRow
@@ -46,7 +48,7 @@ function FullRow({
 			</EfficiencyContainer>
 			<DueContainer title={dueToolTip}>
 				{isChecked
-					? localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
+					? formatDate(localDueDate)
 					: <DateTimePickerWrapper
 						variant={variant}
 						services={{
@@ -108,6 +110,43 @@ function FullRow({
 			</DependencyContainer>
 		</>
 	)
+}
+
+FullRow.propTypes = {
+	simpleTaskProps: PropTypes.shape({
+		provided: PropTypes.object,
+		taskObject: PropTypes.shape({
+			task: PropTypes.string,
+			waste: PropTypes.number,
+			ttc: PropTypes.number,
+			eta: PropTypes.string, // ISO String
+			status: PropTypes.string,
+			id: PropTypes.number,
+			timestamp: PropTypes.number,
+		}),
+		variant: PropTypes.string,
+		isChecked: PropTypes.bool,
+		setLocalTask: PropTypes.func,
+		localTask: PropTypes.string,
+		localTtc: PropTypes.number,
+		setLocalTtc: PropTypes.func,
+		handleCheckBoxClicked: PropTypes.func,
+	}),
+	services: PropTypes.shape({
+		setLocalDueDate: PropTypes.func,
+		setLocalWeight: PropTypes.func,
+		setLocalThread: PropTypes.func,
+		setLocalDependencies: PropTypes.func,
+		addThread: PropTypes.func,
+	}),
+	state: PropTypes.shape({
+		availableThreads: PropTypes.array,
+		localThread: PropTypes.string,
+		localDueDate: PropTypes.string, // ISO String
+		localDependencies: PropTypes.array,
+		localWeight: PropTypes.number,
+		options: PropTypes.array,
+	}),
 }
 
 export default FullRow

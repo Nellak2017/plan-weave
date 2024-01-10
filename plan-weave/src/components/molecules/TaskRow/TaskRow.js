@@ -28,7 +28,7 @@ function TaskRow({
 	// --- Destructuring
 	const { task, waste, ttc, eta, status, id, timestamp, completedTimeStamp, hidden, efficiency, parentThread, dependencies, weight, dueDate } = { ...taskObject }
 	const { taskRow, addThread } = services || {}
-	const { isHighlighting, selectedTasks, fullTask, availableThreads } = state || {isHighlighting: false}
+	const { isHighlighting, selectedTasks, fullTask, availableThreads } = state || { isHighlighting: false }
 	const { delete: deleteTooltip } = TASK_ROW_TOOLTIPS
 	const newETA = useMemo(() => parseISO(eta), [eta]) // Converts eta from ISO -> Date
 
@@ -56,7 +56,7 @@ function TaskRow({
 	// Handler Services/State
 	const handleCheckBoxServices = useMemo(() => ({ ...services, setIsChecked }), [services, setIsChecked])
 	const handleCheckBoxState = useMemo(() => ({
-		taskObject, prevCompletedTask, 
+		taskObject, prevCompletedTask,
 		isChecked, isHighlighting, selectedTasks, index, newETA, id,
 		localTask,
 		localTtc,
@@ -69,9 +69,9 @@ function TaskRow({
 	const handleUpdateTaskServices = useMemo(() => ({ taskRow }), [taskRow])
 	const handleUpdateTaskState = useMemo(() => ({
 		id, taskObject,
-		localTask, 
-		localTtc, 
-		
+		localTask,
+		localTtc,
+
 		localDueDate,
 		localWeight,
 		localThread,
@@ -195,6 +195,16 @@ TaskRow.propTypes = {
 	maxwidth: PropTypes.number,
 	index: PropTypes.number,
 	old: PropTypes.bool,
+	prevCompletedTask: PropTypes.shape({
+		task: PropTypes.string,
+		waste: PropTypes.number,
+		ttc: PropTypes.number,
+		eta: PropTypes.string, // Expects ISO String
+		status: PropTypes.string,
+		id: PropTypes.number,
+		timestamp: PropTypes.any,
+	}),
+	options: PropTypes.array,
 }
 
 export default TaskRow

@@ -83,6 +83,7 @@ InfoSection.propTypes = {
 			alt: PropTypes.string,
 		}),
 	}),
+	priority: PropTypes.bool,
 }
 
 export default InfoSection

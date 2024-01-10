@@ -11,6 +11,7 @@ import Button from '../../atoms/Button/Button.js'
 import Image from 'next/image'
 import logo from '../../../../public/Plan-Weave-Logo-Square.png'
 import { BsArrowRightShort } from 'react-icons/bs'
+import PropTypes from 'prop-types'
 
 const defaultImage = ({
 	image = logo,
@@ -97,6 +98,19 @@ function Nav({
 			</ContentContainer>
 		</StyledNav>
 	)
+}
+
+Nav.propTypes = {
+	variant: PropTypes.string,
+	NavLogo: PropTypes.elementType,
+	MiddleComponent: PropTypes.elementType,
+	AppComponent: PropTypes.elementType,
+	LoginComponent: PropTypes.elementType,
+	SignUpComponent: PropTypes.elementType,
+	handleLogo: PropTypes.func,
+	handleApp: PropTypes.func,
+	handleLogIn: PropTypes.func,
+	handleSignUp: PropTypes.func,
 }
 
 export default Nav

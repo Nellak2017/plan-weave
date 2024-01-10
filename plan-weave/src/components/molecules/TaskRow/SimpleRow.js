@@ -15,6 +15,7 @@ import {
 } from './TaskRow.elements.js'
 import { formatTimeLeft } from '../../utils/helpers.js'
 import { format, parseISO } from 'date-fns'
+import PropTypes from 'prop-types'
 
 // Task View Logic (Simple, Full) (Just Simple for now)
 const SimpleRow = ({
@@ -102,6 +103,29 @@ const SimpleRow = ({
 				</p>
 			</TimeContainer>
 		</>)
+}
+
+SimpleRow.propTypes = {
+	services: PropTypes.shape({
+		setLocalTask: PropTypes.func.isRequired,
+		setLocalTtc: PropTypes.func.isRequired,
+		handleCheckBoxClicked: PropTypes.func.isRequired,
+	}).isRequired,
+	state: PropTypes.shape({
+		taskObject: PropTypes.shape({
+			task: PropTypes.string.isRequired,
+			waste: PropTypes.number.isRequired,
+			ttc: PropTypes.number.isRequired,
+			eta: PropTypes.string.isRequired,
+			status: PropTypes.string.isRequired,
+			index: PropTypes.number.isRequired,
+		}).isRequired,
+		isChecked: PropTypes.bool.isRequired,
+		localTask: PropTypes.string.isRequired,
+		localTtc: PropTypes.number.isRequired,
+	}).isRequired,
+	variant: PropTypes.string.isRequired,
+	provided: PropTypes.object,
 }
 
 export default SimpleRow
