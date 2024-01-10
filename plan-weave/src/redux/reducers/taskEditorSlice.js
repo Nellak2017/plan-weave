@@ -18,7 +18,7 @@ const initialState = {
 	tasksPerPage: 10,
 	taskTransition: [0, 0], // Used to keep dnd config in sync when completing/incompleting a task
 	tasks: [],
-	fullTask: true, // Used to show Full tasks or Simple Tasks
+	fullTask: false, // Used to show Full tasks or Simple Tasks
 	firstLoad: true, // Used to guard against setting endtime multiple times
 	userId: '', // Used to store the userId for Firebase
 }

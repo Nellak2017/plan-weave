@@ -15,11 +15,9 @@ export default function Home() {
   const handleSignUp = () => router.push('/signup')
 
   const handleLogout = async () => {
-    console.log("Logging out")
     try {
       await signOutOfApp()
       router.push('/')
-      console.log("Logged out")
     } catch (error) {
       console.log(error)
     }
