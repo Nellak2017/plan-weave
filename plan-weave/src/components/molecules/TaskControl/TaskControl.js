@@ -68,7 +68,7 @@ function TaskControl({
 
 	// Effects
 	useEffect(() => checkTimeRange(services, toast, endTime, startTime, owl), [owl, services, endTime, startTime])
-	useInterval(() => setCurrentTime(new Date()), 1000, [currentTime])
+	useInterval(() => setCurrentTime(new Date()), 33, [currentTime])
 	useEffect(() => {
 		if (!firstLoad) return // early return
 		updateFirstLoad(false) // To prevent the increment when user changes page bug
