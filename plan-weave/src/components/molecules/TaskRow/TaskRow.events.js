@@ -1,4 +1,4 @@
-import { validateTask, millisToHours, calculateEfficiency, correctEfficiencyCase } from '../../utils/helpers'
+import { validateTask, millisToHours, correctEfficiencyCase } from '../../utils/helpers'
 import { TASK_STATUSES } from '../../utils/constants.js'
 import { parseISO } from 'date-fns'
 
@@ -41,7 +41,7 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 		dueDate: localDueDate,
 		weight: parseFloat(localWeight) || 1,
 		dependencies: localDependencies,
-		// parentThread: localThread
+		parentThread: localThread
 	}
 	taskRow?.complete(id, updatedTask, index)
 }
@@ -53,7 +53,6 @@ export const handleUpdateTask = ({ services, state }) => {
 	const { id, taskObject, localTask, localTtc,
 		localDueDate, localWeight, localThread, localDependencies } = state || {}
 
-	console.log(localDependencies)
 	taskRow?.update(id, {
 		...taskObject,
 		eta: parseISO(taskObject?.eta) && parseISO(taskObject.eta) instanceof Date
@@ -65,6 +64,6 @@ export const handleUpdateTask = ({ services, state }) => {
 		dueDate: localDueDate,
 		weight: parseFloat(localWeight) || 1,
 		dependencies: localDependencies,
-		// parentThread: localThread
+		parentThread: localThread
 	})
 }

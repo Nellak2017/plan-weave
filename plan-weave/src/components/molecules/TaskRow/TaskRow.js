@@ -18,12 +18,12 @@ function TaskRow({
 	services,
 	state,
 	taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Date(), status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: Math.floor((new Date()).getTime() / 1000) },
-	prevCompletedTask, // Used for Efficiency Calculations
 	variant = 'dark',
 	maxwidth = 818,
 	index,
 	old = false,
-	options = [],
+	prevCompletedTask, // Used for Efficiency Calculations
+	options = [], // Used for Predecessor drop-down options
 }) {
 	// --- Destructuring
 	const { task, waste, ttc, eta, status, id, timestamp, completedTimeStamp, hidden, efficiency, parentThread, dependencies, weight, dueDate } = { ...taskObject }
@@ -106,7 +106,6 @@ function TaskRow({
 			}}
 			onKeyDown={e => { if (e.key === 'Tab') setTab(true) }} // Set to be true, so that tabbing in doesn't cause updates. (other approaches don't work perfectly)
 		>
-			{/*<button onClick={() => console.log(state)}>state</button>*/}
 			{!fullTask &&
 				<>
 					<SimpleRow
@@ -151,6 +150,7 @@ function TaskRow({
 							setLocalWeight,
 
 							addThread,
+							// NOTE: Update and Delete Functionality are solely in the Thread View Component to be made
 						}}
 					/>
 					<TrashContainer>

@@ -56,7 +56,7 @@ export const createTaskEditorServices = (store) => {
 			search: (newSearchValue) => {
 				dispatch(updateSearch(newSearchValue.trim()))
 			}, // reducer for updating search in the store associated with that section
-			owl: (prev=false) => {
+			owl: (prev = false) => {
 				dispatch(updateOwlThunk(prev))
 			}, // thunk to update owl
 			highlighting: () => {

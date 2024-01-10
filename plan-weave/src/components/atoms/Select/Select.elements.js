@@ -31,7 +31,6 @@ export const DropdownMenu = styled.ul`
 	display: ${props => (props.open ? 'block' : 'none')};
 	z-index: 999; // be above all other stuff
 	overflow-y: auto;
-	border: 1px solid red;
 `;
 
 // Styled component for dropdown menu items
