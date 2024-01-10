@@ -63,7 +63,13 @@ const TaskTable = ({
 					<Droppable droppableId="taskTable" type="TASK">
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
-								{todoList({ services, state: taskRowState, taskList: filteredTasks, startRange, endRange, timeRange, options, variant })}
+								{taskList && taskList.length > 0
+									? todoList({ services, state: taskRowState, taskList: filteredTasks, startRange, endRange, timeRange, options, variant })
+									: <tr>
+										<td colSpan='4' style={{ width: '818px', textAlign: 'center'}}>
+											No Tasks are made yet. Make some by pressing the + button above.
+										</td>
+									</tr>}
 								{provided.placeholder}
 							</tbody>
 						)}

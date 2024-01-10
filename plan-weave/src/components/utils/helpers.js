@@ -614,6 +614,6 @@ export const predecessorOptions = (taskList, schema = taskSchema, schemaDefaultF
 		taskList, schema, schemaDefaultFx,
 		customErrorMessage: `Failed to validate Tasks in predecessorOptions function.\n taskList = ${taskList}`
 	})
-	return validatedTasks.map(task => ({ value: task?.id, label: task?.task }))
+	return validatedTasks?.map(task => ({ value: task?.id, label: task?.task }))
 }
 

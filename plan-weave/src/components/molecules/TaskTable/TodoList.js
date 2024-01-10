@@ -23,17 +23,19 @@ export const todoList = ({
 		const isOld = isTaskOld(timeRange, task)
 		try {
 			const validatedFullTask = validateTask({ task, schema: taskSchema, schemaDefaultFx: fillDefaults })
-			return <TaskRow
-				services={services}
-				state={state}
-				key={`task-${task.id}`}
-				variant={variant}
-				taskObject={validatedFullTask}
-				prevCompletedTask={lastCompletedTask} // Used for Efficiency Calculations. No need to validate again
-				index={idx}
-				old={isOld}
-				options={options} // Used for Predecessor Options
-			/>
+			return (
+				<TaskRow
+					services={services}
+					state={state}
+					key={`task-${task.id}`}
+					variant={variant}
+					taskObject={validatedFullTask}
+					prevCompletedTask={lastCompletedTask} // Used for Efficiency Calculations. No need to validate again
+					index={idx}
+					old={isOld}
+					options={options} // Used for Predecessor Options
+				/>
+			)
 		} catch (e) {
 			return <>{e.message + '\n'}</>
 		}

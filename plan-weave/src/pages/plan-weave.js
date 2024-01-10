@@ -7,6 +7,10 @@ import TaskEditor from '../components/organisms/TaskEditor/TaskEditor.js'
 import Nav from '../components/molecules/Nav/Nav.js'
 import { makeLink } from '../components/molecules/Nav/Nav.helpers.js'
 import { toast } from 'react-toastify'
+import { fetchTasksFromFirebase, serialize } from '../../firebase/firebase_controller.js'
+import store from '../redux/store.js'
+import { initialTaskUpdate } from '../redux/thunks/planWeavePageThunks.js'
+
 
 const options = [
 	{ name: 'name', listener: () => toast.info('Name Sorting applied. Tasks now appear alphabetically.'), algorithm: 'name' },
@@ -18,13 +22,34 @@ const options = [
 const title = () => <h1 style={{ fontSize: '40px' }}>App</h1>
 
 function PlanWeave() {
+	const dispatch = store.dispatch
 	const router = useRouter()
 	const [user, loading, error] = useAuthState(auth)
 
+	const fetchTasks = async (userId) => {
+		try {
+			const tasks = await fetchTasksFromFirebase(userId)
+			const processedTasks = serialize(tasks)
+			console.log(processedTasks)
+			dispatch(initialTaskUpdate(processedTasks))
+		} catch (e) {
+			console.error('Error fetching tasks: ', e)
+			toast.error('Failed to fetch tasks')
+		}
+	}
+
 	// When auth state changes, push to homepage
-	useEffect(() => { 
-		if (user === null && !loading) router.push('/') 
+	useEffect(() => {
+		if (user === null && !loading) router.push('/')
 	}, [user, router, loading])
+
+	// When the page loads in, fetch tasks from Firebase
+	useEffect(() => {
+		if (user) {
+			const userId = user?.uid
+			fetchTasks(userId)
+		}
+	}, [user])
 
 	const handleLogout = async () => {
 		try {

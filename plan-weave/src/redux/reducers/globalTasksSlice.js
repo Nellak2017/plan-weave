@@ -41,7 +41,7 @@ const initialState = {
 }
 const globalTasksSlice = createSlice({
 	name: 'globalTasks',
-	initialState,
+	initialState: {tasks: []}, // TODO: Remove this
 	reducers: {
 		updateGlobalTasks: (state, action) => {
 			state.tasks = action.payload

@@ -1,11 +1,36 @@
-import { getFirestore, collection, addDoc } from 'firebase/firestore'
+import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore'
 import { fillDefaults } from '../src/components/schemas/taskSchema/taskSchema.js'
 import app from '../firebase/config.js'
 
 const db = getFirestore(app)
 
-const TaskCollection = 'tasks'
+const getTaskCollection = userId => `users/${userId}/tasks`
 
-export async function addTask(task) {
+export async function fetchTasksFromFirebase(userId) {
+	const TaskCollection = getTaskCollection(userId)
+
+	const tasksQuery = query(collection(db, TaskCollection))
+	const tasksSnapshot = await getDocs(tasksQuery)
+
+	const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+	return tasks
+}
+
+export async function addTask(userId, task) {
+	const TaskCollection = getTaskCollection(userId)
 	await addDoc(collection(db, TaskCollection), fillDefaults(task))
+}
+
+// Converts tasks from Firebase version to Redux version
+// Currently only messes with Firebase timestamps
+export function serialize(tasks) {
+	const processedTasks = tasks?.map(task => {
+		return {
+			...task,
+			timestamp: task?.timestamp?.seconds
+				? task?.timestamp?.seconds
+				: timestamp
+		}
+	})
+	return processedTasks
 }
