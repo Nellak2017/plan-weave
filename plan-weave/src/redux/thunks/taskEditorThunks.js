@@ -107,9 +107,9 @@ export const updateSortingAlgorithmThunk = (sortingAlgo) => (dispatch) => {
 }
 
 // Thunks for tasks
-export const addNewTaskThunk = task => (dispatch) => {
+export const addNewTaskThunk = (task, userId) => (dispatch) => {
   try {
-    // POST here
+    addTaskAPI(task, userId) // POST here
     dispatch(addGlobalTask(task))
     dispatch(addTask(task))
     toast.info('You added a New Default Task')
@@ -145,7 +145,7 @@ export const removeTasksThunk = taskIdList => (dispatch) => {
 
 export const updateTaskThunk = (taskId, updatedTask) => (dispatch) => {
   try {
-    // You can perform any necessary logic here before dispatching the action
+    // PATCH here
     dispatch(editGlobalTask({ id: taskId, updatedTask }))
     dispatch(editTask({ id: taskId, updatedTask }))
   } catch (e) {
@@ -157,8 +157,8 @@ export const updateTaskThunk = (taskId, updatedTask) => (dispatch) => {
 export const completedTaskThunk = (taskId, updatedTask, index) => (dispatch) => {
   // Same as updateTaskThunk, but with extra logic for completing tasks, like dnd config updates and source update for taskTable
   try {
+    // PATCH here
     dispatch(completeTask({ id: taskId, updatedTask, index }))
-    //toast.info('This Task was Completed')
   } catch (e) {
     console.error(e)
     toast.error('The Task failed to complete or incomplete')

@@ -24,6 +24,7 @@ const TaskEditor = ({
 	const globalTasks = useSelector(state => state?.globalTasks)
 	const taskList = useSelector(selectNonHiddenTasks)
 	const fullTask = useSelector(state => state?.taskEditor?.fullTask)
+	const userId = useSelector(state => state?.taskEditor?.userId)
 
 	// State for TaskControl
 	const TaskControlState = {
@@ -36,6 +37,7 @@ const TaskEditor = ({
 		theme: useContext(ThemeContext),
 		fullTask,
 		firstLoad: useSelector(state => state?.taskEditor?.firstLoad),
+		userId,
 	}
 
 	// State for TaskTable 
@@ -56,6 +58,7 @@ const TaskEditor = ({
 			fullTask,
 			availableThreads: useSelector(state => state?.globalThreads?.threads)
 		},
+		userId,
 	}
 
 	// State for Pagination
@@ -70,6 +73,7 @@ const TaskEditor = ({
 	return (
 		<TaskEditorContainer variant={variant}>
 			<button onClick={() => console.log(taskList)}>Task List</button>
+			<button onClick={() => console.log(userId)}>userId</button>
 			<h1>{title}</h1>
 			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 				<TaskControl

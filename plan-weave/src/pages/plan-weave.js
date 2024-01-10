@@ -9,8 +9,7 @@ import { makeLink } from '../components/molecules/Nav/Nav.helpers.js'
 import { toast } from 'react-toastify'
 import { fetchTasksFromFirebase, serialize } from '../../firebase/firebase_controller.js'
 import store from '../redux/store.js'
-import { initialTaskUpdate } from '../redux/thunks/planWeavePageThunks.js'
-
+import { initialTaskUpdate, initialUserIdUpdate } from '../redux/thunks/planWeavePageThunks.js'
 
 const options = [
 	{ name: 'name', listener: () => toast.info('Name Sorting applied. Tasks now appear alphabetically.'), algorithm: 'name' },
@@ -26,15 +25,9 @@ function PlanWeave() {
 	const router = useRouter()
 	const [user, loading, error] = useAuthState(auth)
 
-	const fetchTasks = async (userId) => {
-		try {
-			const tasks = await fetchTasksFromFirebase(userId)
-			const processedTasks = serialize(tasks)
-			dispatch(initialTaskUpdate(processedTasks))
-		} catch (e) {
-			console.error('Error fetching tasks: ', e)
-			toast.error('Failed to fetch tasks')
-		}
+	const fetchTasks = async (userId, serialize) => {
+		const tasks = await fetchTasksFromFirebase(userId, serialize)
+		dispatch(initialTaskUpdate(tasks))
 	}
 
 	// When auth state changes, push to homepage
@@ -46,7 +39,8 @@ function PlanWeave() {
 	useEffect(() => {
 		if (user) {
 			const userId = user?.uid
-			fetchTasks(userId)
+			fetchTasks(userId, serialize)
+			dispatch(initialUserIdUpdate(userId))
 		}
 	}, [user])
 
@@ -54,8 +48,8 @@ function PlanWeave() {
 		try {
 			await signOutOfApp()
 			router.push('/')
-		} catch (error) {
-			console.log(error)
+		} catch (e) {
+			console.log(e)
 		}
 	}
 

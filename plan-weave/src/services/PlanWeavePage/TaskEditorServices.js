@@ -62,8 +62,8 @@ export const createTaskEditorServices = (store) => {
 			highlighting: () => {
 				dispatch(updateHighlighting())
 			}, // reducer to update highlighting bool for delete many tasks
-			addTask: (task) => {
-				dispatch(addNewTaskThunk(task))
+			addTask: (task, userId) => {
+				dispatch(addNewTaskThunk(task, userId))
 			}, // thunk to add task (simple or full)
 			deleteMany: (selectedIds) => {
 				dispatch(removeTasksThunk(selectedIds))

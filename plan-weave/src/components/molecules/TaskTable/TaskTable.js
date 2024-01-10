@@ -31,7 +31,7 @@ const TaskTable = ({
 
 	// --- Services and State (destructured)
 	const { updateTasks, updateDnD } = services || {}
-	const { globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState } = state || {}
+	const { globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState, userId } = state || {}
 	const options = useMemo(() => predecessorOptions(globalTasks?.tasks), [globalTasks]) // options used in predecessor drop-down component
 	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
 	const filteredTasks = useMemo(() => filterTaskList({ list: taskList, filter: search?.trim(), attribute: 'task' }), [taskList, search])

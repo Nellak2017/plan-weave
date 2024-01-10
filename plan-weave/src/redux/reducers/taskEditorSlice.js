@@ -20,6 +20,7 @@ const initialState = {
 	tasks: [],
 	fullTask: true, // Used to show Full tasks or Simple Tasks
 	firstLoad: true, // Used to guard against setting endtime multiple times
+	userId: '', // Used to store the userId for Firebase
 }
 // Extracted because CompleteTask Reducer uses this logic
 const editTaskReducer = (state, action) => {
@@ -112,6 +113,9 @@ const taskEditorSlice = createSlice({
 		updateFirstLoad: (state, action) => {
 			state.firstLoad = !!action.payload // coerce to Boolean
 		},
+		updateUserId: (state, action) => {
+			state.userId = action.payload // No verification, just raw
+		},
 
 
 		updateTasks: (state, action) => {
@@ -157,5 +161,6 @@ export const {
 	updateTasksPerPage,
 	fullToggle,
 	updateFirstLoad,
+	updateUserId,
 	updateTasks, addTask, deleteTask, deleteTasks, editTask, completeTask } = taskEditorSlice.actions
 export default taskEditorSlice.reducer

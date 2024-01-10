@@ -51,7 +51,7 @@ function TaskControl({
 	const { y0, y1, x0, x1 } = { ...coords }
 	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip, fullTaskToggleTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
 	const { search, sort, fullToggle, updateFirstLoad } = services || {}
-	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme, fullTask, firstLoad } = state || {}
+	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme, fullTask, firstLoad, userId } = state || {}
 	const startTime = useMemo(() => timeRange?.start ? parseISO(timeRange?.start) : new Date(), [timeRange])
 	const endTime = useMemo(() => timeRange?.end ? parseISO(timeRange?.end) : new Date(), [timeRange])
 
@@ -133,8 +133,8 @@ function TaskControl({
 					<BiPlusCircle
 						tabIndex={0}
 						title={addToolTip}
-						onClick={() => addEvent(services)}
-						onKeyDown={e => { if (e.key === 'Enter') { addEvent(services) } }}
+						onClick={() => addEvent(services, userId)}
+						onKeyDown={e => { if (e.key === 'Enter') { addEvent(services, userId) } }}
 						size={owlSize}
 						data-testid={'add-button'}
 					/>
