@@ -1,6 +1,6 @@
 import DropDownButton from './DropDownButton'
 
-export default {
+const DropDownButtonStories = {
   title: 'Atoms/Buttons/DropDownButton',
   component: DropDownButton,
   argTypes: {
@@ -23,3 +23,5 @@ dropDownButton.args = {
   color: 'primary',
   options: options
 }
+
+export default DropDownButtonStories

@@ -1,6 +1,6 @@
 import GoogleButton from './GoogleButton'
 
-export default {
+const GoogleButtonStories = {
 	title: 'Atoms/Buttons/GoogleButton',
 	component: GoogleButton,
 	argTypes: {
@@ -19,3 +19,5 @@ export const SignUp = Template.bind({})
 SignUp.args = {
 	signup: true,
 }
+
+export default GoogleButtonStories

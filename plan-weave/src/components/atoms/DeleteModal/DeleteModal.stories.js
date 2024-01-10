@@ -1,6 +1,6 @@
 import DeleteModal from './DeleteModal'
 
-export default {
+const DeleteModalStories = {
 	title: 'Atoms/DeleteModal',
 	component: DeleteModal,
 	argTypes: {
@@ -18,3 +18,5 @@ Light.args = {
 export const Dark = Template.bind({})
 Dark.args = {
 }
+
+export default DeleteModalStories

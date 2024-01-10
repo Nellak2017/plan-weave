@@ -1,6 +1,6 @@
 import Spinner from './Spinner'
 
-export default {
+const SpinnerStories = {
 	title: 'Atoms/Spinner',
 	component: Spinner,
 	argTypes: {
@@ -20,3 +20,5 @@ export const Dark = Template.bind({})
 Dark.args = {
 	variant: 'dark',
 }
+
+export default SpinnerStories

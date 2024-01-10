@@ -44,7 +44,7 @@ function TimePickerWrapper({
   const currentTime = controlled ? controlledTime : time // Use controlledTime if controlled by the parent
 
   // --- Debouncing the Clock Feature
-  const debouncedChangeHandler = useMemo(() => debounce(newTime => onTimeChange(newTime), CLOCK_DEBOUNCE), [])
+  const debouncedChangeHandler = useMemo(() => debounce(newTime => onTimeChange(newTime), CLOCK_DEBOUNCE), [onTimeChange])
   useEffect(() => { return () => { debouncedChangeHandler.cancel() } }, [debouncedChangeHandler])
 
   // --- Clock FSM (implemented without State machines) Feature

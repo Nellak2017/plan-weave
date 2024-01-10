@@ -1,6 +1,6 @@
 import Select from './Select'
 
-export default {
+const SelectStories = {
 	title: 'Atoms/input/Select',
 	component: Select,
 	argTypes: {
@@ -37,3 +37,5 @@ Dark.args = {
 		maxLength: 3,
 	}
 }
+
+export default SelectStories

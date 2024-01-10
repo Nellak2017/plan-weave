@@ -6,7 +6,7 @@ import store from '../../../redux/store'
 import { Provider } from 'react-redux'
 import { DEFAULT_SIMPLE_TASKS } from '../../utils/constants.js'
 
-export default {
+const TaskRowStories = {
 	title: 'Molecules/TaskRow',
 	component: TaskRow,
 	argTypes: {
@@ -55,3 +55,5 @@ Dark.args = {
 	taskObject: DEFAULT_SIMPLE_TASKS[1],
 	highlight: 'selected'
 }
+
+export default TaskRowStories

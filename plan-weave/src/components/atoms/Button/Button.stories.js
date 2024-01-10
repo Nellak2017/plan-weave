@@ -1,6 +1,6 @@
 import Button from './Button.js'
 
-export default {
+const ButtonStory = {
 	title: 'Atoms/Buttons/Button',
 	component: Button,
 	argTypes: {
@@ -30,3 +30,4 @@ DeleteButton.args = {
 	variant: 'delete',
 	children: 'Delete'
 }
+export default ButtonStory

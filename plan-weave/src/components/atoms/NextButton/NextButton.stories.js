@@ -1,6 +1,6 @@
 import NextButton from './NextButton.js'
 
-export default {
+const NextButtonStories = {
   title: 'Atoms/Buttons/NextButton',
   component: NextButton,
   argTypes: {
@@ -23,3 +23,5 @@ nextButtonRight.args = {
 	variant: 'right',
   	color: 'primary'
 }
+
+export default NextButtonStories

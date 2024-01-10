@@ -1,6 +1,6 @@
 import Pagination from './Pagination'
 
-export default {
+const PaginationStories = {
 	title: 'Molecules/Pagination',
 	component: Pagination,
 	argTypes: {
@@ -21,3 +21,5 @@ export const Dark = Template.bind({})
 Dark.args = {
 	variant: 'dark',
 }
+
+export default PaginationStories

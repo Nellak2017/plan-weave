@@ -1,6 +1,6 @@
 import AuthForm from './AuthForm'
 
-export default {
+const AuthFormStories = {
 	title: 'Organisms/AuthForm',
 	component: AuthForm,
 	argTypes: {
@@ -20,3 +20,5 @@ Dark.args = {
 	variant: 'dark',
 	signup: true
 }
+
+export default AuthFormStories

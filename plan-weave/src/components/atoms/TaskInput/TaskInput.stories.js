@@ -1,6 +1,6 @@
 import TaskInput from './TaskInput'
 
-export default {
+const TaskInputStories = {
 	title: 'Atoms/input/TaskInput',
 	component: TaskInput,
 	argTypes: {
@@ -24,3 +24,5 @@ Dark.args = {
 	maxwidth: 200,
 	initialValue: 'Hello'
 }
+
+export default TaskInputStories

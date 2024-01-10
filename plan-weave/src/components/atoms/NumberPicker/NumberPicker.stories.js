@@ -1,6 +1,6 @@
 import NumberPicker from './NumberPicker'
 
-export default {
+const NumberPickerStories = {
 	title: 'Atoms/Pickers/NumberPicker',
 	component: NumberPicker,
 	argTypes: {
@@ -23,3 +23,5 @@ Dark.args = {
 	variant: 'dark',
 	options: options
 }
+
+export default NumberPickerStories

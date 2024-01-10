@@ -76,7 +76,7 @@ function TaskRow({
 		localWeight,
 		localThread,
 		localDependencies,
-	}), [id, taskObject, localTask, localTtc, localDueDate])
+	}), [id, taskObject, localTask, localTtc, localDueDate, localWeight, localThread, localDependencies])
 
 	// Simple Row Services/State
 	const simpleRowServices = useMemo(() => (
@@ -88,7 +88,7 @@ function TaskRow({
 
 	// --- Effects
 	// Should run when the highlighting stops to reset the checkmarks to what they should be
-	useEffect(() => { isHighlighting ? setIsChecked(false) : setIsChecked(status === TASK_STATUSES.COMPLETED) }, [isHighlighting])
+	useEffect(() => { isHighlighting ? setIsChecked(false) : setIsChecked(status === TASK_STATUSES.COMPLETED) }, [isHighlighting, status])
 
 	// -- Helper components
 	const completedTask = provided => (

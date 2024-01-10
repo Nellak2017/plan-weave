@@ -1,7 +1,7 @@
 import React from 'react'
 import TableHeader from './TableHeader.js'
 
-export default {
+const TableHeaderStories = {
   title: 'Atoms/Table Elements/TableHeader',
   component: TableHeader,
   argTypes: {
@@ -23,3 +23,5 @@ dark.args = {
   labels: ['Task', 'Waste', 'Eta', 'TTC'],
   variant: 'dark'
 }
+
+export default TableHeaderStories

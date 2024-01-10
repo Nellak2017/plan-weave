@@ -1,6 +1,6 @@
 import ReactSelectWrapper from './ReactSelectWrapper'
 
-export default {
+const ReactSelectWrapperStories = {
 	title: 'Atoms/input/ReactSelectWrapper',
 	component: ReactSelectWrapper,
 	argTypes: {
@@ -31,3 +31,5 @@ Dark.args = {
 	options,
 	initialSelectedPredecessors: options
 }
+
+export default ReactSelectWrapperStories

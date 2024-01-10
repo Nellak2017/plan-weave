@@ -4,7 +4,7 @@ import store from '../../../redux/store'
 import { Provider } from 'react-redux'
 import { toast } from 'react-toastify'
 
-export default {
+const TaskEditorStories = {
 	title: 'Organisms/TaskEditor',
 	component: TaskEditor,
 	argTypes: {
@@ -43,3 +43,5 @@ Dark.args = {
 	sortingAlgorithm: 'timestamp',
 	options
 }
+
+export default TaskEditorStories

@@ -1264,7 +1264,7 @@ export const getPresetCSS = (preSets, preSetProp) => (props) => {
 }
 
 // body and defaultFontColor are redundant and only there for understandability
-export default {
+const theme = {
   colors: {
     primaryLight: '#f1ecfd',
     primaryLightHover: '#e2d9fc',
@@ -1336,3 +1336,5 @@ export default {
   elevations,
   insets
 }
+
+export default theme

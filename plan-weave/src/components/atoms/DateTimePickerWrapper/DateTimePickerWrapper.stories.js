@@ -1,6 +1,6 @@
 import DateTimePickerWrapper from './DateTimePickerWrapper'
 
-export default {
+const DateTimePickerWrapperStories =  {
 	title: 'Atoms/Pickers/DateTimePicker',
 	component: DateTimePickerWrapper,
 	argTypes: {
@@ -23,3 +23,5 @@ export const Dark = Template.bind({})
 Dark.args = {
 	variant: 'dark',
 }
+
+export default DateTimePickerWrapperStories

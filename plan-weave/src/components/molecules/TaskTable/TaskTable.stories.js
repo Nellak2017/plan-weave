@@ -6,7 +6,7 @@ import { SIMPLE_TASK_HEADERS } from '../../utils/constants.js'
 import store from '../../../redux/store'
 import { Provider } from 'react-redux'
 
-export default {
+const TaskTableStories = {
   title: 'Molecules/TaskTable',
   component: TaskTable,
   argTypes: {
@@ -45,3 +45,5 @@ dark.args = {
     // Add more tasks here
   ],
 }
+
+export default TaskTableStories

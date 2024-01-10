@@ -1,6 +1,6 @@
 import TimePickerWrapper from './TimePickerWrapper'
 
-export default {
+const TimePickerWrapperStories = {
   title: 'Atoms/Pickers/TimePicker',
   component: TimePickerWrapper,
   argTypes: {
@@ -20,3 +20,5 @@ export const Dark = Template.bind({})
 Dark.args = {
   variant: 'dark'
 }
+
+export default TimePickerWrapperStories

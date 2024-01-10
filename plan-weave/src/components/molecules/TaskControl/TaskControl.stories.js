@@ -3,7 +3,7 @@ import TaskControl from './TaskControl'
 import store from '../../../redux/store'
 import { Provider } from 'react-redux'
 
-export default {
+const TaskControlStories = {
   title: 'Molecules/TaskControl',
   component: TaskControl,
   argTypes: {
@@ -47,3 +47,5 @@ Dark.args = {
   clock2Text: '',
   // Add other args for SearchBar, DropDownButton, and Date Picker
 }
+
+export default TaskControlStories

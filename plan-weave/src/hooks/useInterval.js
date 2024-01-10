@@ -11,7 +11,7 @@ export const useInterval = (callback, delay, dependencies) => {
   useEffect(() => {
     const interval = setInterval(callback, delay)
     return () => clearInterval(interval)
-  }, dependencies)
+  }, [callback, delay, ...dependencies])
 }
 
 export default useInterval

@@ -1,6 +1,6 @@
 import Nav from './Nav'
 
-export default {
+const NavStories = {
 	title: 'Molecules/Nav',
 	component: Nav,
 	argTypes: {
@@ -19,3 +19,5 @@ export const Dark = Template.bind({})
 Dark.args = {
 	variant: 'dark',
 }
+
+export default NavStories

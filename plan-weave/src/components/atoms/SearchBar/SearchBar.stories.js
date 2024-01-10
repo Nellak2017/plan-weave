@@ -1,6 +1,6 @@
 import SearchBar from './SearchBar'
 
-export default {
+const SearchBarStories = {
   title: 'Atoms/Input/SearchBar',
   component: SearchBar,
   argTypes: {
@@ -19,3 +19,5 @@ export const darkSearchBar = Template.bind({})
 darkSearchBar.args = {
   variant: 'dark',
 }
+
+export default SearchBarStories

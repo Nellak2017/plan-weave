@@ -18,7 +18,7 @@ function NumberPicker({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	const [number, setNumber] = useState(defaultNumber)
-	const value = useMemo(() => controlledValue || number, [number])
+	const value = useMemo(() => controlledValue || number, [controlledValue, number])
 
 	const handleNumberChange = e => {
 		// Pass the new value to the parent component

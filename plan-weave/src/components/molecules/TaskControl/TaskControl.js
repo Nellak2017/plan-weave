@@ -64,10 +64,10 @@ function TaskControl({
 			OPTION_NOTIFICATIONS[name]() // This will do a toast notification when option is pressed
 			sort(name) // service for changing the sortingAlgo based on the name
 		}
-	})), []) // Drop-down options for sorting methods. 
+	})), [sort]) // Drop-down options for sorting methods. 
 
 	// Effects
-	useEffect(() => checkTimeRange(services, toast, endTime, startTime, owl), [owl])
+	useEffect(() => checkTimeRange(services, toast, endTime, startTime, owl), [owl, services, endTime, startTime])
 	useInterval(() => setCurrentTime(new Date()), 1000, [currentTime])
 	useEffect(() => {
 		if (!firstLoad) return // early return
@@ -75,8 +75,8 @@ function TaskControl({
 		if (owl) {
 			shiftEndTime(services, 24, startTime, endTime, 2 * 24)
 		}
-	}, []) 
-	
+	}, [])
+
 	return (
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
 			<TopContainer>

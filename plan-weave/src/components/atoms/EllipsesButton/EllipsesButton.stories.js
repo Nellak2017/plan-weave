@@ -1,7 +1,7 @@
 import React from 'react'
 import EllipsesButton from './EllipsesButton'
 
-export default {
+const EllipsesButtonStories = {
   title: 'Atoms/Buttons/EllipsesButton',
   component: EllipsesButton,
   argTypes: {
@@ -20,3 +20,5 @@ export const Dark = Template.bind({})
 Dark.args = {
   variant: 'dark'
 }
+
+export default EllipsesButtonStories

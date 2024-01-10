@@ -1,6 +1,6 @@
 import HoursInput from './HoursInput'
 
-export default {
+const HoursInputStories = {
   title: 'Atoms/input/HoursInput',
   component: HoursInput,
   argTypes: {
@@ -29,3 +29,5 @@ dark.args = {
 	placeholder: 'Time',
 	initialValue: 2
 }
+
+export default HoursInputStories

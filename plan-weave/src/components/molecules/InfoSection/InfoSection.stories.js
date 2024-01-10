@@ -1,7 +1,7 @@
 import InfoSection from './InfoSection'
 import { body } from '../../../Data/HomePage/Data'
 
-export default {
+const InfoSectionStories = {
 	title: 'Molecules/InfoSection',
 	component: InfoSection,
 	argTypes: {
@@ -23,3 +23,5 @@ Dark.args = {
 	variant: 'dark',
 	data: body[0]
 }
+
+export default InfoSectionStories
