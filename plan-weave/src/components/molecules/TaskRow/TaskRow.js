@@ -117,7 +117,7 @@ function TaskRow({
 						provided={provided || undefined}
 					/>
 					<TrashContainer>
-						<BiTrash title={deleteTooltip} onClick={() => taskRow?.delete(id)} size={iconSize} />
+						<BiTrash title={deleteTooltip} onClick={() => taskRow?.delete(id, userId)} size={iconSize} />
 					</TrashContainer>
 				</>
 
@@ -156,7 +156,7 @@ function TaskRow({
 						}}
 					/>
 					<TrashContainer>
-						<BiTrash title={deleteTooltip} onClick={() => taskRow?.delete(id)} size={iconSize} />
+						<BiTrash title={deleteTooltip} onClick={() => taskRow?.delete(id, userId)} size={iconSize} />
 					</TrashContainer>
 				</>}
 		</TaskRowStyled>

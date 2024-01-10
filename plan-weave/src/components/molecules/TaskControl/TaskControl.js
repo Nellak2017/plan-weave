@@ -161,8 +161,8 @@ function TaskControl({
 							tabIndex={0}
 							variant={'delete'}
 							title={'Delete Selected Tasks'}
-							onClick={() => deleteMultipleEvent(services, toast, taskList, setIsDeleteClicked, selectedTasks, isDeleteClicked)}
-							onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent(services, toast, taskList, setIsDeleteClicked, selectedTasks, isDeleteClicked) } }}
+							onClick={() => deleteMultipleEvent(services, toast, taskList, setIsDeleteClicked, selectedTasks, isDeleteClicked, userId)}
+							onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent(services, toast, taskList, setIsDeleteClicked, selectedTasks, isDeleteClicked, userId) } }}
 						>
 							Delete
 						</Button>

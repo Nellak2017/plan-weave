@@ -20,6 +20,7 @@ const modalStyles = {
 // services = {deleteMany, highlighting}
 const DeleteModal = ({
 	services,
+	userId,
 	selectedTasks,
 	taskList,
 	warningText = 'Warning, you are deleting multiple tasks. Are you sure?',
@@ -37,7 +38,7 @@ const DeleteModal = ({
 							? taskList[index]?.id // it should have id, but ? to be safe
 							: selected)
 						.filter(selected => typeof selected !== 'boolean')
-					services?.deleteMany(selectedIds)
+					services?.deleteMany(selectedIds, userId)
 					services?.highlighting()
 					closeToast()
 				}}>

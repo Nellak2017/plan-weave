@@ -38,7 +38,7 @@ export const deleteEvent = (services, toast, setIsDeleteClicked, isHighlighting,
 	services?.highlighting() // changes highlighting from true->false or false->true
 }
 
-export const deleteMultipleEvent = (services, toast, taskList, setIsDeleteClicked, selectedTasks, isDeleteClicked) => {
+export const deleteMultipleEvent = (services, toast, taskList, setIsDeleteClicked, selectedTasks, isDeleteClicked, userId) => {
 	const tasksAreSelected = selectedTasks.some(task => task === true) // if there is atleast 1 task selected then true
 	if (tasksAreSelected && !isDeleteClicked) {
 		setIsDeleteClicked(true) // This is to prevent the user from spamming the delete buttom multiple times
@@ -48,6 +48,7 @@ export const deleteMultipleEvent = (services, toast, taskList, setIsDeleteClicke
 					deleteMany: services?.deleteMany,
 					highlighting: services?.highlighting,
 				}}
+				userId={userId}
 				selectedTasks={selectedTasks}
 				taskList={taskList}
 				setIsDeleteClicked={setIsDeleteClicked}

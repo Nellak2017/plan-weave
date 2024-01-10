@@ -28,6 +28,7 @@ import {
 import { 
   addTask as addTaskAPI,
   updateTask as updateTaskAPI,
+  deleteTasks as deleteTasksAPI,
 } from '../../../firebase/firebase_controller.js'
 
 // --- Thunks for manipulating all the Threads
@@ -122,9 +123,9 @@ export const addNewTaskThunk = (task, userId) => (dispatch) => {
   }
 }
 
-export const removeTaskThunk = taskId => (dispatch) => {
+export const removeTaskThunk = (taskId, userId) => (dispatch) => {
   try {
-    // DELETE here
+    deleteTasksAPI(taskId, userId) // DELETE here
     dispatch(deleteGlobalTask(taskId))
     dispatch(deleteTask(taskId))
     toast.info('This Task was deleted')
@@ -134,9 +135,9 @@ export const removeTaskThunk = taskId => (dispatch) => {
   }
 }
 
-export const removeTasksThunk = taskIdList => (dispatch) => {
+export const removeTasksThunk = (taskIdList, userId) => (dispatch) => {
   try {
-    // DELETE here
+    deleteTasksAPI(taskIdList, userId) // DELETE here
     dispatch(deleteGlobalTasks(taskIdList))
     dispatch(deleteTasks(taskIdList))
     toast.info('The tasks were deleted')

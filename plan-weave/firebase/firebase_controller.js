@@ -1,4 +1,4 @@
-import { getFirestore, collection, addDoc, setDoc, query, doc, getDocs, where } from 'firebase/firestore'
+import { getFirestore, collection, setDoc, query, doc, getDocs, deleteDoc } from 'firebase/firestore'
 import { fillDefaults } from '../src/components/schemas/taskSchema/taskSchema.js'
 import app from '../firebase/config.js'
 import { toast } from 'react-toastify'
@@ -56,6 +56,31 @@ export async function updateTask(updatedTask, userId) {
 	} catch (e) {
 		console.error(e)
 		toast.error('Failed to update task')
+	}
+}
+
+// accepts taskIds array or singular taskId
+export async function deleteTasks(taskIds, userId) {
+	if (!taskIds || !userId) {
+		console.error('Invalid taskIds or userId when trying to delete tasks. Failed to delete tasks')
+		toast.error('Failed to delete tasks')
+		throw new Error('Invalid taskIds or userId when trying to delete tasks. Failed to delete tasks')
+	}
+
+	try {
+		const TaskCollection = getTaskCollection(userId)
+		const taskIdsArray = Array.isArray(taskIds) ? taskIds : [taskIds]
+		
+		// Use Promise.all to delete multiple tasks concurrently
+		await Promise.all(
+			taskIdsArray.map(async (taskId) => {
+				const taskDocRef = doc(db, TaskCollection, taskId.toString())
+				await deleteDoc(taskDocRef)
+			})
+		)
+	} catch (e) {
+		console.error(e)
+		toast.error('Failed to delete tasks')
 	}
 }
 

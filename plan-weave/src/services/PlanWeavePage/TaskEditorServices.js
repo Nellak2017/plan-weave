@@ -65,8 +65,8 @@ export const createTaskEditorServices = (store) => {
 			addTask: (task, userId) => {
 				dispatch(addNewTaskThunk(task, userId))
 			}, // thunk to add task (simple or full)
-			deleteMany: (selectedIds) => {
-				dispatch(removeTasksThunk(selectedIds))
+			deleteMany: (selectedIds, userId) => {
+				dispatch(removeTasksThunk(selectedIds, userId))
 			}, // thunk to delete many
 			sort: (sortingAlgo) => {
 				dispatch(updateSortingAlgorithmThunk(sortingAlgo))
@@ -80,8 +80,8 @@ export const createTaskEditorServices = (store) => {
 				complete: (id, updatedTask, index) => {
 					dispatch(completedTaskThunk(id, updatedTask, index))
 				},
-				delete: (id) => {
-					dispatch(removeTaskThunk(id))
+				delete: (id, userId) => {
+					dispatch(removeTaskThunk(id, userId))
 				},
 				update: (id, newTask, userId) => {
 					dispatch(updateTaskThunk(id, newTask, userId))
