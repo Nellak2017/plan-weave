@@ -130,4 +130,23 @@ export const ThreadContainer = styled.td`
 
 export const DependencyContainer = styled.td`
 	padding: ${props => props.theme.spaces.small};
+
+	& > div {
+		width: 100%;
+	}
+	.css-3w2yfm-ValueContainer {
+		-webkit-flex-wrap: nowrap;
+		flex-wrap: nowrap;
+		column-gap: 5px;
+
+		padding-right: 45px;
+		max-width: 370px;
+		width: 100%;
+		overflow-x: auto;
+		overflow-y: hidden;
+
+		div {
+			flex: none;	
+		}
+	}
 `

@@ -18,7 +18,7 @@ TaskEditor (Refactoring done by 12/25/2023, Full Task done by 1/9/2023)
   X Efficiency Calculation Bug fix
   X Efficiency update every interval
   X Fix Overnight bug on refresh (sets it to be 24 hours more when it shouldnt when you do: /plan-weave -> / -> /plan-weave)
-  Add docs to Github, and make front page very pretty
+  X Add docs to Github, and make front page very pretty
   
   Predecessor Component  
 	Thread Input delete button for dropdown thread options
@@ -35,8 +35,8 @@ TaskView (1 way binding of information. Read-only. Efficiency over time, Matrix,
    Discover best way to deal with tasks over time (not just single day). Derive the Logic for it.
    Discover 3rd parties to help with Efficiency over time Graph and Calendar (Linear and Matrix may be done by hand using Tables with scrolling as you already made)
    Efficiency over time component
-   Linear List component
    
+   (later) Linear List component
    (later) Matrix component
    (later) Calendar component
    Test the services, helpers, and events

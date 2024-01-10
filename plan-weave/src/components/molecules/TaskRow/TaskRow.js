@@ -22,7 +22,8 @@ function TaskRow({
 	variant = 'dark',
 	maxwidth = 818,
 	index,
-	old = false
+	old = false,
+	options = [],
 }) {
 	// --- Destructuring
 	const { task, waste, ttc, eta, status, id, timestamp, completedTimeStamp, hidden, efficiency, parentThread, dependencies, weight, dueDate } = { ...taskObject }
@@ -64,7 +65,7 @@ function TaskRow({
 		localWeight,
 		localThread,
 		localDependencies,
-	}), [taskObject, prevCompletedTask, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id, localDueDate])
+	}), [taskObject, prevCompletedTask, isChecked, isHighlighting, selectedTasks, index, newETA, id, localTask, localTtc, localDueDate, localWeight, localThread, localDependencies])
 	const handleUpdateTaskServices = useMemo(() => ({ taskRow }), [taskRow])
 	const handleUpdateTaskState = useMemo(() => ({
 		id, taskObject,
@@ -140,6 +141,8 @@ function TaskRow({
 							localDueDate,
 							localDependencies,
 							localWeight,
+
+							options,
 						}}
 						services={{
 							setLocalThread,

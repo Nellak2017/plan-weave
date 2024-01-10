@@ -15,6 +15,8 @@ import Select from '../../atoms/Select/Select.js'
 import { validateTaskField } from '../../utils/helpers.js'
 import { taskSchema } from '../../schemas/taskSchema/taskSchema.js'
 
+import ReactSelectWrapper from '../../atoms/ReactSelectWrapper/ReactSelectWrapper.js'
+
 function FullRow({
 	simpleTaskProps,
 	services,
@@ -22,7 +24,7 @@ function FullRow({
 }) {
 	const { provided, taskObject, variant, isChecked, setLocalTask, localTask, localTtc, setLocalTtc, handleCheckBoxClicked } = simpleTaskProps
 	const { setLocalDueDate, setLocalWeight, setLocalThread, setLocalDependencies, addThread } = services || {}
-	const { availableThreads, localThread, localDueDate, localDependencies, localWeight } = state || {}
+	const { availableThreads, localThread, localDueDate, localDependencies, localWeight, options } = state || {}
 	const { efficiency: efficencyToolTip, due: dueToolTip, weight: weightToolTip, thread: threadToolTip, dependencies: dependencyToolTip } = TASK_ROW_TOOLTIPS
 	const fullTask = { ...taskObject, ...state }
 	return (
@@ -97,7 +99,12 @@ function FullRow({
 				}
 			</ThreadContainer>
 			<DependencyContainer title={dependencyToolTip}>
-				Predecessors
+				<ReactSelectWrapper
+					variant={variant}
+					initialSelectedPredecessors={localDependencies}
+					options={options}
+					onChange={setLocalDependencies}
+				/>
 			</DependencyContainer>
 		</>
 	)

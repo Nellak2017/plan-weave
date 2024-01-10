@@ -10,7 +10,8 @@ import {
 	calculateEfficiencyList,
 	calculateWaste,
 	calculateRange,
-	transformAll
+	transformAll,
+	predecessorOptions
 } from '../../utils/helpers.js'
 import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
@@ -31,6 +32,7 @@ const TaskTable = ({
 	// --- Services and State (destructured)
 	const { updateTasks, updateDnD } = services || {}
 	const { globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState } = state || {}
+	const options = useMemo(() => predecessorOptions(globalTasks?.tasks), [globalTasks]) // options used in predecessor drop-down component
 	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
 	const filteredTasks = useMemo(() => filterTaskList({ list: taskList, filter: search?.trim(), attribute: 'task' }), [taskList, search])
 	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page), [tasksPerPage, page])
@@ -60,7 +62,7 @@ const TaskTable = ({
 					<Droppable droppableId="taskTable" type="TASK">
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
-								{todoList(services, taskRowState, filteredTasks, startRange, endRange, timeRange, variant)}
+								{todoList(services, taskRowState, filteredTasks, startRange, endRange, timeRange, options, variant)}
 								{provided.placeholder}
 							</tbody>
 						)}

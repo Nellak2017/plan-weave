@@ -5,7 +5,18 @@ const due = '2023-12-27T21:00:00.000Z'
 const initialState = {
 	tasks: [
 
-		{ status: 'incomplete', task: 'Eat', ttc: 1, id: 1, timestamp: timestamp, dueDate: due },
+		{
+			status: 'incomplete', task: 'Eat', ttc: 1, id: 1, timestamp: timestamp, dueDate: due, dependencies: [
+				{
+					"value": 1,
+					"label": "Eat"
+				},
+				{
+					"value": 2,
+					"label": "Meal Prep"
+				}
+			]
+		},
 		{ status: 'incomplete', task: 'Meal Prep', ttc: .1, id: 2, timestamp: timestamp - 1, dueDate: due },
 		{ status: 'incomplete', task: 'Shower+', ttc: .5, id: 3, timestamp: timestamp - 2, dueDate: due },
 		{ status: 'incomplete', task: 'Clean', ttc: 1, id: 4, timestamp: timestamp - 3, dueDate: due },
@@ -56,13 +67,13 @@ const globalTasksSlice = createSlice({
 			if (taskIndex !== -1) state.tasks[taskIndex] = updatedTask // Edit a task by ID
 		},
 	},
-  })
-  
-  export const { 
+})
+
+export const {
 	updateGlobalTasks,
-	addGlobalTask, 
+	addGlobalTask,
 	deleteGlobalTask,
 	deleteGlobalTasks,
 	editGlobalTask,
- } = globalTasksSlice.actions
-  export default globalTasksSlice.reducer
+} = globalTasksSlice.actions
+export default globalTasksSlice.reducer

@@ -1,6 +1,7 @@
-import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema'
+import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
+import { taskSchema, fillDefaults } from '../schemas/taskSchema/taskSchema.js'
 import { getTime, formatISO, parseISO } from 'date-fns'
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants'
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants.js'
 import * as Yup from 'yup'
 import { isEqual as lodashIsEqual } from 'lodash'
 
@@ -601,11 +602,18 @@ export const calculateEfficiencyList = taskList => {
 	return taskList.map(task =>
 		lodashIsEqual(task, firstIncomplete)
 			? { ...task, efficiency: firstIncompleteTaskCalculated }
-			: { ...task, efficiency: task.status === TASK_STATUSES.COMPLETED ? task?.efficiency : undefined } 
-			// nested ternary here to make dnd eff% reset non-first incomplete tasks to '-' and not affect complete tasks at all
+			: { ...task, efficiency: task.status === TASK_STATUSES.COMPLETED ? task?.efficiency : undefined }
+		// nested ternary here to make dnd eff% reset non-first incomplete tasks to '-' and not affect complete tasks at all
 	)
 }
 
-
-
+// Takes a task list with atleast objects with an id and task
+// Returns a list of options of form: [{value: id (number), label: task (string)}]
+export const predecessorOptions = (taskList, schema = taskSchema, schemaDefaultFx = fillDefaults) => {
+	const validatedTasks = validateTasks({
+		taskList, schema, schemaDefaultFx,
+		customErrorMessage: `Failed to validate Tasks in predecessorOptions function.\n taskList = ${taskList}`
+	})
+	return validatedTasks.map(task => ({ value: task?.id, label: task?.task }))
+}
 

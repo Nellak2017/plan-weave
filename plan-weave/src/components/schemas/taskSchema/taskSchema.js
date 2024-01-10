@@ -56,12 +56,7 @@ export const taskSchema = Yup.object({
 			return value
 		}),
 	dependencies: Yup.array()
-		.of(Yup.lazy((value) => {
-			if (!value) {
-				return Yup.mixed().nullable()
-			}
-			return taskSchema
-		}))
+		.of(Yup.mixed())
 		.default([]),
 	weight: Yup.number()
 		.min(0),

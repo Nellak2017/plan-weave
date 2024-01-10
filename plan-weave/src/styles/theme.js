@@ -896,12 +896,47 @@ export const dateTimePickerPresets = {
 
 export const selectWrapperPresets = {
   variant: {
-    light: css``,
-    dark: css``,
+    light: css`
+      & .css-1jqq78o-placeholder, .css-13cymwt-control, .css-t3ipsp-control {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+      & div {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+      svg {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+      .css-12a83d4-MultiValueRemove > .css-tj5bde-Svg {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+    `,
+    dark: css`
+      color: ${props => props.theme.colors.lightNeutralLight};
+      & .css-1jqq78o-placeholder, .css-13cymwt-control, .css-t3ipsp-control {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
+      div {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+      svg {
+        color: ${props => props.theme.colors.lightNeutralLight};
+      }
+      .css-12a83d4-MultiValueRemove > .css-tj5bde-Svg {
+        color: ${props => props.theme.colors.darkNeutralDark};
+      }
+    `,
   },
   color: colorPreset
 }
 
+export const reactSelectWrapperPresets = {
+  variant:  {
+    light: css`
+    `,
+    dark: css`
+    `,
+  }
+}
 // ------
 // --- Molecules ---
 
