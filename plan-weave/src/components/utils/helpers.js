@@ -580,7 +580,8 @@ export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTi
 
 /**
  * Calculates efficiency for the tasks in the given list, considering the completion status of tasks.
- *
+ * It will also auto-correct start times that are out of the established date range, effectively automatically shifting the start of day.
+ * 
  * @param {Array} taskList - The list of tasks to calculate efficiency for.
  * @returns {Array} - A new array of tasks with updated efficiency for the first incomplete task.
  *
@@ -595,18 +596,23 @@ export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTi
  * const updatedTaskList = calculateEfficiencyList(taskList)
  */
 // TODO: Update JSDOCS
+// TODO: BUG The start time will sometimes be out of the accepted date range
+//		-> Solution: If end - start > 86400 then make the start time for today in all the tasks. (Update it in calcEfficiencyList)
 export const calculateEfficiencyList = (taskList, start) => {
+
 	// 1. Figure out last complete task
 	const lastComplete = findLastCompletedTask(taskList)
-	const lastCompleteEta = getTime(parseISO(lastComplete?.eta)) / 1000
+	const lastCompleteEta = lastComplete?.eta ? getTime(dateToToday(parseISO(lastComplete?.eta))) / 1000 : NaN
 	const lenCompleted = taskList?.filter(task => task?.status === TASK_STATUSES.COMPLETED).length
 
 	// 2. Figure out what task is first incomplete and assume completedTimestamp to be current moment
 	const firstIncomplete = findFirstIncompleteTask(taskList)
 	const { ttc, eta } = { ...firstIncomplete }
+	const noCompleteTasksCase = eta ? getTime(dateToToday(parseISO(eta))) / 1000 : NaN
+	const completeTasksCase = start ? getTime(dateToToday(start)) / 1000 : NaN
 	const firstIncompleteStartTime = lenCompleted > 0
-		? getTime(parseISO(eta)) / 1000 // If no complete tasks -> firstIncompleteStartTime is start time
-		: getTime(start) / 1000 // If complete tasks -> firstIncompleteStartTime is eta
+		? noCompleteTasksCase // If no complete tasks -> firstIncompleteStartTime is start time. Adjusted to be today to avoid date bugs.
+		: completeTasksCase // If complete tasks -> firstIncompleteStartTime is eta. Adjusted to be today to avoid date bugs.
 	const completedTimeStamp = getTime(new Date()) / 1000 // We assume the incomplete task is being completed at this instant
 
 	try {

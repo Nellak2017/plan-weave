@@ -9,12 +9,12 @@ import { getTime, differenceInHours } from 'date-fns'
 export const shiftEndTime = (services, shift, startTime, endTime, maxDifference) => {
 	const newDate = new Date(endTime.getTime() + hoursToMillis(shift))
 	const startEndDifference = differenceInHours(newDate, startTime)
-	if (startEndDifference <= maxDifference) services?.timeRange(undefined, newDate.toISOString())
+	if (startEndDifference <= maxDifference) services?.updateTimeRange(undefined, newDate.toISOString())
 }
 
 export const checkTimeRange = (services, toast, endTime, startTime, owl) => {
 	if ((getTime(endTime) < getTime(startTime)) && !owl) {
-		services?.timeRange(undefined, startTime.toISOString())
+		services?.updateTimeRange(undefined, startTime.toISOString())
 		toast.warn('End time cannot be less than start time. End time is set to start time.')
 	}
 }
@@ -63,5 +63,5 @@ export const deleteMultipleEvent = (services, toast, taskList, setIsDeleteClicke
 			})
 	}
 }
-export const startTimeChangeEvent = (services, newStart) => { services?.timeRange(newStart.toISOString()) }
-export const endTimeChangeEvent = (services, newEnd) => { services?.timeRange(undefined, newEnd.toISOString()) }
+export const startTimeChangeEvent = (services, newStart) => { services?.updateTimeRange(newStart.toISOString()) }
+export const endTimeChangeEvent = (services, newEnd) => { services?.updateTimeRange(undefined, newEnd.toISOString()) }

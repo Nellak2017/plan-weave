@@ -11,9 +11,10 @@ import {
 	calculateWaste,
 	calculateRange,
 	transformAll,
-	predecessorOptions
+	predecessorOptions,
+	dateToToday
 } from '../../utils/helpers.js'
-import { parseISO } from 'date-fns'
+import { add, getTime, parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
 import PropTypes from 'prop-types'
 import { useInterval } from '../../../hooks/useInterval.js'
@@ -30,10 +31,11 @@ const TaskTable = ({
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
 	// --- Services and State (destructured)
-	const { updateTasks, updateDnD } = services || {}
+	const { updateTasks, updateDnD, updateTimeRange } = services || {}
 	const { globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState } = state || {}
 	const options = useMemo(() => predecessorOptions(globalTasks?.tasks), [globalTasks]) // options used in predecessor drop-down component
 	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
+	const end = useMemo(() => parseISO(timeRange?.end), [timeRange])
 	const filteredTasks = useMemo(() => filterTaskList({ list: taskList, filter: search?.trim(), attribute: 'task' }), [taskList, search])
 	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page), [tasksPerPage, page])
 
@@ -46,13 +48,19 @@ const TaskTable = ({
 		if (updateTasks) updateTasks(completedOnTopSorted(globalTasks?.tasks, [], start, transforms, SORTING_METHODS[sortingAlgo]))
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [sortingAlgo])
+
 	const update = () => {
 		const transforms = [
 			t => calculateWaste({ start, taskList: t, time: new Date() }),
 			t => calculateEfficiencyList(t, start)
 		]
 		if (taskList?.length > 0) updateTasks(transformAll(taskList, transforms) || taskList)
+
+		// If the day ends, adjust start and end times to match new day
+		const newEnd = owl ? add(dateToToday(end), { hours: 24 }) : dateToToday(end)
+		if (getTime(end) / 1000 - getTime(start) / 1000 >= 86400) updateTimeRange(dateToToday(start), newEnd)
 	}
+
 	useInterval(() => update(), 33, [timeRange, owl, taskList]) // 33 is 30 fps
 
 	return (
@@ -66,7 +74,7 @@ const TaskTable = ({
 								{taskList && taskList.length > 0
 									? todoList({ services, state: taskRowState, taskList: filteredTasks, startRange, endRange, timeRange, options, variant })
 									: <tr>
-										<td colSpan='4' style={{ width: '818px', textAlign: 'center'}}>
+										<td colSpan='4' style={{ width: '818px', textAlign: 'center' }}>
 											No Tasks are made yet. Make some by pressing the + button above.
 										</td>
 									</tr>}

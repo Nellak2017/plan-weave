@@ -42,7 +42,7 @@ export const createTaskEditorServices = (store) => {
 			updateTasks: (tasks) => {
 				dispatch(updateTasks(tasks))
 			},
-			timeRange: (newStart, newEnd) => {
+			updateTimeRange: (newStart, newEnd) => {
 				dispatch(updateTimeRangeThunk(newStart, newEnd))
 			}, // thunk to update start/end
 			addThread: (thread) => {
