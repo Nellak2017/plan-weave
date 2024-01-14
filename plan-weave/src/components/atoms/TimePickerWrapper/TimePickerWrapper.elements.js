@@ -8,16 +8,11 @@ import { TimeClock } from '@mui/x-date-pickers'
 export const ClockStyled = styled(TimeClock)`
 	transform-origin: top left;
     transform: scale(.95); /* Adjust the scale as needed */
-    display: block;
-    &.css-1m3ruz6-MuiTimeClock-root {
-      flex-direction: row;
-      justify-content: flex-start;
-	  width: 220px;
-    }
-    & .css-1j9v0by-MuiClock-root {
-      margin: 0; 
-    }
-	width: 150px;
+    justify-content: flex-start;
+	width: 220px!important; // overrides material ui default
+    div {
+		margin: 0; 
+	}
 	outline: none;
 `
 
