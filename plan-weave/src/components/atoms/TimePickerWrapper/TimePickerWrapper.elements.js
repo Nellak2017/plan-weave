@@ -14,7 +14,7 @@ export const ClockStyled = styled(TimeClock)`
       justify-content: flex-start;
 	  width: 220px;
     }
-    .css-1j9v0by-MuiClock-root {
+    & .css-1j9v0by-MuiClock-root {
       margin: 0; 
     }
 	width: 150px;

@@ -67,7 +67,7 @@ function TimePickerWrapper({
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <TimePickerWrapperStyled variant={variant} >
         <Display><p>{displayText}</p><p aria-label={`Time display: ${timeDisplayMemo}`}>{timeDisplayMemo}</p></Display>
-        <ClockIconWrapper data-testid={testid.concat('-button')} role="button" onMouseDown={toggleClock} onKeyDown={(e) => { if (e.key === 'Enter') { toggleClock() } }}>
+        <ClockIconWrapper role="button" onMouseDown={toggleClock} onKeyDown={(e) => { if (e.key === 'Enter') { toggleClock() } }}>
           <AiOutlineClockCircle tabIndex={tabIndex} size={32} title={title} />
         </ClockIconWrapper>
         <TimeClockWrapper
@@ -75,7 +75,6 @@ function TimePickerWrapper({
           $verticalOffset={verticalOffset}
           $horizontalOffset={horizontalOffset}>
           <ClockStyled
-            data-testid={testid} // used in unit testing
             value={currentTime}
             onChange={handleTimeChange}
             onFocusedViewChange={handleViewChange}
