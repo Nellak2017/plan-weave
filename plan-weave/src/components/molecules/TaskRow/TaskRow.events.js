@@ -28,7 +28,7 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 	const currentTime = new Date()
 	const completedTimeStamp = currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 	// efficiency = first task ? calcEff(timestamp,completedTimeStamp,localTtc) : calcEff(completedTimeStamp[n-1],completedTimeStamp,localTtc)
-	
+
 	const updatedTask = {
 		...validateTask({ task: taskObject }),
 		status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
@@ -55,6 +55,7 @@ export const handleUpdateTask = ({ services, state }) => {
 		localDueDate, localWeight, localThread, localDependencies,
 		userId, prevCompletedTask } = state || {}
 
+	const currentTime = new Date()
 	const completedTimeStamp = currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 	taskRow?.update(id, {
 		...taskObject,
