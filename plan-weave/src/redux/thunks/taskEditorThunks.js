@@ -114,8 +114,8 @@ export const updateSortingAlgorithmThunk = (sortingAlgo) => (dispatch) => {
 export const addNewTaskThunk = (task, userId) => (dispatch) => {
   try {
     addTaskAPI(task, userId) // POST here
-    dispatch(addGlobalTask(task))
-    dispatch(addTask(task))
+    dispatch(addGlobalTask(task)) // TODO: Update this so that when adding you never have incomplete over completed
+    dispatch(addTask(task)) // TODO: Ensure that tasks are valid and never can have invalid values like undefined efficiency
     toast.info('You added a New Default Task')
   } catch (e) {
     console.error(e)
@@ -161,7 +161,7 @@ export const updateTaskThunk = (taskId, updatedTask, userId) => (dispatch) => {
 export const completedTaskThunk = (taskId, updatedTask, index) => (dispatch) => {
   // Same as updateTaskThunk, but with extra logic for completing tasks, like dnd config updates and source update for taskTable
   try {
-    // PATCH here
+    updateTaskAPI(updatedTask, userId) // PATCH here
     dispatch(completeTask({ id: taskId, updatedTask, index }))
   } catch (e) {
     console.error(e)
