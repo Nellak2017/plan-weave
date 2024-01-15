@@ -6,7 +6,6 @@ export const TaskTableContainer = styled.div`
 
 	display: block;
 	max-width: -moz-fit-content;
-	max-width: fit-content;
 	margin: 0 auto;
 	overflow-x: auto;
 	white-space: nowrap;	

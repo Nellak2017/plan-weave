@@ -575,7 +575,7 @@ export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTi
 	}
 
 	// Completed -> Incomplete Case (And the else Case)
-	return undefined
+	return 0
 }
 
 /**
@@ -618,14 +618,14 @@ export const calculateEfficiencyList = (taskList, start) => {
 	try {
 		// 3. for the first incomplete task, calculate its efficiency by: 
 		const firstIncompleteTaskCalculated = lastComplete
-			? calculateEfficiency(lastCompleteEta, completedTimeStamp, ttc)
-			: calculateEfficiency(firstIncompleteStartTime, completedTimeStamp, ttc)
+			? calculateEfficiency(lastCompleteEta, completedTimeStamp, ttc || .01)
+			: calculateEfficiency(firstIncompleteStartTime, completedTimeStamp, ttc || .01)
 
 		// 4. return a copy of taskList with the first incomplete task being firstIncompleteTaskCalculated
 		return taskList.map(task =>
 			lodashIsEqual(task, firstIncomplete)
 				? { ...task, efficiency: firstIncompleteTaskCalculated }
-				: { ...task, efficiency: task.status === TASK_STATUSES.COMPLETED ? task?.efficiency : undefined }
+				: { ...task, efficiency: task.status === TASK_STATUSES.COMPLETED ? task?.efficiency : 0 } // Was undefined instead of 0
 			// nested ternary here to make dnd eff% reset non-first incomplete tasks to '-' and not affect complete tasks at all
 		)
 	} catch (e) {

@@ -77,8 +77,8 @@ export const createTaskEditorServices = (store) => {
 		},
 		taskTable: {
 			taskRow: {
-				complete: (id, updatedTask, index) => {
-					dispatch(completedTaskThunk(id, updatedTask, index))
+				complete: (id, updatedTask, index, userId) => {
+					dispatch(completedTaskThunk(id, updatedTask, index, userId))
 				},
 				delete: (id, userId) => {
 					dispatch(removeTaskThunk(id, userId))

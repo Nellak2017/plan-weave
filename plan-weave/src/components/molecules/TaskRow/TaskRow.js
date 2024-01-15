@@ -77,8 +77,8 @@ function TaskRow({
 		localWeight,
 		localThread,
 		localDependencies,
-		userId,
-	}), [id, taskObject, localTask, localTtc, localDueDate, localWeight, localThread, localDependencies, userId])
+		userId, prevCompletedTask,
+	}), [id, taskObject, localTask, localTtc, localDueDate, localWeight, localThread, localDependencies, userId, prevCompletedTask,])
 
 	// Simple Row Services/State
 	const simpleRowServices = useMemo(() => (

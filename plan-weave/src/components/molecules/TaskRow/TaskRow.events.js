@@ -44,7 +44,7 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 		dependencies: localDependencies,
 		parentThread: localThread
 	}
-	taskRow?.complete(id, updatedTask, index)
+	taskRow?.complete(id, updatedTask, index, userId)
 }
 
 // services: taskRow
@@ -53,8 +53,9 @@ export const handleUpdateTask = ({ services, state }) => {
 	const { taskRow } = services || {}
 	const { id, taskObject, localTask, localTtc,
 		localDueDate, localWeight, localThread, localDependencies,
-		userId } = state || {}
+		userId, prevCompletedTask } = state || {}
 
+	const completedTimeStamp = currentTime.getTime() / 1000 // epoch in seconds, NOT millis
 	taskRow?.update(id, {
 		...taskObject,
 		eta: parseISO(taskObject?.eta) && parseISO(taskObject.eta) instanceof Date
@@ -62,7 +63,7 @@ export const handleUpdateTask = ({ services, state }) => {
 			: new Date().getTime() / 1000,
 		task: localTask,
 		ttc: localTtc,
-
+		efficiency: correctEfficiencyCase(prevCompletedTask, taskObject, completedTimeStamp, localTtc),
 		dueDate: localDueDate,
 		weight: parseFloat(localWeight) || 1,
 		dependencies: localDependencies,
