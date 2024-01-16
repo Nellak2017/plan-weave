@@ -12,8 +12,10 @@ import {
 	calculateRange,
 	transformAll,
 	predecessorOptions,
-	dateToToday
 } from '../../utils/helpers.js'
+import {
+	dateToToday
+} from '../../utils/helpers.res.js'
 import { add, getTime, parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
 import PropTypes from 'prop-types'
@@ -57,11 +59,16 @@ const TaskTable = ({
 		if (taskList?.length > 0) updateTasks(transformAll(taskList, transforms) || taskList)
 
 		// If the day ends, adjust start and end times to match new day
-		const newEnd = owl ? add(dateToToday(end), { hours: 24 }) : dateToToday(end)
-		if (getTime(end) / 1000 - getTime(start) / 1000 >= 86400) updateTimeRange(dateToToday(start), newEnd)
+		const endResult = dateToToday(end)
+		const startResult = dateToToday(start)
+
+		if (startResult.TAG !== 'Ok' || endResult.TAG !== 'Ok') { console.error('Error updating time range'); return }
+
+		const newEnd = owl ? add(endResult._0, { hours: 24 }) : endResult._0
+		if (getTime(end) / 1000 - getTime(start) / 1000 >= 86400) updateTimeRange(startResult._0, newEnd)
 	}
 
-	useInterval(() => update(), 33, [timeRange, owl, taskList]) // 33 is 30 fps
+	useInterval(() => update(), 3300, [timeRange, owl, taskList]) // 33 is 30 fps
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>

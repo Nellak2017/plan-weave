@@ -11,9 +11,11 @@ import {
 	deleteDnDEvent,
 	diagonalize,
 	calculateRange,
-	dateToToday,
 	calculateEfficiency,
 } from './helpers'
+import {
+	dateToToday
+} from './helpers.res.js'
 import { TASK_STATUSES } from './constants'
 import { format } from 'date-fns-tz'
 
@@ -604,18 +606,21 @@ describe('dateToToday', () => {
 			expected: new Date(new Date().setHours(6, 0, 0, 0)),
 		},
 		{
-			description: 'Throws error for invalid input',
+			description: 'Handles invalid input',
 			input: 'abc',
-			expectedError: /Invalid input\. Expected a Date for dateToToday function\.\n[^]+/,
+			expectedError: 'Invalid input. Expected a Date for dateToToday function.',
 		},
 	]
 
 	testCases.forEach(({ description, input, expected, expectedError }) => {
 		it(description, () => {
+			const result = dateToToday(input)
 			if (expectedError) {
-				expect(() => dateToToday(input)).toThrow(expectedError)
+				expect(result.TAG).toEqual('Error')
+        		expect(result._0).toEqual(expectedError)
 			} else {
-				expect(dateToToday(input)).toEqual(expected)
+				expect(result.TAG).toEqual('Ok')
+        		expect(result._0).toEqual(expected)
 			}
 		})
 	})

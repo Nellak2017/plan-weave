@@ -2,7 +2,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { parse, parseISO } from 'date-fns'
 import { SORTING_METHODS } from '../../components/utils/constants.js'
-import { relativeSortIndex, rearrangeDnD, dateToToday, hoursToMillis } from '../../components/utils/helpers.js'
+import { relativeSortIndex, rearrangeDnD, hoursToMillis } from '../../components/utils/helpers.js'
+import { dateToToday } from '../../components/utils/helpers.res.js'
 
 const initialState = {
 	search: '',
@@ -85,20 +86,31 @@ const taskEditorSlice = createSlice({
 				1. update start to be for today and end to be for today if no owl, and tomorrow if owl
 				2. update every task in the task list to have timestamp for today but with it's hours
 			*/
-			const endPlusOne = old => new Date(dateToToday(parseISO(old['end'])).getTime() + hoursToMillis(24))
+			const endPlusOne = old => {
+				const result = dateToToday(parseISO(old['end']))
+				if (result.TAG !== 'Ok') { console.error('Error incrementing old timerange in refresh reducer', result._0); return { TAG: 'Error', _0: 'Error incrementing old timerange in refresh reducer' } }
+				return { TAG: 'Ok', _0: new Date(result._0.getTime() + hoursToMillis(24)) }
+			}
 			const owl = state.owl
 			const oldTimeRange = state.timeRange
 			const oldTasks = state.tasks
+
+			const newStartResult = dateToToday(parseISO(oldTimeRange['start']))
+			const newEndResult = owl ? endPlusOne(oldTimeRange) : dateToToday(parseISO(oldTimeRange['end']))
+
+			if (newStartResult.TAG !== 'Ok' || newEndResult.TAG !== 'Ok') { console.error("Error updating time range"); return }
+
 			state.timeRange = {
-				start: dateToToday(parseISO(oldTimeRange['start'])).toISOString(),
-				end: owl
-					? endPlusOne(oldTimeRange).toISOString()
-					: dateToToday(parseISO(oldTimeRange['end'])).toISOString()
+				start: newStartResult._0.toISOString(),
+				end: newEndResult._0.toISOString(),
 			}
 			state.tasks = oldTasks.map(task => (
 				{
 					...task,
-					timestamp: dateToToday(new Date(task.timestamp)).getTime() / 1000 // timestamp in Epoch for now until ISO version update
+					timestamp: dateToToday(new Date(task.timestamp)).TAG === 'Ok'
+						? dateToToday(new Date(task.timestamp))._0.getTime() / 1000
+						: (new Date()).getTime() / 1000, // Default value (TODO: Figure out if this is appropriate)
+					// timestamp in Epoch for now until ISO version update
 				}
 			))
 		},

@@ -1,5 +1,8 @@
 module.exports = {
 	transform: {
-	  "^.+\\.(t|j)sx?$": "@swc/jest",
+		"^.+\\.(t|j)sx?$": "@swc/jest",
 	},
-  }
+	transformIgnorePatterns: [
+		"node_modules/(?!(rescript)/)"
+	],
+}
