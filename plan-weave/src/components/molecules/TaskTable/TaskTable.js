@@ -58,6 +58,8 @@ const TaskTable = ({
 		]
 		if (taskList?.length > 0) updateTasks(transformAll(taskList, transforms) || taskList)
 
+		// TODO: Fix buggy feature
+		/*
 		// If the day ends, adjust start and end times to match new day
 		const endResult = dateToToday(end)
 		const startResult = dateToToday(start)
@@ -65,10 +67,16 @@ const TaskTable = ({
 		if (startResult.TAG !== 'Ok' || endResult.TAG !== 'Ok') { console.error('Error updating time range'); return }
 
 		const newEnd = owl ? add(endResult._0, { hours: 24 }) : endResult._0
-		if (getTime(end) / 1000 - getTime(start) / 1000 >= 86400) updateTimeRange(startResult._0, newEnd)
+		console.log((getTime(new Date()) / 1000) - getTime(end) / 1000)
+		if ((getTime(new Date()) / 1000) - getTime(end) / 1000 >= 0) {
+			console.log(startResult)
+			console.log(endResult)
+			updateTimeRange(startResult._0.toISOString(), newEnd.toISOString())
+		}
+		*/
 	}
 
-	useInterval(() => update(), 3300, [timeRange, owl, taskList]) // 33 is 30 fps
+	useInterval(() => update(), 33, [timeRange, owl, taskList]) // 33 is 30 fps
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>

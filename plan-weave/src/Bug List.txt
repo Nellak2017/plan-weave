@@ -1,0 +1,16 @@
+Bug List for Plan Weave:
+
+// TODO: Go through Plan-Weave code and look for known bugs more than this
+
+X FPS is 100 times too low -> Set to 30 fps
+
+X Start,End time clock not reverting back to basics after done choosing time
+X Start,End time not allowing 24 hour time choices
+If the day ends, adjust start and end times to match new day NOT WORKING AS INTENDED. Causes many store updates and not what I wanted. (See TaskTable)
+
+Add Task Adding Task before Completed Task
+Completed Tasks being sorted and messing up ETA calculations
+
+Efficiency and other fields potentially being undefined or not valid
+
+Refresh Not really working the way it is supposed to. Not reseting tasks in Task Table (waste is showing multiple day instead of what it should be if it were for today).

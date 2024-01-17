@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import {
-  ClockStyled,
   TimePickerWrapperStyled,
   ClockIconWrapper,
   TimeClockWrapper,
@@ -13,6 +12,8 @@ import { AiOutlineClockCircle } from 'react-icons/ai'
 import { THEMES, CLOCK_DEBOUNCE } from '../../utils/constants'
 import { debounce } from 'lodash'
 import PropTypes from 'prop-types'
+
+import { TimeClock } from '@mui/x-date-pickers'
 
 function TimePickerWrapper({
   variant,
@@ -74,7 +75,7 @@ function TimePickerWrapper({
           $showclock={showClock}
           $verticalOffset={verticalOffset}
           $horizontalOffset={horizontalOffset}>
-          <ClockStyled
+          <TimeClock
             value={currentTime}
             onChange={handleTimeChange}
             onFocusedViewChange={handleViewChange}

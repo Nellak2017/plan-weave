@@ -78,6 +78,15 @@ function TaskControl({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 
+	const handleFormat = (time) => {
+		try {
+			return format(time, 'HH:mm')
+		} catch (e) {
+			console.error(`startTime = ${startTime}`,e)
+			return
+		}
+	}
+
 	return (
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
 			<TopContainer>
@@ -95,7 +104,7 @@ function TaskControl({
 						tabIndex={0}
 						title={'Enter Start Time'}
 						variant={variant}
-						defaultTime={format(startTime, 'HH:mm')}
+						defaultTime={handleFormat(startTime)}
 						displayText={clock1Text}
 						verticalOffset={y0}
 						horizontalOffset={x0}

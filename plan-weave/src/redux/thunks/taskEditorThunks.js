@@ -20,12 +20,12 @@ import {
 
 import {
   updateGlobalThreads,
-	addGlobalThread,
-	deleteGlobalThread,
-	deleteGlobalThreads,
+  addGlobalThread,
+  deleteGlobalThread,
+  deleteGlobalThreads,
 } from '../reducers/globalThreadsSlice.js'
 
-import { 
+import {
   addTask as addTaskAPI,
   updateTask as updateTaskAPI,
   deleteTasks as deleteTasksAPI,

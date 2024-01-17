@@ -3,18 +3,6 @@ import {
 	getPresetCSS,
 	timePickerPresets,
 } from '../../../styles/theme'
-import { TimeClock } from '@mui/x-date-pickers'
-
-export const ClockStyled = styled(TimeClock)`
-	transform-origin: top left;
-    transform: scale(.95); /* Adjust the scale as needed */
-    justify-content: flex-start;
-	width: 220px!important; // overrides material ui default
-    div {
-		margin: 0; 
-	}
-	outline: none;
-`
 
 export const TimePickerWrapperStyled = styled.div`
 	position: relative;
@@ -42,6 +30,18 @@ export const TimeClockWrapper = styled.div`
 	transition: opacity 0.3s linear;
 	opacity: ${props => (props.$showclock ? '1' : '0')};
 	visibility: ${props => (props.$showclock ? 'visible' : 'hidden')};
+
+	& > :first-child { // Selects the Clock inside. Styled Clock causes style bugs
+		transform-origin: top left;
+		transform: scale(.95); 
+		justify-content: center;
+		width: 220px!important; // overrides material ui default
+		outline: none;		
+
+		& > :first-child {
+			margin: 0;
+		}
+	}
 `
 
 export const ClockIconWrapper = styled.div`
