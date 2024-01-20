@@ -76,7 +76,7 @@ const TaskTable = ({
 		*/
 	}
 
-	useInterval(() => update(), 33, [timeRange, owl, taskList]) // 33 is 30 fps
+	useInterval(() => update(), 3300, [timeRange, owl, taskList]) // TODO: 33 is 30 fps
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>

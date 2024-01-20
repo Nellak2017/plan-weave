@@ -32,13 +32,13 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 	const updatedTask = {
 		...validateTask({ task: taskObject }),
 		status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
-		task: localTask,
+		task: localTask.slice(0,50), // Ensures it is always valid if localTask is a string
 		waste: millisToHours(currentTime.getTime() - newETA.getTime()), // millisToHours(currentTime.getTime() - eta.getTime())
-		ttc: localTtc,
+		ttc: parseFloat(localTtc) || .1, // Fail-safe default
 		eta: isChecked && newETA instanceof Date ? newETA.toISOString() : currentTime.toISOString(),
 		completedTimeStamp,
 
-		efficiency: correctEfficiencyCase(prevCompletedTask, taskObject, completedTimeStamp, localTtc),
+		efficiency: correctEfficiencyCase(prevCompletedTask, taskObject, completedTimeStamp, parseFloat(localTtc) || .1),
 		dueDate: localDueDate,
 		weight: parseFloat(localWeight) || 1,
 		dependencies: localDependencies,
@@ -62,9 +62,9 @@ export const handleUpdateTask = ({ services, state }) => {
 		eta: parseISO(taskObject?.eta) && parseISO(taskObject.eta) instanceof Date
 			? parseISO(taskObject.eta).getTime() / 1000
 			: new Date().getTime() / 1000,
-		task: localTask,
-		ttc: localTtc,
-		efficiency: correctEfficiencyCase(prevCompletedTask, taskObject, completedTimeStamp, localTtc),
+		task: localTask.slice(0,50), // Ensures it is always valid if localTask is a string
+		ttc: parseFloat(localTtc) || .1, // Fail-safe default
+		efficiency: correctEfficiencyCase(prevCompletedTask, taskObject, completedTimeStamp, parseFloat(localTtc) || .1),
 		dueDate: localDueDate,
 		weight: parseFloat(localWeight) || 1,
 		dependencies: localDependencies,

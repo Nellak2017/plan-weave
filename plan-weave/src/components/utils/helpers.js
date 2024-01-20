@@ -480,7 +480,7 @@ export const dateToToday = (start) => {
  */
 export const calculateEfficiency = (startTime, endTime, ttcHours) => {
 	if (typeof startTime !== 'number' || typeof endTime !== 'number' || typeof ttcHours !== 'number') {
-		throw new TypeError(`All input parameters must be numbers.\nstartTime = ${startTime}\nendTime = ${endTime}\nttcHours = ${ttcHours}`)
+		throw new TypeError(`All input parameters must be numbers.\nstartTime = ${startTime}, type => ${typeof startTime}\nendTime = ${endTime}, type => ${typeof endTime}\nttcHours = ${ttcHours}, type => ${typeof ttcHours}`)
 	}
 	if (startTime < 0 || (endTime - startTime) > 86400 || endTime < 0 || ttcHours <= 0 || ttcHours > 86400) {
 		throw new RangeError(`Start/End Time should be in the Range [startTime, startTime + 86400]. etaHours should be in range [0, 86400].\nstartTime = ${startTime}\nendTime = ${endTime}\netaHours = ${ttcHours}`)
@@ -618,8 +618,8 @@ export const calculateEfficiencyList = (taskList, start) => {
 	try {
 		// 3. for the first incomplete task, calculate its efficiency by: 
 		const firstIncompleteTaskCalculated = lastComplete
-			? calculateEfficiency(lastCompleteEta, completedTimeStamp, ttc || .01)
-			: calculateEfficiency(firstIncompleteStartTime, completedTimeStamp, ttc || .01)
+			? calculateEfficiency(lastCompleteEta, completedTimeStamp, parseFloat(ttc) || .01)
+			: calculateEfficiency(firstIncompleteStartTime, completedTimeStamp, parseFloat(ttc) || .01)
 
 		// 4. return a copy of taskList with the first incomplete task being firstIncompleteTaskCalculated
 		return taskList.map(task =>

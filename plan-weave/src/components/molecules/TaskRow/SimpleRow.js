@@ -32,6 +32,7 @@ const SimpleRow = ({
 		waste: wasteTooltip, ttc: ttcTooltip, eta: etaTooltip } = TASK_ROW_TOOLTIPS
 
 	const iconSize = 36
+
 	return (
 		<>
 			<DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''}>
@@ -85,8 +86,9 @@ const SimpleRow = ({
 						}) :
 						'0 minutes'}</pre>
 					: <HoursInput
-						onValueChange={value => setLocalTtc(parseFloat(value))}
-						value={localTtc}
+						onValueChange={value => setLocalTtc(value)}
+						onBlur={() => setLocalTtc(localTtc)} 
+						controlledValue={localTtc}
 						initialValue={localTtc && localTtc > .01 ? localTtc : 1}
 						variant={variant}
 						placeholder='hours'
@@ -122,7 +124,10 @@ SimpleRow.propTypes = {
 		}).isRequired,
 		isChecked: PropTypes.bool.isRequired,
 		localTask: PropTypes.string.isRequired,
-		localTtc: PropTypes.number.isRequired,
+		localTtc: PropTypes.oneOfType([
+			PropTypes.string.isRequired,
+			PropTypes.number.isRequired,
+		]), // To account for '', '*.*' cases when typing
 	}).isRequired,
 	variant: PropTypes.string.isRequired,
 	provided: PropTypes.object,

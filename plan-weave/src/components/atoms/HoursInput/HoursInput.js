@@ -14,10 +14,12 @@ const HoursInput = ({
 	initialValue,
 	controlledValue,
 	onValueChange,
-	onBlur,
-	step = .1,
+	step = .01,
 	min = 0,
 	max = 24,
+	maxLength = '5',
+	onBlur,
+	...props
 }) => {
 	if (variant && !THEMES.includes(variant)) variant = 'dark'
 
@@ -28,23 +30,24 @@ const HoursInput = ({
 
 	const handleChange = e => {
 		const newValue = e.target.value
-		const cleanedValue = (newValue >= min && newValue <= max) || newValue === '' ? newValue : min
+		const cleanedValue = (parseFloat(newValue) >= min && parseFloat(newValue) <= max) || newValue === '' || newValue === '.' ? String(newValue) : String(min)
 		
 		setLocalValue(cleanedValue) // if it is in range, then it is that, default to min
 		
 		// Pass the new value to the parent component
 		if (onValueChange) onValueChange(cleanedValue) 
 	}
+
+	// TODO: remove this function or make it work still
 	const handleBlur = () => {
-		let sanitizedValue = Math.max(min, Math.min(24, parseFloat(localValue) || min))
-		sanitizedValue = isNaN(sanitizedValue) ? '' : sanitizedValue.toFixed(1)
+		const sanitizedValue = (parseFloat(localValue) || .1).toFixed(2) // Fail-safe default on blur, fixes ttc crash site bug on edge case
 
-		if (onBlur) onBlur() // From parent
+		if (onBlur) onBlur(String(sanitizedValue))
 
-		setLocalValue(sanitizedValue)
+		setLocalValue(String(sanitizedValue))
 
 		// If it's being controlled, call the parent's onValueChange
-		if (onValueChange && controlledValue !== undefined) onValueChange(sanitizedValue)
+		if (onValueChange && controlledValue !== undefined) onValueChange(String(sanitizedValue))
 	}
 	return (
 		<HoursContainer variant={variant} color={color}>
@@ -58,10 +61,12 @@ const HoursInput = ({
 				max={max}
 				step={step}
 				inputMode='numeric'
-				pattern='[0-9]*'
+				pattern='^$|^[0-9]*\.?[0-9]*$' // Empty, ".", decimal
 				onChange={handleChange}
 				onBlur={handleBlur}
 				value={value}
+				maxLength={maxLength}
+				{...props} // TODO:  maybe remove
 			/>
 			<span>{text}</span>
 		</HoursContainer>
