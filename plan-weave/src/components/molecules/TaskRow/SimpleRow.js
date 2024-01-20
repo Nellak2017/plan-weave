@@ -46,7 +46,7 @@ const SimpleRow = ({
 			<TaskContainer title={taskTooltip}>
 				{status === TASK_STATUSES.COMPLETED ?
 					<p>{task}</p>
-					: <TaskInput onChange={e => setLocalTask(e.target.value)} value={localTask} variant={variant} />
+					: <TaskInput maxLength="50" onChange={e => setLocalTask(e.target.value)} value={localTask} variant={variant} />
 				}
 			</TaskContainer>
 			<WasteContainer title={wasteTooltip} style={{ width: '200px' }}>

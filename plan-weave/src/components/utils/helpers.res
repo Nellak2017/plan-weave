@@ -24,3 +24,12 @@ let dateToToday = (start: Js.Date.t): result<Js.Date.t, string> => {
     Error("Invalid input. Expected a Date for dateToToday function.")
   }
 }
+
+let calculateEfficiency = (startTime: int, endTime: int, ttcHours: int): Result.t<float,string> => {
+  let normalFormula = hoursToSeconds(ttcHours) /. float(endTime - startTime)
+  switch true {
+  | _ if startTime < 0 || endTime - startTime > 86400 || endTime < 0 || ttcHours <= 0 || ttcHours > 86400 => Error("Invalid input parameters")
+  | _ if startTime > endTime => Ok(-1.0 /. normalFormula)
+  | _ => Ok(normalFormula)
+  }
+}

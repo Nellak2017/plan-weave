@@ -73,15 +73,26 @@ Hook up Thunks to Backend Endpoints to update DB Tasks in Firebase
 Test the whole user flow in production by making an account, and doing the usual actions a user would do. 
 Test the whole user flow adversarily by trying to break it. 
 
+(later) Set up backend to be scalable and migrate away from Firebase if it gets too much traffic
+
 (optional) hook up analytics
 (optional) make a page that lets users submit complaints
 
+--- Security
+
+Ensure that Client information is private
+
 --- QA and Marketing
+Fix all known bugs
+Migrate to ReScript
 Fix any Lighthouse issues, make sure the site conforms to all best practices, make sure there is no console warnings, etc. Atleast 80/100 for all Lighthouse metrics on deployed site.
 Make sure the deployed site works even on another device and browser
 Tell my friends about it and let them play with it to see what they like and dislike.
 
 
+--- Monetization
 
-
-
+Register LLC
+Set up paywall for certain features
+Set up subscription plans
+...rest

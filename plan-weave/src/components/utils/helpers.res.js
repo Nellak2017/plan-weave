@@ -38,6 +38,26 @@ function dateToToday(start) {
         };
 }
 
+function calculateEfficiency(startTime, endTime, ttcHours) {
+  var normalFormula = hoursToSeconds(ttcHours) / (endTime - startTime | 0);
+  if (startTime < 0 || (endTime - startTime | 0) > 86400 || endTime < 0 || ttcHours <= 0 || ttcHours > 86400) {
+    return {
+            TAG: "Error",
+            _0: "Invalid input parameters"
+          };
+  } else if (startTime > endTime) {
+    return {
+            TAG: "Ok",
+            _0: -1.0 / normalFormula
+          };
+  } else {
+    return {
+            TAG: "Ok",
+            _0: normalFormula
+          };
+  }
+}
+
 export {
   hoursToSeconds ,
   hoursToMillis ,
@@ -45,5 +65,6 @@ export {
   add ,
   subtract ,
   dateToToday ,
+  calculateEfficiency ,
 }
 /* No side effect */
