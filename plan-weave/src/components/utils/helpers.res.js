@@ -39,21 +39,35 @@ function dateToToday(start) {
 }
 
 function calculateEfficiency(startTime, endTime, ttcHours) {
-  var normalFormula = hoursToSeconds(ttcHours) / (endTime - startTime | 0);
-  if (startTime < 0 || (endTime - startTime | 0) > 86400 || endTime < 0 || ttcHours <= 0 || ttcHours > 86400) {
+  var normalFormula = hoursToSeconds(ttcHours) / (endTime - startTime);
+  var normalFormulaCondition = startTime < endTime && startTime >= 0.0 && endTime > 0.0 && ttcHours > 0.0 && ttcHours < 86400.0 && endTime - startTime <= 86400.0;
+  var inverseNormalFormulaCondition = startTime > endTime && startTime >= 0.0 && endTime > 0.0 && ttcHours > 0.0;
+  var invalidInputTypeCondition = !Number.isFinite(startTime) || !Number.isFinite(endTime) || !Number.isFinite(ttcHours);
+  var invalidInputRangeCondition = startTime < 0.0 || endTime - startTime > 86400.0 || endTime < 0.0 || ttcHours <= 0.0 || ttcHours > 86400.0;
+  if (normalFormulaCondition) {
     return {
-            TAG: "Error",
-            _0: "Invalid input parameters"
+            TAG: "Ok",
+            _0: normalFormula
           };
-  } else if (startTime > endTime) {
+  } else if (inverseNormalFormulaCondition) {
     return {
             TAG: "Ok",
             _0: -1.0 / normalFormula
           };
+  } else if (invalidInputTypeCondition) {
+    return {
+            TAG: "Error",
+            _0: "Invalid input parameter types"
+          };
+  } else if (invalidInputRangeCondition) {
+    return {
+            TAG: "Error",
+            _0: "Invalid input parameter range"
+          };
   } else {
     return {
-            TAG: "Ok",
-            _0: normalFormula
+            TAG: "Error",
+            _0: "Unknown Error has occurred in calculateEfficiency formula, check input parameters"
           };
   }
 }

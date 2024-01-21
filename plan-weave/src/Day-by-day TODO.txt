@@ -96,3 +96,27 @@ Register LLC
 Set up paywall for certain features
 Set up subscription plans
 ...rest
+
+--- Migration to ReScript (7/121)
+
+TESTS + FUNCTION TRANSLATIONS
+// Only mark off if you complete the function and the associated tests
+
+Pure Helper Functions (7/36)
+Side Effect Functions (/68)
+  Component Effects / helpers (/47)
+    Atoms (/18)
+      Side Effects (/16)
+      Pure (/2)
+    Molecules (/23)
+      Side Effects (/21)
+      Pure (/2)
+    Organisms (/6)
+      Side Effects (/5)
+      Pure (/1)
+  API/Reducer/Thunk (/21)
+Component (/16)
+  Atoms (/9)
+  Molecules (/6)
+  Organisms (/1)
+Hooks (0/1)

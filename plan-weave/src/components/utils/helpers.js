@@ -602,7 +602,7 @@ export const calculateEfficiencyList = (taskList, start) => {
 
 	// 1. Figure out last complete task
 	const lastComplete = findLastCompletedTask(taskList)
-	const lastCompleteEta = lastComplete?.eta ? getTime(dateToToday(parseISO(lastComplete?.eta))) / 1000 : NaN
+	const lastCompleteEta = lastComplete?.eta ? getTime(dateToToday(new Date(lastComplete.eta))) / 1000 : NaN
 	const lenCompleted = taskList?.filter(task => task?.status === TASK_STATUSES.COMPLETED).length
 
 	// 2. Figure out what task is first incomplete and assume completedTimestamp to be current moment

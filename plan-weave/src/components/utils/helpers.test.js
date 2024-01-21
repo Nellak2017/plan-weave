@@ -11,13 +11,131 @@ import {
 	deleteDnDEvent,
 	diagonalize,
 	calculateRange,
-	calculateEfficiency,
 } from './helpers'
 import {
-	dateToToday
+	hoursToSeconds,
+	hoursToMillis,
+	millisToHours,
+	add,
+	subtract,
+	dateToToday,
+	calculateEfficiency,
 } from './helpers.res.js'
 import { TASK_STATUSES } from './constants'
 import { format } from 'date-fns-tz'
+
+describe('hoursToSeconds', () => {
+	test.each([
+		[1, 3600],
+		[0.5, 1800],
+		[2.5, 9000],
+		[0, 0],
+	])('converts %f hours to %d seconds', (hours, expectedSeconds) => {
+		expect(hoursToSeconds(hours)).toBe(expectedSeconds)
+	})
+})
+
+describe('hoursToMillis', () => {
+	test.each([
+		[1, 3600000],
+		[0.5, 1800000],
+		[2.5, 9000000],
+		[0, 0],
+	])('converts %f hours to %d milliseconds', (hours, expectedMillis) => {
+		expect(hoursToMillis(hours)).toBe(expectedMillis)
+	})
+})
+
+describe('millisToHours', () => {
+	test.each([
+		[3600000, 1],
+		[1800000, 0.5],
+		[9000000, 2.5],
+		[0, 0],
+	])('converts %d milliseconds to %f hours', (milliseconds, expectedHours) => {
+		expect(millisToHours(milliseconds)).toBeCloseTo(expectedHours, 5) // Adjust for float precision
+	})
+})
+
+describe('add hours to date', () => {
+	test.each([
+		[new Date(Date.parse('2024-01-17T12:00:00Z')), 1, new Date(Date.parse('2024-01-17T13:00:00Z'))],
+		[new Date(Date.parse('2024-01-17T08:00:00Z')), 2.5, new Date(Date.parse('2024-01-17T10:30:00Z'))],
+		[new Date(Date.parse('2024-01-17T20:00:00Z')), 0.5, new Date(Date.parse('2024-01-17T20:30:00Z'))],
+		[new Date(Date.parse('2024-01-17T20:30:00Z')), 0, new Date(Date.parse('2024-01-17T20:30:00Z'))],
+		[new Date(Date.parse('2024-01-17T20:30:00Z')), -1, new Date(Date.parse('2024-01-17T19:30:00Z'))],
+	])('adds %f hours to %o', (start, hours, expectedDate) => {
+		
+		expect(add(start, hours)).toEqual(expectedDate)
+	})
+})
+
+describe('subtract two dates', () => { 
+	test.each([
+		[new Date(Date.parse('2024-01-17T13:00:00Z')), new Date(Date.parse('2024-01-17T12:00:00Z')), 1],
+		[new Date(Date.parse('2024-01-17T10:30:00Z')), new Date(Date.parse('2024-01-17T08:00:00Z')), 2.5],
+		[new Date(Date.parse('2024-01-17T20:30:00Z')), new Date(Date.parse('2024-01-17T20:00:00Z')), 0.5],
+		[new Date(Date.parse('2024-01-17T20:30:00Z')), new Date(Date.parse('2024-01-17T20:30:00Z')), 0],
+	])('adds %f hours to %o', (start, hours, expectedDate) => {
+		expect(subtract(start, hours)).toEqual(expectedDate)
+	})
+})
+
+describe('dateToToday', () => {
+	const testCases = [
+		{
+			description: 'Transforms a given date to today\'s date',
+			input: new Date('2023-01-15T12:00:00Z'),
+			expected: new Date(new Date().setHours(6, 0, 0, 0)),
+		},
+		{
+			description: 'Handles invalid input',
+			input: 'abc',
+			expectedError: 'Invalid input. Expected a Date for dateToToday function.',
+		},
+	]
+
+	testCases.forEach(({ description, input, expected, expectedError }) => {
+		it(description, () => {
+			const result = dateToToday(input)
+			if (expectedError) {
+				expect(result.TAG).toEqual('Error')
+				expect(result._0).toEqual(expectedError)
+			} else {
+				expect(result.TAG).toEqual('Ok')
+				expect(result._0).toEqual(expected)
+			}
+		})
+	})
+})
+
+describe('calculateEfficiency', () => {
+	const testCases = [
+		// Example 1
+		{ startTime: 0, endTime: 7200, etaHours: 2.5, expected: {"TAG": "Ok", "_0": 1.25} },
+
+		// Example 2
+		{ startTime: 0, endTime: 11250, etaHours: 2.5, expected: {"TAG": "Ok", "_0": 0.8} },
+
+		// Example 3
+		{ startTime: 0, endTime: 1, etaHours: 24, expected: {"TAG": "Ok", "_0": 86400} },
+
+		// Additional cases
+		{ startTime: 0, endTime: 3600, etaHours: 1, expected: {"TAG": "Ok", "_0": 1} }, // 100% efficiency
+		{ startTime: 0, endTime: 7200, etaHours: 0, expected: {"TAG": "Error", "_0": "Invalid input parameter range"} }, // Invalid eta
+		{ startTime: 0, endTime: -100, etaHours: 2, expected: {"TAG": "Error", "_0": "Invalid input parameter range"} }, // Negative end time
+		{ startTime: 'invalid', endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": "Invalid input parameter types"} }, // Invalid start time
+		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: {"TAG": "Ok", "_0": 1} }, // Start time greater than end time Domain Extension
+	]
+
+	testCases.forEach(({ startTime, endTime, etaHours, expected }) => {
+		test(`calculateEfficiency(${startTime}, ${endTime}, ${etaHours}) should return ${expected['_0']}`, () => {
+			expect(calculateEfficiency(startTime, endTime, etaHours)).toEqual(expected) // Use toBeCloseTo for floating-point numbers
+		})
+	})
+})
+
+// --- Later
 
 describe('formatTimeLeft', () => {
 	it('should return the correct string when endTime - startTime = 1', () => {
@@ -594,64 +712,6 @@ describe('calculateRange', () => {
 	testCases.forEach(({ description, input, expected }) => {
 		it(description, () => {
 			expect(calculateRange(...input)).toEqual(expected)
-		})
-	})
-})
-
-describe('dateToToday', () => {
-	const testCases = [
-		{
-			description: 'Transforms a given date to today\'s date',
-			input: new Date('2023-01-15T12:00:00Z'),
-			expected: new Date(new Date().setHours(6, 0, 0, 0)),
-		},
-		{
-			description: 'Handles invalid input',
-			input: 'abc',
-			expectedError: 'Invalid input. Expected a Date for dateToToday function.',
-		},
-	]
-
-	testCases.forEach(({ description, input, expected, expectedError }) => {
-		it(description, () => {
-			const result = dateToToday(input)
-			if (expectedError) {
-				expect(result.TAG).toEqual('Error')
-        		expect(result._0).toEqual(expectedError)
-			} else {
-				expect(result.TAG).toEqual('Ok')
-        		expect(result._0).toEqual(expected)
-			}
-		})
-	})
-})
-
-describe('calculateEfficiency', () => {
-	const testCases = [
-		// Example 1
-		{ startTime: 0, endTime: 7200, etaHours: 2.5, expected: 1.25 },
-
-		// Example 2
-		{ startTime: 0, endTime: 11250, etaHours: 2.5, expected: .80 },
-
-		// Example 3
-		{ startTime: 0, endTime: 1, etaHours: 24, expected: 86400.00 },
-
-		// Additional cases
-		{ startTime: 0, endTime: 3600, etaHours: 1, expected: 1.00 }, // 100% efficiency
-		{ startTime: 0, endTime: 7200, etaHours: 0, expected: new RangeError(/.*/) }, // Invalid eta
-		{ startTime: 0, endTime: -100, etaHours: 2, expected: new RangeError(/.*/) }, // Negative end time
-		{ startTime: 'invalid', endTime: 7200, etaHours: 2, expected: new TypeError(/.*/) }, // Invalid start time
-		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: 1.00 }, // Start time greater than end time Domain Extension
-	]
-
-	testCases.forEach(({ startTime, endTime, etaHours, expected }) => {
-		test(`calculateEfficiency(${startTime}, ${endTime}, ${etaHours}) should return ${expected}`, () => {
-			if (expected instanceof Error) {
-				expect(() => calculateEfficiency(startTime, endTime, etaHours)).toThrow(/.*/)
-			} else {
-				expect(calculateEfficiency(startTime, endTime, etaHours)).toBeCloseTo(expected, 5) // Use toBeCloseTo for floating-point numbers
-			}
 		})
 	})
 })
