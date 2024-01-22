@@ -120,12 +120,29 @@ describe('calculateEfficiency', () => {
 		// Example 3
 		{ startTime: 0, endTime: 1, etaHours: 24, expected: {"TAG": "Ok", "_0": 86400} },
 
-		// Additional cases
-		{ startTime: 0, endTime: 3600, etaHours: 1, expected: {"TAG": "Ok", "_0": 1} }, // 100% efficiency
-		{ startTime: 0, endTime: 7200, etaHours: 0, expected: {"TAG": "Error", "_0": "Invalid input parameter range"} }, // Invalid eta
-		{ startTime: 0, endTime: -100, etaHours: 2, expected: {"TAG": "Error", "_0": "Invalid input parameter range"} }, // Negative end time
-		{ startTime: 'invalid', endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": "Invalid input parameter types"} }, // Invalid start time
+		{ startTime: -0, endTime: 3600, etaHours: 1, expected: {"TAG": "Ok", "_0": 1} }, // 100% efficiency
 		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: {"TAG": "Ok", "_0": 1} }, // Start time greater than end time Domain Extension
+
+		// Additional cases
+		{ startTime: 'invalid', endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start time type
+		{ startTime: 0, endTime: 'invalid', etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid end time type
+		{ startTime: 0, endTime: 7200, etaHours: 'invalid', expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid etaHours time type
+		{ startTime: -1, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Negative start time
+		{ startTime: 0, endTime: -100, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Negative end time
+		{ startTime: 0, endTime: 100, etaHours: -2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Negative etaHours
+		{ startTime: 0, endTime: 7200, etaHours: 0, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid eta
+		{ startTime: 8.64e15+1, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // start time too big
+		{ startTime: 0, endTime: 8.64e15+1, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // end time too big
+		{ startTime: 0, endTime: 7200, etaHours: 24+1, expected: {"TAG": "Error", "_0": expect.any(String)} }, // etaHours too big
+		{ startTime: 0, endTime: 86400+1, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // end - start too big
+		{ startTime: 0, endTime: 0, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // start == end
+
+		{ startTime: NaN, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start time type NaN
+		{ startTime: NaN, endTime: NaN, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start,end time type NaN
+		{ startTime: -5e-324, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start time < 0
+		{ startTime: 0, endTime: undefined, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid end time type undefined
+		{ startTime: null, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start time type null
+		{ startTime: Infinity, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start time type infinity
 	]
 
 	testCases.forEach(({ startTime, endTime, etaHours, expected }) => {

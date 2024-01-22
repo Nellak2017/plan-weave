@@ -2,6 +2,23 @@
 
 import * as Caml_obj from "rescript/lib/es6/caml_obj.js";
 
+function isNullOrUndefined(val) {
+  if (val == null) {
+    return true;
+  } else {
+    return Caml_obj.notequal(val, val);
+  }
+}
+
+function floatToStringNullable(num, fallbackOpt) {
+  var fallback = fallbackOpt !== undefined ? fallbackOpt : "undefined or null";
+  if (isNullOrUndefined(num)) {
+    return fallback;
+  } else {
+    return num.toString();
+  }
+}
+
 function hoursToSeconds(hours) {
   return hours * 60.0 * 60.0;
 }
@@ -40,39 +57,68 @@ function dateToToday(start) {
 
 function calculateEfficiency(startTime, endTime, ttcHours) {
   var normalFormula = hoursToSeconds(ttcHours) / (endTime - startTime);
-  var normalFormulaCondition = startTime < endTime && startTime >= 0.0 && endTime > 0.0 && ttcHours > 0.0 && ttcHours < 86400.0 && endTime - startTime <= 86400.0;
-  var inverseNormalFormulaCondition = startTime > endTime && startTime >= 0.0 && endTime > 0.0 && ttcHours > 0.0;
-  var invalidInputTypeCondition = !Number.isFinite(startTime) || !Number.isFinite(endTime) || !Number.isFinite(ttcHours);
-  var invalidInputRangeCondition = startTime < 0.0 || endTime - startTime > 86400.0 || endTime < 0.0 || ttcHours <= 0.0 || ttcHours > 86400.0;
-  if (normalFormulaCondition) {
+  var parametersString = "\nstartTime = " + floatToStringNullable(startTime, undefined) + "}\r\n  \nendTime = " + floatToStringNullable(endTime, undefined) + "}\nttcHours = " + floatToStringNullable(ttcHours, undefined) + "}";
+  var undefinedString = "Type Error. Expected (startTime, endTime, ttcHours := Not undefined)." + parametersString;
+  var invalidTypeString = "Type Error. Expected (startTime, endTime, ttcHours := Float)." + parametersString;
+  var parameterRangeString = "Invalid input parameter Range.";
+  var beyondMaxDateString = parameterRangeString + " Expected (startTime, endTime := [0,max safe date (8.64e15)))." + parametersString;
+  var belowZeroErrorString = parameterRangeString + " Expected (startTime, endTime := [0,max safe date (8.64e15)]), (ttcHours := (0,24])." + parametersString;
+  var moreThanDayString = parameterRangeString + " Expected (endTime - startTime <= 86400), (ttcHours <= 24)." + parametersString;
+  var startEqualsEndString = parameterRangeString + " Expected (startTime === endTime)." + parametersString;
+  var unknownErrorString = "Unknown Error has occurred in calculateEfficiency function." + parametersString;
+  var undefinedError = startTime === undefined || endTime === undefined || ttcHours === undefined;
+  var invalidInputTypeError = !Number.isFinite(startTime) || !Number.isFinite(endTime) || !Number.isFinite(ttcHours);
+  if (undefinedError) {
+    return {
+            TAG: "Error",
+            _0: undefinedString
+          };
+  } else if (invalidInputTypeError) {
+    return {
+            TAG: "Error",
+            _0: invalidTypeString
+          };
+  } else if (startTime < 0.0 || endTime < 0.0 || ttcHours <= 0.0) {
+    return {
+            TAG: "Error",
+            _0: belowZeroErrorString
+          };
+  } else if (startTime > 8.64e15 || endTime > 8.64e15) {
+    return {
+            TAG: "Error",
+            _0: beyondMaxDateString
+          };
+  } else if (endTime - startTime > 86400.0 || ttcHours > 24.0) {
+    return {
+            TAG: "Error",
+            _0: moreThanDayString
+          };
+  } else if (startTime === endTime) {
+    return {
+            TAG: "Error",
+            _0: startEqualsEndString
+          };
+  } else if (startTime < endTime) {
     return {
             TAG: "Ok",
             _0: normalFormula
           };
-  } else if (inverseNormalFormulaCondition) {
+  } else if (startTime > endTime) {
     return {
             TAG: "Ok",
             _0: -1.0 / normalFormula
           };
-  } else if (invalidInputTypeCondition) {
-    return {
-            TAG: "Error",
-            _0: "Invalid input parameter types"
-          };
-  } else if (invalidInputRangeCondition) {
-    return {
-            TAG: "Error",
-            _0: "Invalid input parameter range"
-          };
   } else {
     return {
             TAG: "Error",
-            _0: "Unknown Error has occurred in calculateEfficiency formula, check input parameters"
+            _0: unknownErrorString
           };
   }
 }
 
 export {
+  isNullOrUndefined ,
+  floatToStringNullable ,
   hoursToSeconds ,
   hoursToMillis ,
   millisToHours ,

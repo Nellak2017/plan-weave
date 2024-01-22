@@ -15,3 +15,4 @@ Efficiency and other fields potentially being undefined or not valid
 Refresh Not really working the way it is supposed to. Not reseting tasks in Task Table (waste is showing multiple day instead of what it should be if it were for today).
 TTC -> Hard to enter in .x, it rounds up to nearest (6 minutes) and you get wrong impression of eta
 Ordering of Tasks -> It turns out that it is desirable to remember ordering between refreshes, fix this
+Tasks not updating when Tabbed out of
