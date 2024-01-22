@@ -4,18 +4,16 @@ let isNullOrUndefined = (val): bool => {
   | _ => true
   }
 }
-
-let floatToStringNullable = (num: float, ~fallback="undefined or null"):string => {
-	open Js.Float
-	isNullOrUndefined(num) ? fallback : toString(num)
+let floatToStringNullable = (num: float, ~fallback="undefined or null"): string => {
+  open Js.Float
+  isNullOrUndefined(num) ? fallback : toString(num)
 }
 
+// migrated functions
+
 let hoursToSeconds = (hours: float) => hours *. 60.0 *. 60.0
-
 let hoursToMillis = (hours: float) => hours *. 60000.0 *. 60.0
-
 let millisToHours = (milliseconds: float) => milliseconds /. 60000.0 /. 60.0
-
 let add = (start: Js.Date.t, hours: float) =>
   Js.Date.fromFloat(Js.Date.getTime(start) +. hoursToMillis(hours))
 
@@ -38,7 +36,6 @@ let dateToToday = (start: Js.Date.t): result<Js.Date.t, string> => {
     Error("Invalid input. Expected a Date for dateToToday function.")
   }
 }
-
 let calculateEfficiency = (startTime: float, endTime: float, ttcHours: float): Result.t<
   float,
   string,
@@ -47,8 +44,11 @@ let calculateEfficiency = (startTime: float, endTime: float, ttcHours: float): R
   let normalFormula = hoursToSeconds(ttcHours) /. (endTime -. startTime)
 
   // Helper Strings
-  let parametersString = `\nstartTime = ${floatToStringNullable(startTime))}
-  \nendTime = ${floatToStringNullable(endTime))}\nttcHours = ${floatToStringNullable(ttcHours))}`
+  let parametersString = `\nstartTime = ${floatToStringNullable(
+      startTime,
+    )}}\nendTime = ${floatToStringNullable(endTime)}}\nttcHours = ${floatToStringNullable(
+      ttcHours,
+    )}}`
   let undefinedString = `Type Error. Expected (startTime, endTime, ttcHours := Not undefined).${parametersString}`
   let invalidTypeString = `Type Error. Expected (startTime, endTime, ttcHours := Float).${parametersString}`
   let parameterRangeString = `Invalid input parameter Range.`
@@ -77,4 +77,46 @@ let calculateEfficiency = (startTime: float, endTime: float, ttcHours: float): R
   | _ if startTime > endTime => Ok(-1.0 /. normalFormula)
   | _ => Error(unknownErrorString)
   }
+}
+
+type schemaType<'a, 'b> = {isValidSync: ('a, 'b) => bool}
+type schemaOptions = {strict: bool}
+let validateTransformation = (
+  task,
+  schema: schemaType<'a, schemaOptions>,
+  customErrorMessage,
+): result<unit, string> => {
+  let customErrorProcessed = switch customErrorMessage {
+  | Some(customErrorMessage) => customErrorMessage
+  | None => ""
+  }
+  let errorMessage = switch Js.Json.stringifyAny(task) {
+  | Some(str) => customErrorProcessed ++ " task : " ++ str
+  | None => "Failed to stringify task for error message"
+  }
+  switch schema.isValidSync(task, {strict: true}) {
+  | true => Ok()
+  | false => Error(errorMessage)
+  }
+}
+
+let isTimestampFromToday = (
+  today: Js.Date.t, 
+  timestamp: float,
+  ~secondsFromStart=86400.0,
+): bool => {
+  open Js.Date
+  // today can be undefined / null in regular JS land
+  let todayDate = fromFloat(valueOf(today))
+  let initOfToday = makeWithYMDHMS(
+    ~year=getFullYear(todayDate),
+    ~month=getMonth(todayDate),
+    ~date=getDate(todayDate),
+    ~hours=0.,
+    ~minutes=0.,
+    ~seconds=0.,
+    (),
+  )
+  let startOfTodaySeconds = valueOf(initOfToday) /. 1000.
+  (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds +. secondsFromStart))
 }

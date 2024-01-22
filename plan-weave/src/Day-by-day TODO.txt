@@ -102,7 +102,7 @@ Set up subscription plans
 TESTS + FUNCTION TRANSLATIONS
 // Only mark off if you complete the function and the associated tests
 
-Pure Helper Functions (7/36)
+Pure Helper Functions (9/36)
 Side Effect Functions (/68)
   Component Effects / helpers (/47)
     Atoms (/18)

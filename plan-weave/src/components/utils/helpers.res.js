@@ -57,7 +57,7 @@ function dateToToday(start) {
 
 function calculateEfficiency(startTime, endTime, ttcHours) {
   var normalFormula = hoursToSeconds(ttcHours) / (endTime - startTime);
-  var parametersString = "\nstartTime = " + floatToStringNullable(startTime, undefined) + "}\r\n  \nendTime = " + floatToStringNullable(endTime, undefined) + "}\nttcHours = " + floatToStringNullable(ttcHours, undefined) + "}";
+  var parametersString = "\nstartTime = " + floatToStringNullable(startTime, undefined) + "}\nendTime = " + floatToStringNullable(endTime, undefined) + "}\nttcHours = " + floatToStringNullable(ttcHours, undefined) + "}";
   var undefinedString = "Type Error. Expected (startTime, endTime, ttcHours := Not undefined)." + parametersString;
   var invalidTypeString = "Type Error. Expected (startTime, endTime, ttcHours := Float)." + parametersString;
   var parameterRangeString = "Invalid input parameter Range.";
@@ -116,6 +116,37 @@ function calculateEfficiency(startTime, endTime, ttcHours) {
   }
 }
 
+function validateTransformation(task, schema, customErrorMessage) {
+  var customErrorProcessed = customErrorMessage !== undefined ? customErrorMessage : "";
+  var str = JSON.stringify(task);
+  var errorMessage = str !== undefined ? customErrorProcessed + " task : " + str : "Failed to stringify task for error message";
+  if (schema.isValidSync(task, {
+          strict: true
+        })) {
+    return {
+            TAG: "Ok",
+            _0: undefined
+          };
+  } else {
+    return {
+            TAG: "Error",
+            _0: errorMessage
+          };
+  }
+}
+
+function isTimestampFromToday(today, timestamp, secondsFromStartOpt) {
+  var secondsFromStart = secondsFromStartOpt !== undefined ? secondsFromStartOpt : 86400.0;
+  var todayDate = new Date(today.valueOf());
+  var initOfToday = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate(), 0, 0, 0);
+  var startOfTodaySeconds = initOfToday.valueOf() / 1000;
+  if (startOfTodaySeconds <= timestamp) {
+    return timestamp <= startOfTodaySeconds + secondsFromStart;
+  } else {
+    return false;
+  }
+}
+
 export {
   isNullOrUndefined ,
   floatToStringNullable ,
@@ -126,5 +157,7 @@ export {
   subtract ,
   dateToToday ,
   calculateEfficiency ,
+  validateTransformation ,
+  isTimestampFromToday ,
 }
 /* No side effect */

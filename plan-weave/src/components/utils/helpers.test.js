@@ -1,6 +1,5 @@
 import {
 	formatTimeLeft,
-	isTimestampFromToday,
 	validateTask,
 	filterTaskList,
 	calculateWaste,
@@ -20,9 +19,12 @@ import {
 	subtract,
 	dateToToday,
 	calculateEfficiency,
+	validateTransformation,
+	isTimestampFromToday,
 } from './helpers.res.js'
 import { TASK_STATUSES } from './constants'
 import { format } from 'date-fns-tz'
+import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 
 describe('hoursToSeconds', () => {
 	test.each([
@@ -65,12 +67,12 @@ describe('add hours to date', () => {
 		[new Date(Date.parse('2024-01-17T20:30:00Z')), 0, new Date(Date.parse('2024-01-17T20:30:00Z'))],
 		[new Date(Date.parse('2024-01-17T20:30:00Z')), -1, new Date(Date.parse('2024-01-17T19:30:00Z'))],
 	])('adds %f hours to %o', (start, hours, expectedDate) => {
-		
+
 		expect(add(start, hours)).toEqual(expectedDate)
 	})
 })
 
-describe('subtract two dates', () => { 
+describe('subtract two dates', () => {
 	test.each([
 		[new Date(Date.parse('2024-01-17T13:00:00Z')), new Date(Date.parse('2024-01-17T12:00:00Z')), 1],
 		[new Date(Date.parse('2024-01-17T10:30:00Z')), new Date(Date.parse('2024-01-17T08:00:00Z')), 2.5],
@@ -112,37 +114,37 @@ describe('dateToToday', () => {
 describe('calculateEfficiency', () => {
 	const testCases = [
 		// Example 1
-		{ startTime: 0, endTime: 7200, etaHours: 2.5, expected: {"TAG": "Ok", "_0": 1.25} },
+		{ startTime: 0, endTime: 7200, etaHours: 2.5, expected: { "TAG": "Ok", "_0": 1.25 } },
 
 		// Example 2
-		{ startTime: 0, endTime: 11250, etaHours: 2.5, expected: {"TAG": "Ok", "_0": 0.8} },
+		{ startTime: 0, endTime: 11250, etaHours: 2.5, expected: { "TAG": "Ok", "_0": 0.8 } },
 
 		// Example 3
-		{ startTime: 0, endTime: 1, etaHours: 24, expected: {"TAG": "Ok", "_0": 86400} },
+		{ startTime: 0, endTime: 1, etaHours: 24, expected: { "TAG": "Ok", "_0": 86400 } },
 
-		{ startTime: -0, endTime: 3600, etaHours: 1, expected: {"TAG": "Ok", "_0": 1} }, // 100% efficiency
-		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: {"TAG": "Ok", "_0": 1} }, // Start time greater than end time Domain Extension
+		{ startTime: -0, endTime: 3600, etaHours: 1, expected: { "TAG": "Ok", "_0": 1 } }, // 100% efficiency
+		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: { "TAG": "Ok", "_0": 1 } }, // Start time greater than end time Domain Extension
 
 		// Additional cases
-		{ startTime: 'invalid', endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start time type
-		{ startTime: 0, endTime: 'invalid', etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid end time type
-		{ startTime: 0, endTime: 7200, etaHours: 'invalid', expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid etaHours time type
-		{ startTime: -1, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Negative start time
-		{ startTime: 0, endTime: -100, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Negative end time
-		{ startTime: 0, endTime: 100, etaHours: -2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Negative etaHours
-		{ startTime: 0, endTime: 7200, etaHours: 0, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid eta
-		{ startTime: 8.64e15+1, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // start time too big
-		{ startTime: 0, endTime: 8.64e15+1, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // end time too big
-		{ startTime: 0, endTime: 7200, etaHours: 24+1, expected: {"TAG": "Error", "_0": expect.any(String)} }, // etaHours too big
-		{ startTime: 0, endTime: 86400+1, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // end - start too big
-		{ startTime: 0, endTime: 0, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // start == end
+		{ startTime: 'invalid', endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time type
+		{ startTime: 0, endTime: 'invalid', etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid end time type
+		{ startTime: 0, endTime: 7200, etaHours: 'invalid', expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid etaHours time type
+		{ startTime: -1, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Negative start time
+		{ startTime: 0, endTime: -100, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Negative end time
+		{ startTime: 0, endTime: 100, etaHours: -2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Negative etaHours
+		{ startTime: 0, endTime: 7200, etaHours: 0, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid eta
+		{ startTime: 8.64e15 + 1, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // start time too big
+		{ startTime: 0, endTime: 8.64e15 + 1, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // end time too big
+		{ startTime: 0, endTime: 7200, etaHours: 24 + 1, expected: { "TAG": "Error", "_0": expect.any(String) } }, // etaHours too big
+		{ startTime: 0, endTime: 86400 + 1, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // end - start too big
+		{ startTime: 0, endTime: 0, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // start == end
 
-		{ startTime: NaN, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start time type NaN
-		{ startTime: NaN, endTime: NaN, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start,end time type NaN
-		{ startTime: -5e-324, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start time < 0
-		{ startTime: 0, endTime: undefined, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid end time type undefined
-		{ startTime: null, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start time type null
-		{ startTime: Infinity, endTime: 7200, etaHours: 2, expected: {"TAG": "Error", "_0": expect.any(String)} }, // Invalid start time type infinity
+		{ startTime: NaN, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time type NaN
+		{ startTime: NaN, endTime: NaN, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start,end time type NaN
+		{ startTime: -5e-324, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time < 0
+		{ startTime: 0, endTime: undefined, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid end time type undefined
+		{ startTime: null, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time type null
+		{ startTime: Infinity, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time type infinity
 	]
 
 	testCases.forEach(({ startTime, endTime, etaHours, expected }) => {
@@ -151,6 +153,107 @@ describe('calculateEfficiency', () => {
 		})
 	})
 })
+
+describe('validateTransformation', () => {
+	const twelve = new Date(new Date().setHours(12, 0, 0, 0)).toISOString()
+	const validTask = {
+		task: ' ',
+		waste: 1,
+		ttc: 1,
+		eta: twelve , //'12:00',
+		id: 1,
+		status: TASK_STATUSES.INCOMPLETE,
+		timestamp: 1692543600 - 1,
+		completedTimeStamp: 1692543600,
+		hidden: false,
+	}
+	const invalidTask = {
+		task: '1'.repeat(51), // too long
+		waste: -1, // negative
+		ttc: 1,
+		eta: twelve, //'12:00',
+		id: 1,
+		status: TASK_STATUSES.INCOMPLETE,
+		timestamp: 1692543600 - 1,
+		completedTimeStamp: 1692543600,
+		hidden: false,
+	}
+	const simpleSchema = simpleTaskSchema 
+	const customErrorMessage = 'Validation failed.'
+
+	const testCases = [
+		{
+			name: 'valid transformation with strict schema',
+			task: validTask,
+			schema: simpleSchema,
+			errorMessage: customErrorMessage,
+			expected: { "TAG": "Ok", "_0": undefined },
+		},
+		{
+			name: 'invalid transformation with strict schema',
+			task: invalidTask,
+			schema: simpleSchema,
+			errorMessage: customErrorMessage,
+			expected: { "TAG": "Error", "_0": expect.any(String) },
+		},
+		{
+			name: 'valid transformation without defined error message',
+			task: validTask,
+			schema: simpleSchema,
+			errorMessage: undefined,
+			expected: { "TAG": "Ok", "_0": undefined },
+		},
+	]
+
+	testCases.forEach(({ name, task, schema, errorMessage, expected }) => {
+		test(name, () => {
+			const result = validateTransformation(task, schema, errorMessage)
+			expect(result).toEqual(expected)
+		})
+	})
+})
+
+describe('isTimestampFromToday', () => {
+	// https://www.epochconverter.com/ (Use Local Time)
+	const testCases = [
+		// Current date: August 20, 2023
+		// Timestamp: August 20, 2023, 10:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692543600, expected: true },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 20, 2023, 23:59:59 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692593999, expected: true },
+
+		// Current date: August 23, 2023 00:00:00
+		// Timestamp: Wednesday, August 23, 2023 23:45:00 === 1692852300 seconds
+		// secondsElapsed: 85500 ==> 23:45
+		{ today: new Date(2023, 7, 23, 0, 0, 0, 0), timestamp: 1692852300, expected: true, elapsed: 85500 }, // I am inclusive in start/end acceptance
+
+		// Current date: August 20, 2023
+		// Timestamp: August 21, 2023, 00:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594000, expected: true }, // I am inclusive in start/end acceptance
+
+		// Current date: August 20, 2023
+		// Timestamp: August 21, 2023, 00:00:01 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594001, expected: false },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 21, 2023, 02:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692601200, expected: false },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 19, 2023, 18:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692486000, expected: false },
+	]
+
+	testCases.forEach(({ today, timestamp, expected, elapsed = 60 * 60 * 24 }) => {
+		const result = isTimestampFromToday(today, timestamp, elapsed)
+		it(`Should return ${expected} for timestamp = ${timestamp} and today = ${today}`, () => {
+			expect(result).toBe(expected)
+		})
+	})
+})
+
 
 // --- Later
 
@@ -221,46 +324,6 @@ describe('formatTimeLeft', () => {
 
 })
 
-describe('isTimestampFromToday', () => {
-	// https://www.epochconverter.com/ (Use Local Time)
-	const testCases = [
-		// Current date: August 20, 2023
-		// Timestamp: August 20, 2023, 10:00:00 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692543600, expected: true },
-
-		// Current date: August 20, 2023
-		// Timestamp: August 20, 2023, 23:59:59 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692593999, expected: true },
-
-		// Current date: August 23, 2023 00:00:00
-		// Timestamp: Wednesday, August 23, 2023 23:45:00 === 1692852300 seconds
-		// secondsElapsed: 85500 ==> 23:45
-		{ today: new Date(2023, 7, 23, 0, 0, 0, 0), timestamp: 1692852300, expected: true, elapsed: 85500 }, // I am inclusive in start/end acceptance
-
-		// Current date: August 20, 2023
-		// Timestamp: August 21, 2023, 00:00:00 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594000, expected: true }, // I am inclusive in start/end acceptance
-
-		// Current date: August 20, 2023
-		// Timestamp: August 21, 2023, 00:00:01 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594001, expected: false },
-
-		// Current date: August 20, 2023
-		// Timestamp: August 21, 2023, 02:00:00 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692601200, expected: false },
-
-		// Current date: August 20, 2023
-		// Timestamp: August 19, 2023, 18:00:00 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692486000, expected: false },
-	]
-
-	testCases.forEach(({ today, timestamp, expected, elapsed = 60 * 60 * 24 }) => {
-		const result = isTimestampFromToday(today, timestamp, elapsed)
-		it(`Should return ${expected} for timestamp = ${timestamp} and today = ${today}`, () => {
-			expect(result).toBe(expected)
-		})
-	})
-})
 
 describe('validateTask', () => {
 	const twelve = new Date(new Date().setHours(12, 0, 0, 0)).toISOString()
