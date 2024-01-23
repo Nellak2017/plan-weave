@@ -16,3 +16,4 @@ Refresh Not really working the way it is supposed to. Not reseting tasks in Task
 TTC -> Hard to enter in .x, it rounds up to nearest (6 minutes) and you get wrong impression of eta
 Ordering of Tasks -> It turns out that it is desirable to remember ordering between refreshes, fix this
 Tasks not updating when Tabbed out of
+Ordering of Tasks -> Tasks are given in reverse order of the way they are entered chronologically on refresh

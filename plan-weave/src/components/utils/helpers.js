@@ -11,6 +11,7 @@ import { isEqual as lodashIsEqual } from 'lodash'
 
 // validate function private helpers
 const validateTransformation = (task, schema, customErrorMessage) => { if (!schema.isValidSync(task, { strict: true })) throw new Error(customErrorMessage + ` task : ${JSON.stringify(task)}`) }
+
 const isRequired = (field, schema) => schema.describe().fields[field] ? !schema?.describe()?.fields[field]?.optional : false
 const requiredFields = (schema) => Object.keys(schema.describe().fields)
 	.map(field => isRequired(field, schema) ? field : null)
@@ -19,6 +20,7 @@ const requiredFields = (schema) => Object.keys(schema.describe().fields)
 // calculate waste private helpers
 const add = (start, hours) => new Date(start.getTime() + hoursToMillis(hours)) // (Date: start, hours: hours) -> Date(start + hours)
 const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
+
 const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) => [...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)], [start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
 
 // --- Helpers Exported

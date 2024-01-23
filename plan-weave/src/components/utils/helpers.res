@@ -1,3 +1,8 @@
+@module("./constants.js") external millisecondsPerHour: float = "MILLISECONDS_PER_HOUR"
+@module("./constants.js") external millisecondsPerDay: float = "MILLISECONDS_PER_DAY"
+@module("./constants.js") external taskStatuses: Js.t<{..}> = "TASK_STATUSES"
+
+// private ReScript specific helpers or constants
 let isNullOrUndefined = (val): bool => {
   switch Nullable.toOption(val->Nullable.make) {
   | Some(value) => value != val
@@ -8,6 +13,7 @@ let floatToStringNullable = (num: float, ~fallback="undefined or null"): string 
   open Js.Float
   isNullOrUndefined(num) ? fallback : toString(num)
 }
+let step = (x: float, ~threshold=0.) => x > threshold ? 1. : 0.
 
 // migrated functions
 
@@ -41,7 +47,8 @@ let calculateEfficiency = (startTime: float, endTime: float, ttcHours: float): R
   string,
 > => {
   open Js.Float
-  let normalFormula = hoursToSeconds(ttcHours) /. (endTime -. startTime)
+  let timeDiff = endTime -. startTime
+  let efficiencyFormula = hoursToSeconds(ttcHours) /. (timeDiff *. step(timeDiff))
 
   // Helper Strings
   let parametersString = `\nstartTime = ${floatToStringNullable(
@@ -56,6 +63,7 @@ let calculateEfficiency = (startTime: float, endTime: float, ttcHours: float): R
   let belowZeroErrorString = `${parameterRangeString} Expected (startTime, endTime := [0,max safe date (8.64e15)]), (ttcHours := (0,24]).${parametersString}`
   let moreThanDayString = `${parameterRangeString} Expected (endTime - startTime <= 86400), (ttcHours <= 24).${parametersString}`
   let startEqualsEndString = `${parameterRangeString} Expected (startTime === endTime).${parametersString}`
+  let startGreaterEndString = `${parameterRangeString} Expected (startTime < endTime).No longer supporting domain extension.${parametersString}`
   let unknownErrorString = `Unknown Error has occurred in calculateEfficiency function.${parametersString}`
 
   // Conditional Check booleans
@@ -73,8 +81,8 @@ let calculateEfficiency = (startTime: float, endTime: float, ttcHours: float): R
   | _ if startTime > 8.64e15 || endTime > 8.64e15 => Error(beyondMaxDateString)
   | _ if endTime -. startTime > 86400.0 || ttcHours > 24.0 => Error(moreThanDayString)
   | _ if startTime === endTime => Error(startEqualsEndString)
-  | _ if startTime < endTime => Ok(normalFormula)
-  | _ if startTime > endTime => Ok(-1.0 /. normalFormula)
+  | _ if startTime > endTime || !isFinite(efficiencyFormula) => Error(startGreaterEndString)
+  | _ if startTime < endTime => Ok(efficiencyFormula)
   | _ => Error(unknownErrorString)
   }
 }
@@ -99,9 +107,8 @@ let validateTransformation = (
   | false => Error(errorMessage)
   }
 }
-
 let isTimestampFromToday = (
-  today: Js.Date.t, 
+  today: Js.Date.t,
   timestamp: float,
   ~secondsFromStart=86400.0,
 ): bool => {
@@ -118,5 +125,68 @@ let isTimestampFromToday = (
     (),
   )
   let startOfTodaySeconds = valueOf(initOfToday) /. 1000.
-  (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds +. secondsFromStart))
+  startOfTodaySeconds <= timestamp && timestamp <= startOfTodaySeconds +. secondsFromStart
+}
+
+// TODO: Convert this to default record with types
+let formatTimeLeft = (
+  ~currentTime=Js.Date.make(),
+  ~endTime=Js.Date.make(),
+  ~timeDifference=0.0,
+  ~minuteText="minutes left",
+  ~hourText="hour",
+  ~hourText2="hours left",
+  ~overNightMode=false,
+): string => {
+  open Js.Date
+
+  let calculateTimeDifference = (
+    ~endTime: Js.Date.t,
+    ~currentTime=make(),
+    ~timeDifference=0.,
+    ~overNightMode=false,
+  ) => {
+    let adjustedEndTimeValue = switch overNightMode {
+    | true => valueOf(add(endTime, 24.))
+    | false => valueOf(endTime)
+    }
+
+    switch true {
+    | _ if !Js.Float.isFinite(timeDifference) => Error("timeDifference must be a number")
+    | _ if !Js.Types.test(overNightMode, Boolean) => Error("overNightMode must be a boolean")
+    | _ if timeDifference > 0. => Ok(timeDifference *. millisecondsPerHour)
+    | _ if timeDifference === 0. => Ok(Math.max(0., adjustedEndTimeValue -. valueOf(currentTime)))
+    | _ => Error(`Unspecified error.\nendTime=${Belt.Float.toString(valueOf(endTime))}\ncurrentTime=${Belt.Float.toString(valueOf(currentTime))}\ntimeDifference=${Belt.Float.toString(timeDifference)}`)
+    }
+  }
+
+  let formatTime = timeMillis => {
+    let totalHours = timeMillis /. millisecondsPerHour
+    let timeLeftInHours = Math.floor(totalHours)
+    let timeLeftInMinutes = Math.floor((totalHours -. timeLeftInHours) *. 60.)
+
+    let parsedString = if timeLeftInHours > 0. {
+      let secondsText = timeLeftInHours > 1. ? "s" : ""
+      timeLeftInMinutes > 0.
+        ? `${Belt.Float.toString(timeLeftInHours)} ${hourText}${secondsText} ${Belt.Float.toString(
+              timeLeftInMinutes,
+            )} ${minuteText}`
+        : `${Belt.Float.toString(timeLeftInHours)} ${hourText2}`
+    } else {
+      `${Belt.Float.toString(timeLeftInMinutes)} ${minuteText}`
+    }
+
+    switch Js.Types.test(parsedString, String) {
+      | true => Ok(parsedString)
+      | false => Error("Invalid input in format Time")
+    }
+  }
+
+  let res = calculateTimeDifference(~endTime, ~currentTime, ~timeDifference, ~overNightMode)
+  -> Belt.Result.flatMap(res => formatTime(res))
+  
+  switch res {
+    | Ok(result) => result
+    | Error(errorMessage) => errorMessage 
+  }
 }

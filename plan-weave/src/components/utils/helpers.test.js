@@ -1,5 +1,4 @@
 import {
-	formatTimeLeft,
 	validateTask,
 	filterTaskList,
 	calculateWaste,
@@ -21,6 +20,7 @@ import {
 	calculateEfficiency,
 	validateTransformation,
 	isTimestampFromToday,
+	formatTimeLeft,
 } from './helpers.res.js'
 import { TASK_STATUSES } from './constants'
 import { format } from 'date-fns-tz'
@@ -123,14 +123,14 @@ describe('calculateEfficiency', () => {
 		{ startTime: 0, endTime: 1, etaHours: 24, expected: { "TAG": "Ok", "_0": 86400 } },
 
 		{ startTime: -0, endTime: 3600, etaHours: 1, expected: { "TAG": "Ok", "_0": 1 } }, // 100% efficiency
-		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: { "TAG": "Ok", "_0": 1 } }, // Start time greater than end time Domain Extension
+		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Start time greater than end time Not allowed anymore
 
 		// Additional cases
 		{ startTime: 'invalid', endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time type
 		{ startTime: 0, endTime: 'invalid', etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid end time type
 		{ startTime: 0, endTime: 7200, etaHours: 'invalid', expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid etaHours time type
 		{ startTime: -1, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Negative start time
-		{ startTime: 0, endTime: -100, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Negative end time
+		{ startTime: 0, endTime: -100, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Negative end time, start > end
 		{ startTime: 0, endTime: 100, etaHours: -2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Negative etaHours
 		{ startTime: 0, endTime: 7200, etaHours: 0, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid eta
 		{ startTime: 8.64e15 + 1, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // start time too big
@@ -160,7 +160,7 @@ describe('validateTransformation', () => {
 		task: ' ',
 		waste: 1,
 		ttc: 1,
-		eta: twelve , //'12:00',
+		eta: twelve, //'12:00',
 		id: 1,
 		status: TASK_STATUSES.INCOMPLETE,
 		timestamp: 1692543600 - 1,
@@ -178,7 +178,7 @@ describe('validateTransformation', () => {
 		completedTimeStamp: 1692543600,
 		hidden: false,
 	}
-	const simpleSchema = simpleTaskSchema 
+	const simpleSchema = simpleTaskSchema
 	const customErrorMessage = 'Validation failed.'
 
 	const testCases = [
@@ -254,75 +254,29 @@ describe('isTimestampFromToday', () => {
 	})
 })
 
+describe('formatTimeLeft', () => {
+	test.each([
+		['endTime - startTime = 1', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T13:00:00'), '1 hours left'],
+		['0 < endTime - startTime < 1', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T12:30:00'), '30 minutes left'],
+		['endTime - startTime > 1 and not an integer', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T14:45:00'), '2 hours 45 minutes left'],
+		['endTime < startTime and overNightMode is false', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T11:30:00'), '0 minutes left'],
+	])('should return the correct string when %s', (_, currentTime, endTime, expected) => {
+		const result = formatTimeLeft(currentTime, endTime)
+		expect(result).toBe(expected)
+	})
+
+	test.each([
+		['1 hours left', 1],
+		['30 minutes left', 0.5],
+		['2 hours 45 minutes left', 2.75],
+		['2 hours left', 2],
+	])('should display "%s" when timeDifference is %s', (expected,timeDifference) => {
+		const result = formatTimeLeft(undefined, undefined, timeDifference)
+		expect(result).toBe(expected)
+	})
+})
 
 // --- Later
-
-describe('formatTimeLeft', () => {
-	it('should return the correct string when endTime - startTime = 1', () => {
-		const currentTime = new Date('2023-08-09T12:00:00')
-		const endTime = new Date('2023-08-09T13:00:00')
-		const result = formatTimeLeft({ currentTime, endTime })
-
-		expect(result).toBe('1 hours left')
-	})
-
-	it('should return the correct string when endTime - startTime < 1', () => {
-		const currentTime = new Date('2023-08-09T12:00:00')
-		const endTime = new Date('2023-08-09T12:30:00')
-		const result = formatTimeLeft({ currentTime, endTime })
-
-		expect(result).toBe('30 minutes left')
-	})
-
-	it('should return the correct string when endTime - startTime > 1 and not an integer', () => {
-		const currentTime = new Date('2023-08-09T12:00:00')
-		const endTime = new Date('2023-08-09T14:45:00')
-		const result = formatTimeLeft({ currentTime, endTime })
-
-		expect(result).toBe('2 hours 45 minutes left')
-	})
-
-	it('should return 0 minutes left when endTime < startTime and overNightMode is false', () => {
-		const currentTime = new Date('2023-08-09T12:00:00')
-		const endTime = new Date('2023-08-09T11:30:00')
-		const result = formatTimeLeft({ currentTime, endTime })
-
-		expect(result).toBe('0 minutes left')
-	})
-
-	it('should display "1 hour left" when timeDifference is 1', () => {
-		const result = formatTimeLeft({
-			timeDifference: 1,
-		})
-
-		expect(result).toBe('1 hours left')
-	})
-
-	it('should display "${minutes} minutes left" when timeDifference is .5', () => {
-		const result = formatTimeLeft({
-			timeDifference: 0.5,
-		})
-
-		expect(result).toBe('30 minutes left')
-	})
-
-	it('should display "${hours} hours ${minutes} minutes left" when timeDifference is 2.75', () => {
-		const result = formatTimeLeft({
-			timeDifference: 2.75,
-		})
-
-		expect(result).toBe('2 hours 45 minutes left')
-	})
-
-	it('should display "2 hours left" when timeDifference is 2', () => {
-		const result = formatTimeLeft({
-			timeDifference: 2,
-		})
-
-		expect(result).toBe('2 hours left')
-	})
-
-})
 
 
 describe('validateTask', () => {

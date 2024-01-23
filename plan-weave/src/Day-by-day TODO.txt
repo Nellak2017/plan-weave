@@ -97,12 +97,12 @@ Set up paywall for certain features
 Set up subscription plans
 ...rest
 
---- Migration to ReScript (7/121)
+--- Migration to ReScript (10/121)
 
 TESTS + FUNCTION TRANSLATIONS
 // Only mark off if you complete the function and the associated tests
 
-Pure Helper Functions (9/36)
+Pure Helper Functions (10/36)
 Side Effect Functions (/68)
   Component Effects / helpers (/47)
     Atoms (/18)
@@ -120,3 +120,6 @@ Component (/16)
   Molecules (/6)
   Organisms (/1)
 Hooks (0/1)
+
+// Sum of Pure = 41
+// Sum of impure = 80 
