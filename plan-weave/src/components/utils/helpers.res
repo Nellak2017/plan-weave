@@ -2,7 +2,46 @@
 @module("./constants.js") external millisecondsPerDay: float = "MILLISECONDS_PER_DAY"
 @module("./constants.js") external taskStatuses: Js.t<{..}> = "TASK_STATUSES"
 
-// private ReScript specific helpers or constants
+// ---- private ReScript specific helpers or constants
+
+// -- Dev logging functions and types
+type devLogConfig<'a> = {
+  postConditions: 'a => bool,
+  defaultVal: 'a,
+  warning: 'a => string,
+}
+
+let logFx = (
+  result,
+  ~postConditions=_ => true,
+  ~defaultVal,
+  ~logger=Js.Console.warn,
+  ~warning="Unsafe input detected in this function. Logging and returning default",
+) => {
+  if postConditions(result) {
+    result
+  } else {
+    logger(warning)
+    defaultVal
+  }
+}
+
+// Wrapper of logFx (logFx with super-powers)
+let devLog = (result, ~config:devLogConfig<'a>, ~logFx=logFx) => {
+  let {postConditions, defaultVal, warning} = config
+  logFx(result, ~postConditions, ~defaultVal, ~warning=warning(result))
+}
+// Usage of devLog:
+//  devLog is used to help catch runtime type constraint violations, like a number being infinite 
+// let config = (~text="Invalid postconditions in ", ~fxName="hoursToSeconds"):devLogConfig<float> => {
+//    postConditions: a => Js.Float.isFinite(a),
+//    defaultVal: 0.,
+//    warning: result => text++fxName++Js.Float.toString(result),
+// }
+// hoursToSeconds(1.0)->devLog(config()) // returns 1.0, no logging. config is required!!
+// hoursToSeconds(infinity)->devLog(config()) // returns 0.0, warns you of mistake. config is required!!
+
+// -- other helpers
 let isNullOrUndefined = (val): bool => {
   switch Nullable.toOption(val->Nullable.make) {
   | Some(value) => value != val
@@ -15,14 +54,13 @@ let floatToStringNullable = (num: float, ~fallback="undefined or null"): string 
 }
 let step = (x: float, ~threshold=0.) => x > threshold ? 1. : 0.
 
-// migrated functions
+// ---- migrated functions
 
 let hoursToSeconds = (hours: float) => hours *. 60.0 *. 60.0
 let hoursToMillis = (hours: float) => hours *. 60000.0 *. 60.0
 let millisToHours = (milliseconds: float) => milliseconds /. 60000.0 /. 60.0
 let add = (start: Js.Date.t, hours: float) =>
   Js.Date.fromFloat(Js.Date.getTime(start) +. hoursToMillis(hours))
-
 let subtract = (time: Js.Date.t, eta: Js.Date.t) =>
   millisToHours(Js.Date.getTime(time) -. Js.Date.getTime(eta))
 
@@ -86,7 +124,6 @@ let calculateEfficiency = (startTime: float, endTime: float, ttcHours: float): R
   | _ => Error(unknownErrorString)
   }
 }
-
 type schemaType<'a, 'b> = {isValidSync: ('a, 'b) => bool}
 type schemaOptions = {strict: bool}
 let validateTransformation = (
@@ -127,7 +164,6 @@ let isTimestampFromToday = (
   let startOfTodaySeconds = valueOf(initOfToday) /. 1000.
   startOfTodaySeconds <= timestamp && timestamp <= startOfTodaySeconds +. secondsFromStart
 }
-
 // TODO: Convert this to default record with types
 let formatTimeLeft = (
   ~currentTime=Js.Date.make(),
@@ -156,7 +192,14 @@ let formatTimeLeft = (
     | _ if !Js.Types.test(overNightMode, Boolean) => Error("overNightMode must be a boolean")
     | _ if timeDifference > 0. => Ok(timeDifference *. millisecondsPerHour)
     | _ if timeDifference === 0. => Ok(Math.max(0., adjustedEndTimeValue -. valueOf(currentTime)))
-    | _ => Error(`Unspecified error.\nendTime=${Belt.Float.toString(valueOf(endTime))}\ncurrentTime=${Belt.Float.toString(valueOf(currentTime))}\ntimeDifference=${Belt.Float.toString(timeDifference)}`)
+    | _ =>
+      Error(
+        `Unspecified error.\nendTime=${Belt.Float.toString(
+            valueOf(endTime),
+          )}\ncurrentTime=${Belt.Float.toString(
+            valueOf(currentTime),
+          )}\ntimeDifference=${Belt.Float.toString(timeDifference)}`,
+      )
     }
   }
 
@@ -177,16 +220,21 @@ let formatTimeLeft = (
     }
 
     switch Js.Types.test(parsedString, String) {
-      | true => Ok(parsedString)
-      | false => Error("Invalid input in format Time")
+    | true => Ok(parsedString)
+    | false => Error("Invalid input in format Time")
     }
   }
 
-  let res = calculateTimeDifference(~endTime, ~currentTime, ~timeDifference, ~overNightMode)
-  -> Belt.Result.flatMap(res => formatTime(res))
-  
+  let res =
+    calculateTimeDifference(
+      ~endTime,
+      ~currentTime,
+      ~timeDifference,
+      ~overNightMode,
+    )->Belt.Result.flatMap(res => formatTime(res))
+
   switch res {
-    | Ok(result) => result
-    | Error(errorMessage) => errorMessage 
+  | Ok(result) => result
+  | Error(errorMessage) => errorMessage
   }
 }
