@@ -27,12 +27,12 @@ let logFx = (
 }
 
 // Wrapper of logFx (logFx with super-powers)
-let devLog = (result, ~config:devLogConfig<'a>, ~logFx=logFx) => {
+let devLog = (result, ~config: devLogConfig<'a>, ~logFx=logFx) => {
   let {postConditions, defaultVal, warning} = config
   logFx(result, ~postConditions, ~defaultVal, ~warning=warning(result))
 }
-// Usage of devLog:
-//  devLog is used to help catch runtime type constraint violations, like a number being infinite 
+// Usage of devLog (Non-blocking assert):
+//  devLog is used to help catch runtime type constraint violations, like a number being infinite
 // let config = (~text="Invalid postconditions in ", ~fxName="hoursToSeconds"):devLogConfig<float> => {
 //    postConditions: a => Js.Float.isFinite(a),
 //    defaultVal: 0.,
@@ -237,4 +237,43 @@ let formatTimeLeft = (
   | Ok(result) => result
   | Error(errorMessage) => errorMessage
   }
+}
+
+// isRequired, requiredFields, etaList Are Missing Unit Tests
+// TODO: Add unit tests for these
+type yupFieldInfo = {optional: bool}
+type yupDescribe = {fields: Js.Dict.t<yupFieldInfo>}
+type yupSchema = {describe: unit => option<yupDescribe>}
+let isRequired = (field, schema: yupSchema) => {
+  open Belt.Option
+  schema.describe() // Dictionary of schema.describe() or None
+  ->flatMap(v => Js.Dict.get(v.fields, field)) // Dictionary of schema.describe().fields[field] or None
+  ->map(fieldInfo => !fieldInfo.optional) // Boolean of !schema.describe().fields[field].optional or None
+  ->getWithDefault(false) // !schema.describe().fields[field].optional:boolean or false, unwrapped
+}
+let requiredFields = (schema: yupSchema) => {
+  open Belt.Option
+  schema.describe() // Dictionary of schema.describe() or None
+  ->map(v => v.fields) // Dictionary of schema.describe().fields or None
+  ->map(fields => Js.Dict.keys(fields)) // [Keys of ...fields] or None
+  ->map(keys => Belt.Array.map(keys, field => isRequired(field, schema) ? Some(field) : None)) // [Some(isRequired:bool) or None] or None
+  ->map(fields => Belt.Array.keepMap(fields, x => x)) // filter None out to get [Some(isRequired:bool)] or None
+  ->getWithDefault([]) // default to [] and return unwrapped [isRequired:bool]
+}
+type task = {ttc: option<float>}
+let etaList = (taskList: array<'b>, ~start=0.) => {
+  open Belt.Array
+  taskList->Belt.Array.reduce([start], (acc, task) => {
+    let ttc = switch task.ttc {
+    | Some(t) => t
+    | None => 0.1 // default ttc
+    }
+    let end = switch acc->get(-1) {
+    | Some(t) => t
+    | None => 0. // Idk a good default
+    }
+    acc
+    ->slice(~offset=0, ~len=length(acc))
+    ->concat([end +. ttc])
+  })
 }

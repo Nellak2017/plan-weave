@@ -21,7 +21,9 @@ const requiredFields = (schema) => Object.keys(schema.describe().fields)
 const add = (start, hours) => new Date(start.getTime() + hoursToMillis(hours)) // (Date: start, hours: hours) -> Date(start + hours)
 const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
 
-const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) => [...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)], [start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
+const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) => 
+[...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)], 
+[start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
 
 // --- Helpers Exported
 /**
@@ -644,4 +646,3 @@ export const predecessorOptions = (taskList, schema = taskSchema, schemaDefaultF
 	})
 	return validatedTasks?.map(task => ({ value: task?.id, label: task?.task }))
 }
-
