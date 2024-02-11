@@ -1155,7 +1155,9 @@ export const navPresets = {
 export const infoSectionPresets = {
   variant: {
     light: css`
-      background-color: ${props => props.theme.colors.lightNeutralLight};
+      background-color: #fff; // To pass contrast WGAG requirement
+			// See also: https://accessibleweb.com/color-contrast-checker/
+			// with foreground = #fff, background = #815AF1 (primary) 
       .reverse {
         flex-direction: row-reverse;
       }

@@ -18,6 +18,12 @@ export const StyledNav = styled.nav`
 	background-color: ${props => props.theme.colors.darkNeutral}99;
 	box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.12); // BAD Copy-Pasted from theme
 
+	* {
+		color: #fff; // To pass contrast WGAG requirement
+		// See also: https://accessibleweb.com/color-contrast-checker/
+		// with foreground = #fff, background = #815AF1 (primary) 
+	}
+
 	${space};
 	${layout};
 	${typography};
