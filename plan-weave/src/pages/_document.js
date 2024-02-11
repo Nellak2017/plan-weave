@@ -9,9 +9,7 @@ class MyDocument extends Document {
           <meta httpEquiv="content-language" content="en" />
           <meta charSet="UTF-8" />
           <meta name="keywords" content="task management, productivity, organization, time management" />
-          <meta name="author" content="Your Name" />
-          <meta name="publisher" content="Your Name" />
-          <meta name="copyright" content="Your Name" />
+          <meta name="author" content="Connor Keenum" />
           <meta name="description" content="Plan Weave: Your Ultimate Task Management Solution. Organize, prioritize, and conquer your daily tasks with ease." />
           <meta name="page-topic" content="Productivity" />
           <meta name="page-type" content="Task Management" />

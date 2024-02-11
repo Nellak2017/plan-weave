@@ -124,11 +124,9 @@ let calculateEfficiency = (startTime: float, endTime: float, ttcHours: float): R
   | _ => Error(unknownErrorString)
   }
 }
-type schemaType<'a, 'b> = {isValidSync: ('a, 'b) => bool}
-type schemaOptions = {strict: bool}
 let validateTransformation = (
   task,
-  schema: schemaType<'a, schemaOptions>,
+  schema,
   customErrorMessage,
 ): result<unit, string> => {
   let customErrorProcessed = switch customErrorMessage {
@@ -139,7 +137,7 @@ let validateTransformation = (
   | Some(str) => customErrorProcessed ++ " task : " ++ str
   | None => "Failed to stringify task for error message"
   }
-  switch schema.isValidSync(task, {strict: true}) {
+  switch schema["isValidSync"](task, {"strict": true}) {
   | true => Ok()
   | false => Error(errorMessage)
   }
@@ -241,26 +239,24 @@ let formatTimeLeft = (
 
 // isRequired, requiredFields, etaList Are Missing Unit Tests
 // TODO: Add unit tests for these
-type yupFieldInfo = {optional: bool}
-type yupDescribe = {fields: Js.Dict.t<yupFieldInfo>}
-type yupSchema = {describe: unit => option<yupDescribe>}
-let isRequired = (field, schema: yupSchema) => {
+// isRequired and requiredFields are using Objects due to not knowing what schemas will be like in advance
+let isRequired = (field, schema) => {
   open Belt.Option
-  schema.describe() // Dictionary of schema.describe() or None
-  ->flatMap(v => Js.Dict.get(v.fields, field)) // Dictionary of schema.describe().fields[field] or None
-  ->map(fieldInfo => !fieldInfo.optional) // Boolean of !schema.describe().fields[field].optional or None
-  ->getWithDefault(false) // !schema.describe().fields[field].optional:boolean or false, unwrapped
+  schema["describe"]()
+  ->flatMap(v => Js.Dict.get(v["fields"], field))
+  ->map(fieldInfo => !fieldInfo["optional"])
+  ->getWithDefault(false)
 }
-let requiredFields = (schema: yupSchema) => {
+let requiredFields = schema => {
   open Belt.Option
-  schema.describe() // Dictionary of schema.describe() or None
-  ->map(v => v.fields) // Dictionary of schema.describe().fields or None
-  ->map(fields => Js.Dict.keys(fields)) // [Keys of ...fields] or None
-  ->map(keys => Belt.Array.map(keys, field => isRequired(field, schema) ? Some(field) : None)) // [Some(isRequired:bool) or None] or None
-  ->map(fields => Belt.Array.keepMap(fields, x => x)) // filter None out to get [Some(isRequired:bool)] or None
-  ->getWithDefault([]) // default to [] and return unwrapped [isRequired:bool]
+  schema["describe"]() // option<yupDescribe>
+  ->map(v => v["fields"]) // option<yupDescribe.fields>
+  ->map(fields => Js.Dict.keys(fields)) // get keys of fields or None
+  ->map(keys => Belt.Array.map(keys, field => isRequired(field, schema) ? Some(field) : None)) // map isRequired to each field
+  ->map(fields => Belt.Array.keepMap(fields, x => x))
+  ->getWithDefault([])
 }
-type task = {ttc: option<float>}
+type task = {ttc: option<float>} // Leave this in, because the shape of Tasks is known
 let etaList = (taskList: array<'b>, ~start=0.) => {
   open Belt.Array
   taskList->Belt.Array.reduce([start], (acc, task) => {
@@ -277,3 +273,4 @@ let etaList = (taskList: array<'b>, ~start=0.) => {
     ->concat([end +. ttc])
   })
 }
+

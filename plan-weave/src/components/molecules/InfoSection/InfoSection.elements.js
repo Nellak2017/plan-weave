@@ -24,7 +24,7 @@ export const ColumnContainer = styled.div`
 	display: flex;
 	align-items: center;
 	@media screen and (max-width:${props => props.theme.breakpoints.md}){
-        flex-direction: column;
+        flex-direction: column!important; // overrides light-mode's row-reverse when hitting this breakpoint
 		row-gap: ${props => props.theme.spaces.medium};
 		max-width: 100%;
         flex-basis: 100%;

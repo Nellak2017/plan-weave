@@ -27,6 +27,7 @@ body {
     margin: 0!important;
     background-color: ${props => props.theme.colors.body};
     color: ${props => props.theme.colors.defaultFontColor};
+    overflow-x: hidden; // To ensure no weird horizontal scrollbar on homescreen (TODO: Test on other screens)
 }
 
 *::-webkit-scrollbar {

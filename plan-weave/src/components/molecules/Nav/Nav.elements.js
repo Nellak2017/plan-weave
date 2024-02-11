@@ -70,8 +70,10 @@ export const LoginContainer = styled.span`
 // This is to make the spacing proper even for large desktops
 export const ContentContainer = styled.section`
 	display: flex;
+	flex-wrap: wrap; // 2 rows when it is small screen
 	align-items: center;
-	justify-content: space-between;
+	justify-content: space-evenly; // looks better than space-between on small screens
+	column-gap: ${props => props.theme.spaces.small}; // to ensure it wraps at 688 px, to avoid awkward design
 	max-width: 1290px;
 	width: 100%;
 	height: 100%;
