@@ -1,3 +1,46 @@
 {
-  "extends": "next/core-web-vitals"
+  "plugins": [
+    "fp"
+  ],
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:storybook/recommended",
+    "plugin:fp/recommended"
+  ],
+  "rules" : {
+    "camelcase": "error", // We use CamelCase in this application
+    "no-param-reassign": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+
+    "fp/no-mutation": "off", // This rule is not applicable to my application, due to it being required in many places
+    "fp/no-mutating-methods": "off", // This is mostly here due to Next.js library functions like router.push. We don't use classes directly, so this doesn't apply
+    "fp/no-nil": "off", // Would be applicable, but some functions must return nothing. (Otherwise it would be very verbose to return {} everywhere)
+    "fp/no-unused-expression": "off", // Would be applicable, but we need callback functions
+    "fp/no-rest-parameters": "off", // This is commonly used in Components and is essential for conciseness
+
+    "fp/no-mutating-assign": "warn",
+    "fp/no-throw": "warn", // Some things are actually exceptional and may require this. Also needed for compatiblity with API in some cases
+    "prefer-arrow-callback": "warn",
+    "max-lines": ["warn", { "max": 200 }], // max lines in a file, beyond which is a warning
+    "max-lines-per-function": ["warn", { "max": 120 }], // max lines in a function, beyond which is a warning
+    "complexity": ["warn", 8], // Cyclomatic complexity can't exceed 8
+    "max-nested-callbacks": ["warn", 4], 
+    "max-depth": ["warn", 4],
+    "max-params": ["warn", 3] // This is to ensure State / Service pattern is followed
+  },
+  "overrides": [
+    {
+      "files": ["*_document.js"],
+      "rules": {
+        "fp/no-class": "off" // We have to extend document unfortunately
+      }
+    },
+    {
+      "files": ["**/*.res.js"],
+      "rules": {
+        "camelcase": "off" // ReScript can do whatever casing it wants
+      }
+    }
+  ]
 }

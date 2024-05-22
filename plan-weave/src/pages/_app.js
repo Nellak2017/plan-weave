@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import isPropValid from '@emotion/is-prop-valid' // automatic unknown prop filtering
 import PropTypes from 'prop-types'
 
+// eslint-disable-next-line camelcase
 import { Poppins, Courier_Prime, Roboto } from 'next/font/google'
 
 const poppins = Poppins({

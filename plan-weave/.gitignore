@@ -30,11 +30,11 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env
 
 # vercel
 .vercel
 
-.vercel
 
 # ReScript related
 .DS_Store
@@ -43,3 +43,4 @@ yarn-error.log*
 npm-debug.log
 /lib/bs/
 /node_modules/
+*.cm*
