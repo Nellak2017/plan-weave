@@ -69,10 +69,10 @@ const taskEditorSlice = createSlice({
 		updatePage: (state, action) => {
 			state.page = Math.abs(parseInt(action.payload, 10)) || 1 // default to 1 if invalid page given
 		},
-		prevPage: (state) => {
+		prevPage: state => {
 			state.page = Math.abs(parseInt(state.page, 10) - 1) || 1 // default to 1 if subtracting 1 gives 0
 		},
-		nextPage: (state) => {
+		nextPage: state => {
 			const len = state.tasks.length || 1 // if 0 length, then 1
 			const maxPage = Math.ceil(len / state.tasksPerPage)
 			const newPageNumber = Math.abs(parseInt(state.page, 10) + 1) || 1 // no matter what is done, it will always be atleast 1
@@ -90,7 +90,7 @@ const taskEditorSlice = createSlice({
 				const result = dateToToday(parseISO(old['end']))
 				if (result.TAG !== 'Ok') { console.error('Error incrementing old timerange in refresh reducer', result._0); return { TAG: 'Error', _0: 'Error incrementing old timerange in refresh reducer' } }
 				return { TAG: 'Ok', _0: new Date(result._0.getTime() + hoursToMillis(24)) }
-			}
+			} // TODO: Find a way to make this less ugly. Either Full ReScript or none at all
 			const owl = state.owl
 			const oldTimeRange = state.timeRange
 			const oldTasks = state.tasks
