@@ -1,5 +1,5 @@
+/* eslint-disable max-lines */
 import { css } from 'styled-components'
-// TODO: Factor out re-used attributes inside of the pre-sets so you can apply DRY principle. Ex: Color is re-used alot, so factor it out.
 
 // Add variants or size or kind pre-sets, then when you need to alter hover, get that css in the hover
 //    based on the prop passed in

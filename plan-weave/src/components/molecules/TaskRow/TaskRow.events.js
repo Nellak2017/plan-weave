@@ -32,7 +32,7 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 	const updatedTask = {
 		...validateTask({ task: taskObject }),
 		status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
-		task: localTask.slice(0,50), // Ensures it is always valid if localTask is a string
+		task: localTask.slice(0, 50), // Ensures it is always valid if localTask is a string
 		waste: millisToHours(currentTime.getTime() - newETA.getTime()), // millisToHours(currentTime.getTime() - eta.getTime())
 		ttc: parseFloat(localTtc) || .1, // Fail-safe default
 		eta: isChecked && newETA instanceof Date ? newETA.toISOString() : currentTime.toISOString(),
@@ -44,7 +44,7 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 		dependencies: localDependencies,
 		parentThread: localThread
 	}
-	taskRow?.complete(id, updatedTask, index, userId)
+	taskRow?.complete({ id, updatedTask, index, userId })
 }
 
 // services: taskRow
@@ -62,7 +62,7 @@ export const handleUpdateTask = ({ services, state }) => {
 		eta: parseISO(taskObject?.eta) && parseISO(taskObject.eta) instanceof Date
 			? parseISO(taskObject.eta).getTime() / 1000
 			: new Date().getTime() / 1000,
-		task: localTask.slice(0,50), // Ensures it is always valid if localTask is a string
+		task: localTask.slice(0, 50), // Ensures it is always valid if localTask is a string
 		ttc: parseFloat(localTtc) || .1, // Fail-safe default
 		efficiency: correctEfficiencyCase(prevCompletedTask, taskObject, completedTimeStamp, parseFloat(localTtc) || .1),
 		dueDate: localDueDate,

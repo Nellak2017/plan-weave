@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { taskSchema, fillDefaults } from '../schemas/taskSchema/taskSchema.js'
 import { getTime, formatISO, parseISO } from 'date-fns'

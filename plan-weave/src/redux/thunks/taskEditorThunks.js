@@ -158,10 +158,9 @@ export const updateTaskThunk = (taskId, updatedTask, userId) => (dispatch) => {
   }
 }
 
-export const completedTaskThunk = (taskId, updatedTask, index, userId) => (dispatch) => {
+export const completedTaskThunk = ({ taskId, updatedTask, index, userId }) => (dispatch) => {
   // Same as updateTaskThunk, but with extra logic for completing tasks, like dnd config updates and source update for taskTable
   try {
-    console.log(updatedTask)
     updateTaskAPI(updatedTask, userId) // PATCH here
     dispatch(completeTask({ id: taskId, updatedTask, index }))
   } catch (e) {

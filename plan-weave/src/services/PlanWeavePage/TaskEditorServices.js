@@ -25,35 +25,32 @@ import {
 	addGlobalThreadThunk,
 } from "../../redux/thunks/taskEditorThunks.js"
 
-
-export const createTaskEditorServices = (store) => {
-
+export const createTaskEditorServices = store => {
 	const dispatch = store.dispatch
-
 	const services = {
 		// Shared between all of TaskEditor sub-components
 		global: {
-			updateDnD: (movePoints) => {
+			updateDnD: movePoints => {
 				dispatch(updateDnD(movePoints))
 			}, // reducer to update dnd config list when drag and drop happens (not DB)
-			updateSelectedTasks: (newSelectedTasks) => {
+			updateSelectedTasks: newSelectedTasks => {
 				dispatch(updateSelectedTasks(newSelectedTasks))
 			}, // reducer to update selected tasks for multi-delete feature
-			updateTasks: (tasks) => {
+			updateTasks: tasks => {
 				dispatch(updateTasks(tasks))
 			},
 			updateTimeRange: (newStart, newEnd) => {
 				dispatch(updateTimeRangeThunk(newStart, newEnd))
 			}, // thunk to update start/end
-			addThread: (thread) => {
+			addThread: thread => {
 				dispatch(addGlobalThreadThunk(thread))
 			}, // thunk to update global threads with the new one
-			updateFirstLoad: (isFirstLoad) => {
+			updateFirstLoad: isFirstLoad => {
 				dispatch(updateFirstLoad(isFirstLoad))
 			} // Reducer to verify it is first load of TaskEditor, for the life of the application
 		},
 		taskControl: {
-			search: (newSearchValue) => {
+			search: newSearchValue => {
 				dispatch(updateSearch(newSearchValue.trim()))
 			}, // reducer for updating search in the store associated with that section
 			owl: (prev = false) => {
@@ -68,7 +65,7 @@ export const createTaskEditorServices = (store) => {
 			deleteMany: (selectedIds, userId) => {
 				dispatch(removeTasksThunk(selectedIds, userId))
 			}, // thunk to delete many
-			sort: (sortingAlgo) => {
+			sort: sortingAlgo => {
 				dispatch(updateSortingAlgorithmThunk(sortingAlgo))
 			}, // thunk to update sorting method
 			fullToggle: () => {
@@ -77,8 +74,8 @@ export const createTaskEditorServices = (store) => {
 		},
 		taskTable: {
 			taskRow: {
-				complete: (id, updatedTask, index, userId) => {
-					dispatch(completedTaskThunk(id, updatedTask, index, userId))
+				complete: ({ id, updatedTask, index, userId }) => {
+					dispatch(completedTaskThunk({ taskId: id, updatedTask, index, userId }))
 				},
 				delete: (id, userId) => {
 					dispatch(removeTaskThunk(id, userId))
@@ -101,7 +98,7 @@ export const createTaskEditorServices = (store) => {
 			refresh: () => {
 				dispatch(refresh())
 			}, // thunk to refresh the tasks 
-			tasksPerPageUpdate: (newTasksPerPage) => {
+			tasksPerPageUpdate: newTasksPerPage => {
 				dispatch(updateTasksPerPage(newTasksPerPage))
 			}, // reducer to update number of tasks per page
 		},
