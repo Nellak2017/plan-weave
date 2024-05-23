@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { THEMES } from '../../utils/constants'
+import { THEMES, VARIANTS } from '../../utils/constants'
 import {
 	PickerContainer,
 	DropdownWrapper,
@@ -8,14 +8,14 @@ import {
 import PropTypes from 'prop-types'
 
 function NumberPicker({
-	variant = 'dark',
+	variant = VARIANTS[0],
 	defaultNumber = 10,
 	options = [10],
 	text = 'Tasks per page',
 	onValueChange,
 	controlledValue
 }) {
-	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
 
 	const [number, setNumber] = useState(defaultNumber)
 	const value = useMemo(() => controlledValue || number, [controlledValue, number])
@@ -29,7 +29,7 @@ function NumberPicker({
 	}
 
 	return (
-		<PickerContainer variant={variant}>
+		<PickerContainer variant={processedVariant}>
 			{text && <p>{text}</p>}
 			<DropdownWrapper>
 				<StyledNumberPicker onChange={handleNumberChange} value={value}>
@@ -43,7 +43,7 @@ function NumberPicker({
 }
 
 NumberPicker.propTypes = {
-	variant: PropTypes.string,
+	variant: PropTypes.oneOf(VARIANTS),
 	defaultNumber: PropTypes.number,
 	options: PropTypes.arrayOf(PropTypes.number),
 	text: PropTypes.string,

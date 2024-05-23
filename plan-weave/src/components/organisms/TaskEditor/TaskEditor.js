@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasks } from '../../../redux/selectors'
-import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS } from '../../utils/constants'
+import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS, VARIANTS } from '../../utils/constants'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import Pagination from '../../molecules/Pagination/Pagination'
@@ -13,12 +13,12 @@ import { ThemeContext } from 'styled-components' // needed for theme object
 
 const TaskEditor = ({
 	services = createTaskEditorServices(store),
-	variant = 'dark',
+	variant = VARIANTS[0],
 	maxwidth = 818,
 	title = "Today's Tasks"
 }) => {
 	// --- Input Verification
-	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
 
 	// --- State Objects for Children
 	const globalTasks = useSelector(state => state?.globalTasks)
@@ -71,16 +71,16 @@ const TaskEditor = ({
 	}
 
 	return (
-		<TaskEditorContainer variant={variant}>
+		<TaskEditorContainer variant={processedVariant}>
 			<h1>{title}</h1>
-			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
+			<StyledTaskEditor variant={processedVariant} maxwidth={maxwidth}>
 				<TaskControl
 					services={{
 						...services?.global,
 						...services?.taskControl,
 					}}
 					state={TaskControlState}
-					variant={variant}
+					variant={processedVariant}
 					clock1Text={''}
 					clock2Text={''}
 				/>
@@ -90,7 +90,7 @@ const TaskEditor = ({
 						...services?.taskTable,
 					}}
 					state={TaskTableState}
-					variant={variant}
+					variant={processedVariant}
 					headerLabels={fullTask ? FULL_TASK_HEADERS : SIMPLE_TASK_HEADERS}
 					maxwidth={maxwidth}
 				/>
@@ -100,7 +100,7 @@ const TaskEditor = ({
 						...services?.pagination,
 					}}
 					state={PaginationState}
-					variant={variant}
+					variant={processedVariant}
 				/>
 			</StyledTaskEditor>
 		</TaskEditorContainer>
@@ -137,7 +137,7 @@ TaskEditor.propTypes = {
 			tasksPerPageUpdate: PropTypes.func.isRequired,
 		}).isRequired,
 	}),
-	variant: PropTypes.string,
+	variant: PropTypes.oneOf(VARIANTS),
 	maxwidth: PropTypes.number,
 	title: PropTypes.string,
 }

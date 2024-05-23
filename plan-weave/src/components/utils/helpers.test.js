@@ -1,3 +1,5 @@
+/* eslint-disable max-lines-per-function */
+/* eslint-disable max-lines */
 import {
 	validateTask,
 	filterTaskList,
@@ -260,6 +262,7 @@ describe('formatTimeLeft', () => {
 		['0 < endTime - startTime < 1', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T12:30:00'), '30 minutes left'],
 		['endTime - startTime > 1 and not an integer', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T14:45:00'), '2 hours 45 minutes left'],
 		['endTime < startTime and overNightMode is false', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T11:30:00'), '0 minutes left'],
+	// eslint-disable-next-line max-params
 	])('should return the correct string when %s', (_, currentTime, endTime, expected) => {
 		const result = formatTimeLeft(currentTime, endTime)
 		expect(result).toBe(expected)

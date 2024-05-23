@@ -34,6 +34,8 @@ const roboto = Roboto({
   display: 'swap',
 })
 
+// TODO: When you add support for light/dark mode, see the NutriSync project to add support for initial variant regardless of page
+
 function MyApp({ Component, pageProps }) {
   return (
     <StyleSheetManager shouldForwardProp={prop => isPropValid(prop)}>

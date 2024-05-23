@@ -7,13 +7,13 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers'
 import { parse } from 'date-fns'
-import { THEMES } from '../../utils/constants'
+import { THEMES, VARIANTS } from '../../utils/constants'
 
 import PropTypes from 'prop-types'
 
 // Styled Components can't be used on MUI DateTimePicker! 
 function DateTimePickerWrapper({
-	variant,
+	variant = VARIANTS[0],
 	services = {
 		onTimeChange: (newDateTime) => console.log(newDateTime)
 	},
@@ -24,7 +24,7 @@ function DateTimePickerWrapper({
 	},
 }) {
 	// --- Verify Input
-	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
 
 	const { onTimeChange } = services || {}
 	const { label, defaultTime, defaultDate } = state || {}
@@ -40,7 +40,7 @@ function DateTimePickerWrapper({
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns}>
-			<PickerContainer variant={variant}>
+			<PickerContainer variant={processedVariant}>
 				<DateTimePicker
 					label={label}
 					value={dateTime}
@@ -58,7 +58,7 @@ function DateTimePickerWrapper({
 }
 
 DateTimePickerWrapper.propTypes = {
-	variant: PropTypes.string,
+	variant: PropTypes.oneOf(VARIANTS),
 	services: PropTypes.shape({
 		onTimeChange: PropTypes.func,
 	}),

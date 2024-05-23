@@ -14,9 +14,10 @@ import { debounce } from 'lodash'
 import PropTypes from 'prop-types'
 
 import { TimeClock } from '@mui/x-date-pickers'
+import { VARIANTS } from '../../utils/constants'
 
 function TimePickerWrapper({
-  variant,
+  variant = VARIANTS[0],
   defaultTime = '14:00',
   displayText = 'Start',
   ampm = false,
@@ -30,7 +31,7 @@ function TimePickerWrapper({
   testid // used for unit testing
 }) {
   // --- Verify Input
-  if (variant && !THEMES.includes(variant)) variant = 'dark'
+  const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
 
   // --- State for component
   const [time, setTime] = useState(parse(defaultTime, 'HH:mm', new Date()))
@@ -66,7 +67,7 @@ function TimePickerWrapper({
   // BEFORE Controlled code, time was used to be displayed, not currentTime
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <TimePickerWrapperStyled variant={variant} >
+      <TimePickerWrapperStyled variant={processedVariant} >
         <Display><p>{displayText}</p><p aria-label={`Time display: ${timeDisplayMemo}`}>{timeDisplayMemo}</p></Display>
         <ClockIconWrapper role="button" onMouseDown={toggleClock} onKeyDown={(e) => { if (e.key === 'Enter') { toggleClock() } }}>
           <AiOutlineClockCircle tabIndex={tabIndex} size={32} title={title} />
@@ -94,7 +95,7 @@ function TimePickerWrapper({
 }
 
 TimePickerWrapper.propTypes = {
-  variant: PropTypes.string,
+  variant: PropTypes.oneOf(VARIANTS),
   defaultTime: PropTypes.string,
   displayText: PropTypes.string,
   ampm: PropTypes.bool,

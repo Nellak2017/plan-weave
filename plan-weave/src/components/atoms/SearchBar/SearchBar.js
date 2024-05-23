@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { SearchBarStyled } from './SearchBar.elements'
 import { MdSearch } from 'react-icons/md'
-import { THEMES } from '../../utils/constants'
+import { THEMES, VARIANTS } from '../../utils/constants'
 import PropTypes from 'prop-types'
 
 // Icon is placed AFTER input but displayed before 
@@ -9,14 +9,14 @@ import PropTypes from 'prop-types'
 // services = {search}
 function SearchBar({
 	services,
-	variant,
+	variant = VARIANTS[0],
 	placeholder = "Search for a Task",
 	maxwidth = 240,
 	tabIndex,
 	onChange,
 	...rest }) {
 
-	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
 	const [searchValue, setSearchValue] = useState('')
 
 	const handleSearchChange = e => {
@@ -28,7 +28,7 @@ function SearchBar({
 	}
 
 	return (
-		<SearchBarStyled variant={variant} maxwidth={maxwidth} {...rest}>
+		<SearchBarStyled variant={processedVariant} maxwidth={maxwidth} {...rest}>
 			<input
 				tabIndex={tabIndex}
 				type="text"
@@ -43,7 +43,7 @@ function SearchBar({
 
 SearchBar.propTypes = {
 	services: PropTypes.object,
-	variant: PropTypes.string,
+	variant: PropTypes.oneOf(VARIANTS),
 	placeholder: PropTypes.string,
 	maxwidth: PropTypes.number,
 	tabIndex: PropTypes.number,

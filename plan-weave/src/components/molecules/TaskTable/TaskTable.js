@@ -3,7 +3,7 @@ import TableHeader from '../../atoms/TableHeader/TableHeader'
 import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import 'react-toastify/dist/ReactToastify.css'
-import { THEMES, SORTING_METHODS } from '../../utils/constants'
+import { THEMES, SORTING_METHODS, VARIANTS } from '../../utils/constants'
 import {
 	filterTaskList,
 	completedOnTopSorted,
@@ -26,11 +26,11 @@ import { useInterval } from '../../../hooks/useInterval.js'
 const TaskTable = ({
 	services,
 	state,
-	variant = 'dark',
+	variant = VARIANTS[0],
 	headerLabels,
 	maxwidth = 818
 }) => {
-	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
 
 	// --- Services and State (destructured)
 	const { updateTasks, updateDnD, updateTimeRange } = services || {}
@@ -82,7 +82,7 @@ const TaskTable = ({
 		<DragDropContext onDragEnd={onDragEnd}>
 			<TaskTableContainer maxwidth={maxwidth}>
 				<table>
-					<TableHeader variant={variant} labels={headerLabels} />
+					<TableHeader variant={processedVariant} labels={headerLabels} />
 					<Droppable droppableId="taskTable" type="TASK">
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
@@ -119,7 +119,7 @@ TaskTable.propTypes = {
 		owl: PropTypes.any,
 		taskRowState: PropTypes.any
 	}),
-	variant: PropTypes.string,
+	variant: PropTypes.oneOf(VARIANTS),
 	headerLabels: PropTypes.array,
 	maxwidth: PropTypes.number
 }

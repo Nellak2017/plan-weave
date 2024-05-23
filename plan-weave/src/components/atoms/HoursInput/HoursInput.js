@@ -2,13 +2,13 @@ import {
 	HoursInputStyled, HoursContainer
 } from './HoursInput.elements'
 import { useState, useMemo } from 'react'
-import { THEMES } from '../../utils/constants'
+import { THEMES, VARIANTS } from '../../utils/constants'
 import PropTypes from 'prop-types'
 
 const HoursInput = ({
 	placeholder = '0',
 	text,
-	variant = 'dark',
+	variant = VARIANTS[0],
 	maxwidth = 45,
 	color,
 	initialValue,
@@ -21,7 +21,7 @@ const HoursInput = ({
 	onBlur,
 	...props
 }) => {
-	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
 
 	const [localValue, setLocalValue] = useState(initialValue)
 
@@ -50,9 +50,9 @@ const HoursInput = ({
 		if (onValueChange && controlledValue !== undefined) onValueChange(String(sanitizedValue))
 	}
 	return (
-		<HoursContainer variant={variant} color={color}>
+		<HoursContainer variant={processedVariant} color={color}>
 			<HoursInputStyled
-				variant={variant}
+				variant={processedVariant}
 				placeholder={placeholder}
 				maxwidth={maxwidth}
 				color={color}
@@ -76,7 +76,7 @@ const HoursInput = ({
 HoursInput.propTypes = {
 	placeholder: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 	text: PropTypes.string,
-	variant: PropTypes.string,
+	variant: PropTypes.oneOf(VARIANTS),
 	maxwidth: PropTypes.number,
 	color: PropTypes.string,
 	initialValue: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),

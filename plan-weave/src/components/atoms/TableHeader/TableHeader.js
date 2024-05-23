@@ -1,16 +1,16 @@
 import { TableHeaderContainer, StyledRow } from './TableHeader.elements'
-import { THEMES } from '../../utils/constants'
+import { THEMES, VARIANTS } from '../../utils/constants'
 import PropTypes from 'prop-types'
 
-const TableHeader = ({ variant, labels }) => {
-	if (variant && !THEMES.includes(variant)) variant = 'dark'
+const TableHeader = ({ variant = VARIANTS[0], labels }) => {
+	const processedVariant = variant && !THEMES.includes(variant) ? VARIANTS[0] : variant
 	return (
 		<thead>
-			<StyledRow variant={variant}>
+			<StyledRow variant={processedVariant}>
 				<th></th>
 				<th></th>
 				{labels.map((label, index) => (
-					<TableHeaderContainer variant={variant} key={label || `Unique Key: ${index}`}>
+					<TableHeaderContainer variant={processedVariant} key={label || `Unique Key: ${index}`}>
 						{label}
 					</TableHeaderContainer>
 				))}
@@ -21,7 +21,7 @@ const TableHeader = ({ variant, labels }) => {
 }
 
 TableHeader.propTypes = {
-	variant: PropTypes.string,
+	variant: PropTypes.oneOf(VARIANTS),
 	labels: PropTypes.arrayOf(PropTypes.string).isRequired,
 }
 

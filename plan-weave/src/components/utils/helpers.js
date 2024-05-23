@@ -22,9 +22,9 @@ const requiredFields = (schema) => Object.keys(schema.describe().fields)
 const add = (start, hours) => new Date(start.getTime() + hoursToMillis(hours)) // (Date: start, hours: hours) -> Date(start + hours)
 const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
 
-const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) => 
-[...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)], 
-[start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
+const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) =>
+	[...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)],
+	[start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
 
 // --- Helpers Exported
 /**
@@ -122,15 +122,16 @@ export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx 
 
 		// Case 3: If the Task is invalid, but has required fields. Update it and return list.
 		// Iterate through fields and apply defaults to invalid ones, or delete it if it isn't in the attribute list
-		let updatedTask = schemaDefaultFx(task) // fill defaults if there is other undefined attributes too
-		Object.keys(updatedTask).forEach(field => {
+		const updatedTask = schemaDefaultFx(task); // fill defaults if there are other undefined attributes too
+
+		const finalTask = Object.keys(updatedTask).reduce((acc, field) => {
 			const fieldExists = schema?.fields[field]
 			const isValid = fieldExists?.isValidSync(updatedTask[field])
-			if (!isValid && fieldExists) updatedTask[field] = fieldExists?.getDefault()
-			else if (!isValid && !fieldExists) delete updatedTask[field]
-		})
-		validateTransformation(updatedTask, schema, customErrorMessage)
-		return updatedTask
+			return { ...acc, [field]: (isValid || !fieldExists) ? updatedTask[field] : fieldExists.getDefault() }
+		}, {})
+
+		validateTransformation(finalTask, schema, customErrorMessage)
+		return finalTask
 	}
 }
 
@@ -331,17 +332,18 @@ export const deleteDnDEvent = (dnd, indexRange) => {
  */
 export const completedOnTopSorted = (reduxTasks, tasks, start, transforms, sort = t => t.slice()) => {
 	// transforms is a list of transformation functions, tasks => ordering of tasks
-	if (!transforms) {
-		transforms = [
+	const processedTransforms = !transforms
+		? [
 			t => transform(t, reduxTasks.map((_, i) => i)),
 			t => calculateWaste({ start, taskList: t, time: new Date() })
 		]
-	}
-	if (!reduxTasks) return tasks && tasks.length > 0 ? transformAll(tasks, transforms) : []
+		: transforms
+
+	if (!reduxTasks) return tasks && tasks.length > 0 ? transformAll(tasks, processedTransforms) : []
 
 	const completedTasks = sort([...reduxTasks].filter(task => task?.status === TASK_STATUSES.COMPLETED))
 	const remainingTasks = sort([...reduxTasks].filter(task => task?.status !== TASK_STATUSES.COMPLETED))
-	return transformAll([...completedTasks, ...remainingTasks], transforms)
+	return transformAll([...completedTasks, ...remainingTasks], processedTransforms)
 }
 
 /**

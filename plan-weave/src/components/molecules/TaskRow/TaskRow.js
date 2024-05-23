@@ -3,7 +3,7 @@ import { TaskRowStyled, TrashContainer } from './TaskRow.elements.js'
 import SimpleRow from './SimpleRow.js'
 import FullRow from './FullRow.js'
 import { Draggable } from 'react-beautiful-dnd'
-import { THEMES, TASK_STATUSES, TASK_ROW_TOOLTIPS } from '../../utils/constants.js'
+import { THEMES, TASK_STATUSES, TASK_ROW_TOOLTIPS, VARIANTS } from '../../utils/constants.js'
 import 'react-toastify/dist/ReactToastify.css'
 import { highlightTaskRow } from '../../utils/helpers'
 import { parseISO } from 'date-fns'
@@ -18,7 +18,7 @@ function TaskRow({
 	services,
 	state,
 	taskObject = { task: 'example', waste: 0, ttc: 1, eta: new Date(), status: TASK_STATUSES.INCOMPLETE, id: 0, timestamp: Math.floor((new Date()).getTime() / 1000) },
-	variant = 'dark',
+	variant = VARIANTS[0],
 	maxwidth = 818,
 	index,
 	old = false,
@@ -33,8 +33,8 @@ function TaskRow({
 	const newETA = useMemo(() => parseISO(eta), [eta]) // Converts eta from ISO -> Date
 
 	// --- Input Checks
-	if (variant && !THEMES.includes(variant)) variant = 'dark'
-	if (!maxwidth || isNaN(maxwidth) || maxwidth <= 0) maxwidth = 818
+	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
+	const processedMaxWidth = (!maxwidth || isNaN(maxwidth) || maxwidth <= 0) ? 818 : maxwidth
 	if (index === undefined || index === null || isNaN(index) || index < 0) console.error(`index is not a valid number in row = ${id}, index = ${index}`)
 	if (id === undefined || id === null || isNaN(id) || id < 0) console.error(`Id is not a valid number for task index = ${index}, id = ${id}`)
 
@@ -95,12 +95,12 @@ function TaskRow({
 	// -- Helper components
 	const completedTask = provided => (
 		<TaskRowStyled
-			variant={variant}
+			variant={processedVariant}
 			status={status}
 			ref={provided?.innerRef || null}
 			{...(provided?.draggableProps ? provided.draggableProps : {})} // conditionally destructure if not completed task
 			style={{ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' }}
-			maxwidth={maxwidth}
+			maxwidth={processedMaxWidth}
 			highlight={highlightTaskRow(isHighlighting, isChecked, old)}
 			onBlur={() => {
 				if (!tab) handleUpdateTask({ services: handleUpdateTaskServices, state: handleUpdateTaskState })
@@ -113,7 +113,7 @@ function TaskRow({
 					<SimpleRow
 						services={simpleRowServices}
 						state={simpleRowState}
-						variant={variant}
+						variant={processedVariant}
 						provided={provided || undefined}
 					/>
 					<TrashContainer>
@@ -128,7 +128,7 @@ function TaskRow({
 						simpleTaskProps={{
 							...simpleRowServices,
 							...simpleRowState,
-							variant: variant,
+							variant: processedVariant,
 							provided: provided || undefined,
 						}}
 						state={{
@@ -193,7 +193,7 @@ TaskRow.propTypes = {
 		id: PropTypes.number,
 		timestamp: PropTypes.any,
 	}),
-	variant: PropTypes.string,
+	variant: PropTypes.oneOf(VARIANTS),
 	maxwidth: PropTypes.number,
 	index: PropTypes.number,
 	old: PropTypes.bool,

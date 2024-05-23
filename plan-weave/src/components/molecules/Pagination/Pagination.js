@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { THEMES } from '../../utils/constants'
+import { THEMES, VARIANTS } from '../../utils/constants'
 import { PaginationContainer, PageChooserContainer } from '../Pagination/Pagination.elements'
 import NextButton from '../../atoms/NextButton/NextButton'
 import HoursInput from '../../atoms/HoursInput/HoursInput'
@@ -12,7 +12,7 @@ import PropTypes from 'prop-types'
 function Pagination({
 	services,
 	state,
-	variant = 'dark',
+	variant = VARIANTS[0],
 	min = 1, // optional
 	hoursText, // optional, if defined it overrides the default of ${num} text
 	defaultNumber = 10,
@@ -22,7 +22,7 @@ function Pagination({
 	size = 'l', // optional
 }) {
 	// --- Input verification
-	if (variant && !THEMES.includes(variant)) variant = 'dark'
+	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
 
 	// --- Destructuring
 	const { updatePage, prevPage, nextPage, refresh, tasksPerPageUpdate } = services || {}
@@ -39,7 +39,7 @@ function Pagination({
 	const handlePrevPage = () => { prevPage(); setLocalPageNumber(old => old > min ? old - 1 : old) } 
 
 	return (
-		<PaginationContainer variant={variant} maxWidth={maxWidth}>
+		<PaginationContainer variant={processedVariant} maxWidth={maxWidth}>
 			<BiRecycle
 				className='pagination-icon'
 				tabIndex={0}
@@ -49,7 +49,7 @@ function Pagination({
 			<PageChooserContainer>
 				<NextButton variant={'left'} onClick={handlePrevPage} size={size} tabIndex={-1} />
 				<HoursInput
-					variant={variant}
+					variant={processedVariant}
 					placeholder={1}
 					text={hoursText || ` of ${maxPage}`}
 					maxwidth={35}
@@ -65,7 +65,7 @@ function Pagination({
 				<NextButton variant={'right'} onClick={handleNextPage} size={size} tabIndex={-1} />
 			</PageChooserContainer>
 			<NumberPicker
-				variant={variant}
+				variant={processedVariant}
 				defaultNumber={parseInt(defaultNumber)}
 				options={options}
 				pickerText={pickerText}
@@ -90,7 +90,7 @@ Pagination.propTypes = {
 		tasksPerPage: PropTypes.number,
 		taskList: PropTypes.array,
 	}),
-	variant: PropTypes.string,
+	variant: PropTypes.oneOf(VARIANTS),
 	min: PropTypes.number,
 	hoursText: PropTypes.string,
 	defaultNumber: PropTypes.number,
