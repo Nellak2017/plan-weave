@@ -1,4 +1,4 @@
-import { React, useEffect } from 'react'
+import { React, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import { signOutOfApp, auth } from '../../firebase/firebase_auth.js'
 import { useAuthState } from 'react-firebase-hooks/auth'
@@ -25,10 +25,10 @@ function PlanWeave() {
 	const router = useRouter()
 	const [user, loading, error] = useAuthState(auth)
 
-	const fetchTasks = async (userId, serialize) => {
+	const fetchTasks = useCallback(async (userId, serialize) => {
 		const tasks = await fetchTasksFromFirebase(userId, serialize)
 		dispatch(initialTaskUpdate(tasks))
-	}
+	}, [dispatch])
 
 	// When auth state changes, push to homepage
 	useEffect(() => {
@@ -42,7 +42,7 @@ function PlanWeave() {
 			fetchTasks(userId, serialize)
 			dispatch(initialUserIdUpdate(userId))
 		}
-	}, [user])
+	}, [dispatch, fetchTasks, user])
 
 	const handleLogout = async () => {
 		try {
