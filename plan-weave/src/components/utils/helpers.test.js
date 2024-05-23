@@ -4,6 +4,8 @@ import {
 	clamp,
 	add,
 	subtract,
+	etaList,
+	formatTimeLeft,
 	validateTask,
 	filterTaskList,
 	calculateWaste,
@@ -19,13 +21,10 @@ import {
 	hoursToSeconds,
 	hoursToMillis,
 	millisToHours,
-	//add,
-	//subtract,
 	dateToToday,
 	calculateEfficiency,
 	validateTransformation,
 	isTimestampFromToday,
-	formatTimeLeft,
 } from './helpers.res.js'
 import { TASK_STATUSES, MAX_SAFE_DATE } from './constants'
 import { format } from 'date-fns-tz'
@@ -33,6 +32,7 @@ import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.j
 import { fc } from '@fast-check/jest'
 
 describe('clamp values so they are always in specific range', () => {
+	// --- Property based tests
 	it('Should clamp the value within the specified range', () => {
 		fc.assert(fc.property(fc.integer(), fc.integer(), fc.integer(),
 			(value, min, max) => {
@@ -69,6 +69,7 @@ describe('add hours to date', () => {
 })
 
 describe('subtract two dates', () => {
+	// --- Example based tests
 	test.each([
 		[new Date(Date.parse('2024-01-17T13:00:00Z')), new Date(Date.parse('2024-01-17T12:00:00Z')), 1],
 		[new Date(Date.parse('2024-01-17T10:30:00Z')), new Date(Date.parse('2024-01-17T08:00:00Z')), 2.5],
@@ -77,6 +78,80 @@ describe('subtract two dates', () => {
 	])('adds %f hours to %o', (start, hours, expectedDate) => {
 		expect(subtract(start, hours)).toEqual(expectedDate)
 	})
+	// --- Property based tests
+	it('Should return the difference in hours between two dates', () => {
+		//fc.configureGlobal({ seed: 301260064 })
+		fc.assert(fc.property(fc.date(), fc.date(),
+			(time, eta) => {
+				const expected = (time.getTime() - eta.getTime()) / (1000 * 60 * 60)
+				const actual = subtract(time, eta)
+				expect(actual).toBeCloseTo(expected)
+			}
+		))
+	})
+})
+
+describe('etaList', () => {
+	// etaList figures out the running sum for each element in the list
+	// --- Property based tests
+	it('should preserve length for any input', () => {
+		fc.assert(fc.property(fc.array(fc.anything()), taskList => etaList(taskList).length === taskList.length))
+	})
+
+	it('should preserve cumulative sum property for valid input', () => {
+		fc.assert(fc.property(
+			fc.array(fc.nat()),
+			taskDurations => {
+				const taskList = taskDurations.map(duration => ({ ttc: duration }))
+				const etas = etaList(taskList)
+				return taskList.reduce(
+					(acc, task, index) => {
+						const cumulativeSum = acc.cumulativeSum + task.ttc
+						const isValid = etas[index] === cumulativeSum
+						return { cumulativeSum, isValid: acc.isValid && isValid }
+					},
+					{ cumulativeSum: 0, isValid: true }
+				).isValid
+			}))
+	})
+})
+
+describe('formatTimeLeft', () => {
+	// --- Example based tests
+	test.each([
+		['endTime - startTime = 1', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T13:00:00'), '1 hours left'],
+		['0 < endTime - startTime < 1', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T12:30:00'), '30 minutes left'],
+		['endTime - startTime > 1 and not an integer', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T14:45:00'), '2 hours 45 minutes left'],
+		['endTime < startTime and overNightMode is false', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T11:30:00'), '0 minutes left'],
+		// eslint-disable-next-line max-params
+	])('should return the correct string when %s', (_, currentTime, endTime, expected) => {
+		const result = formatTimeLeft({ currentTime, endTime })
+		expect(result).toBe(expected)
+	})
+
+	test.each([
+		['1 hours left', 1],
+		['30 minutes left', 0.5],
+		['2 hours 45 minutes left', 2.75],
+		['2 hours left', 2],
+	])('should display "%s" when timeDifference is %s', (expected, timeDifference) => {
+		const result = formatTimeLeft({ timeDifference })
+		expect(result).toBe(expected)
+	})
+	// --- Property based tests
+	it('should produce consistent output for the same input', () => {
+		fc.assert(fc.property(
+			fc.integer(), fc.boolean(), fc.date(),
+			(timeDifference, overNightMode, endTime) => {
+				const currentTime = new Date()
+				const result1 = formatTimeLeft({ timeDifference, overNightMode, endTime, currentTime })
+				const result2 = formatTimeLeft({ timeDifference, overNightMode, endTime, currentTime })
+				return result1 === result2
+			}
+		))
+	})
+
+	// it is quite hard to make properties for this function since it is a composite
 })
 
 describe('hoursToSeconds', () => {
@@ -283,31 +358,7 @@ describe('isTimestampFromToday', () => {
 	})
 })
 
-describe('formatTimeLeft', () => {
-	test.each([
-		['endTime - startTime = 1', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T13:00:00'), '1 hours left'],
-		['0 < endTime - startTime < 1', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T12:30:00'), '30 minutes left'],
-		['endTime - startTime > 1 and not an integer', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T14:45:00'), '2 hours 45 minutes left'],
-		['endTime < startTime and overNightMode is false', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T11:30:00'), '0 minutes left'],
-		// eslint-disable-next-line max-params
-	])('should return the correct string when %s', (_, currentTime, endTime, expected) => {
-		const result = formatTimeLeft(currentTime, endTime)
-		expect(result).toBe(expected)
-	})
-
-	test.each([
-		['1 hours left', 1],
-		['30 minutes left', 0.5],
-		['2 hours 45 minutes left', 2.75],
-		['2 hours left', 2],
-	])('should display "%s" when timeDifference is %s', (expected, timeDifference) => {
-		const result = formatTimeLeft(undefined, undefined, timeDifference)
-		expect(result).toBe(expected)
-	})
-})
-
 // --- Later
-
 
 describe('validateTask', () => {
 	const twelve = new Date(new Date().setHours(12, 0, 0, 0)).toISOString()

@@ -2,7 +2,7 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { taskSchema, fillDefaults } from '../schemas/taskSchema/taskSchema.js'
 import { getTime, formatISO, parseISO } from 'date-fns'
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE} from './constants.js'
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE } from './constants.js'
 import * as Yup from 'yup'
 import { isEqual as lodashIsEqual } from 'lodash'
 
@@ -18,14 +18,15 @@ const requiredFields = (schema) => Object.keys(schema.describe().fields)
 	.map(field => isRequired(field, schema) ? field : null)
 	.filter(field => field !== null)
 
-// calculate waste private helpers
+// calculate waste helpers
 export const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
 export const add = (start, hours) => new Date(clamp(start.getTime() + hoursToMillis(hours), 0, MAX_SAFE_DATE)) // (Date: start, hours: hours) -> Date(start + hours)
 export const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
-
-const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) =>
-	[...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)],
-	[start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
+export const etaList = (taskList, start = 0) => (taskList.length === 0)
+	? [] // to preserve the length property. ([]) => any because calculateWaste skips over the empty list case 
+	: taskList.reduce((acc, task, index) =>
+		[...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)],
+		[start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
 
 // --- Helpers Exported
 /**
