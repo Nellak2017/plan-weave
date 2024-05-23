@@ -9,6 +9,7 @@
     "start:res": "rescript -w",
     "start": "next start",
     "lint": "next lint",
+    "lint-count": "next lint 2>&1 | grep -Ei \"error|warning\" | wc -l | xargs -I {} echo \"{} problems\"",
     "test": "jest",
     "failing-test": "jest --onlyFailures",
     "storybook": "storybook dev -p 6006",
