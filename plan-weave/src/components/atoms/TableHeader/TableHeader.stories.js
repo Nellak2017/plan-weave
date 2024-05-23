@@ -12,14 +12,14 @@ const TableHeaderStories = {
 
 const Template = args => <TableHeader {...args} />
 
-export const light = Template.bind({})
-light.args = {
+export const Light = Template.bind({})
+Light.args = {
   labels: ['Task', 'Waste', 'Eta', 'TTC'],
   variant: 'light'
 }
 
-export const dark = Template.bind({})
-dark.args = {
+export const Dark = Template.bind({})
+Dark.args = {
   labels: ['Task', 'Waste', 'Eta', 'TTC'],
   variant: 'dark'
 }

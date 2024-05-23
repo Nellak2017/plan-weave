@@ -26,14 +26,14 @@ const TemplateWithProvider = args => {
 const Template = args => <TaskTable {...args} />
 
 
-export const light = TemplateWithProvider.bind({})
-light.args = {
+export const Light = TemplateWithProvider.bind({})
+Light.args = {
   variant: 'light',
   headerLabels: SIMPLE_TASK_HEADERS,
 }
 
-export const dark = TemplateWithProvider.bind({})
-dark.args = {
+export const Dark = TemplateWithProvider.bind({})
+Dark.args = {
   variant: 'dark',
   headerLabels: SIMPLE_TASK_HEADERS,
   tasks: [

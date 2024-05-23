@@ -12,14 +12,14 @@ const NextButtonStories = {
 
 const Template = args => <NextButton {...args} />
 
-export const nextButtonLeft = Template.bind({})
-nextButtonLeft.args = {
+export const NextButtonLeft = Template.bind({})
+NextButtonLeft.args = {
 	variant: 'left',
   	color: 'primary',
 }
 
-export const nextButtonRight = Template.bind({})
-nextButtonRight.args = {
+export const NextButtonRight = Template.bind({})
+NextButtonRight.args = {
 	variant: 'right',
   	color: 'primary'
 }

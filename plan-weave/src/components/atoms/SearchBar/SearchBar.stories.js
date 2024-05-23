@@ -10,13 +10,13 @@ const SearchBarStories = {
 
 const Template = args => <SearchBar {...args} />
 
-export const lightSearchBar = Template.bind({})
-lightSearchBar.args = {
+export const LightSearchBar = Template.bind({})
+LightSearchBar.args = {
   variant: 'light',
 }
 
-export const darkSearchBar = Template.bind({})
-darkSearchBar.args = {
+export const DarkSearchBar = Template.bind({})
+DarkSearchBar.args = {
   variant: 'dark',
 }
 

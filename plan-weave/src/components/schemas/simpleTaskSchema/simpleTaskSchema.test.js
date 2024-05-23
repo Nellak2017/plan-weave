@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+/* eslint-disable max-lines-per-function */
 import { simpleTaskSchema, fillDefaultsForSimpleTask } from "./simpleTaskSchema"
 import { TASK_STATUSES } from '../../utils/constants'
 

@@ -17,8 +17,8 @@ const options = [
   { name: 'Option 3', listener: () => console.log('Option 3 clicked') },
 ]
 
-export const dropDownButton = Template.bind({})
-dropDownButton.args = {
+export const DropDownButtonStory = Template.bind({})
+DropDownButton.args = {
   children: 'Auto Sort',
   color: 'primary',
   options: options
