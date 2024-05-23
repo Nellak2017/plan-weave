@@ -94,11 +94,6 @@ export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400)
 	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
 }
 
-export const validateTasks = ({ taskList, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
-	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
-	return taskList?.map(task => validateTask({ task, schema, schemaDefaultFx, customErrorMessage }))
-}
-
 /**
  * Try to validate the task, removing extras and filling defaults
  * If validation fails, throw an error and warn the user
@@ -137,15 +132,20 @@ export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx 
 	}
 }
 
+export const validateTasks = ({ taskList, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
+	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
+	return taskList?.map(task => validateTask({ task, schema, schemaDefaultFx, customErrorMessage }))
+}
+
 // Validates a particular task field against the schema
 // Example: Validate({ field: 'parentThread', payload: "t", schema: fullTaskSchema }) => {valid: false, error: 'Parent Thread must be atleast 2 characters'}
-export const validateTaskField = ({ field, payload, schema = simpleTaskSchema }) => {
+export const validateTaskField = ({ field, payload, schema = simpleTaskSchema, logger = console.error }) => {
 	try {
 		const fieldSchema = Yup.reach(schema, field)
 		fieldSchema.validateSync(payload, { abortEarly: false })
 		return { valid: true, error: null }
 	} catch (e) {
-		console.error(e)
+		logger(e)
 		return { valid: false, error: e.errors }
 	}
 }

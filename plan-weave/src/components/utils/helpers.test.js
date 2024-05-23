@@ -6,7 +6,10 @@ import {
 	subtract,
 	etaList,
 	formatTimeLeft,
-	validateTask,
+	isTimestampFromToday,
+	validateTask, // not covered by property based tests
+	validateTaskField,
+
 	filterTaskList,
 	calculateWaste,
 	rearrangeDnD,
@@ -24,12 +27,12 @@ import {
 	dateToToday,
 	calculateEfficiency,
 	validateTransformation,
-	isTimestampFromToday,
 } from './helpers.res.js'
 import { TASK_STATUSES, MAX_SAFE_DATE } from './constants'
 import { format } from 'date-fns-tz'
 import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { fc } from '@fast-check/jest'
+import * as Yup from 'yup'
 
 describe('clamp values so they are always in specific range', () => {
 	// --- Property based tests
@@ -152,6 +155,115 @@ describe('formatTimeLeft', () => {
 	})
 
 	// it is quite hard to make properties for this function since it is a composite
+})
+
+describe('isTimestampFromToday', () => {
+	// --- Example based tests
+	// https://www.epochconverter.com/ (Use Local Time)
+	const testCases = [
+		// Current date: August 20, 2023
+		// Timestamp: August 20, 2023, 10:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692543600, expected: true },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 20, 2023, 23:59:59 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692593999, expected: true },
+
+		// Current date: August 23, 2023 00:00:00
+		// Timestamp: Wednesday, August 23, 2023 23:45:00 === 1692852300 seconds
+		// secondsElapsed: 85500 ==> 23:45
+		{ today: new Date(2023, 7, 23, 0, 0, 0, 0), timestamp: 1692852300, expected: true, elapsed: 85500 }, // I am inclusive in start/end acceptance
+
+		// Current date: August 20, 2023
+		// Timestamp: August 21, 2023, 00:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594000, expected: true }, // I am inclusive in start/end acceptance
+
+		// Current date: August 20, 2023
+		// Timestamp: August 21, 2023, 00:00:01 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594001, expected: false },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 21, 2023, 02:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692601200, expected: false },
+
+		// Current date: August 20, 2023
+		// Timestamp: August 19, 2023, 18:00:00 (in seconds)
+		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692486000, expected: false },
+	]
+
+	testCases.forEach(({ today, timestamp, expected, elapsed = 60 * 60 * 24 }) => {
+		const result = isTimestampFromToday(today, timestamp, elapsed)
+		it(`Should return ${expected} for timestamp = ${timestamp} and today = ${today}`, () => {
+			expect(result).toBe(expected)
+		})
+	})
+	// --- Property based tests
+	it('should return true for timestamps from today', () => {
+		fc.assert(fc.property(
+			fc.date({ min: new Date(0) }), fc.integer({ min: 0, max: 86399 }),
+			(today, seconds) => {
+				const timestamp = new Date(today).setHours(0, 0, 0, 0) / 1000 + seconds
+				return isTimestampFromToday(today, timestamp)
+			}
+		))
+	})
+
+	it('should return false for timestamps outside of today\'s range', () => {
+		fc.assert(fc.property(
+			fc.date({ min: new Date(0) }), fc.integer({ min: Number.MIN_SAFE_INTEGER, max: -1 }), fc.integer({ min: 86401 }),
+			(today, beforeSeconds, afterSeconds) => {
+				const beforeTimestamp = new Date(today).setHours(0, 0, 0, 0) / 1000 + beforeSeconds
+				const afterTimestamp = new Date(today).setHours(0, 0, 0, 0) / 1000 + afterSeconds
+				return !isTimestampFromToday(today, beforeTimestamp) && !isTimestampFromToday(today, afterTimestamp)
+			}
+		))
+	})
+
+	it('should return the same value for timestamps on the boundaries', () => {
+		fc.assert(fc.property(
+			fc.date({ min: new Date(0) }), fc.constant(0), fc.constant(86400),
+			(today, startTimestamp, endTimestamp) => {
+				const startOfToday = new Date(today).setHours(0, 0, 0, 0) / 1000
+				const startTimestampToday = startOfToday + startTimestamp
+				const endTimestampToday = startOfToday + endTimestamp
+				return isTimestampFromToday(today, startTimestampToday) && isTimestampFromToday(today, endTimestampToday)
+			}
+		))
+	})
+})
+
+describe('validateTaskField', () => {
+	// --- Property based tests
+	const simpleTaskSchema = Yup.object({
+		parentThread: Yup.string().min(2).required(),
+	}) // minimal example
+
+	it('should validate successfully for valid payloads', () => {
+		fc.assert(fc.property(
+			fc.record({
+				field: fc.constantFrom('parentThread'),
+				payload: fc.string({ minLength: 2 })
+			}),
+			({ field, payload }) => {
+				const result = validateTaskField({ field, payload, schema: simpleTaskSchema })
+				return result.valid === true && result.error === null
+			}
+		))
+	})
+
+
+	test('Validation should fail for invalid payloads', () => {
+		fc.assert(fc.property(
+			fc.record({
+				field: fc.constantFrom('parentThread'),
+				payload: fc.string({ maxLength: 1 })
+			}),
+			({ field, payload }) => {
+				const result = validateTaskField({ field, payload, schema: simpleTaskSchema, logger: e => {} })
+				return result.valid === false && result.error !== null
+			}
+		))
+	})
 })
 
 describe('hoursToSeconds', () => {
@@ -313,47 +425,6 @@ describe('validateTransformation', () => {
 		test(name, () => {
 			const result = validateTransformation(task, schema, errorMessage)
 			expect(result).toEqual(expected)
-		})
-	})
-})
-
-describe('isTimestampFromToday', () => {
-	// https://www.epochconverter.com/ (Use Local Time)
-	const testCases = [
-		// Current date: August 20, 2023
-		// Timestamp: August 20, 2023, 10:00:00 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692543600, expected: true },
-
-		// Current date: August 20, 2023
-		// Timestamp: August 20, 2023, 23:59:59 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692593999, expected: true },
-
-		// Current date: August 23, 2023 00:00:00
-		// Timestamp: Wednesday, August 23, 2023 23:45:00 === 1692852300 seconds
-		// secondsElapsed: 85500 ==> 23:45
-		{ today: new Date(2023, 7, 23, 0, 0, 0, 0), timestamp: 1692852300, expected: true, elapsed: 85500 }, // I am inclusive in start/end acceptance
-
-		// Current date: August 20, 2023
-		// Timestamp: August 21, 2023, 00:00:00 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594000, expected: true }, // I am inclusive in start/end acceptance
-
-		// Current date: August 20, 2023
-		// Timestamp: August 21, 2023, 00:00:01 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692594001, expected: false },
-
-		// Current date: August 20, 2023
-		// Timestamp: August 21, 2023, 02:00:00 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692601200, expected: false },
-
-		// Current date: August 20, 2023
-		// Timestamp: August 19, 2023, 18:00:00 (in seconds)
-		{ today: new Date(2023, 7, 20, 10, 0, 0, 0), timestamp: 1692486000, expected: false },
-	]
-
-	testCases.forEach(({ today, timestamp, expected, elapsed = 60 * 60 * 24 }) => {
-		const result = isTimestampFromToday(today, timestamp, elapsed)
-		it(`Should return ${expected} for timestamp = ${timestamp} and today = ${today}`, () => {
-			expect(result).toBe(expected)
 		})
 	})
 })
