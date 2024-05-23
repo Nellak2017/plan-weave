@@ -1,10 +1,11 @@
 import Nav from '../components/molecules/Nav/Nav.js'
 import InfoSection from '../components/molecules/InfoSection/InfoSection.js'
 import { makeLink, defaultLogin } from '../components/molecules/Nav/Nav.helpers.js'
-import { signOutOfApp, auth } from '../../firebase/firebase_auth.js'
+import { auth } from '../../firebase/firebase_auth.js'
 import { useRouter } from 'next/router'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { body } from '../Data/HomePage/Data.js'
+import { handleLogout } from '../pageUtils/page-handlers.js'
 
 export default function Home() {
   const router = useRouter()
@@ -13,15 +14,6 @@ export default function Home() {
   const handleApp = () => router.push('/plan-weave')
   const handleLogIn = () => router.push('/login')
   const handleSignUp = () => router.push('/signup')
-
-  const handleLogout = async () => {
-    try {
-      await signOutOfApp()
-      router.push('/')
-    } catch (error) {
-      console.log(error)
-    }
-  }
 
   const defaultLogout = ({
     text = 'Log Out',
