@@ -32,6 +32,15 @@ import {
 import { useInterval } from '../../../hooks/useInterval.js'
 import { IoIosInformationCircleOutline } from "react-icons/io"
 
+const handleFormat = time => {
+	try {
+		return format(time, 'HH:mm')
+	} catch (e) {
+		console.error(`startTime = ${startTime}`,e)
+		return
+	}
+}
+
 // services are: search, timeRange, owl, addTask, deleteMany, highlighting, updateSelectedTasks, sort, updateFirstLoad
 // state is: timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme, firstLoad
 function TaskControl({
@@ -72,20 +81,9 @@ function TaskControl({
 	useEffect(() => {
 		if (!firstLoad) return // early return
 		updateFirstLoad(false) // To prevent the increment when user changes page bug
-		if (owl) {
-			shiftEndTime(services, 24, startTime, endTime, 2 * 24)
-		}
+		if (owl) { shiftEndTime(services, 24, startTime, endTime, 2 * 24) }
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
-
-	const handleFormat = (time) => {
-		try {
-			return format(time, 'HH:mm')
-		} catch (e) {
-			console.error(`startTime = ${startTime}`,e)
-			return
-		}
-	}
 
 	return (
 		<TaskControlContainer variant={processedVariant} maxwidth={maxwidth}>

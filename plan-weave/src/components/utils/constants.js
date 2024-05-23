@@ -7,6 +7,7 @@ const twelve = new Date(new Date().setHours(12, 0, 0, 0))
 export const VARIANTS = ['dark', 'light']
 export const MILLISECONDS_PER_HOUR = 60 * 60 * 1000
 export const MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * 24
+export const MAX_SAFE_DATE = 8.64e15 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
 export const THEMES = ['light', 'dark']
 export const TASK_STATUSES = {
 	COMPLETED: 'completed',

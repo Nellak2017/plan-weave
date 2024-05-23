@@ -1,6 +1,9 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
 import {
+	clamp,
+	add,
+	subtract,
 	validateTask,
 	filterTaskList,
 	calculateWaste,
@@ -16,17 +19,65 @@ import {
 	hoursToSeconds,
 	hoursToMillis,
 	millisToHours,
-	add,
-	subtract,
+	//add,
+	//subtract,
 	dateToToday,
 	calculateEfficiency,
 	validateTransformation,
 	isTimestampFromToday,
 	formatTimeLeft,
 } from './helpers.res.js'
-import { TASK_STATUSES } from './constants'
+import { TASK_STATUSES, MAX_SAFE_DATE } from './constants'
 import { format } from 'date-fns-tz'
 import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
+import { fc } from '@fast-check/jest'
+
+describe('clamp values so they are always in specific range', () => {
+	it('Should clamp the value within the specified range', () => {
+		fc.assert(fc.property(fc.integer(), fc.integer(), fc.integer(),
+			(value, min, max) => {
+				const [minValue, maxValue] = min > max ? [max, min] : [min, max]
+				const result = clamp(value, min, max)
+				const isClampedWithinRange = result >= minValue && result <= maxValue
+				expect(isClampedWithinRange).toBe(true)
+			}
+		))
+	})
+})
+
+describe('add hours to date', () => {
+	// --- Example based tests
+	test.each([
+		[new Date(Date.parse('2024-01-17T12:00:00Z')), 1, new Date(Date.parse('2024-01-17T13:00:00Z'))],
+		[new Date(Date.parse('2024-01-17T08:00:00Z')), 2.5, new Date(Date.parse('2024-01-17T10:30:00Z'))],
+		[new Date(Date.parse('2024-01-17T20:00:00Z')), 0.5, new Date(Date.parse('2024-01-17T20:30:00Z'))],
+		[new Date(Date.parse('2024-01-17T20:30:00Z')), 0, new Date(Date.parse('2024-01-17T20:30:00Z'))],
+		[new Date(Date.parse('2024-01-17T20:30:00Z')), -1, new Date(Date.parse('2024-01-17T19:30:00Z'))],
+	])('adds %f hours to %o', (start, hours, expectedDate) => {
+		expect(add(start, hours)).toEqual(expectedDate)
+	})
+	// --- Property based tests
+	it('Should return a date that is the sum of start time and hours', () => {
+		fc.assert(fc.property(fc.date(), fc.integer(),
+			(start, hours) => {
+				const result = add(start, hours)
+				const expected = new Date(Math.min(Math.max(start.getTime() + hoursToMillis(hours), 0), MAX_SAFE_DATE))
+				expect(result).toEqual(expected)
+			}
+		))
+	})
+})
+
+describe('subtract two dates', () => {
+	test.each([
+		[new Date(Date.parse('2024-01-17T13:00:00Z')), new Date(Date.parse('2024-01-17T12:00:00Z')), 1],
+		[new Date(Date.parse('2024-01-17T10:30:00Z')), new Date(Date.parse('2024-01-17T08:00:00Z')), 2.5],
+		[new Date(Date.parse('2024-01-17T20:30:00Z')), new Date(Date.parse('2024-01-17T20:00:00Z')), 0.5],
+		[new Date(Date.parse('2024-01-17T20:30:00Z')), new Date(Date.parse('2024-01-17T20:30:00Z')), 0],
+	])('adds %f hours to %o', (start, hours, expectedDate) => {
+		expect(subtract(start, hours)).toEqual(expectedDate)
+	})
+})
 
 describe('hoursToSeconds', () => {
 	test.each([
@@ -58,30 +109,6 @@ describe('millisToHours', () => {
 		[0, 0],
 	])('converts %d milliseconds to %f hours', (milliseconds, expectedHours) => {
 		expect(millisToHours(milliseconds)).toBeCloseTo(expectedHours, 5) // Adjust for float precision
-	})
-})
-
-describe('add hours to date', () => {
-	test.each([
-		[new Date(Date.parse('2024-01-17T12:00:00Z')), 1, new Date(Date.parse('2024-01-17T13:00:00Z'))],
-		[new Date(Date.parse('2024-01-17T08:00:00Z')), 2.5, new Date(Date.parse('2024-01-17T10:30:00Z'))],
-		[new Date(Date.parse('2024-01-17T20:00:00Z')), 0.5, new Date(Date.parse('2024-01-17T20:30:00Z'))],
-		[new Date(Date.parse('2024-01-17T20:30:00Z')), 0, new Date(Date.parse('2024-01-17T20:30:00Z'))],
-		[new Date(Date.parse('2024-01-17T20:30:00Z')), -1, new Date(Date.parse('2024-01-17T19:30:00Z'))],
-	])('adds %f hours to %o', (start, hours, expectedDate) => {
-
-		expect(add(start, hours)).toEqual(expectedDate)
-	})
-})
-
-describe('subtract two dates', () => {
-	test.each([
-		[new Date(Date.parse('2024-01-17T13:00:00Z')), new Date(Date.parse('2024-01-17T12:00:00Z')), 1],
-		[new Date(Date.parse('2024-01-17T10:30:00Z')), new Date(Date.parse('2024-01-17T08:00:00Z')), 2.5],
-		[new Date(Date.parse('2024-01-17T20:30:00Z')), new Date(Date.parse('2024-01-17T20:00:00Z')), 0.5],
-		[new Date(Date.parse('2024-01-17T20:30:00Z')), new Date(Date.parse('2024-01-17T20:30:00Z')), 0],
-	])('adds %f hours to %o', (start, hours, expectedDate) => {
-		expect(subtract(start, hours)).toEqual(expectedDate)
 	})
 })
 
@@ -262,7 +289,7 @@ describe('formatTimeLeft', () => {
 		['0 < endTime - startTime < 1', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T12:30:00'), '30 minutes left'],
 		['endTime - startTime > 1 and not an integer', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T14:45:00'), '2 hours 45 minutes left'],
 		['endTime < startTime and overNightMode is false', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T11:30:00'), '0 minutes left'],
-	// eslint-disable-next-line max-params
+		// eslint-disable-next-line max-params
 	])('should return the correct string when %s', (_, currentTime, endTime, expected) => {
 		const result = formatTimeLeft(currentTime, endTime)
 		expect(result).toBe(expected)
@@ -273,7 +300,7 @@ describe('formatTimeLeft', () => {
 		['30 minutes left', 0.5],
 		['2 hours 45 minutes left', 2.75],
 		['2 hours left', 2],
-	])('should display "%s" when timeDifference is %s', (expected,timeDifference) => {
+	])('should display "%s" when timeDifference is %s', (expected, timeDifference) => {
 		const result = formatTimeLeft(undefined, undefined, timeDifference)
 		expect(result).toBe(expected)
 	})
@@ -719,7 +746,7 @@ describe('diagonalize', () => {
 	testCases.forEach(({ description, input, expected, expectedError }) => {
 		it(description, () => {
 			if (expectedError) {
-				expect(() => diagonalize(input)).toThrow(expectedError)
+				expect(diagonalize(input)).toEqual('')
 			} else {
 				expect(diagonalize(input)).toEqual(expected)
 			}

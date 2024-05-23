@@ -2,7 +2,7 @@
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { taskSchema, fillDefaults } from '../schemas/taskSchema/taskSchema.js'
 import { getTime, formatISO, parseISO } from 'date-fns'
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES } from './constants.js'
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE} from './constants.js'
 import * as Yup from 'yup'
 import { isEqual as lodashIsEqual } from 'lodash'
 
@@ -19,8 +19,9 @@ const requiredFields = (schema) => Object.keys(schema.describe().fields)
 	.filter(field => field !== null)
 
 // calculate waste private helpers
-const add = (start, hours) => new Date(start.getTime() + hoursToMillis(hours)) // (Date: start, hours: hours) -> Date(start + hours)
-const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
+export const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
+export const add = (start, hours) => new Date(clamp(start.getTime() + hoursToMillis(hours), 0, MAX_SAFE_DATE)) // (Date: start, hours: hours) -> Date(start + hours)
+export const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
 
 const etaList = (taskList, start = 0) => taskList.reduce((acc, task, index) =>
 	[...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)],
@@ -354,8 +355,7 @@ export const completedOnTopSorted = (reduxTasks, tasks, start, transforms, sort 
  * to create the new string.
  *
  * @param {string[]} strList - An array of strings from which to construct the new string.
- * @throws {Error} Throws an error if the input is not a valid array of strings.
- * @returns {string} A string that is not present in the original list.
+ * @returns {string} A string that is not present in the original list or '' if it is invalid
  *
  * @complexity O(n), where n is the length of the input strings in `strList`.
  *
@@ -364,13 +364,9 @@ export const completedOnTopSorted = (reduxTasks, tasks, start, transforms, sort 
  * console.log(diagonalize(originalStrings)) // resulting string is not in original list
  * > 'bbft'
  */
-export const diagonalize = strList => {
-	// 1. Input verification: Ensure all elements in the list are strings
-	if (!Array.isArray(strList) || !strList.every(str => typeof str === 'string')) throw new Error('Invalid input. Expected an array of strings.')
-
-	// 2. Consider the diagonal characters of the strings and add 1 to them, this results in a string not in the list
-	return strList.map((str, i) => i < str.length ? String.fromCharCode(str[i].charCodeAt(0) + 1) : 'a').join('')
-}
+export const diagonalize = strList => (!Array.isArray(strList) || !strList.every(str => typeof str === 'string'))
+	? ''
+	: strList.map((str, i) => i < str.length ? String.fromCharCode(str[i].charCodeAt(0) + 1) : 'a').join('')
 
 /**
  * Calculates the range of tasks to display based on the number of tasks per page and the current page.
@@ -497,9 +493,7 @@ export const calculateEfficiency = (startTime, endTime, ttcHours) => {
 	return normalFormula // efficiency = (ttc) seconds / (end - start) seconds
 }
 
-export const isValidDate = (date) => {
-	return (new Date(date) != "Invalid Date") && !isNaN(new Date(date))
-}
+export const isValidDate = date => (new Date(date) != "Invalid Date") && !isNaN(new Date(date))
 
 /**
  * Checks if a task is considered old based on a given time range.

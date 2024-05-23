@@ -17,6 +17,8 @@ import { taskSchema } from '../../schemas/taskSchema/taskSchema.js'
 import PropTypes from 'prop-types'
 import ReactSelectWrapper from '../../atoms/ReactSelectWrapper/ReactSelectWrapper.js'
 
+const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
+
 function FullRow({
 	simpleTaskProps,
 	services,
@@ -28,7 +30,6 @@ function FullRow({
 	const { efficiency: efficencyToolTip, due: dueToolTip, weight: weightToolTip, thread: threadToolTip, dependencies: dependencyToolTip } = TASK_ROW_TOOLTIPS
 	const fullTask = { ...taskObject, ...state }
 
-	const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
 	return (
 		<>
 			<SimpleRow
