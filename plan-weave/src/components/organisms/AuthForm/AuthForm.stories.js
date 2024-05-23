@@ -18,7 +18,7 @@ Light.args = {
 export const Dark = Template.bind({})
 Dark.args = {
 	variant: 'dark',
-	signup: true
+	signup: { signup: true }
 }
 
 export default AuthFormStories

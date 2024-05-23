@@ -26,9 +26,13 @@ import {
 	handleSignInWithEmail,
 	handleSignInWithGoogle
 } from './AuthForm.handlers.js'
+import { VARIANTS } from '../../utils/constants.js'
 import PropTypes from 'prop-types'
 
-function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
+function AuthForm({ variant = VARIANTS[0], state = { maxwidth: 409, signup: false } }) {
+	const { maxwidth, signup } = state
+	const processedMaxWidth = maxwidth || 409
+
 	const router = useRouter()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
@@ -39,12 +43,24 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 	const googleServices = { setLoading, setEmail, setPassword }
 	const googleState = { router }
 
+	const upIn = `${signup ? 'up' : 'in'}`
+	const inUp = `${signup ? 'in' : 'up'}`
+	const signUpInEmail = `Sign ${upIn} with Email`
+	const haveDontHave = `${signup ? "H" : "Don't h"}`
+	const loginOrSignUp = `${signup ? 'login' : 'signup'}`
+
 	if (loading) return (<Spinner />)
 
 	return (
 		<CenteredContainer>
-			<AuthContainer variant={variant} maxwidth={maxwidth}>
-				<StyledAuthForm id='email-form' variant={variant} maxwidth={maxwidth} onSubmit={e => handleSignInWithEmail(e, emailServices, emailState)} method='POST'>
+			<AuthContainer variant={variant} maxwidth={processedMaxWidth}>
+				<StyledAuthForm
+					id='email-form'
+					variant={variant}
+					maxwidth={processedMaxWidth}
+					onSubmit={e => handleSignInWithEmail(e, emailServices, emailState)} 
+					method='POST'
+				>
 					<Image
 						src={logo.src} //'/Plan-Weave-Logo.png'
 						alt='Plan Weave Logo'
@@ -55,12 +71,12 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 						onClick={() => handleHomePage(router)}
 						priority={true}
 					/>
-					<h2>{`Sign ${signup ? 'Up' : 'In'}`}</h2>
+					<h2>{`Sign ${upIn}`}</h2>
 					<SubtitleContainer>
 						<h3>
-							<p>{`${signup ? "H" : "Don't h"}ave an account?`}</p>
+							<p>{`${haveDontHave}ave an account?`}</p>
 						</h3>
-						<Link href={`/${signup ? 'login' : 'signup'}`}>{`Sign ${signup ? 'in' : 'up'}.`}</Link>
+						<Link href={`/${loginOrSignUp}`}>{`Sign ${inUp}.`}</Link>
 					</SubtitleContainer>
 					<InputSection>
 						<label htmlFor='email'>Email Address</label>
@@ -87,8 +103,8 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 						/>
 					</InputSection>
 					<SignInContainer>
-						<Button type='submit' name='email-auth' title={`Sign ${signup ? 'up' : 'in'} with Email`}>
-							{`Sign ${signup ? 'up' : 'in'} with Email`}
+						<Button type='submit' name='email-auth' title={signUpInEmail}>
+							{signUpInEmail}
 						</Button>
 					</SignInContainer>
 				</StyledAuthForm>
@@ -98,7 +114,11 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 					<Line />
 				</OrSeparator>
 				<SignInContainer id='google-auth-container'>
-					<GoogleButton name='google-auth' type='button' onClick={e => handleSignInWithGoogle(e, googleServices, googleState)} signup={signup} />
+					<GoogleButton
+						name='google-auth'
+						type='button'
+						onClick={e => handleSignInWithGoogle(e, googleServices, googleState)}
+						signup={signup} />
 				</SignInContainer>
 			</AuthContainer>
 		</CenteredContainer>
@@ -106,9 +126,11 @@ function AuthForm({ variant = 'dark', maxwidth = 409, signup = false }) {
 }
 
 AuthForm.propTypes = {
-	variant: PropTypes.string,
-	maxwidth: PropTypes.number,
-	signup: PropTypes.bool,
+	variant: PropTypes.oneOf(VARIANTS),
+	state: PropTypes.shape({
+		maxwidth: PropTypes.number,
+		signup: PropTypes.bool,
+	}),
 }
 
 export default AuthForm
