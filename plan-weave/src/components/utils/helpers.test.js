@@ -9,8 +9,11 @@ import {
 	isTimestampFromToday,
 	validateTask, // not covered by property based tests
 	validateTaskField,
-
 	filterTaskList,
+	hoursToSeconds,
+	hoursToMillis,
+	millisToHours,
+
 	calculateWaste,
 	rearrangeDnD,
 	relativeSortIndex,
@@ -21,9 +24,6 @@ import {
 	calculateRange,
 } from './helpers'
 import {
-	hoursToSeconds,
-	hoursToMillis,
-	millisToHours,
 	dateToToday,
 	calculateEfficiency,
 	validateTransformation,
@@ -259,14 +259,130 @@ describe('validateTaskField', () => {
 				payload: fc.string({ maxLength: 1 })
 			}),
 			({ field, payload }) => {
-				const result = validateTaskField({ field, payload, schema: simpleTaskSchema, logger: e => {} })
+				const result = validateTaskField({ field, payload, schema: simpleTaskSchema, logger: e => { } })
 				return result.valid === false && result.error !== null
 			}
 		))
 	})
 })
 
+describe('filterTaskList', () => {
+	// --- Example based tests
+	const testCases = [
+		{
+			name: 'filters list correctly with valid filter and attribute',
+			input: {
+				filter: 'apple',
+				list: [
+					{ name: 'apple pie' },
+					{ name: 'banana' },
+					{ name: 'apple cider' },
+					{ name: 'orange' },
+				],
+				attribute: 'name',
+			},
+			expected: [
+				{ name: 'apple pie' },
+				{ name: 'apple cider' },
+			],
+		},
+		{
+			name: 'returns the original list with missing attribute',
+			input: {
+				filter: 'apple',
+				list: [
+					{ name: 'apple pie' },
+					{ name: 'banana' },
+					{ name: 'apple cider' },
+					{ name: 'orange' },
+				],
+				attribute: undefined,
+			},
+			expected: [
+				{ name: 'apple pie' },
+				{ name: 'banana' },
+				{ name: 'apple cider' },
+				{ name: 'orange' },
+			],
+		},
+		{
+			name: 'returns the original list with missing filter',
+			input: {
+				filter: undefined,
+				list: [
+					{ name: 'apple pie' },
+					{ name: 'banana' },
+					{ name: 'apple cider' },
+					{ name: 'orange' },
+				],
+				attribute: 'name',
+			},
+			expected: [
+				{ name: 'apple pie' },
+				{ name: 'banana' },
+				{ name: 'apple cider' },
+				{ name: 'orange' },
+			],
+		},
+	]
+
+	testCases.forEach(testCase => {
+		it(testCase.name, () => {
+			const { filter, list, attribute } = testCase.input
+			const result = filterTaskList({ filter, list, attribute })
+			expect(result).toEqual(testCase.expected)
+		})
+	})
+	// --- Property based tests
+	it('should return original list if no filter or no attribute', () => {
+		fc.assert(
+			fc.property(
+				fc.array(fc.record({ attribute: fc.string() })),
+				fc.string(),
+				fc.string(),
+				(list, attribute, filter) => {
+					const res1 = filterTaskList({ filter: '', list, attribute })
+					expect(res1).toEqual(list)
+					const res2 = filterTaskList({ filter, list, attribute: '' })
+					expect(res2).toEqual(list)
+				}
+			)
+		)
+	})
+
+	it('should have len(filtered list) <= len(list)', () => {
+		fc.assert(
+			fc.property(
+				fc.array(fc.record({ attribute: fc.string() })),
+				fc.string(),
+				(list, filter) => {
+					const res = filterTaskList({ filter, list, attribute: 'attribute' })
+					expect(res.length <= list.length).toBe(true)
+				}
+			)
+		)
+	})
+
+	it('should have filtered list contain only items with attribute containing filter', () => {
+		fc.assert(
+			fc.property(
+				fc.array(fc.record({ attribute: fc.string() })),
+				fc.string(),
+				(list, filter) => {
+					const result = filterTaskList({ filter, list, attribute: 'attribute' })
+					const lowerFilter = filter.toLowerCase()
+					result.forEach(item => {
+						expect(item['attribute']?.toLowerCase()?.includes(lowerFilter)).toBe(true)
+					})
+				}
+			)
+		)
+	})
+
+})
+
 describe('hoursToSeconds', () => {
+	// --- Example based tests
 	test.each([
 		[1, 3600],
 		[0.5, 1800],
@@ -275,9 +391,21 @@ describe('hoursToSeconds', () => {
 	])('converts %f hours to %d seconds', (hours, expectedSeconds) => {
 		expect(hoursToSeconds(hours)).toBe(expectedSeconds)
 	})
+	// --- Property based tests
+	it('should correctly convert hours to seconds', () => {
+		fc.assert(fc.property(
+			fc.float({ min: 0, max: 1e6 }),
+			hours => {
+				const processedHours = isNaN(hours) ? 0 : hours
+				const result = hoursToSeconds(processedHours)
+				expect(result).toBeCloseTo(processedHours * 3600)
+			})
+		)
+	})
 })
 
 describe('hoursToMillis', () => {
+	// --- Example based tests
 	test.each([
 		[1, 3600000],
 		[0.5, 1800000],
@@ -286,9 +414,21 @@ describe('hoursToMillis', () => {
 	])('converts %f hours to %d milliseconds', (hours, expectedMillis) => {
 		expect(hoursToMillis(hours)).toBe(expectedMillis)
 	})
+	// --- Property based tests
+	it('should correctly convert hours to milliseconds', () => {
+		fc.configureGlobal({seed: -790803875})
+        fc.assert(
+            fc.property(fc.float({ min: 0, max: 1e6 }), hours => {
+				const processedHours = isNaN(hours) ? 0 : hours
+                const result = hoursToMillis(processedHours)
+                expect(result).toBeCloseTo(processedHours * 3600000)
+            })
+        )
+    })
 })
 
 describe('millisToHours', () => {
+	// --- Example based tests
 	test.each([
 		[3600000, 1],
 		[1800000, 0.5],
@@ -297,7 +437,18 @@ describe('millisToHours', () => {
 	])('converts %d milliseconds to %f hours', (milliseconds, expectedHours) => {
 		expect(millisToHours(milliseconds)).toBeCloseTo(expectedHours, 5) // Adjust for float precision
 	})
+	// --- Property based tests
+	test('should correctly convert milliseconds to hours', () => {
+        fc.assert(
+            fc.property(fc.float({ min: 0, max: Math.fround(1e12) }), milliseconds => {
+				const processedMillis = isNaN(milliseconds) ? 0 : milliseconds
+                const result = millisToHours(processedMillis)
+                expect(result).toBeCloseTo(processedMillis / 3600000)
+            })
+        )
+    })
 })
+
 
 describe('dateToToday', () => {
 	const testCases = [
@@ -491,74 +642,6 @@ describe('validateTask', () => {
 	})
 })
 
-describe('filterTaskList', () => {
-	const testCases = [
-		{
-			name: 'filters list correctly with valid filter and attribute',
-			input: {
-				filter: 'apple',
-				list: [
-					{ name: 'apple pie' },
-					{ name: 'banana' },
-					{ name: 'apple cider' },
-					{ name: 'orange' },
-				],
-				attribute: 'name',
-			},
-			expected: [
-				{ name: 'apple pie' },
-				{ name: 'apple cider' },
-			],
-		},
-		{
-			name: 'returns the original list with missing attribute',
-			input: {
-				filter: 'apple',
-				list: [
-					{ name: 'apple pie' },
-					{ name: 'banana' },
-					{ name: 'apple cider' },
-					{ name: 'orange' },
-				],
-				attribute: undefined,
-			},
-			expected: [
-				{ name: 'apple pie' },
-				{ name: 'banana' },
-				{ name: 'apple cider' },
-				{ name: 'orange' },
-			],
-		},
-		{
-			name: 'returns the original list with missing filter',
-			input: {
-				filter: undefined,
-				list: [
-					{ name: 'apple pie' },
-					{ name: 'banana' },
-					{ name: 'apple cider' },
-					{ name: 'orange' },
-				],
-				attribute: 'name',
-			},
-			expected: [
-				{ name: 'apple pie' },
-				{ name: 'banana' },
-				{ name: 'apple cider' },
-				{ name: 'orange' },
-			],
-		},
-	]
-
-	testCases.forEach(testCase => {
-		it(testCase.name, () => {
-			const { filter, list, attribute } = testCase.input
-			const result = filterTaskList({ filter, list, attribute })
-			expect(result).toEqual(testCase.expected)
-		})
-	})
-
-})
 
 describe('calculateWaste', () => {
 	const start = new Date(1692975600000) // Friday, August 25, 2023 10:00:00 AM GMT-05:00

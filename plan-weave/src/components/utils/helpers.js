@@ -152,6 +152,7 @@ export const validateTaskField = ({ field, payload, schema = simpleTaskSchema, l
 
 /**
  * Filters a list of items based on a given attribute and filter string.
+ * [{attribute: string}, ...] => [{attribute: string}, ...]
  * 
  * @param {Object} options - Options for filtering.
  * @param {string} options.filter - The filter string to apply.
