@@ -8,6 +8,7 @@ export const VARIANTS = ['dark', 'light']
 export const MILLISECONDS_PER_HOUR = 60 * 60 * 1000
 export const MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * 24
 export const MAX_SAFE_DATE = 8.64e15 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
+export const MAX_SAFE_DATE_SMALL = 253381737599000 // parsing this format leads to invalid dates after 9999 -> "9999-05-07T18:59:59-05:00"
 export const THEMES = ['light', 'dark']
 export const TASK_STATUSES = {
 	COMPLETED: 'completed',

@@ -203,15 +203,15 @@ export const millisToHours = milliseconds => (milliseconds / 60000) / 60
  */
 export const calculateWaste = ({ start, taskList, time = new Date() }) => {
 	if (!taskList || taskList.some(task => !task)) {
-		console.error('Task list is undefined or has undefined values', taskList)
-		return
+		console.warn('Task list is undefined or has some undefined values', taskList)
+		return taskList
 	}
 
 	return ((tasks = taskList, currentTime = time) => {
 		const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
 		const etas = etaList(taskList.slice(firstIncompleteIndex)) // etas calculated only for the incomplete tasks
 		const lastCompletedTimestamp = tasks[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completedTimestamp to millis
-		const startTime = firstIncompleteIndex === 0 || !lastCompletedTimestamp || isNaN(lastCompletedTimestamp) ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
+		const startTime = firstIncompleteIndex === 0 ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
 		return tasks.map((task, index) => {
 			const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : currentTime // index - firstIncomplete shifts accordingly
 			const waste = index === firstIncompleteIndex ? subtract(currentTime, eta) : 0 // we must use the updated eta value.
@@ -491,8 +491,9 @@ export const calculateEfficiency = (startTime, endTime, ttcHours) => {
 		throw new RangeError(`Start/End Time should be in the Range [startTime, startTime + 86400]. etaHours should be in range [0, 86400].\nstartTime = ${startTime}\nendTime = ${endTime}\netaHours = ${ttcHours}`)
 	}
 	const normalFormula = hoursToSeconds(ttcHours) / (endTime - startTime)
-	if (startTime > endTime) return -1 / normalFormula // Domain Extension
-	return normalFormula // efficiency = (ttc) seconds / (end - start) seconds
+	return startTime > endTime
+		? -1 / normalFormula // Domain Extension
+		: normalFormula // efficiency = (ttc) seconds / (end - start) seconds
 }
 
 export const isValidDate = date => (new Date(date) != "Invalid Date") && !isNaN(new Date(date))

@@ -13,8 +13,8 @@ import {
 	hoursToSeconds,
 	hoursToMillis,
 	millisToHours,
-
 	calculateWaste,
+
 	rearrangeDnD,
 	relativeSortIndex,
 	highlightTaskRow,
@@ -28,11 +28,12 @@ import {
 	calculateEfficiency,
 	validateTransformation,
 } from './helpers.res.js'
-import { TASK_STATUSES, MAX_SAFE_DATE } from './constants'
+import { TASK_STATUSES, MAX_SAFE_DATE, MAX_SAFE_DATE_SMALL } from './constants'
 import { format } from 'date-fns-tz'
 import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
+import { formatISO } from 'date-fns'
 
 describe('clamp values so they are always in specific range', () => {
 	// --- Property based tests
@@ -83,7 +84,6 @@ describe('subtract two dates', () => {
 	})
 	// --- Property based tests
 	it('Should return the difference in hours between two dates', () => {
-		//fc.configureGlobal({ seed: 301260064 })
 		fc.assert(fc.property(fc.date(), fc.date(),
 			(time, eta) => {
 				const expected = (time.getTime() - eta.getTime()) / (1000 * 60 * 60)
@@ -100,7 +100,6 @@ describe('etaList', () => {
 	it('should preserve length for any input', () => {
 		fc.assert(fc.property(fc.array(fc.anything()), taskList => etaList(taskList).length === taskList.length))
 	})
-
 	it('should preserve cumulative sum property for valid input', () => {
 		fc.assert(fc.property(
 			fc.array(fc.nat()),
@@ -116,6 +115,16 @@ describe('etaList', () => {
 					{ cumulativeSum: 0, isValid: true }
 				).isValid
 			}))
+	})
+	it('should have etaList(x)[0] === x[0].ttc', () => {
+		fc.assert(fc.property(
+			fc.array(fc.nat(), { minLength: 1 }),
+			taskDurations => {
+				const taskList = taskDurations.map(duration => ({ ttc: duration }))
+				const etas = etaList(taskList)
+				expect(etas[0] === taskList[0].ttc).toBe(true)
+			}
+		))
 	})
 })
 
@@ -416,15 +425,14 @@ describe('hoursToMillis', () => {
 	})
 	// --- Property based tests
 	it('should correctly convert hours to milliseconds', () => {
-		fc.configureGlobal({seed: -790803875})
-        fc.assert(
-            fc.property(fc.float({ min: 0, max: 1e6 }), hours => {
+		fc.assert(
+			fc.property(fc.float({ min: 0, max: 1e6 }), hours => {
 				const processedHours = isNaN(hours) ? 0 : hours
-                const result = hoursToMillis(processedHours)
-                expect(result).toBeCloseTo(processedHours * 3600000)
-            })
-        )
-    })
+				const result = hoursToMillis(processedHours)
+				expect(result).toBeCloseTo(processedHours * 3600000)
+			})
+		)
+	})
 })
 
 describe('millisToHours', () => {
@@ -439,16 +447,190 @@ describe('millisToHours', () => {
 	})
 	// --- Property based tests
 	test('should correctly convert milliseconds to hours', () => {
-        fc.assert(
-            fc.property(fc.float({ min: 0, max: Math.fround(1e12) }), milliseconds => {
+		fc.assert(
+			fc.property(fc.float({ min: 0, max: Math.fround(1e12) }), milliseconds => {
 				const processedMillis = isNaN(milliseconds) ? 0 : milliseconds
-                const result = millisToHours(processedMillis)
-                expect(result).toBeCloseTo(processedMillis / 3600000)
-            })
-        )
-    })
+				const result = millisToHours(processedMillis)
+				expect(result).toBeCloseTo(processedMillis / 3600000)
+			})
+		)
+	})
 })
 
+describe('calculateWaste', () => {
+	// --- Example based tests
+	const start = new Date(1692975600000) // Friday, August 25, 2023 10:00:00 AM GMT-05:00
+	const completedTime = new Date(1692977400000) // Friday, August 25, 2023 10:30:00 AM GMT-05:00 	
+	const completedTimeSeconds = completedTime.getTime() / 1000
+
+	const hoursToMillis = hours => hours * 60000 * 60
+	const fmt = (dateISO) => format(new Date(dateISO), 'yyyy-MM-dd\'T\'HH:mm:ssXXX', { timeZone: 'America/Chicago' }) // gets it in correct format, so tests will pass
+	const addTestOnly = (dateA, hour) => fmt(new Date(dateA.getTime() + hoursToMillis(hour)).toISOString()) // used to be without these wrappers, but now dates are ISO strings
+
+	// Test cases covering what happens whenever we don't want any tasks updated and just want them initialized
+	const initialTestCases = [
+		{
+			name: 'Given a list of tasks, The first incomplete task in the list has: waste = time - eta. eta is the updated eta, not old eta',
+			input: {
+				taskList: [
+					{ status: 'incomplete', task: 'Task 1', waste: 0, ttc: 1, eta: addTestOnly(start, -1), id: 1, timestamp: 1 }, // incomplete tasks are not guaranteed to have correct eta/waste
+					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: addTestOnly(start, 8.5), id: 2, timestamp: 2 },
+					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: addTestOnly(start, 9), id: 3, timestamp: 3 },
+				],
+				time: completedTime // Friday, August 25, 2023 10:30:00 AM GMT-05:00
+			},
+			expected: [
+				{ status: 'incomplete', task: 'Task 1', waste: -.5, ttc: 1, eta: addTestOnly(start, 1), id: 1, timestamp: 1 }, // eta = 10+1=11. Waste = time - eta(new) --> Waste = 10.5 - 11 == -.5
+				{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: addTestOnly(start, 1 + .5), id: 2, timestamp: 2 }, // eta = 11+.5=11.5
+				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: addTestOnly(start, 1 + .5 + 1.5), id: 3, timestamp: 3 }, // eta = 12+1.5=13
+			],
+		},
+		{
+			name: 'Given a list of tasks, The tasks completed will not be touched, but the others will have the usual waste and eta calculations applied',
+			input: {
+				taskList: [
+					{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: addTestOnly(start, .5), id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // completed tasks are guaranteed to have correct eta/waste
+					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: addTestOnly(start, .5 + .5), id: 2, timestamp: 2 }, // incomplete tasks can have wrong eta/waste
+					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: addTestOnly(start, .5 + .5 + 1.5), id: 3, timestamp: 3 },
+				],
+				time: completedTime // Friday, August 25, 2023 10:30:00 AM GMT-05:00
+			},
+			expected: [
+				{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: addTestOnly(start, .5), id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // Completed tasks are not touched
+				{ status: 'incomplete', task: 'Task 2', waste: -.5, ttc: .5, eta: addTestOnly(start, .5 + .5), id: 2, timestamp: 2 }, // eta = 10.5+.5=11 waste should be 0
+				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: addTestOnly(start, .5 + .5 + 1.5), id: 3, timestamp: 3 }, // eta = 11+1.5=12.5 waste should be 0
+			],
+		}
+	]
+	// Task Row is responsible for updating and submitting Completed tasks
+
+	initialTestCases.forEach(testCase => {
+		const { taskList, time } = testCase.input
+		it(testCase.name, () => {
+			expect(calculateWaste({ start, taskList, time })).toEqual(testCase.expected)
+		})
+	})
+
+	// --- Property based tests
+
+	// Setup
+	const startArbitrary = fc.date({ min: new Date(0), max: new Date(MAX_SAFE_DATE_SMALL) })
+	const taskStatusArbitrary = fc.constantFrom(TASK_STATUSES.COMPLETED, TASK_STATUSES.INCOMPLETE, TASK_STATUSES.WAITING, TASK_STATUSES.INCONSISTENT)
+	const etaArbitrary = start => fc.date({ min: start, max: new Date(MAX_SAFE_DATE_SMALL) }).map(date => formatISO(date))
+	const ttcArbitrary = fc.float({ min: 0, max: 5 }).filter(ttc => !isNaN(ttc) && isFinite(ttc))
+	const completedTimeStampArbitrary = fc.integer({ min: 0, max: Math.floor(Date.now() / 1000) }) // CompletedTimeStamps are epoch in seconds
+	const taskArbitrary = start => fc.record({
+		status: taskStatusArbitrary,
+		waste: fc.float({ min: 0, max: 23 }),
+		eta: etaArbitrary(start),
+		ttc: ttcArbitrary,
+		completedTimeStamp: completedTimeStampArbitrary,
+	})
+	const taskListArbitrary = start => fc.array(taskArbitrary(start), { minLength: 0 })
+		.map(tasks => {
+			const completedTasks = tasks.filter(task => task.status === TASK_STATUSES.COMPLETED)
+			const incompleteTasks = tasks.filter(task => task.status !== TASK_STATUSES.COMPLETED)
+			return [...completedTasks, ...incompleteTasks]
+		})
+	const timeArbitrary = start => fc.date({ min: start, max: new Date(start.getTime() + 82800000) })
+	const calculateWasteArbitrary = fc.record({
+		start: startArbitrary,
+		taskList: fc.record({ start: startArbitrary }).chain(({ start }) => taskListArbitrary(start)),
+		time: fc.option(fc.record({ start: startArbitrary }).chain(({ start }) => timeArbitrary(start)), { nil: undefined })
+	})
+
+	// Property tests
+	test('completed tasks in the input taskList and output must match', () => {
+		fc.assert(fc.property(
+			calculateWasteArbitrary,
+			({ start, taskList, time }) => {
+				const result = calculateWaste({ start, taskList, time })
+				const completedTasksInput = taskList.filter(task => task.status === TASK_STATUSES.COMPLETED)
+				const completedTasksOutput = result.filter(task => task.status === TASK_STATUSES.COMPLETED)
+				expect(completedTasksOutput).toEqual(completedTasksInput)
+			}
+		))
+	})
+
+	test('waste is ( currentTime - (etas[0] + startTime) ) for 1st incomplete if 1st incomplete exists in the input taskList', () => {
+		fc.assert(fc.property(
+			calculateWasteArbitrary,
+			({ start, taskList, time }) => {
+				const result = calculateWaste({ start, taskList, time })
+				const incompleteTasks = result.filter(task => task.status === !TASK_STATUSES.COMPLETED)
+				if (incompleteTasks.length === 0) return true
+				const firstIncomplete = incompleteTasks[0]
+				const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
+				const lastCompletedTimestamp = taskList[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completed to millis
+				const startTime = firstIncompleteIndex === 0 ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
+				const etas0 = firstIncomplete.ttc // etaList(x)[0] === x[0].ttc
+				const eta = add(startTime, etas0)
+				const currentTime = new Date(time || new Date())
+				const waste = subtract(currentTime, eta)
+				expect(firstIncomplete.waste).toBeCloseTo(waste)
+			})
+		)
+	})
+
+	test('waste is 0 for incomplete tasks with index > first incomplete task', () => {
+		fc.assert(fc.property(
+			calculateWasteArbitrary,
+			({ start, taskList, time }) => {
+				const res = calculateWaste({ start, taskList, time })
+				const firstIncompleteIndex = taskList.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
+				return res.every((task, index) =>
+					task.status !== TASK_STATUSES.COMPLETED && index > firstIncompleteIndex
+						? task.waste === 0
+						: true
+				)
+			}
+		))
+	})
+
+	test('eta is etas[i] + startTime for all incomplete tasks, where i is indexed based on incomplete pos', () => {
+		fc.assert(fc.property(
+			calculateWasteArbitrary,
+			({ start, taskList, time }) => {
+				const res = calculateWaste({ start, taskList, time })
+				const incompleteTasks = taskList.filter(task => task.status !== TASK_STATUSES.COMPLETED)
+				const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
+				const lastCompletedTimestamp = taskList[firstIncompleteIndex - 1]?.completedTimeStamp * 1000
+				const startTime = firstIncompleteIndex === 0 ? start : new Date(lastCompletedTimestamp)
+				const etas = etaList(incompleteTasks)
+				res.every((task, i) => {
+					if (task.status !== TASK_STATUSES.COMPLETED) {
+						// round to nearest second. date-fns formatISO doesn't have ms precision
+						expect(Math.floor(new Date(task.eta).getTime() / 1000))
+							.toBeCloseTo(Math.floor(add(startTime, etas[i - firstIncompleteIndex]).getTime() / 1000))
+					}
+					else return true
+				}
+				)
+			}
+		))
+	})
+
+	test('len(taskList input) == len(taskList output)', () => {
+		fc.assert(fc.property(
+			calculateWasteArbitrary,
+			({ start, taskList, time }) => {
+				const output = calculateWaste({ start, taskList, time })
+				return taskList.length === output.length
+			}),
+		)
+	})
+
+	test('task.status is valid for all tasks in output', () => {
+		fc.assert(fc.property(
+			calculateWasteArbitrary,
+			({ start, taskList, time }) => {
+				const output = calculateWaste({ start, taskList, time })
+				return output.every(task => Object.values(TASK_STATUSES).includes(task.status))
+			}),
+		)
+	})
+
+})
 
 describe('dateToToday', () => {
 	const testCases = [
@@ -642,62 +824,6 @@ describe('validateTask', () => {
 	})
 })
 
-
-describe('calculateWaste', () => {
-	const start = new Date(1692975600000) // Friday, August 25, 2023 10:00:00 AM GMT-05:00
-	const completedTime = new Date(1692977400000) // Friday, August 25, 2023 10:30:00 AM GMT-05:00 	
-	const completedTimeSeconds = completedTime.getTime() / 1000
-
-	const hoursToMillis = hours => hours * 60000 * 60
-	const fmt = (dateISO) => format(new Date(dateISO), 'yyyy-MM-dd\'T\'HH:mm:ssXXX', { timeZone: 'America/Chicago' }) // gets it in correct format, so tests will pass
-	const add = (dateA, hour) => fmt(new Date(dateA.getTime() + hoursToMillis(hour)).toISOString()) // used to be without these wrappers, but now dates are ISO strings
-
-
-	// Test cases covering what happens whenever we don't want any tasks updated and just want them initialized
-	const initialTestCases = [
-		{
-			name: 'Given a list of tasks, The first incomplete task in the list has: waste = time - eta. eta is the updated eta, not old eta',
-			input: {
-				taskList: [
-					{ status: 'incomplete', task: 'Task 1', waste: 0, ttc: 1, eta: add(start, -1), id: 1, timestamp: 1 }, // incomplete tasks are not guaranteed to have correct eta/waste
-					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: add(start, 8.5), id: 2, timestamp: 2 },
-					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: add(start, 9), id: 3, timestamp: 3 },
-				],
-				time: completedTime // Friday, August 25, 2023 10:30:00 AM GMT-05:00
-			},
-			expected: [
-				{ status: 'incomplete', task: 'Task 1', waste: -.5, ttc: 1, eta: add(start, 1), id: 1, timestamp: 1 }, // eta = 10+1=11. Waste = time - eta(new) --> Waste = 10.5 - 11 == -.5
-				{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: add(start, 1 + .5), id: 2, timestamp: 2 }, // eta = 11+.5=11.5
-				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: add(start, 1 + .5 + 1.5), id: 3, timestamp: 3 }, // eta = 12+1.5=13
-			],
-		},
-		{
-			name: 'Given a list of tasks, The tasks completed will not be touched, but the others will have the usual waste and eta calculations applied',
-			input: {
-				taskList: [
-					{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: add(start, .5), id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // completed tasks are guaranteed to have correct eta/waste
-					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: add(start, .5 + .5), id: 2, timestamp: 2 }, // incomplete tasks can have wrong eta/waste
-					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: add(start, .5 + .5 + 1.5), id: 3, timestamp: 3 },
-				],
-				time: completedTime // Friday, August 25, 2023 10:30:00 AM GMT-05:00
-			},
-			expected: [
-				{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: add(start, .5), id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // Completed tasks are not touched
-				{ status: 'incomplete', task: 'Task 2', waste: -.5, ttc: .5, eta: add(start, .5 + .5), id: 2, timestamp: 2 }, // eta = 10.5+.5=11 waste should be 0
-				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: add(start, .5 + .5 + 1.5), id: 3, timestamp: 3 }, // eta = 11+1.5=12.5 waste should be 0
-			],
-		}
-	]
-	// Task Row is responsible for updating and submitting Completed tasks
-
-	initialTestCases.forEach(testCase => {
-		const { taskList, time } = testCase.input
-		it(testCase.name, () => {
-			expect(calculateWaste({ start, taskList, time })).toEqual(testCase.expected)
-		})
-	})
-
-})
 
 describe('rearrangeDnD', () => {
 	const initialDnD = [1, 2, 3, 4]
