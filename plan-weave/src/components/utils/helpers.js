@@ -206,18 +206,15 @@ export const calculateWaste = ({ start, taskList, time = new Date() }) => {
 		console.warn('Task list is undefined or has some undefined values', taskList)
 		return taskList
 	}
-
-	return ((tasks = taskList, currentTime = time) => {
-		const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
-		const etas = etaList(taskList.slice(firstIncompleteIndex)) // etas calculated only for the incomplete tasks
-		const lastCompletedTimestamp = tasks[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completedTimestamp to millis
-		const startTime = firstIncompleteIndex === 0 ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
-		return tasks.map((task, index) => {
-			const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : currentTime // index - firstIncomplete shifts accordingly
-			const waste = index === firstIncompleteIndex ? subtract(currentTime, eta) : 0 // we must use the updated eta value.
-			return task?.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta: formatISO(eta) }
-		})
-	})()
+	const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
+	const etas = etaList(taskList.slice(firstIncompleteIndex)) // etas calculated only for the incomplete tasks
+	const lastCompletedTimestamp = taskList[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completedTimestamp to millis
+	const startTime = firstIncompleteIndex === 0 ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
+	return taskList.map((task, index) => {
+		const eta = index >= firstIncompleteIndex ? add(startTime, etas[index - firstIncompleteIndex]) : time // index - firstIncomplete shifts accordingly
+		const waste = index === firstIncompleteIndex ? subtract(time, eta) : 0 // we must use the updated eta value.
+		return task?.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta: formatISO(eta) }
+	})
 }
 
 /**

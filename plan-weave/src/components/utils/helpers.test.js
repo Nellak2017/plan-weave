@@ -1,5 +1,7 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
+
+// TODO: Cover the functions that aren't covered by property based tests
 import {
 	clamp,
 	add,
@@ -14,8 +16,10 @@ import {
 	hoursToMillis,
 	millisToHours,
 	calculateWaste,
-
+	isInt,
+	transform, // not covered by property based tests (Annoying)
 	rearrangeDnD,
+
 	relativeSortIndex,
 	highlightTaskRow,
 	ordinalSet,
@@ -632,6 +636,249 @@ describe('calculateWaste', () => {
 
 })
 
+describe('isInt', () => {
+	// --- Example based tests
+	it('should return false for Infinity and NaN', () => {
+		expect(isInt(Infinity)).toBe(false)
+		expect(isInt(NaN)).toBe(false)
+	})
+
+	// --- Property based tests
+	it('should return true for any integer', () => {
+		fc.assert(fc.property(
+			fc.integer(),
+			number => {
+				expect(isInt(number)).toBe(true)
+			}
+		))
+	})
+
+	it('should return false for any non-integer number', () => {
+		fc.assert(fc.property(
+			fc.float({ noInteger: true }),
+			number => {
+				expect(isInt(number)).toBe(false)
+			}
+		))
+	})
+
+	it('should return false for non-number inputs', () => {
+		fc.assert(fc.property(
+			fc.anything().filter(x => typeof x !== 'number'),
+			nonNumber => {
+				expect(isInt(nonNumber)).toBe(false)
+			}
+		))
+	})
+})
+
+describe('transform', () => {
+
+	// --- Property based tests
+
+	// Identity Property: Applying the transformation with the identity list ([0, 1, 2, ..., n]) should result in the same array of tasks.
+	test('should satisfy the identity property', () => {
+		fc.assert(fc.property(
+			fc.array(fc.object()),
+			tasks => {
+				const result = transform(tasks, tasks.map((_, i) => i))
+				expect(result).toEqual(tasks)
+			}
+		)
+		)
+	})
+
+	/*
+	// Reversibility Property: Applying the transformation twice with its inverse should result in the original array of tasks.
+	test('should satisfy the reversibility property', () => {
+		fc.assert(fc.property(
+			fc.array(fc.object()), // Arbitrary array of objects for tasks
+			fc.array(fc.object()).chain(tasks => {
+				const indices = [...Array(tasks.length).keys()]
+				return fc.tuple(
+					fc.constant(tasks),
+					fc.shuffledSubarray(indices, { minLength: tasks.length, maxLength: tasks.length })
+				)
+			}),
+			(tasks, transformation) => {
+				const result1 = transform(transform(tasks, transformation), transformation.map((_, i) => transformation.indexOf(i)))
+				const result2 = transform(tasks, tasks.map((_, i) => i))
+				expect(JSON.stringify(result1)).toEqual(JSON.stringify(result2))
+			}
+		)
+		)
+	})
+
+	// Consistency Property: Reordering tasks with a transformation list should yield the same result regardless of the order of tasks or the transformation list.
+	test('should satisfy the consistency property', () => {
+		fc.assert(fc.property(
+			fc.array(fc.object()),
+			fc.array(fc.integer()),
+			fc.array(fc.object()),
+			fc.array(fc.integer()),
+			(tasks1, transformation1, tasks2) => {
+				// Applying the same transformation to different tasks should yield the same result
+				const result1 = transform(tasks1, transformation1)
+				const result2 = transform(tasks2, transformation1)
+
+				expect(JSON.stringify(result1)).toEqual(JSON.stringify(result2))
+			}
+		)
+		)
+	})
+
+	// Transitivity Property: If a transformation list A transforms tasks to a result B, and another transformation list B transforms B back to the original tasks, 
+	// then composing transformation lists A and B should also transform the tasks back to the original order.
+	test('should satisfy the transitivity property', () => {
+		fc.assert(fc.property(
+			fc.array(fc.object()),
+			fc.array(fc.integer()),
+			fc.array(fc.integer()),
+			(tasks, transformation1, transformation2) => {
+				// Applying composed transformation should yield the same result as applying each transformation individually
+				const composedTransformation = transformation2.map(i => transformation1[i])
+				const result1 = transform(transform(tasks, transformation1), transformation2)
+				const result2 = transform(tasks, composedTransformation)
+
+				expect(JSON.stringify(result1)).toEqual(JSON.stringify(result2))
+			}
+		)
+		)
+	})
+
+	// Length Preservation Property: The length of the resulting array should always be the same as the length of the input array.
+	test('should satisfy the length preservation property', () => {
+		fc.assert(fc.property(
+			fc.array(fc.object()), // Arbitrary array of objects for tasks
+			fc.array(fc.integer()), // Arbitrary array of integers for transformation
+			(tasks, transformation) => {
+				const result = transform(tasks, transformation)
+				expect(result.length).toBe(tasks.length)
+			}
+		)
+		)
+	})
+	*/
+
+})
+
+describe('rearrangeDnD', () => {
+	// --- Example based tests
+	const initialDnD = [1, 2, 3, 4]
+	const destinations = [0, 1, 2, 3]
+
+	destinations.forEach(destination => {
+		it(`moves 4 to index ${destination}`, () => {
+			const result = rearrangeDnD(initialDnD, 3, destination)
+			const expected = [...initialDnD] // Copy the initial DnD array
+			expected.splice(destination, 0, expected.splice(3, 1)[0]) // Perform the same rearrangement as the function
+			expect(result).toEqual(expected)
+		})
+	})
+
+	// --- Property based tests
+	it('should preserve the length of the array', () => {
+		fc.assert(fc.property(
+			fc.array(fc.anything()),
+			fc.nat(),
+			fc.nat(),
+			(dnd, source, destination) => {
+				const sourceIndex = source % dnd.length
+				const destinationIndex = destination % dnd.length
+				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
+				expect(result.length).toBe(dnd.length)
+			}
+		))
+	})
+
+	it('should contain the same elements as the original array', () => {
+		fc.assert(fc.property(
+			fc.array(fc.nat()),
+			fc.nat(),
+			fc.nat(),
+			(dnd, source, destination) => {
+				const sourceIndex = source % dnd.length
+				const destinationIndex = destination % dnd.length
+				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
+				const originalSorted = [...dnd].sort()
+				const resultSorted = [...result].sort()
+				expect(originalSorted).toEqual(resultSorted)
+			}
+		))
+	})
+
+	it('should be identical if source and destination are the same', () => {
+		fc.assert(fc.property(
+			fc.array(fc.anything()), // Arbitrary array
+			fc.nat(),
+			(dnd, index) => {
+				const idx = index % dnd.length
+				const result = rearrangeDnD(dnd, idx, idx)
+				expect(result).toEqual(dnd)
+			}
+		))
+	})
+
+	it('should preserve the order of elements not involved in the move', () => {
+		fc.assert(fc.property(
+			fc.array(fc.anything()), // Arbitrary array
+			fc.nat(),
+			fc.nat(),
+			(dnd, source, destination) => {
+				const sourceIndex = source % dnd.length
+				const destinationIndex = destination % dnd.length
+				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
+				const originalWithoutMovedItem = dnd.filter((_, i) => i !== sourceIndex)
+				const resultWithoutMovedItem = result.filter((_, i) => i !== destinationIndex)
+
+				expect(originalWithoutMovedItem).toEqual(resultWithoutMovedItem)
+			}
+		)
+		)
+	})
+
+	it('should place the moved item in the correct position', () => {
+		fc.assert(fc.property(
+			fc.array(fc.anything()), // Arbitrary array
+			fc.nat(),
+			fc.nat(),
+			(dnd, source, destination) => {
+				if (dnd.length === 0) return true
+				const sourceIndex = source % dnd.length
+				const destinationIndex = destination % dnd.length
+				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
+
+				expect(result[destinationIndex]).toEqual(dnd[sourceIndex])
+			}
+		))
+	})
+
+	it('should maintain the correctness of the overall array', () => {
+		fc.assert(fc.property(
+			fc.array(fc.anything()), // Arbitrary array
+			fc.nat(),
+			fc.nat(),
+			(dnd, source, destination) => {
+				if (dnd.length === 0) return true
+				const sourceIndex = source % dnd.length
+				const destinationIndex = destination % dnd.length
+				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
+
+				const expectedArray = [
+					...dnd.slice(0, sourceIndex),
+					...dnd.slice(sourceIndex + 1)
+				]
+				const resultWithoutMovedItem = [
+					...result.slice(0, destinationIndex),
+					...result.slice(destinationIndex + 1)
+				]
+				expect(expectedArray).toEqual(resultWithoutMovedItem)
+			}
+		))
+	})
+
+})
+
 describe('dateToToday', () => {
 	const testCases = [
 		{
@@ -821,21 +1068,6 @@ describe('validateTask', () => {
 		expect(() => {
 			validateTask({ task })
 		}).toThrowError()
-	})
-})
-
-
-describe('rearrangeDnD', () => {
-	const initialDnD = [1, 2, 3, 4]
-	const destinations = [0, 1, 2, 3]
-
-	destinations.forEach(destination => {
-		it(`moves 4 to index ${destination}`, () => {
-			const result = rearrangeDnD(initialDnD, 3, destination)
-			const expected = [...initialDnD] // Copy the initial DnD array
-			expected.splice(destination, 0, expected.splice(3, 1)[0]) // Perform the same rearrangement as the function
-			expect(result).toEqual(expected)
-		})
 	})
 })
 
