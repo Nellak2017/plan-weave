@@ -19,11 +19,12 @@ import {
 	isInt,
 	transform, // not covered by property based tests (Annoying)
 	rearrangeDnD,
+	ordinalSet,
+	deleteDnDEvent,
+	isRelativelyOrdered, // not covered by property based tests
 
 	relativeSortIndex,
 	highlightTaskRow,
-	ordinalSet,
-	deleteDnDEvent,
 	diagonalize,
 	calculateRange,
 } from './helpers'
@@ -879,6 +880,209 @@ describe('rearrangeDnD', () => {
 
 })
 
+describe('ordinalSet', () => {
+	// --- Example based tests
+	const testCases = [
+		{
+			description: 'should return empty array for empty input',
+			input: [],
+			expected: [],
+		},
+		{
+			description: 'should assign ordinal values to unique numbers in the input array',
+			input: [1, 3, 2],
+			expected: [0, 2, 1],
+		},
+	]
+
+	testCases.forEach(({ description, input, expected }) => {
+		it(description, () => {
+			expect(ordinalSet(input)).toEqual(expected)
+		})
+	})
+
+	// --- Property based tests
+	it('should preserve the length of the array', () => {
+		fc.assert(fc.property(
+			fc.array(fc.integer()),
+			(dnd) => {
+				const result = ordinalSet(dnd)
+				expect(result.length).toBe(dnd.length)
+			}
+		))
+	})
+
+	it('should produce ordinal values within the correct range', () => {
+		fc.assert(fc.property(
+			fc.array(fc.integer()),
+			(dnd) => {
+				const result = ordinalSet(dnd)
+				const uniqueValues = new Set(dnd).size
+				const withinRange = result.every(value => value >= 0 && value < uniqueValues)
+				expect(withinRange).toBe(true)
+			}
+		))
+	})
+
+	it('should preserve the uniqueness of ordinal values', () => {
+		fc.assert(fc.property(
+			fc.array(fc.integer()),
+			(dnd) => {
+				const result = ordinalSet(dnd)
+				const uniqueValues = new Set(dnd).size
+				const uniqueOrdinals = new Set(result).size
+				expect(uniqueOrdinals).toBe(uniqueValues)
+			}
+		))
+	})
+
+	it('should correctly map input numbers to their ordinal values', () => {
+		fc.assert(fc.property(
+			fc.array(fc.integer()),
+			(dnd) => {
+				const result = ordinalSet(dnd)
+				const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
+				const mapping = {}
+				uniqueSortedArr.forEach((num, index) => {
+					mapping[num] = index
+				})
+				const correctMapping = dnd.every((num, index) => result[index] === mapping[num])
+				expect(correctMapping).toBe(true)
+			}
+		))
+	})
+
+})
+
+describe('deleteDnDEvent', () => {
+	// --- Example based tests
+	const testCases = [
+		{
+			description: 'should delete a single index',
+			input: [[1, 3, 2, 4, 5], [0, 0]],
+			expected: [1, 0, 2, 3],
+		},
+		{
+			description: 'should delete a range of indices starting from 0',
+			input: [[1, 3, 2, 4, 5], [0, 2]],
+			expected: [0, 1],
+		},
+		{
+			description: 'should delete another range of indices starting from not 0',
+			input: [[1, 3, 2, 4, 5], [2, 3]],
+			expected: [0, 1, 2],
+		},
+	]
+
+	testCases.forEach(({ description, input, expected }) => {
+		it(description, () => {
+			expect(deleteDnDEvent(...input)).toEqual(expected)
+		})
+	})
+
+	// --- Property based tests
+	/* 
+	Constraints on outputs given valid inputs
+	1. Output is an array of natural numbers
+		[nat, nat, nat, ...inf]
+	2. len(Output) = len(dnd) - ((endIndex - startIndex) + 1) // since it is strictly smaller than input dnd
+		[nat, nat, nat, ...len(dnd) - ((endIndex - startIndex) + 1)]
+	3. all naturals 0 to len(dnd) - ((endIndex - startIndex) + 1) are in the output // making all naturals in list unique
+		[nat, nat, nat, ...len(dnd) - ((endIndex - startIndex) + 1)]
+	4. for all pairs (a, b) in the ouput and (c, d) in the input dnd, the comparison between all pairs is the same for both.
+		// i.e if a < b then c < d and vice versa. This ensures proper ordering of the natural numbers in the list
+		// ex: [1,2,3] = input after deletions, [0, 1, 2] = output => (1 < 2) === (0 < 1) and (2 < 3) === (1 < 2) etc.
+		[nat, nat, nat, ...len(dnd) - ((endIndex - startIndex) + 1)] // properly ordered
+	*/
+	const setCompare = (set1, set2) => set1.size === set2.size && [...set1].every(x => set2.has(x))
+	const dndArbitrary = fc.uniqueArray(fc.nat(), { minLength: 1 })
+	const indexRangeArbitrary = max => fc.tuple(
+		fc.nat({ max }), // Start index is an int with a minimum of 0
+		fc.nat({ max }), // End index is an int >= start
+	).filter(([startIndex, endIndex]) => endIndex >= startIndex)
+
+	// Output is an array of natural numbers
+	test('Output is an array of natural numbers', () => {
+		fc.assert(fc.property(
+			dndArbitrary,
+			dndArbitrary.chain(arr => indexRangeArbitrary(arr.length - 1)),
+			(dnd, indexRange) => {
+				const output = deleteDnDEvent(dnd, indexRange)
+				expect(output.every(num => Number.isInteger(num) && num >= 0)).toBe(true)
+			}
+		))
+	})
+
+	// len(Output) = len(dnd) - ((endIndex - startIndex) + 1)
+	test('len(Output) = len(dnd) - ((endIndex - startIndex) + 1)', () => {
+		fc.assert(fc.property(
+			dndArbitrary,
+			dndArbitrary.chain(arr => indexRangeArbitrary(arr.length - 1)),
+			(dnd, [startIndex, endIndex]) => {
+				if (endIndex > dnd.length - 1) return // skip this case, endIndex should not be bigger than the len of list
+				const output = deleteDnDEvent(dnd, [startIndex, endIndex])
+				const lenOutput = output.length
+				const expectedLen = dnd.length - ((endIndex - startIndex) + 1)
+				expect(lenOutput).toBe(expectedLen)
+			}
+		))
+	})
+
+	// all naturals 0 to len(dnd) - ((endIndex - startIndex) + 1) are in output meaning no duplicates
+	test('all naturals 0 to len(dnd) - ((endIndex - startIndex) + 1) are in output meaning no duplicates', () => {
+		fc.assert(fc.property(
+			dndArbitrary,
+			dndArbitrary.chain(arr => indexRangeArbitrary(arr.length - 1)),
+			(dnd, [startIndex, endIndex]) => {
+				if (endIndex > dnd.length - 1) return // skip this case, endIndex should not be bigger than the len of list
+				const output = deleteDnDEvent(dnd, [startIndex, endIndex])
+				const expectedLen = dnd.length - ((endIndex - startIndex) + 1)
+				const expectedSet = new Set([...Array(expectedLen).keys()]) // {0...expectedLen}
+				const outputSet = new Set(output) // {0...expectedLen} ?
+				expect(setCompare(outputSet, expectedSet)).toBe(true)
+			}
+		))
+	})
+
+	// for all pairs (a, b) in the ouput and (c, d) in the input dnd, the comparison between all pairs is the same for both.
+	// Order is preserved after deletions
+	test('Order of elements is preserved after deletions', () => {
+		fc.assert(fc.property(
+			dndArbitrary,
+			dndArbitrary.chain(arr => indexRangeArbitrary(arr.length - 1)),
+			(dnd, [startIndex, endIndex]) => {
+				if (endIndex > dnd.length - 1) return // skip this case, endIndex should not be bigger than the len of list
+				const output = deleteDnDEvent(dnd, [startIndex, endIndex])
+				const filteredDnd = dnd.filter((_, i) => i < startIndex || i > endIndex)
+				expect(isRelativelyOrdered(filteredDnd, output)).toBe(true)
+			}
+		))
+	})
+
+})
+
+describe('isRelativelyOrdered', () => {
+	// --- Example based tests
+	const testCases = [
+		{ list1: [3, 4], list2: [0, 1], expected: true },
+		{ list1: [1, 2, 3], list2: [0, 1, 2], expected: true },
+		{ list1: [1, 3, 2], list2: [0, 2, 1], expected: true },
+		{ list1: [3, 1], list2: [2, 0], expected: true },
+		{ list1: [1], list2: [0], expected: true },
+		{ list1: [], list2: [], expected: true },
+		{ list1: [1, 2, 3, 4], list2: [10, 20, 30, 40], expected: true },
+		{ list1: [3, 4], list2: [1, 0], expected: false },
+		{ list1: [1, 3, 2], list2: [1, 0, 2], expected: false },
+		{ list1: [3, 1], list2: [0, 2], expected: false },
+		{ list1: [1, 2, 3, 4], list2: [10, 30, 20, 40], expected: false },
+	]
+	testCases.forEach(({ list1, list2, expected }, index) => {
+		test(`isRelativelyOrdered test case ${index + 1}`, () => {
+			expect(isRelativelyOrdered(list1, list2)).toBe(expected)
+		})
+	})
+})
+
 describe('dateToToday', () => {
 	const testCases = [
 		{
@@ -1237,53 +1441,6 @@ describe('highlightTaskRow', () => {
 		expect(() => highlightTaskRow('string', true, false)).toThrow(TypeError)
 		expect(() => highlightTaskRow(true, 'string', false)).toThrow(TypeError)
 		expect(() => highlightTaskRow(true, true, 'string')).toThrow(TypeError)
-	})
-})
-
-describe('ordinalSet', () => {
-	const testCases = [
-		{
-			description: 'should return empty array for empty input',
-			input: [],
-			expected: [],
-		},
-		{
-			description: 'should assign ordinal values to unique numbers in the input array',
-			input: [1, 3, 2],
-			expected: [0, 2, 1],
-		},
-	]
-
-	testCases.forEach(({ description, input, expected }) => {
-		it(description, () => {
-			expect(ordinalSet(input)).toEqual(expected)
-		})
-	})
-})
-
-describe('deleteDnDEvent', () => {
-	const testCases = [
-		{
-			description: 'should delete a single index',
-			input: [[1, 3, 2, 4, 5], [0, 0]],
-			expected: [1, 0, 2, 3],
-		},
-		{
-			description: 'should delete a range of indices starting from 0',
-			input: [[1, 3, 2, 4, 5], [0, 2]],
-			expected: [0, 1],
-		},
-		{
-			description: 'should delete another range of indices starting from not 0',
-			input: [[1, 3, 2, 4, 5], [2, 3]],
-			expected: [0, 1, 2],
-		},
-	]
-
-	testCases.forEach(({ description, input, expected }) => {
-		it(description, () => {
-			expect(deleteDnDEvent(...input)).toEqual(expected)
-		})
 	})
 })
 

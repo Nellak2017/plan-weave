@@ -274,7 +274,7 @@ export const rearrangeDnD = (dnd, source, destination) => {
  * const ordinalSet = getOrdinalSet(dnd)
  * // ordinalSet will be [0, 2, 1]
  */
-export const ordinalSet = (dnd) => {
+export const ordinalSet = dnd => {
 	const mapping = {}
 	const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
 	uniqueSortedArr.forEach((num, index) => {
@@ -289,7 +289,6 @@ export const ordinalSet = (dnd) => {
  * @param {number[]} dnd - The DnD configuration array.
  * @param {number[]} indexRange - The range of indices to be deleted. [start, end]
  * @returns {number[]} The updated DnD configuration after deleting the specified range.
- * @throws {TypeError} Throws a TypeError if the input parameters are invalid.
  * 
  * @example
  * // Example 1: Deleting a single index
@@ -310,14 +309,47 @@ export const ordinalSet = (dnd) => {
  * // Result: [0, 1, 2]
  */
 export const deleteDnDEvent = (dnd, indexRange) => {
-	if (!Array.isArray(dnd) || !Array.isArray(indexRange) || indexRange.length !== 2) {
-		throw new TypeError(`Invalid input parameters in deleteDnDEvent.\ndnd = ${dnd}\nindexRange = ${indexRange}`)
-	}
 	const [startIndex, endIndex] = indexRange
-	const invalidRange = startIndex < 0 || endIndex < startIndex || endIndex >= dnd.length
-	if (invalidRange) throw new TypeError(`Invalid index range in deleteDnDEvent.\nRange = ${indexRange}`)
-
 	return ordinalSet(dnd.filter((_, i) => i < startIndex || i > endIndex))
+}
+
+/**
+ * Checks if two lists have the same relative ordering of their elements.
+ * 
+ * @param {number[]} list1 - The first list of numbers.
+ * @param {number[]} list2 - The second list of numbers.
+ * @returns {boolean} - Returns true if the relative ordering of elements in list1 matches the relative ordering in list2, false otherwise.
+ * 
+ * @example
+ * // returns true
+ * isRelativelyOrdered([3, 4], [0, 1])
+ * 
+ * @example
+ * // returns false
+ * isRelativelyOrdered([3, 4], [1, 0])
+ * 
+ * @example
+ * // returns true
+ * isRelativelyOrdered([1, 2, 3], [0, 1, 2])
+ * 
+ * @example
+ * // returns true
+ * isRelativelyOrdered([1, 3, 2], [0, 2, 1])
+ * 
+ * @example
+ * // returns false
+ * isRelativelyOrdered([1, 3, 2], [1, 0, 2])
+ */
+export const isRelativelyOrdered = (list1, list2) => {
+	if (list1.length !== list2.length) return false
+	if (list1.length <= 1) return true
+	return list1.slice(0, -1).reduce((acc, a, i) => {
+		if (!acc) return false
+		const b = list1[i + 1]
+		const c = list2[i]
+		const d = list2[i + 1]
+		return (a < b && c < d) || (a > b && c > d)
+	}, true)
 }
 
 /**
