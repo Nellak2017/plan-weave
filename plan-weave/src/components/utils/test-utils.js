@@ -3,34 +3,28 @@ import { render } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { ThemeProvider } from 'styled-components'
 import theme from '../../styles/theme.js'
+import GlobalStyle from '../../styles/globalStyles.js'
+import { ToastContainer } from 'react-toastify'
 import PropTypes from 'prop-types'
-import { setupStore } from '../../redux/store'
 
-export function renderWithProviders(
-	ui,
-	{
-		preloadedState = {},
-		// Automatically create a store instance if no store was passed in
-		store = setupStore(preloadedState),
-		...renderOptions
-	} = {}
-) {
-	function Wrapper({ children }) {
-		return (
-			<Provider store={store}>
-				<ThemeProvider theme={theme}>
-					{children}
-				</ThemeProvider>
-			</Provider>
-		)
-	}
+const defaultOptions = {} // we used to do stuff here now not
 
-	Wrapper.propTypes = {
-		children: PropTypes.any
-	}
+const Wrapper = ({ children, store }) => (
+	<ThemeProvider theme={theme}>
+		<GlobalStyle />
+		<ToastContainer position="bottom-left" autoClose={3000} />
+		<Provider store={store}>
+			{children}
+		</Provider>
+	</ThemeProvider>
+)
 
-	// Return an object with the store and all of RTL's query functions
-	return { store, ...render(ui, { wrapper: Wrapper, ...renderOptions }) }
+export const renderWithProviders = (ui, store, options = defaultOptions) =>
+	render(ui, { wrapper: () => <Wrapper store={store}>{ui}</Wrapper>, ...options })
+
+
+Wrapper.propTypes = {
+	children: PropTypes.any
 }
 
 renderWithProviders.propTypes = {

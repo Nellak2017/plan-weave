@@ -2,15 +2,11 @@
 // UI Tests for TaskEditor
 
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react' // render is used in 'renderWithProviders'
+import { renderWithProviders } from '../../utils/test-utils.js'
 import '@testing-library/jest-dom'
-import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import TaskEditor from './TaskEditor'
-import { ThemeProvider } from 'styled-components'
-import GlobalStyle from '../../../styles/globalStyles.js'
-import theme from '../../../styles/theme.js'
-import { ToastContainer } from 'react-toastify'
 import { parse } from 'date-fns'
 
 const timestamp = Math.floor((new Date()).getTime() / 1000)
@@ -66,15 +62,7 @@ describe('TaskEditor Component, Order Problem', () => {
 		store = mockStore(initialState)
 	})
 
-	const renderComponent = () => render(
-		<ThemeProvider theme={theme}>
-			<GlobalStyle />
-			<ToastContainer position="bottom-left" autoClose={3000} />
-			<Provider store={store}>
-				<TaskEditor />
-			</Provider>
-		</ThemeProvider>
-	)
+	const renderComponent = () => renderWithProviders(<TaskEditor />, store)
 
 	test('renders TaskEditor with title', () => {
 		renderComponent()
