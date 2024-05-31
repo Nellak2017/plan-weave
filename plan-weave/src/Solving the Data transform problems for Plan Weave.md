@@ -6,9 +6,10 @@
 
 ### Filter Fields Solution
 
-- In redux, store if it is full task or simple task
-- Assign a listener to the full task/simple task button to toggle between them by sending an action to it in redux
-- render simple task component if it is simple task or full task if it is full task
+- [X] In redux, store if it is full task or simple task
+- [X] Assign a listener to the full task/simple task button to toggle between them by sending an action to it in redux
+- [X] render simple task component if it is simple task or full task if it is full task
+- [ ] UI Property Test for this
 
 // NOTE: This only changes if the user presses the change full task button, it is independent of all other pipes
 
@@ -27,6 +28,15 @@
 #### Observations
 - We need this particular order of data transformation to happen or else it will fail
 	sort -> completed on top -> search filter -> filter pages
+
+#### Order Problem solution
+
+- [X] sort and completed on top
+- [X] search filter
+- [X] filter pages
+- [X] pipe(sort, completed on top, search filter, filter pages)
+- [X] redux store variables
+- [ ] UI Property test for this
 
 #### Implementations
 How do we implement the sort?
@@ -83,6 +93,8 @@ const filterPages = (pageNumber, tasksPerPage) => (reduxTasks) => {
 	const startIndex = pageNumber * tasksPerPage // 0 * 10 = 0 ; 1 * 10 = 10; ...
 	const endIndex = ((pageNumber + 1) * tasksPerPage) - 1 // (1 * 10) - 1 = 9
 	return reduxTasks.filter((_, i) => i >= startIndex && i <=  endIndex) // keep tasks in that range and ignore all else
+
+	reduxTasks.slice(startIndex, endIndex)
 } // Used to actually filter pages from redux Tasks
 
 ##### Pipeline

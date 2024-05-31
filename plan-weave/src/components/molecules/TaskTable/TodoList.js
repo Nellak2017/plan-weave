@@ -1,5 +1,5 @@
 import React from "react"
-import { validateTask, isTaskOld, findLastCompletedTask } from '../../utils/helpers'
+import { validateTask, isTaskOld, findLastCompletedTask, filterPages } from '../../utils/helpers'
 import { taskSchema, fillDefaults } from "../../schemas/taskSchema/taskSchema"
 import TaskRow from '../TaskRow/TaskRow'
 import { VARIANTS } from "../../utils/constants"
@@ -20,7 +20,8 @@ export const todoList = ({
 	const lastCompletedTask = findLastCompletedTask(taskList)
 
 	// startRange, endRange is for pagination capabilities
-	return taskList?.slice(startRange - 1, endRange)?.map((task, idx) => {
+	// filterPages is here because if it is in the pipe, it doesn't always update when you need it to
+	return filterPages(startRange, endRange)(taskList)?.map((task, idx) => {
 		const isOld = isTaskOld(timeRange, task)
 		try {
 			const validatedFullTask = validateTask({ task, schema: taskSchema, schemaDefaultFx: fillDefaults })

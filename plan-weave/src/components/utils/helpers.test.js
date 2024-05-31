@@ -22,13 +22,15 @@ import {
 	ordinalSet,
 	deleteDnDEvent,
 	isRelativelyOrdered, // not covered by property based tests
-	pipe, // not covered by any testing
+	pipe, 
 	completedOnTopSorted,
+	calculateRange, // not covered by any tests yet
+	filterPages, // not covered by any tests yet
 
 	relativeSortIndex,
 	highlightTaskRow,
 	diagonalize,
-	calculateRange,
+	
 } from './helpers'
 import {
 	dateToToday,
@@ -345,7 +347,7 @@ describe('filterTaskList', () => {
 	testCases.forEach(testCase => {
 		it(testCase.name, () => {
 			const { filter, list, attribute } = testCase.input
-			const result = filterTaskList({ filter, list, attribute })
+			const result = filterTaskList(filter, attribute)(list)
 			expect(result).toEqual(testCase.expected)
 		})
 	})
@@ -357,9 +359,9 @@ describe('filterTaskList', () => {
 				fc.string(),
 				fc.string(),
 				(list, attribute, filter) => {
-					const res1 = filterTaskList({ filter: '', list, attribute })
+					const res1 = filterTaskList('', attribute)(list)
 					expect(res1).toEqual(list)
-					const res2 = filterTaskList({ filter, list, attribute: '' })
+					const res2 = filterTaskList(filter, '')(list)
 					expect(res2).toEqual(list)
 				}
 			)
@@ -372,7 +374,7 @@ describe('filterTaskList', () => {
 				fc.array(fc.record({ attribute: fc.string() })),
 				fc.string(),
 				(list, filter) => {
-					const res = filterTaskList({ filter, list, attribute: 'attribute' })
+					const res = filterTaskList(filter, 'attribute')(list)
 					expect(res.length <= list.length).toBe(true)
 				}
 			)
@@ -385,7 +387,7 @@ describe('filterTaskList', () => {
 				fc.array(fc.record({ attribute: fc.string() })),
 				fc.string(),
 				(list, filter) => {
-					const result = filterTaskList({ filter, list, attribute: 'attribute' })
+					const result = filterTaskList(filter, 'attribute')(list)
 					const lowerFilter = filter.toLowerCase()
 					result.forEach(item => {
 						expect(item['attribute']?.toLowerCase()?.includes(lowerFilter)).toBe(true)

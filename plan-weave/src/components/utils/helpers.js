@@ -160,7 +160,7 @@ export const validateTaskField = ({ field, payload, schema = simpleTaskSchema, l
  * @param {string} options.attribute - The attribute to filter by.
  * @returns {Array} - The filtered list.
  */
-export const filterTaskList = ({ filter, list, attribute }) => {
+export const filterTaskList = (filter, attribute) => list => {
 	return (!filter || !attribute)
 		? list
 		: list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
@@ -380,10 +380,26 @@ export const pipe = (...f) => x => f.reduce((acc, fn) => fn(acc), x)
  * @returns {Object[]} The sorted and transformed list of tasks.
  */
 export const completedOnTopSorted = (sort = t => t.slice(), status = TASK_STATUSES) => reduxTasks => [
-	...sort([...reduxTasks].filter(task => task?.status === status.COMPLETED)),
-	...sort([...reduxTasks].filter(task => task?.status !== status.COMPLETED))
+	...sort([...reduxTasks || []].filter(task => task?.status === status.COMPLETED)),
+	...sort([...reduxTasks || []].filter(task => task?.status !== status.COMPLETED))
 ]
 
+/**
+ * Calculates the range of tasks to display based on the number of tasks per page and the current page.
+ *
+ * @param {number} tasksPerPage - The number of tasks to display per page.
+ * @param {number} page - The current page number.
+ * @returns {Array} An array representing the range of tasks to display. The first element is the starting index (inclusive),
+ * and the second element is the ending index (exclusive). If either tasksPerPage or page is not a valid integer, [0, undefined]
+ * is returned.
+ */
+
+export const calculateRange = (tasksPerPage, page) => (isInt(tasksPerPage) && isInt(page))
+	? [(page - 1) * tasksPerPage + 1, page * tasksPerPage]
+	: [0, undefined]
+
+
+export const filterPages = (startRange, endRange) => taskList => taskList?.slice(startRange - 1, endRange)
 
 /**
  * Constructs a string that is not present in the original list of strings using the diagonal argument.
@@ -405,21 +421,6 @@ export const completedOnTopSorted = (sort = t => t.slice(), status = TASK_STATUS
 export const diagonalize = strList => (!Array.isArray(strList) || !strList.every(str => typeof str === 'string'))
 	? ''
 	: strList.map((str, i) => i < str.length ? String.fromCharCode(str[i].charCodeAt(0) + 1) : 'a').join('')
-
-/**
- * Calculates the range of tasks to display based on the number of tasks per page and the current page.
- *
- * @param {number} tasksPerPage - The number of tasks to display per page.
- * @param {number} page - The current page number.
- * @returns {Array} An array representing the range of tasks to display. The first element is the starting index (inclusive),
- * and the second element is the ending index (exclusive). If either tasksPerPage or page is not a valid integer, [0, undefined]
- * is returned.
- */
-
-export const calculateRange = (tasksPerPage, page) => (isInt(tasksPerPage) && isInt(page))
-	? [(page - 1) * tasksPerPage + 1, page * tasksPerPage]
-	: [0, undefined]
-
 
 /**
  * Calculates the index at which a task should be inserted in order to maintain DnD index invariants.

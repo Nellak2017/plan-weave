@@ -18,6 +18,7 @@ import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
 import PropTypes from 'prop-types'
 import { useInterval } from '../../../hooks/useInterval.js'
+import { sortFilterPipe } from './TaskTable.helpers.js'
 
 // services: updateTasks, updateDnD
 // state: globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState
@@ -36,22 +37,18 @@ const TaskTable = ({
 	const options = useMemo(() => predecessorOptions(globalTasks?.tasks), [globalTasks]) // options used in predecessor drop-down component
 	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
 	const end = useMemo(() => parseISO(timeRange?.end), [timeRange])
-	const filteredTasks = useMemo(() => filterTaskList({ list: taskList, filter: search?.trim(), attribute: 'task' }), [taskList, search])
 	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page), [tasksPerPage, page])
+	const globalTasksLen = useMemo(() => globalTasks.tasks.length, [globalTasks]) // TODO: can I memo with globalTasks.tasks.length?
 
 	// --- DnD Event
 	const onDragEnd = result => { if (result.destination) updateDnD([result.source.index, result.destination.index]) }
 
 	// --- Effects
 	useEffect(() => {
-		if (updateTasks) updateTasks(
-			pipe(
-				completedOnTopSorted(SORTING_METHODS[sortingAlgo]),
-				taskList => calculateWaste({ start, taskList, time: new Date() })
-			)(globalTasks?.tasks)
-		)
+		console.log(globalTasks)
+		if (updateTasks) updateTasks(sortFilterPipe({ globalTasks, sortingAlgo, search }))
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [sortingAlgo])
+	}, [sortingAlgo, search, globalTasksLen]) // page
 
 	const update = () => {
 		const transforms = [
@@ -89,7 +86,7 @@ const TaskTable = ({
 						{provided => (
 							<tbody ref={provided.innerRef} {...provided.droppableProps}>
 								{taskList && taskList.length > 0
-									? todoList({ services, state: taskRowState, taskList: filteredTasks, startRange, endRange, timeRange, options, variant })
+									? todoList({ services, state: taskRowState, taskList, startRange, endRange, timeRange, options, variant })
 									: <tr>
 										<td colSpan='4' style={{ width: '818px', textAlign: 'center' }}>
 											No Tasks are made yet. Make some by pressing the + button above.
