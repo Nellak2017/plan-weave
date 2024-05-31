@@ -18,7 +18,7 @@ const initialState = {
 	page: 1, // what page the user is currently on. Starts at 1
 	tasksPerPage: 10,
 	taskTransition: [0, 0], // Used to keep dnd config in sync when completing/incompleting a task
-	tasks: [],
+	tasks: [], // Pretty sure this is the local tasks derived from redux global tasks
 	fullTask: false, // Used to show Full tasks or Simple Tasks
 	firstLoad: true, // Used to guard against setting endtime multiple times
 	userId: '', // Used to store the userId for Firebase

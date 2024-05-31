@@ -17,14 +17,14 @@ import {
 	millisToHours,
 	calculateWaste,
 	isInt,
-	reorderList, // not covered by property based tests (Annoying)
+	reorderList, // not covered by property based tests (Annoying, also unused content)
 	rearrangeDnD,
 	ordinalSet,
 	deleteDnDEvent,
 	isRelativelyOrdered, // not covered by property based tests
 	pipe, 
 	completedOnTopSorted,
-	calculateRange, // not covered by any tests yet
+	calculateRange, // only covered by example based tests
 	filterPages, // not covered by any tests yet
 
 	relativeSortIndex,

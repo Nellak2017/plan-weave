@@ -1,7 +1,7 @@
 import {
 	HoursInputStyled, HoursContainer
 } from './HoursInput.elements'
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { THEMES, VARIANTS } from '../../utils/constants'
 import PropTypes from 'prop-types'
 

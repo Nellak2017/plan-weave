@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import React, { useMemo, useEffect } from 'react'
 import TableHeader from '../../atoms/TableHeader/TableHeader'
 import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
@@ -45,7 +45,6 @@ const TaskTable = ({
 
 	// --- Effects
 	useEffect(() => {
-		console.log(globalTasks)
 		if (updateTasks) updateTasks(sortFilterPipe({ globalTasks, sortingAlgo, search }))
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [sortingAlgo, search, globalTasksLen]) // page

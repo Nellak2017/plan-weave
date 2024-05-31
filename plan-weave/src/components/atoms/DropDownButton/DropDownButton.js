@@ -5,7 +5,7 @@ import {
   DropdownMenuItem
 } from './DropDownButton.elements'
 import { AiFillCaretDown } from 'react-icons/ai'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
 function DropDownButton({ size = 's', color = 'primary', options, children = 'Auto Sort', tabIndex, ...rest }) {

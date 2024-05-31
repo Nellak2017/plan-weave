@@ -1,3 +1,4 @@
+import React from 'react'
 import { TableHeaderContainer, StyledRow } from './TableHeader.elements'
 import { THEMES, VARIANTS } from '../../utils/constants'
 import PropTypes from 'prop-types'

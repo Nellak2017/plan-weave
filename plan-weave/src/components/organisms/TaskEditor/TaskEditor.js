@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import React, { useContext } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasks } from '../../../redux/selectors'
 import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS, VARIANTS } from '../../utils/constants'

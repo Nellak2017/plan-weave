@@ -160,11 +160,9 @@ export const validateTaskField = ({ field, payload, schema = simpleTaskSchema, l
  * @param {string} options.attribute - The attribute to filter by.
  * @returns {Array} - The filtered list.
  */
-export const filterTaskList = (filter, attribute) => list => {
-	return (!filter || !attribute)
-		? list
-		: list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
-}
+export const filterTaskList = (filter, attribute) => list => (!filter || !attribute)
+	? list
+	: list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
 
 /**
  * Converts hours to seconds.
@@ -277,9 +275,7 @@ export const rearrangeDnD = (dnd, source, destination) => {
 export const ordinalSet = dnd => {
 	const mapping = {}
 	const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
-	uniqueSortedArr.forEach((num, index) => {
-		mapping[num] = index
-	})
+	uniqueSortedArr.forEach((num, index) => { mapping[num] = index })
 	return dnd.map(num => mapping[num])
 }
 
@@ -345,9 +341,7 @@ export const isRelativelyOrdered = (list1, list2) => {
 	if (list1.length <= 1) return true
 	return list1.slice(0, -1).reduce((acc, a, i) => {
 		if (!acc) return false
-		const b = list1[i + 1]
-		const c = list2[i]
-		const d = list2[i + 1]
+		const [b, c, d] = [list1[i + 1], list2[i], list2[i + 1]]
 		return (a < b && c < d) || (a > b && c > d)
 	}, true)
 }
@@ -475,7 +469,7 @@ export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
 
 	if (isHighlighting && isChecked) return 'selected'
 	else if (!isHighlighting && !isChecked && isOld) return 'old'
-	else return ''
+	return ''
 }
 
 /**
