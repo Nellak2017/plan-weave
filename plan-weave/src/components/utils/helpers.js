@@ -229,10 +229,10 @@ export const isInt = number => ((!!number || number === 0) && typeof number === 
  * Reorders an array of tasks based on a provided transformation list.
  *
  * @param {Array<Object>} tasks - The array of tasks to be reordered. Like [{a:0},{b:1},{c:2}]
- * @param {Array<number>} transform - An array representing the desired order of task IDs. Like [1,2,0]
+ * @param {Array<number>} reordering - An array representing the desired order of task IDs. Like [1,2,0]
  * @returns {Array<Object>} Returns a new array of tasks reordered based on the transform list. Like [{a:1},{b:2},{c:0}]
  */
-export const transform = (tasks, transform) => tasks.map((_, i) => tasks[transform[i]])
+export const reorderList = (tasks, reordering) => tasks.map((_, i) => tasks[reordering[i]])
 
 /**
  * Applies a sequence of transformation functions to an initial array of tasks.
@@ -353,6 +353,23 @@ export const isRelativelyOrdered = (list1, list2) => {
 }
 
 /**
+ * Composes a series of functions into a single function.
+ * The functions are executed in sequence from left to right.
+ *
+ * @function pipe
+ * @param {...Function} f - The functions to compose.
+ * @returns {Function} A function that takes an initial value and passes it through the composed functions.
+ * 
+ * @example
+ * const add1 = x => x + 1
+ * const multiply2 = x => x * 2
+ * const addThenMultiply = pipe(add1, multiply2)
+ * 
+ * console.log(addThenMultiply(5)) // Output: 12
+ */
+export const pipe = (...f) => x => f.reduce((acc, fn) => fn(acc), x)
+
+/**
  * Sorts tasks with completed tasks on top and applies transformation functions.
  *
  * @param {Object[]} reduxTasks - The list of tasks from Redux.
@@ -362,21 +379,11 @@ export const isRelativelyOrdered = (list1, list2) => {
  * @param {Function} sort - A sorting function. Must be explicitly defined so no bugs happen.
  * @returns {Object[]} The sorted and transformed list of tasks.
  */
-export const completedOnTopSorted = (reduxTasks, tasks, start, transforms, sort = t => t.slice()) => {
-	// transforms is a list of transformation functions, tasks => ordering of tasks
-	const processedTransforms = !transforms
-		? [
-			t => transform(t, reduxTasks.map((_, i) => i)),
-			t => calculateWaste({ start, taskList: t, time: new Date() })
-		]
-		: transforms
+export const completedOnTopSorted = (sort = t => t.slice(), status = TASK_STATUSES) => reduxTasks => [
+	...sort([...reduxTasks].filter(task => task?.status === status.COMPLETED)),
+	...sort([...reduxTasks].filter(task => task?.status !== status.COMPLETED))
+]
 
-	if (!reduxTasks) return tasks && tasks.length > 0 ? transformAll(tasks, processedTransforms) : []
-
-	const completedTasks = sort([...reduxTasks].filter(task => task?.status === TASK_STATUSES.COMPLETED))
-	const remainingTasks = sort([...reduxTasks].filter(task => task?.status !== TASK_STATUSES.COMPLETED))
-	return transformAll([...completedTasks, ...remainingTasks], processedTransforms)
-}
 
 /**
  * Constructs a string that is not present in the original list of strings using the diagonal argument.

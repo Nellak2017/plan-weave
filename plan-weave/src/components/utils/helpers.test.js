@@ -17,11 +17,13 @@ import {
 	millisToHours,
 	calculateWaste,
 	isInt,
-	transform, // not covered by property based tests (Annoying)
+	reorderList, // not covered by property based tests (Annoying)
 	rearrangeDnD,
 	ordinalSet,
 	deleteDnDEvent,
 	isRelativelyOrdered, // not covered by property based tests
+	pipe, // not covered by any testing
+	completedOnTopSorted,
 
 	relativeSortIndex,
 	highlightTaskRow,
@@ -673,7 +675,7 @@ describe('isInt', () => {
 	})
 })
 
-describe('transform', () => {
+describe('reorderList', () => {
 
 	// --- Property based tests
 
@@ -682,7 +684,7 @@ describe('transform', () => {
 		fc.assert(fc.property(
 			fc.array(fc.object()),
 			tasks => {
-				const result = transform(tasks, tasks.map((_, i) => i))
+				const result = reorderList(tasks, tasks.map((_, i) => i))
 				expect(result).toEqual(tasks)
 			}
 		)
@@ -1082,6 +1084,171 @@ describe('isRelativelyOrdered', () => {
 		})
 	})
 })
+
+describe('pipe', () => {
+	const areFunctionsEqual = (func1, func2) => (func1.length !== func2.length)
+		? false
+		: func1.toString() === func2.toString()
+
+	// --- Property based tests
+	/* 
+		1. Identity Property: (I ∘ I)(f) = f ; pipe(I, I)(f) = f
+		2. Associativity Property: (f ∘ g) ∘ h = f ∘ (g ∘ h)
+	*/
+	test('Identity Property: (f ∘ I) = f ; pipe(I, I, ...1 or more times)(f) = f', () => {
+		fc.assert(fc.property(
+			fc.func(fc.anything()),
+			f => {
+				const I = x => x
+				const result = pipe(I, I)(f)
+				expect(result).toEqual(f)
+			}
+		))
+	})
+
+	test('Associativity Property: (f ∘ g) ∘ h = f ∘ (g ∘ h); pipe(pipe(f,g), h) = pipe(f, pipe(g, h))', () => {
+		fc.assert(fc.property(
+			fc.func(fc.anything()), // Generate a random function
+			fc.func(fc.anything()), // Generate another random function
+			fc.func(fc.anything()), // Generate another random function
+			(f, g, h) => {
+				const result1 = pipe(pipe(f, g), h) // Compose functions left to right
+				const result2 = pipe(f, pipe(g, h)) // Compose functions right to left
+				expect(areFunctionsEqual(result1, result2)).toBe(true)
+			}
+		))
+	})
+
+})
+
+describe('completedOnTopSorted', () => {
+	// --- Example based tests
+	const exampleTasks = [
+		{ id: 1, status: TASK_STATUSES.COMPLETED, name: 'Task 1' },
+		{ id: 2, status: TASK_STATUSES.INCOMPLETE, name: 'Task 2' },
+		{ id: 3, status: TASK_STATUSES.COMPLETED, name: 'Task 3' },
+		{ id: 4, status: TASK_STATUSES.WAITING, name: 'Task 4' },
+	]
+	const sortFunction = tasks => tasks.sort((a, b) => a.id - b.id)
+	const testCases = [
+		{
+			description: 'sorts tasks with completed tasks on top',
+			inputTasks: exampleTasks,
+			expectedOutput: [exampleTasks[0], exampleTasks[2], exampleTasks[1], exampleTasks[3]],
+		},
+		{
+			description: 'handles an empty list of tasks',
+			inputTasks: [],
+			expectedOutput: [],
+		},
+		{
+			description: 'sorts tasks with all tasks completed',
+			inputTasks: [
+				{ id: 1, status: TASK_STATUSES.COMPLETED, name: 'Task 1' },
+				{ id: 2, status: TASK_STATUSES.COMPLETED, name: 'Task 2' },
+			],
+			expectedOutput: [
+				{ id: 1, status: TASK_STATUSES.COMPLETED, name: 'Task 1' },
+				{ id: 2, status: TASK_STATUSES.COMPLETED, name: 'Task 2' },
+			],
+		},
+		{
+			description: 'sorts tasks with no tasks completed',
+			inputTasks: [
+				{ id: 1, status: TASK_STATUSES.INCOMPLETE, name: 'Task 1' },
+				{ id: 2, status: TASK_STATUSES.WAITING, name: 'Task 2' },
+			],
+			expectedOutput: [
+				{ id: 1, status: TASK_STATUSES.INCOMPLETE, name: 'Task 1' },
+				{ id: 2, status: TASK_STATUSES.WAITING, name: 'Task 2' },
+			],
+		},
+		{
+			description: 'sorts tasks with all tasks completed and reverse order',
+			inputTasks: [
+				{ id: 2, status: TASK_STATUSES.COMPLETED, name: 'Task 2' },
+				{ id: 1, status: TASK_STATUSES.COMPLETED, name: 'Task 1' },
+			],
+			expectedOutput: [
+				{ id: 1, status: TASK_STATUSES.COMPLETED, name: 'Task 1' },
+				{ id: 2, status: TASK_STATUSES.COMPLETED, name: 'Task 2' },
+			],
+		},
+	]
+
+	testCases.forEach(({ description, inputTasks, expectedOutput }) => {
+		test(description, () => {
+			const sortedTasks = completedOnTopSorted(sortFunction)(inputTasks)
+			expect(sortedTasks).toEqual(expectedOutput)
+		})
+	})
+
+	// --- Property based tests
+	/* 
+	1. output is an array of 0 or more objects which has atleast a status attribute that is a string of one of the accepted statuses // and input for arbitrary
+		[{status: in TASK_STATUSES}*, ...inf]
+	2. tasks with completed status are before all others if there is any
+		[{status: TASK_STATUSES.COMPLETED}*, {status: !TASK_STATUSES.COMPLETED}*, ...inf]
+	3. len(input) = len(output)
+		[{status: TASK_STATUSES.COMPLETED}*, {status: !TASK_STATUSES.COMPLETED}*, ...len(input)]
+	4. completed tasks and non completed tasks are sorted based on the given sort function
+		[sort({status: TASK_STATUSES.COMPLETED}*), sort({status: !TASK_STATUSES.COMPLETED}*), ...len(input)]
+	*/
+	const completedOnTopArbitary = fc.array(fc.record({
+		id: fc.nat({ min: 1 }),
+		status: fc.constantFrom(...Object.values(TASK_STATUSES)),
+		task: fc.string({ maxLength: 50 }),
+	}))
+
+	test('output is an array of objects with at least a status attribute that is a string of one of the accepted statuses', () => {
+		fc.assert(fc.property(
+			completedOnTopArbitary,
+			tasks => {
+				const sortedTasks = completedOnTopSorted(sortFunction)(tasks)
+				expect(sortedTasks.every(task => Object.values(TASK_STATUSES).includes(task.status))).toBe(true)
+			}
+		))
+	})
+
+	test('tasks with completed status are before all others if there is any', () => {
+		fc.assert(fc.property(
+			completedOnTopArbitary,
+			tasks => {
+				const sortedTasks = completedOnTopSorted(sortFunction)(tasks)
+				const firstNonCompletedIndex = sortedTasks.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
+				if (firstNonCompletedIndex === -1) return true
+				expect(sortedTasks.slice(firstNonCompletedIndex).every(task => task.status !== TASK_STATUSES.COMPLETED)).toBe(true)
+			}
+		))
+	})
+
+	test('len(input) = len(output)', () => {
+		fc.assert(fc.property(
+			completedOnTopArbitary,
+			tasks => {
+				const sortedTasks = completedOnTopSorted(sortFunction)(tasks)
+				expect(sortedTasks.length).toBe(tasks.length)
+			}
+		))
+	})
+
+	test('completed tasks and non completed tasks are sorted based on the given sort function', () => {
+		fc.assert(fc.property(
+			completedOnTopArbitary,
+			tasks => {
+				const sortedTasks = completedOnTopSorted(sortFunction)(tasks)
+				const completedTasks = sortedTasks.filter(task => task.status === TASK_STATUSES.COMPLETED)
+				const nonCompletedTasks = sortedTasks.filter(task => task.status !== TASK_STATUSES.COMPLETED)
+				const sortedCompletedTasks = sortFunction(completedTasks)
+				const sortedNonCompletedTasks = sortFunction(nonCompletedTasks)
+				expect(completedTasks).toEqual(sortedCompletedTasks)
+				expect(nonCompletedTasks).toEqual(sortedNonCompletedTasks)
+			}
+		))
+	})
+
+})
+
 
 describe('dateToToday', () => {
 	const testCases = [

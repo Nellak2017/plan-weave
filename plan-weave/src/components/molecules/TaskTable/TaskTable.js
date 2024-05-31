@@ -12,11 +12,9 @@ import {
 	calculateRange,
 	transformAll,
 	predecessorOptions,
+	pipe,
 } from '../../utils/helpers.js'
-import {
-	dateToToday
-} from '../../utils/helpers.res.js'
-import { add, getTime, parseISO } from 'date-fns'
+import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
 import PropTypes from 'prop-types'
 import { useInterval } from '../../../hooks/useInterval.js'
@@ -46,8 +44,12 @@ const TaskTable = ({
 
 	// --- Effects
 	useEffect(() => {
-		const transforms = [t => calculateWaste({ start, taskList: t, time: new Date() })]
-		if (updateTasks) updateTasks(completedOnTopSorted(globalTasks?.tasks, [], start, transforms, SORTING_METHODS[sortingAlgo]))
+		if (updateTasks) updateTasks(
+			pipe(
+				completedOnTopSorted(SORTING_METHODS[sortingAlgo]),
+				taskList => calculateWaste({ start, taskList, time: new Date() })
+			)(globalTasks?.tasks)
+		)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [sortingAlgo])
 

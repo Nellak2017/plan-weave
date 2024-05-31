@@ -2,6 +2,7 @@ import React from "react"
 import { validateTask, isTaskOld, findLastCompletedTask } from '../../utils/helpers'
 import { taskSchema, fillDefaults } from "../../schemas/taskSchema/taskSchema"
 import TaskRow from '../TaskRow/TaskRow'
+import { VARIANTS } from "../../utils/constants"
 
 // --- Extracted view logic for Task Table (Covers both Simple and Full Tasks)
 export const todoList = ({
@@ -12,7 +13,7 @@ export const todoList = ({
 	endRange,
 	timeRange,
 	options,
-	variant = 'dark'
+	variant = VARIANTS[0]
 }) => {
 	if (!taskList) return []
 
