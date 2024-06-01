@@ -1,3 +1,4 @@
+import React from "react"
 import { TASK_STATUSES, TASK_ROW_TOOLTIPS } from "../../utils/constants"
 import TaskInput from '../../atoms/TaskInput/TaskInput.js'
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
@@ -44,7 +45,7 @@ const SimpleRow = ({
 					: (<MdOutlineCheckBoxOutlineBlank size={iconSize} onClick={handleCheckBoxClicked} />)
 				}
 			</IconContainer>
-			<TaskContainer title={taskTooltip}>
+			<TaskContainer aria-label={taskTooltip} title={taskTooltip}>
 				{status === TASK_STATUSES.COMPLETED ?
 					<p>{task}</p>
 					: <TaskInput maxLength="50" onChange={e => setLocalTask(e.target.value)} value={localTask} variant={variant} />

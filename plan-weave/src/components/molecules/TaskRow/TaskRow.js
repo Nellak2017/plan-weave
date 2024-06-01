@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { TaskRowStyled, TrashContainer } from './TaskRow.elements.js'
 import SimpleRow from './SimpleRow.js'
 import FullRow from './FullRow.js'
@@ -107,6 +107,7 @@ function TaskRow({
 				setTab(false)
 			}}
 			onKeyDown={e => { if (e.key === 'Tab') setTab(true) }} // Set to be true, so that tabbing in doesn't cause updates. (other approaches don't work perfectly)
+			data-testid={`task-${id}-testId`}
 		>
 			{!fullTask &&
 				<>

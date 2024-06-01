@@ -70,6 +70,7 @@ const TaskEditor = ({
 		timeRange: useSelector(state => state?.taskEditor?.timeRange),
 	}
 
+
 	return (
 		<TaskEditorContainer variant={processedVariant}>
 			<h1>{title}</h1>
