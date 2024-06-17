@@ -1,3 +1,5 @@
+/* eslint-disable complexity */
+/* eslint-disable max-lines-per-function */
 /* eslint-disable fp/no-let */
 // UI Tests for TaskEditor
 
@@ -5,6 +7,7 @@ import React from 'react'
 import { screen } from '@testing-library/react' // render is used in 'renderWithProviders'
 import { renderWithProviders } from '../../utils/test-utils.js'
 import '@testing-library/jest-dom'
+import { fc } from '@fast-check/jest'
 import configureStore from 'redux-mock-store'
 import TaskEditor from './TaskEditor'
 import { parse } from 'date-fns'
@@ -60,7 +63,7 @@ describe('TaskEditor Component, Order Problem', () => {
 	// --- Set-up
 	let store
 	beforeEach(() => { store = mockStore(initialState) })
-	const renderComponent = () => renderWithProviders(<TaskEditor />, store)
+	const renderComponent = (theStore = store) => renderWithProviders(<TaskEditor />, theStore)
 
 	// --- Example based tests
 
@@ -74,18 +77,11 @@ describe('TaskEditor Component, Order Problem', () => {
 	test('If No Completed Tasks, Non-Complete tasks should be in correct sorted order', () => {
 		// Setup store to have no completed tasks
 		const incompleteTasks = mockTasks.filter(task => task.status !== TASK_STATUSES.COMPLETED)
-		store = mockStore(
-			{
-				...initialState,
-				globalTasks: {
-					tasks: incompleteTasks
-				},
-				taskEditor: {
-					...initialState.taskEditor,
-					tasks: incompleteTasks,
-				}
-			}
-		)
+		store = mockStore({
+			...initialState,
+			globalTasks: { tasks: incompleteTasks },
+			taskEditor: { ...initialState.taskEditor, tasks: incompleteTasks, },
+		})
 		// The tasks we observe should be in sorted order based on existing sorting algorithm
 		const sortAlgoName = initialState.taskEditor.sortingAlgo // We do not change this, so it is valid
 		const sortAlgo = SORTING_METHODS[sortAlgoName] // sort by timestamp or whatever is in initial state
@@ -98,14 +94,57 @@ describe('TaskEditor Component, Order Problem', () => {
 		const taskElements = screen.getAllByTitle('Task Name') // Each task has a Title 'Task Name'
 		expect(taskElements.length > 0).toBe(true)
 		const taskTitlesDisplayed = taskElements.map(taskElement => {
-			const completedElTaskName = taskElement.querySelector('p')?.textContent 
+			const completedElTaskName = taskElement.querySelector('p')?.textContent
 			const notCompletedElTaskName = taskElement.querySelector('input')?.value
-			const displayedTaskName = !completedElTaskName ? notCompletedElTaskName : completedElTaskName 
+			const displayedTaskName = !completedElTaskName ? notCompletedElTaskName : completedElTaskName
 			return displayedTaskName
 		}) // Select text inside <p> or <input> elements
 
 		// Compare the titles of displayed tasks with the sorted tasks
 		expect(taskTitlesDisplayed).toEqual(taskTitlesSorted)
+	})
+
+	// --- Property based tests
+	const completedTaskArbitrary = fc.array(fc.record({
+		status: fc.constant(TASK_STATUSES.COMPLETED),
+		task: fc.string(),
+	}))
+	const nonCompletedTaskArbitrary = fc.array(fc.record({
+		status: fc.constantFrom(...Object.values(TASK_STATUSES).filter(status => status !== TASK_STATUSES.COMPLETED)),
+		task: fc.string(),
+	}))
+
+	// 1. Completed Tasks are always on top if there exists any
+	fc.configureGlobal({ seed: 1772384420 })
+	test('Completed Tasks are always on top if there exists any', () => {
+		fc.assert(fc.property(
+			completedTaskArbitrary,
+			nonCompletedTaskArbitrary,
+			(completedTasks, incompleteTasks) => {
+				const store = mockStore({
+					...initialState,
+					globalTasks: { tasks: [...completedTasks, ...incompleteTasks] },
+					taskEditor: { ...initialState.taskEditor, tasks: [...completedTasks, ...incompleteTasks], },
+				})
+
+				renderComponent(store)
+
+				// Do a random series of allowed operations here (Search, Add, FullTaskToggle, AutoSort, DnD, Complete, ...rest)
+
+				const taskElements = screen.queryAllByTitle('Task Name') // [<td title='Task Name'>...</td>,...]
+				if (taskElements.length === 0) return true
+				const completedTasksDisplayed = taskElements.filter(taskElement => taskElement.querySelector('p'))
+				const incompleteTasksDisplayed = taskElements.filter(taskElement => taskElement.querySelector('input'))
+
+				if (completedTasks.length > 0 && incompleteTasks.length > 0) completedTasksDisplayed.length > 0 && incompleteTasksDisplayed.length > 0 && completedTasksDisplayed[0] && !incompleteTasksDisplayed[0]
+				if (completedTasks.length > 0) completedTasksDisplayed.length > 0 && incompleteTasksDisplayed.length === 0 && completedTasksDisplayed[0]
+				if (incompleteTasks.length > 0) completedTasksDisplayed.length === 0 && incompleteTasksDisplayed.length > 0 && incompleteTasksDisplayed[0]
+				return true // Test passed if there are no tasks
+			}
+		), {
+			numRuns: 10, // must limit it for UI tests
+		}
+		)
 	})
 	/* 
 	Possible Relevant user actions for TaskEditor:

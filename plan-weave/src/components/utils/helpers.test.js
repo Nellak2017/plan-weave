@@ -22,7 +22,7 @@ import {
 	ordinalSet,
 	deleteDnDEvent,
 	isRelativelyOrdered, // not covered by property based tests
-	pipe, 
+	pipe,
 	completedOnTopSorted,
 	calculateRange, // only covered by example based tests
 	filterPages, // not covered by any tests yet
@@ -30,7 +30,7 @@ import {
 	relativeSortIndex,
 	highlightTaskRow,
 	diagonalize,
-	
+
 } from './helpers'
 import {
 	dateToToday,
@@ -1251,6 +1251,35 @@ describe('completedOnTopSorted', () => {
 
 })
 
+describe('calculateRange', () => {
+	const testCases = [
+		{
+			description: 'Calculates the range for a valid page and tasks per page',
+			input: [10, 3],
+			expected: [21, 30],
+		},
+		{
+			description: 'Handles invalid input with default range',
+			input: ['abc', 2],
+			expected: [0, undefined],
+		},
+		{
+			description: 'Handles invalid input with default range',
+			input: [10, 'xyz'],
+			expected: [0, undefined],
+		},
+	]
+
+	testCases.forEach(({ description, input, expected }) => {
+		it(description, () => {
+			expect(calculateRange(...input)).toEqual(expected)
+		})
+	})
+})
+
+// TODO: filterPages tests
+
+// --- Later
 
 describe('dateToToday', () => {
 	const testCases = [
@@ -1381,8 +1410,6 @@ describe('validateTransformation', () => {
 		})
 	})
 })
-
-// --- Later
 
 describe('validateTask', () => {
 	const twelve = new Date(new Date().setHours(12, 0, 0, 0)).toISOString()
@@ -1643,28 +1670,4 @@ describe('diagonalize', () => {
 	})
 })
 
-describe('calculateRange', () => {
-	const testCases = [
-		{
-			description: 'Calculates the range for a valid page and tasks per page',
-			input: [10, 3],
-			expected: [21, 30],
-		},
-		{
-			description: 'Handles invalid input with default range',
-			input: ['abc', 2],
-			expected: [0, undefined],
-		},
-		{
-			description: 'Handles invalid input with default range',
-			input: [10, 'xyz'],
-			expected: [0, undefined],
-		},
-	]
 
-	testCases.forEach(({ description, input, expected }) => {
-		it(description, () => {
-			expect(calculateRange(...input)).toEqual(expected)
-		})
-	})
-})

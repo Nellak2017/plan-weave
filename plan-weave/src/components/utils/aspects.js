@@ -1,18 +1,19 @@
 import { deleteDnDEvent } from "./helpers"
 
 // --- Error Aspects
-// TODO: For now we throw errors, later determine if we can do a better approach
 export const supportedErrors = {
+	// Returns Result Type
+	// eslint-disable-next-line complexity
 	'deleteDnDEvent': (dnd, indexRange) => {
 		// dnd and indexRange are arrays, len(indexRange) = 2, len(dnd) > 0, dnd is an array of unique naturals
 		if (!Array.isArray(dnd) || !Array.isArray(indexRange) || indexRange.length !== 2 || dnd.length === 0 || new Set(dnd).size !== dnd.length) {
-			throw new TypeError(`Invalid input parameters in deleteDnDEvent.\ndnd = ${dnd}\nindexRange = ${indexRange}`)
+			return { ok: false, error: `Invalid input parameters in deleteDnDEvent.\ndnd = ${dnd}\nindexRange = ${indexRange}` }
 		}
 		const [startIndex, endIndex] = indexRange
 		const invalidRange = startIndex < 0 || endIndex < startIndex || endIndex >= dnd.length
-		if (invalidRange) throw new TypeError(`Invalid index range in deleteDnDEvent.\nRange = ${indexRange}`)
+		if (invalidRange) return { ok: false, error: `Invalid index range in deleteDnDEvent.\nRange = ${indexRange}` }
 
-		return deleteDnDEvent(dnd, indexRange)
+		return { ok: deleteDnDEvent(dnd, indexRange), error: false }
 	}
 }
 

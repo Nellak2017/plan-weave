@@ -119,7 +119,7 @@ export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx 
 
 		// Case 3: If the Task is invalid, but has required fields. Update it and return list.
 		// Iterate through fields and apply defaults to invalid ones, or delete it if it isn't in the attribute list
-		const updatedTask = schemaDefaultFx(task); // fill defaults if there are other undefined attributes too
+		const updatedTask = schemaDefaultFx(task) // fill defaults if there are other undefined attributes too
 
 		const finalTask = Object.keys(updatedTask).reduce((acc, field) => {
 			const fieldExists = schema?.fields[field]
