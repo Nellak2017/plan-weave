@@ -6,12 +6,23 @@ import * as Yup from 'yup'
 // --- Predicates
 const isDictionary = val => Object.prototype.toString.call(val) === '[object Object]'
 const isIterable = val => (val !== undefined && val !== null && typeof val !== 'string' && typeof val[Symbol.iterator] === 'function') || isDictionary(val)
-const isNode = val => !isIterable(val)
+const isNode = schema => (!schema || !schema?.type)
+	? false
+	: (schema.type === 'string' || schema.type === 'number' || schema.type === 'boolean' || schema.type === 'date')
 // (any, Yup schema) => { isValid: bool, error: string }
 const isInputValid = (input, schema) => {
 	try {
-		schema.validateSync(input, { strict: true })
-		return { isValid: true, error: '' }
+		schema.validateSync(input, { strict: true, abortEarly: true })
+		// Check if there are extra fields in the input
+		const extraFields = typeof input !== 'object' || typeof schema.fields !== 'object'
+			? []
+			: Object.keys(input).filter(field => !Object.keys(schema.fields).includes(field))
+		return (extraFields.length > 0)
+			? {
+				isValid: false,
+				error: `Extra fields present in input: ${extraFields.join(', ')}.`
+			}
+			: { isValid: true, error: '' }
 	} catch (error) {
 		return { isValid: false, error: error.message || String(error) }
 	}
@@ -94,43 +105,107 @@ const enhancedCastPrimitive = (input, schema) => getTransform(input, schema)(inp
 
 // --- DFS
 
-// Recursive function to traverse the schema and input data
-// ogOutput => Original Output from default of top level. Never changes.
+const reachGet = (input, path) => {
+	const getValue = (obj, keys) => {
+		if (!obj || keys.length === 0) return obj
+		const [key, ...rest] = keys
+		return obj !== null && obj !== undefined ? getValue(obj[key], rest) : undefined
+	}
+	return getValue(input, path)
+}
+const reachUpdate = (input, path, value) => {
+	const updateValue = (obj, keys, val) => {
+		if (keys.length === 0) return val
+		const [key, ...rest] = keys
+		obj[key] = updateValue(obj[key] !== null && obj[key] !== undefined ? obj[key] : Number.isInteger(rest[0]) ? [] : {}, rest, val)
+		return obj
+	}
+	if (path.length === 0) return value
+	return updateValue(input, path, value)
+}
+
+
+// MUTABLE Recursive function to traverse the schema and input data
+// WARNING: This function is mutable meaning it may mutate the output variable passed in. Only use in a closure.
 // schema => Schema at that point in the DFS.
 // input => Data at that point in the DFS.
 // errors => List of errors accumulated in DFS.
-// output => Accumulated Output based on mutatating a copy of ogOutput.
-const dfs = (ogOutput, schema, input, output, path = [], errors = []) => {
-	if (isNode(input)) {
-		const { isValid, error } = isInputValid(input, schema) // see if it is valid
-		if (isValid) {
-			return { output, errors } // if it is valid, recurse up without changing it
-		}
-		// if it is not valid, add those validation errors to the list we are building
-		const newOutput = enhancedCastPrimitive(input, schema) // this enhanced coercion is the output at this level
-		const outputPath = path.join('.')
-		output[outputPath] = newOutput // Is this really the only way to do this, or can it be done immutably?
-		return { output: newOutput, errors: [...errors, error] }
+// output => Accumulated Output based on mutatating output
+// eslint-disable-next-line complexity
+const dfs = (input, schema, output = undefined, path = [], errors = []) => {
+	const currentSchema = schema
+	const currentInput = reachGet(input, path)
+	const { isValid, error } = isInputValid(currentInput, currentSchema) // see if it is valid (works for nodes and non-nodes)
+	if ((isNode(currentSchema) && isValid) || (!isNode(currentSchema) && isValid)) {
+		return { output: reachUpdate(output, path, currentInput), errors }
+	}
+	if (isNode(currentSchema) && !isValid) {
+		const castedValue = enhancedCastPrimitive(currentInput, currentSchema)
+		return { output: reachUpdate(output, path, castedValue), errors: [...errors, error] }
 	}
 
+	if (currentSchema.type === 'object') {
+		// eslint-disable-next-line no-param-reassign
+		output = reachUpdate(output, path, {})
+		// eslint-disable-next-line no-param-reassign
+		errors = [...errors, error]
+		const fields = currentSchema.fields // Assuming fields are iterable
+		const iterable = makeIterable(fields)
+		const entries = Array.from(iterable)
+		entries.forEach(([key, fieldSchema]) => {
+			const newPath = [...path, key] // is this always right??
+			const { output: updatedOutput, errors: updatedErrors } = dfs(input, fieldSchema, output, newPath, errors) // Recursively call dfs
+			// eslint-disable-next-line no-param-reassign
+			output = updatedOutput
+			// eslint-disable-next-line no-param-reassign
+			errors = updatedErrors
+		})
+		return { output, errors }
+	}
+
+	// Array with nested dict
+	// ex: schema.innerType.fields = [field1, field2, ...]
+	if (currentSchema.type === 'array' && currentSchema.innerType.fields) {
+		reachUpdate(output, path, []) // untested
+		const fields = currentSchema.innerType.fields
+		const iterable = makeIterable(fields)
+		const entries = Array.from(iterable)
+		entries.forEach(([key, fieldSchema]) => {
+			const newPath = [...path, key]
+			return dfs(input, fieldSchema, output, newPath, errors)
+		})
+	}
+
+	// Array without nested dict
+	if (currentSchema.type === 'array' && !currentSchema.innerType?.fields) {
+		/*
+		Arrays without dicts are a bit different than Objects. 
+		You need to iterate through the _input_ and keep the schema fixed at path.
+		*/
+		reachUpdate(output, path, [])
+		const inputFields = reachGet(input, path)
+		const { isValid, error } = isInputValid(inputFields, currentSchema)
+		const def = currentSchema.default
+		if (!isValid) {
+			reachUpdate(output, path, def || null)
+			return { output, errors: [...errors, error] }
+		}
+		reachUpdate(output, path, inputFields)
+		return { output, errors: [...errors, error] }
+	}
+
+	return { output, errors: [...errors, { message: `Schema type '${currentSchema?.type}' is not supported` }] }
+
 	// Handle iterables (arrays/objects/other)
-	/*
-	const [currOutput, currSchema, currInput] = the iterable for each of these
-	if you can't go inside currInput:
-		  set output at this point to default based on schema (or else early return) (don't forget to update errors list), 
-		  then go to the next iterable in our list we are iterating
-	if you can go inside currInput:
-	   go inside updating our iterables
-	*/
-	const iterable = makeIterable(input)
-	const entries = Array.from(iterable)
+	// const iterable = makeIterable(input)
+	// const entries = Array.from(iterable)
 
-	entries.forEach(([key, value]) => {
-		const itemPath = [...path, key]
-		dfs(ogOutput, schema[key], value, output, itemPath, errors) // TODO: fix [schema[key], input passed, output] 
-	})
+	// entries.forEach(([key, value]) => {
+	// 	const itemPath = [...path, key]
+	// 	return dfs(value, output, schema[key], itemPath, errors) // TODO: fix [schema[key], input passed, output] 
+	// })
 
-	return { output, errors }
+	// return { output, errors }
 }
 
 // --- Main Coercion function
@@ -173,36 +248,34 @@ const dfs = (ogOutput, schema, input, output, path = [], errors = []) => {
  * // ]
  */
 export const coerceToSchema = (input, schema) => {
-
-	//console.log(schema.fields) // all the data schemas and sub-schemas
-	const exampleSchema = Yup.object().shape({
-		name: Yup.string().default('Anonymous'),
-		age: Yup.number().default(0),
-		email: Yup.string().email().default('no-reply@example.com')
-	}).default({ name: 'Anonymous', age: 0, email: 'no-reply@example.com' })
-	const exampleFields = exampleSchema
-
-	return { output: input, errors: [] }
+	const edgeCasesErr = coercionEdgeCases(input, schema).error
+	if (edgeCasesErr != '') return { output: input, errors: [edgeCasesErr] }
+	return dfs(input, schema)
 }
 
+// --- Testing it out
 const schema = Yup.object().shape({
-    name: Yup.string().required().default('Default Name'),
-    age: Yup.number().required().default(0),
-    preferences: Yup.object().shape({
-        likes: Yup.array().of(Yup.string()).required().default([]),
-        dislikes: Yup.array().of(Yup.string()).required().default([])
-    }).default({})
-}).default({name: 'Default Name', age: 0, preferences: {}})
+	name: Yup.string().required().default('Default Name'),
+	age: Yup.number().required().default(0),
+	// preferences: Yup.object().shape({
+	// 	likes: Yup.array().of(Yup.string()).required().default([]),
+	// 	dislikes: Yup.array().of(Yup.string()).required().default([])
+	// }).default({})
+}).default({ name: 'Default Name', age: 0 }) // preferences: {}
 
 const inputData = {
-    name: "Alice",
-    age: 25,
-    preferences: {
-        likes: ["reading", "swimming"],
-        //dislikes: ["loud music"]
-    }
+	name: "Alice",
+	preferences: {
+		likes: ["reading", "swimming"],
+		//dislikes: ["loud music"]
+	},
+	age: 25,
 }
 
-const initialOutput = schema.default()
-const result = dfs(initialOutput, schema, inputData, initialOutput)
+const result = dfs(inputData, schema)
 console.log(result)
+
+// const temp = Yup.array().of(Yup.object().shape({ id: Yup.string() }))
+// console.log(temp.type)
+// console.log(temp.innerType?.fields)
+// console.log(temp.type && !temp.innerType?.fields)
