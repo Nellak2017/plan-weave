@@ -12,7 +12,7 @@ const isNode = schema => (!schema || !schema?.type)
 // (any, Yup schema) => { isValid: bool, error: string }
 const isInputValid = (input, schema) => {
 	try {
-		schema.validateSync(input, { strict: true, abortEarly: true })
+		schema.validateSync(input, { strict: true, abortEarly: true, recursive: true })
 		// Check if there are extra fields in the input
 		const extraFields = typeof input !== 'object' || typeof schema.fields !== 'object'
 			? []
@@ -58,8 +58,9 @@ const getDefaultOrInput = (input, schema) => {
 
 // --- Node Transformation Logic
 const labels = { 'null': 0, 'undefined': 1, 'boolean': 2, 'number': 3, 'bigint': 4, 'string': 5, 'date': 6, 'mixed': 7 }
+const typeDefaults = { 'null': null, 'undefined': undefined, 'boolean': false, 'number': 0, 'bigint': 0n, 'string': '', 'date': new Date(), 'array': [], 'object': {}, 'mixed': null }
 const rules = {
-	d: (_, schema) => schema && schema?.default() ? schema?.default() : null, // d is for default. No default means null
+	d: (_, schema) => schema && schema?.default() ? schema?.default() : schema?.type in typeDefaults ? typeDefaults[schema?.type] : null, // d is for default. No default means type default or null if unsupported type
 	c: (input, schema) => {
 		try {
 			return schema.cast(input)
@@ -104,7 +105,6 @@ const getTransform = (input, schema, matrix = transformationMatrix) => {
 const enhancedCastPrimitive = (input, schema) => getTransform(input, schema)(input, schema) // Returns expected casting for primitives only, not bullshit one only if default is defined. If no default then null.
 
 // --- DFS
-
 const reachGet = (input, path) => {
 	const getValue = (obj, keys) => {
 		if (!obj || keys.length === 0) return obj
@@ -124,88 +124,62 @@ const reachUpdate = (input, path, value) => {
 	return updateValue(input, path, value)
 }
 
-
-// MUTABLE Recursive function to traverse the schema and input data
-// WARNING: This function is mutable meaning it may mutate the output variable passed in. Only use in a closure.
-// schema => Schema at that point in the DFS.
-// input => Data at that point in the DFS.
-// errors => List of errors accumulated in DFS.
-// output => Accumulated Output based on mutatating output
+// NOTE: Object and array with dict defaults are not respected
 // eslint-disable-next-line complexity
 const dfs = (input, schema, output = undefined, path = [], errors = []) => {
 	const currentSchema = schema
 	const currentInput = reachGet(input, path)
-	const { isValid, error } = isInputValid(currentInput, currentSchema) // see if it is valid (works for nodes and non-nodes)
-	if ((isNode(currentSchema) && isValid) || (!isNode(currentSchema) && isValid)) {
-		return { output: reachUpdate(output, path, currentInput), errors }
+	const { isValid, error } = isInputValid(currentInput, currentSchema) // see if it is valid (works for nodes and shallow non-nodes)
+	const isArrNoDict = currentSchema.type === 'array' && !currentSchema.innerType?.fields
+	const isArrDict = currentSchema.type === 'array' && currentSchema.innerType.fields
+
+	const processErrors = errs => Array.from(new Set(errs.filter(e => e.trim() !== '')))
+
+	if ((isNode(currentSchema) || isArrNoDict) && isValid) {
+		return { output: reachUpdate(output, path, currentInput), errors: processErrors(errors) }
 	}
-	if (isNode(currentSchema) && !isValid) {
+	if ((isNode(currentSchema) || isArrNoDict) && !isValid) {
 		const castedValue = enhancedCastPrimitive(currentInput, currentSchema)
-		return { output: reachUpdate(output, path, castedValue), errors: [...errors, error] }
+		return { output: reachUpdate(output, path, castedValue), errors: processErrors([...errors, error + ` at ${path.join('.')}`]) }
 	}
+	if (currentSchema.type === 'object' || isArrDict) {
+		const fields = isArrDict ? currentSchema.innerType.fields : currentSchema.fields // Assuming fields are iterable
+		const entries = Array.from(makeIterable(fields))
+		const initialValue = isArrDict ? [{}] : {}
 
-	if (currentSchema.type === 'object') {
-		// eslint-disable-next-line no-param-reassign
-		output = reachUpdate(output, path, {})
-		// eslint-disable-next-line no-param-reassign
-		errors = [...errors, error]
-		const fields = currentSchema.fields // Assuming fields are iterable
-		const iterable = makeIterable(fields)
-		const entries = Array.from(iterable)
-		entries.forEach(([key, fieldSchema]) => {
-			const newPath = [...path, key] // is this always right??
-			const { output: updatedOutput, errors: updatedErrors } = dfs(input, fieldSchema, output, newPath, errors) // Recursively call dfs
-			// eslint-disable-next-line no-param-reassign
-			output = updatedOutput
-			// eslint-disable-next-line no-param-reassign
-			errors = updatedErrors
-		})
-		return { output, errors }
-	}
-
-	// Array with nested dict
-	// ex: schema.innerType.fields = [field1, field2, ...]
-	if (currentSchema.type === 'array' && currentSchema.innerType.fields) {
-		reachUpdate(output, path, []) // untested
-		const fields = currentSchema.innerType.fields
-		const iterable = makeIterable(fields)
-		const entries = Array.from(iterable)
-		entries.forEach(([key, fieldSchema]) => {
+		const { accOutput: updatedOutput, accErrors: updatedErrors } = entries.reduce(({ accOutput, accErrors }, [key, fieldSchema]) => {
 			const newPath = [...path, key]
-			return dfs(input, fieldSchema, output, newPath, errors)
-		})
+			const processedNewPath = isArrDict ? [...newPath.slice(0, -1), '0', newPath[newPath.length - 1]] : newPath
+			const { output: nestedOutput, errors: nestedErrors } = dfs(input, fieldSchema, accOutput, processedNewPath, accErrors)
+			return {
+				accOutput: nestedOutput,
+				accErrors: nestedErrors,
+			}
+		}, { accOutput: reachUpdate(output, path, initialValue), accErrors: processErrors([...errors, error]) })
+
+		return { output: updatedOutput, errors: updatedErrors }
 	}
 
-	// Array without nested dict
-	if (currentSchema.type === 'array' && !currentSchema.innerType?.fields) {
-		/*
-		Arrays without dicts are a bit different than Objects. 
-		You need to iterate through the _input_ and keep the schema fixed at path.
-		*/
-		reachUpdate(output, path, [])
-		const inputFields = reachGet(input, path)
-		const { isValid, error } = isInputValid(inputFields, currentSchema)
-		const def = currentSchema.default
-		if (!isValid) {
-			reachUpdate(output, path, def || null)
-			return { output, errors: [...errors, error] }
-		}
-		reachUpdate(output, path, inputFields)
-		return { output, errors: [...errors, error] }
-	}
+	// // Array with nested dict
+	// // ex: schema.innerType.fields = [field1, field2, ...]
+	// if (currentSchema.type === 'array' && currentSchema.innerType.fields) {
+	// 	const fields = currentSchema.innerType.fields
+	// 	const iterable = makeIterable(fields)
+	// 	const entries = Array.from(iterable)
+
+	// 	const { accOutput: updatedOutput, accErrors: updatedErrors } = entries.reduce(({ accOutput, accErrors }, [key, fieldSchema]) => {
+	// 		const newPath = [...path, key]
+	// 		const processedNewPath = [...newPath.slice(0, -1), '0', newPath[newPath.length - 1]]
+	// 		const { output: nestedOutput, errors: nestedErrors } = dfs(input, fieldSchema, accOutput, processedNewPath, accErrors)
+	// 		return {
+	// 			accOutput: nestedOutput,
+	// 			accErrors: nestedErrors,
+	// 		}
+	// 	}, { accOutput: reachUpdate(output, path, [{}]), accErrors: processErrors([...errors, error]) })
+	// 	return { output: updatedOutput, errors: updatedErrors }
+	// }
 
 	return { output, errors: [...errors, { message: `Schema type '${currentSchema?.type}' is not supported` }] }
-
-	// Handle iterables (arrays/objects/other)
-	// const iterable = makeIterable(input)
-	// const entries = Array.from(iterable)
-
-	// entries.forEach(([key, value]) => {
-	// 	const itemPath = [...path, key]
-	// 	return dfs(value, output, schema[key], itemPath, errors) // TODO: fix [schema[key], input passed, output] 
-	// })
-
-	// return { output, errors }
 }
 
 // --- Main Coercion function
@@ -255,27 +229,25 @@ export const coerceToSchema = (input, schema) => {
 
 // --- Testing it out
 const schema = Yup.object().shape({
-	name: Yup.string().required().default('Default Name'),
-	age: Yup.number().required().default(0),
-	// preferences: Yup.object().shape({
-	// 	likes: Yup.array().of(Yup.string()).required().default([]),
-	// 	dislikes: Yup.array().of(Yup.string()).required().default([])
-	// }).default({})
-}).default({ name: 'Default Name', age: 0 }) // preferences: {}
+	first: Yup.object().shape({
+		arr: Yup.array().of(Yup.object().shape({ id: Yup.string().required(), other: Yup.number().required() }).required()).default({ id: '1', other: 2 }),
+		likes: Yup.array().of(Yup.string()).required().default([]),
+		name: Yup.string().required().default('Default Name'),
+		age: Yup.number().required().default(0),
+	})
+})
 
 const inputData = {
-	name: "Alice",
-	preferences: {
-		likes: ["reading", "swimming"],
-		//dislikes: ["loud music"]
-	},
-	age: 25,
+	first: {
+		name: "Alice",
+		preferences: {
+			likes: ["reading", "swimming"],
+			//dislikes: ["loud music"]
+		},
+		age: 25,
+	}
 }
 
 const result = dfs(inputData, schema)
-console.log(result)
-
-// const temp = Yup.array().of(Yup.object().shape({ id: Yup.string() }))
-// console.log(temp.type)
-// console.log(temp.innerType?.fields)
-// console.log(temp.type && !temp.innerType?.fields)
+console.log(JSON.stringify(result, null, 2))
+console.log(inputData)
