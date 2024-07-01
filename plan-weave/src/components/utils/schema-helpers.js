@@ -1,16 +1,15 @@
-/* eslint-disable max-lines */
 // File dedicated solely to schema related functions
 import * as Yup from 'yup'
 
 // ------ Schema Coercion helpers
 // --- Predicates
-const isDictionary = val => Object.prototype.toString.call(val) === '[object Object]'
-const isIterable = val => (val !== undefined && val !== null && typeof val !== 'string' && typeof val[Symbol.iterator] === 'function') || isDictionary(val)
-const isNode = schema => (!schema || !schema?.type)
+export const isDictionary = val => Object.prototype.toString.call(val) === '[object Object]'
+export const isIterable = val => (val !== undefined && val !== null && typeof val !== 'string' && typeof val[Symbol.iterator] === 'function') || isDictionary(val)
+export const isNode = schema => (!schema || !schema?.type)
 	? false
 	: (schema.type === 'string' || schema.type === 'number' || schema.type === 'boolean' || schema.type === 'date' || (schema.type === 'array' && !schema.innerType?.fields))
 // (any, Yup schema) => { isValid: bool, error: string }
-const isInputValid = (input, schema) => {
+export const isInputValid = (input, schema) => {
 	try {
 		schema.validateSync(input, { strict: true, abortEarly: true, recursive: true })
 		// Check if there are extra fields in the input
@@ -89,6 +88,8 @@ const enhancedCastPrimitive = (input, schema) => getTransform(input, schema)(inp
 // --- DFS
 
 // Related dfs functions is in this object for readability
+// Note: Main dfs function does not respect defaults for arrays with dicts nor objects
+// Note: Mixed type is unsupported
 const dfsFns = {
 	reachGet: (input, path) => {
 		const getValue = (obj, keys) => {
