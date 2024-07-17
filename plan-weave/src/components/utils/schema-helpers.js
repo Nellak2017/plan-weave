@@ -28,7 +28,7 @@ export const isInputValid = (input, schema) => {
 }
 
 // --- Others
-const makeIterable = iterable => isIterable(iterable)
+export const makeIterable = iterable => isIterable(iterable)
 	? isDictionary(iterable)
 		? Object.entries(iterable)[Symbol.iterator]()
 		: iterable[Symbol.iterator]()
@@ -90,7 +90,7 @@ const enhancedCastPrimitive = (input, schema) => getTransform(input, schema)(inp
 // Related dfs functions is in this object for readability
 // Note: Main dfs function does not respect defaults for arrays with dicts nor objects
 // Note: Mixed type is unsupported
-const dfsFns = {
+export const dfsFns = {
 	reachGet: (input, path) => {
 		const getValue = (obj, keys) => {
 			if (!obj || keys.length === 0) return obj
@@ -175,9 +175,7 @@ const dfsFns = {
  * //   'Field email was missing and was set to no-reply@example.com'
  * // ]
  */
-export const coerceToSchema = (input, schema) => {
-	const edgeCasesErr = coercionEdgeCases(input, schema).error
-	return edgeCasesErr !== ''
+export const coerceToSchema = (input, schema) =>
+	coercionEdgeCases(input, schema).error !== ''
 		? { output: input, errors: [edgeCasesErr] }
 		: dfsFns.dfs({ input, schema })
-}
