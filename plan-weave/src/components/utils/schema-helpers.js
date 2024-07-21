@@ -179,3 +179,233 @@ export const coerceToSchema = (input, schema) =>
 	coercionEdgeCases(input, schema).error !== ''
 		? { output: input, errors: [edgeCasesErr] }
 		: dfsFns.dfs({ input, schema })
+
+// Will return true if the input has the correct types for each field in the schema
+export const isValidFieldTypes = (schema, data) => {
+	// const validateField = (fieldSchema, fieldValue) => (Array.isArray(fieldSchema._type) || fieldSchema._type === Object)
+	// 	? Array.isArray(fieldSchema._type)
+	// 		? Array.isArray(fieldValue) && fieldValue.every(item => validateField(fieldSchema._type[0], item))
+	// 		: (typeof fieldValue === 'object' && !Array.isArray(fieldValue))
+	// 		&& Object.keys(fieldSchema.fields).every(key => validateField(fieldSchema.fields[key], fieldValue[key]))
+	// 	: typeof fieldValue === typeof fieldSchema.type
+
+	const validateField = (fieldSchema, fieldValue) => {
+		if (fieldSchema.type === 'array' || fieldSchema.type === 'object') {
+			if (fieldSchema.type === 'array') {
+				const isarr = Array.isArray(fieldValue)
+				return isarr && fieldValue.every(item => validateField(fieldSchema.innerType, item))
+			} else {
+				const a = typeof fieldValue === 'object'
+				const b = !Array.isArray(fieldValue)
+				return (a && b)
+					&& Object.keys(fieldSchema.fields).every(key => validateField(fieldSchema.fields[key], fieldValue[key]))
+			}
+		} else {
+			const a = typeof fieldValue
+			const b = fieldSchema.type
+			return a === b
+		}
+	}
+	// Special handling for primitive schemas
+	if (!schema.fields) {
+		return typeof data === schema.type
+	}
+	return Object.keys(schema.fields).every(key => validateField(schema.fields[key], data[key]))
+}
+// Experimental area
+
+// Manual tests for isValidFieldTypes
+const formatTest = (result, condition = true, testCase = 1) => {
+	if (result === condition) {
+		console.log('\x1b[32m%s\x1b[0m', `Test case ${testCase} sucessful.`)
+	} else {
+		console.error('\x1b[31m%s\x1b[0m', `Test case ${testCase} failed.`)
+	}
+}
+
+// // 1. It should validate a simple schema with prim. types
+// const testSchema1 = Yup.object().shape({
+// 	name: Yup.string(),
+// 	age: Yup.number(),
+// })
+// const testData1 = { name: 'John', age: 30 }
+// formatTest(isValidFieldTypes(testSchema1, testData1), true)
+
+// // 2. It should fail validation for incorrect primitive types
+// const testSchema2 = Yup.object().shape({
+// 	name: Yup.string(),
+// 	age: Yup.number(),
+// })
+// const testData2 = {
+// 	name: 123, // should be a string
+// 	age: '30', // should be a number
+// }
+// formatTest(isValidFieldTypes(testSchema2, testData2), false, 2)
+
+// // 3. It should validate an array of numbers
+// const testSchema3 = Yup.object().shape({
+// 	scores: Yup.array().of(Yup.number()),
+// })
+// const testData3 = {
+// 	scores: [100, 95, 80],
+// }
+// formatTest(isValidFieldTypes(testSchema3, testData3), true, 3)
+
+// // 4. It should fail validation for an array with incorrect item types
+// const testSchema4 = Yup.object().shape({
+// 	scores: Yup.array().of(Yup.number()),
+// })
+// const testData4 = {
+// 	scores: [100, '95', 80], // '95' should be a number
+// }
+// formatTest(isValidFieldTypes(testSchema4, testData4), false, 4)
+
+// // 5. It validates nested objects 
+// const testSchema5 = Yup.object().shape({
+// 	user: Yup.object().shape({
+// 		name: Yup.string(),
+// 		age: Yup.number(),
+// 	}),
+// })
+// const testData5 = {
+// 	user: {
+// 		name: 'John',
+// 		age: 30,
+// 	},
+// }
+// formatTest(isValidFieldTypes(testSchema5, testData5), true, 5)
+
+// // 6. It fails validation for nested objects with incorrect types
+// const testSchema6 = Yup.object().shape({
+// 	user: Yup.object().shape({
+// 		name: Yup.string(),
+// 		age: Yup.number(),
+// 	}),
+// })
+
+// const testData6 = {
+// 	user: {
+// 		name: 'John',
+// 		age: '30', // should be a number
+// 	},
+// }
+// formatTest(isValidFieldTypes(testSchema6, testData6), false, 6)
+
+// // 7. It validates a primitive type with valid data
+// const testSchema7 = Yup.string()
+// const testData7 = 'Valid String!'
+// formatTest(isValidFieldTypes(testSchema7, testData7), true, 7)
+
+// // 8. It validates a primitive type with invalid data
+// const testSchema8 = Yup.number()
+// const testData8 = 'Invalid Number!'
+// formatTest(isValidFieldTypes(testSchema8, testData8), false, 8)
+
+// // 9. It validates an array of objects that are valid
+// const testSchema9 = Yup.object().shape({
+// 	users: Yup.array().of(
+// 		Yup.object().shape({
+// 			name: Yup.string(),
+// 			age: Yup.number(),
+// 		})
+// 	),
+// })
+// const testData9 = {
+// 	users: [
+// 		{ name: 'John', age: 30 },
+// 		{ name: 'Jane', age: 25 },
+// 	],
+// }
+// formatTest(isValidFieldTypes(testSchema9, testData9), true, 9)
+
+// // 10. It fails validation for an array of objects with incorrect types
+// const testSchema10 = Yup.object().shape({
+// 	users: Yup.array().of(
+// 		Yup.object().shape({
+// 			name: Yup.string(),
+// 			age: Yup.number(),
+// 		})
+// 	),
+// })
+// const testData10 = {
+// 	users: [
+// 		{ name: 'John', age: 30 },
+// 		{ name: 'Jane', age: '25' }, // should be a number
+// 	],
+// }
+// formatTest(isValidFieldTypes(testSchema10, testData10), false, 10)
+
+// // 11. It validates an object with an array of nested objects with valid data
+// const testSchema11 = Yup.object().shape({
+// 	groups: Yup.array().of(
+// 		Yup.object().shape({
+// 			groupName: Yup.string(),
+// 			members: Yup.array().of(
+// 				Yup.object().shape({
+// 					name: Yup.string(),
+// 					age: Yup.number(),
+// 				})
+// 			),
+// 		})
+// 	),
+// })
+// const testData11 = {
+// 	groups: [
+// 		{
+// 			groupName: 'Group 1',
+// 			members: [
+// 				{ name: 'John', age: 30 },
+// 				{ name: 'Jane', age: 25 },
+// 			],
+// 		},
+// 	],
+// }
+// formatTest(isValidFieldTypes(testSchema11, testData11), true, 11)
+
+// // 12. It fails validation for an object with an array of nested objects with incorrect types
+// const testSchema12 = Yup.object().shape({
+// 	groups: Yup.array().of(
+// 		Yup.object().shape({
+// 			groupName: Yup.string(),
+// 			members: Yup.array().of(
+// 				Yup.object().shape({
+// 					name: Yup.string(),
+// 					age: Yup.number(),
+// 				})
+// 			),
+// 		})
+// 	),
+// })
+
+// const testData12 = {
+// 	groups: [
+// 		{
+// 			groupName: 'Group 1',
+// 			members: [
+// 				{ name: 'John', age: 30 },
+// 				{ name: 'Jane', age: '25' }, // should be a number
+// 			],
+// 		},
+// 	],
+// }
+// formatTest(isValidFieldTypes(testSchema12, testData12), false, 12)
+
+// // 13. It fails validation for an object with an incorrect shape
+// const testSchema13 = Yup.object().shape({
+// 	groups: Yup.array().of(
+// 		Yup.object().shape({
+// 			groupName: Yup.string(),
+// 			members: Yup.array().of(
+// 				Yup.object().shape({
+// 					name: Yup.string(),
+// 					age: Yup.number(),
+// 				})
+// 			),
+// 		})
+// 	),
+// })
+
+// const testData13 = {
+// 	groups: "invalid data"
+// }
+// formatTest(isValidFieldTypes(testSchema13, testData13), false, 13)

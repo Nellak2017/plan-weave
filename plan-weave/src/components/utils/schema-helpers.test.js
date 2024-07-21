@@ -4,13 +4,14 @@ import {
 	isIterable, // example based only
 	isNode, // example based only
 	isInputValid, // example based only
+	isValidFieldTypes, // example based only
 	makeIterable, // example based only
 	// enhancedCastPrimitive, // property tested and example based too
 	dfsFns, // (_ sub-functions out of _ tested with _ and _)
 	// coerceToSchema, // proerty tested and examble based too
 } from './schema-helpers.js'
 // import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
-// import { fc } from '@fast-check/jest'
+import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
 
 // --- predicates
@@ -105,6 +106,169 @@ describe('isInputValid', () => {
 	testCases.forEach(({ input, schema, expected, description }) => {
 		it(description, () => {
 			expect(isInputValid(input, schema)).toEqual(expected)
+		})
+	})
+})
+
+describe('isValidFieldTypes', () => {
+	// --- Example based tests
+	const testCases = [
+		{
+			schema: Yup.object().shape({
+				name: Yup.string(),
+				age: Yup.number(),
+			}),
+			data: { name: 'John', age: 30 },
+			expected: true,
+			description: 'Validates a simple schema with primitive types'
+		},
+		{
+			schema: Yup.object().shape({
+				name: Yup.string(),
+				age: Yup.number(),
+			}),
+			data: { name: 123, age: '30' },
+			expected: false,
+			description: 'Fails validation for incorrect primitive types'
+		},
+		{
+			schema: Yup.object().shape({
+				scores: Yup.array().of(Yup.number()),
+			}),
+			data: { scores: [100, 95, 80] },
+			expected: true,
+			description: 'Validates an array of numbers with valid data'
+		},
+		{
+			schema: Yup.object().shape({
+				scores: Yup.array().of(Yup.number()),
+			}),
+			data: { scores: [100, '95', 80] },
+			expected: false,
+			description: 'Fails validation for an array with incorrect item types'
+		},
+		{
+			schema: Yup.object().shape({
+				user: Yup.object().shape({
+					name: Yup.string(),
+					age: Yup.number(),
+				}),
+			}),
+			data: { user: { name: 'John', age: 30 } },
+			expected: true,
+			description: 'Validates nested objects with valid data'
+		},
+		{
+			schema: Yup.object().shape({
+				user: Yup.object().shape({
+					name: Yup.string(),
+					age: Yup.number(),
+				}),
+			}),
+			data: { user: { name: 'John', age: '30' } },
+			expected: false,
+			description: 'Fails validation for nested objects with incorrect types'
+		},
+		{
+			schema: Yup.string(),
+			data: 'Valid String!',
+			expected: true,
+			description: 'Validates a primitive type with valid data'
+		},
+		{
+			schema: Yup.number(),
+			data: 'Invalid Number!',
+			expected: false,
+			description: 'Validates a primitive type with invalid data'
+		},
+		{
+			schema: Yup.object().shape({
+				users: Yup.array().of(Yup.object().shape({
+					name: Yup.string(),
+					age: Yup.number(),
+				})),
+			}),
+			data: { users: [{ name: 'John', age: 30 }, { name: 'Jane', age: 25 }] },
+			expected: true,
+			description: 'Validates an array of objects that are valid'
+		},
+		{
+			schema: Yup.object().shape({
+				users: Yup.array().of(Yup.object().shape({
+					name: Yup.string(),
+					age: Yup.number(),
+				})),
+			}),
+			data: { users: [{ name: 'John', age: 30 }, { name: 'Jane', age: '25' }] },
+			expected: false,
+			description: 'Fails validation for an array of objects with incorrect types'
+		},
+		{
+			schema: Yup.object().shape({
+				groups: Yup.array().of(Yup.object().shape({
+					groupName: Yup.string(),
+					members: Yup.array().of(Yup.object().shape({
+						name: Yup.string(),
+						age: Yup.number(),
+					})),
+				})),
+			}),
+			data: {
+				groups: [
+					{
+						groupName: 'Group 1',
+						members: [{ name: 'John', age: 30 }, { name: 'Jane', age: 25 }]
+					}
+				]
+			},
+			expected: true,
+			description: 'Validates an object with an array of nested objects with valid data'
+		},
+		{
+			schema: Yup.object().shape({
+				groups: Yup.array().of(Yup.object().shape({
+					groupName: Yup.string(),
+					members: Yup.array().of(Yup.object().shape({
+						name: Yup.string(),
+						age: Yup.number(),
+					})),
+				})),
+			}),
+			data: {
+				groups: [
+					{
+						groupName: 'Group 1',
+						members: [{ name: 'John', age: 30 }, { name: 'Jane', age: '25' }]
+					}
+				]
+			},
+			expected: false,
+			description: 'Fails validation for an object with an array of nested objects with incorrect types'
+		},
+		{
+			schema: Yup.object().shape({
+				groups: Yup.array().of(
+					Yup.object().shape({
+						groupName: Yup.string(),
+						members: Yup.array().of(
+							Yup.object().shape({
+								name: Yup.string(),
+								age: Yup.number(),
+							})
+						),
+					})
+				),
+			}),
+			data: {
+				groups: "invalid data"
+			},
+			expected: false,
+			description: 'It fails validation for an object with an incorrect shape',
+		}
+	]
+	testCases.forEach(({ schema, data, expected, description }) => {
+		it(description, () => {
+			expect(isValidFieldTypes(schema, data)).toBe(expected)
 		})
 	})
 })
@@ -299,6 +463,7 @@ describe('dfsFns.processNodes', () => {
 })
 
 describe('dfsFns.dfs', () => {
+	// --- Example based tests
 	const testCases = [
 		{
 			input: {
@@ -353,10 +518,66 @@ describe('dfsFns.dfs', () => {
 			expect(result.output).toStrictEqual(expected.output) // outputs always same
 			// Verify the errors atleast have the coercion error, and the Yup specific ones are counted good too without explicitly checking for themm
 			if (expected.errors.length > 0) {
-                expect(result.errors).toEqual(expect.arrayContaining([expect.stringContaining(expected.errors[0])]))
-            } else {
-                expect(result.errors).toEqual([])
-            }
+				expect(result.errors).toEqual(expect.arrayContaining([expect.stringContaining(expected.errors[0])]))
+			} else {
+				expect(result.errors).toEqual([])
+			}
 		})
+	})
+
+	// --- Property based tests (using fixed schema, arbitrary data)
+	// Fixed schema definition
+	const schema = Yup.object().shape({
+		primitiveField: Yup.string().default('defaultString'),
+		arrayFieldNoInnerDict: Yup.array().of(Yup.number().default(0)),
+		arrayFieldWithInnerDict: Yup.array().of(
+			Yup.object().shape({
+				innerField: Yup.string().required(),
+			})
+		),
+		dictionaryField: Yup.object().shape({
+			dictField: Yup.number().default(42),
+		}),
+	})
+	const validDataArbitrary = fc.record({
+		primitiveField: fc.string({ minLength: 1 }),
+		arrayFieldNoInnerDict: fc.array(fc.integer()),
+		arrayFieldWithInnerDict: fc.array(fc.record({ innerField: fc.string({ minLength: 1 }) }), { minLength: 1 }),
+		dictionaryField: fc.record({ dictField: fc.integer() }),
+	})
+	const invalidDataArbitrary = fc.anything().filter(data => !validateAgainstSchema(data, schema))
+	const validateAgainstSchema = (data, schema) => {
+		try {
+			schema.validateSync(data, { strict: true, abortEarly: false })
+			return true
+		} catch {
+			return false
+		}
+	}
+	/*
+	Properties known:
+
+	2. Type compliance - f(a) = c, where c has correct type for each field
+	3. Error cases - f(a) returns atleast one error if a does not conform to the schema precisely 
+	4. Default values of schema when field is not coerceable - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
+	5. Type Default values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
+	6. Non-altering of valid data - f(a).output = a.output if a.output is valid against the schema
+	7. (NOTE: This will be implicitly tested in property 2) Field equivalence of schema and output - the fields in the schema and the fields in f(a) must recursively match exactly
+	*/
+
+	// 1. Idempotence of data - f(a).output === f(f(a).output).output 
+	test('dfsFns.dfs is idempotent. f(a) === c === f(c.output)', () => {
+		fc.assert(
+			fc.property(validDataArbitrary, (input) => {
+				// input is from the validDataArbitrary, schema is from fixed definition above
+				const result1 = dfs({ input, schema }) // f(a) = c
+				const result2 = dfs({ input: result1.output, schema }) // c = f(c.output)
+				expect(result1).toStrictEqual(result2) // f(a) = c = f(c.output). f(a) = f(f(a).output)
+			}),
+			{
+				seed: -985785060,
+				numRuns: 1000
+			}
+		)
 	})
 })
