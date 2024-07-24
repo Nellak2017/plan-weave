@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
 import {
 	isDictionary, // example based only
@@ -9,10 +10,73 @@ import {
 	// enhancedCastPrimitive, // property tested and example based too
 	dfsFns, // (_ sub-functions out of _ tested with _ and _)
 	// coerceToSchema, // proerty tested and examble based too
-} from './schema-helpers.js'
+} from './schema-helpers.mjs'
 // import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
+
+// --- Global Arbitraries and test helpers
+
+// Primitive Arbitraries (make primitive schema and data at once)
+const primitiveGenerators = {
+	string: () => ({ schema: Yup.string(), data: fc.string() }),
+	number: () => ({ schema: Yup.number(), data: fc.integer() }), // ints only
+	boolean: () => ({ schema: Yup.boolean(), data: fc.boolean() }),
+	date: () => ({ schema: Yup.date(), data: fc.date() })
+}
+
+// Array Arbitrary (make array schema and data at once)
+const arrayGenerator = innerGenerator => ({
+	schema: Yup.array().of(innerGenerator.schema),
+	data: fc.array(innerGenerator.data),
+})
+
+// Object Arbitrary with Random Fields (make object schema and data at once)
+// TODO: Manual test objectGenerator
+const objectGenerator = (fieldGenerators, maxLen = 5) => fc
+	.uniqueArray(fc.constantFrom(...Object.keys(fieldGenerators)), { minLength: 1, maxLength: maxLen }) // 1..5 from primitiveGenerator keys. ex: [ 'string' ], [ 'string', 'date', 'boolean', 'date' ], [ 'string', 'number', 'number', 'boolean', 'number' ], ... 
+	.map(keys => Object.fromEntries(keys.map(key => [key, fieldGenerators[key]()])))
+	.map(fieldEntries => ({
+		schema: Yup.object().shape(
+			Object.fromEntries(
+				Object.entries(fieldEntries)
+					.map(([key, { schema }]) => [key, schema])
+			)
+		),
+		data: fc.record(
+			Object.fromEntries(
+				Object.entries(fieldEntries)
+					.map(([key, { data }]) => [key, data])
+			)
+		)
+	}))
+
+// Recursive Schema and Data Generator
+const schemaAndDataGenerator = fc.letrec(tie => ({
+	schemaData: fc.oneof(
+		...Object.values(primitiveGenerators).map(gen => fc.constant(gen())),
+		tie.schemaData.map(innerGen => arrayGenerator(innerGen)),
+		tie.schemaData.map(innerGen => objectGenerator({
+			string: primitiveGenerators.string,
+			number: primitiveGenerators.number,
+			boolean: primitiveGenerators.boolean,
+			date: primitiveGenerators.date,
+			nested: innerGen
+		}))
+	)
+})).schemaData
+
+// // Test Example
+// fc.assert(
+// 	fc.property(schemaAndDataGenerator, ({ schema, data }) => {
+// 		const validData = data.generate(fc.sample(fc.random()).slice(0, 1)[0]);
+// 		// Perform your test with the schema and validData
+// 		console.log('Schema:', schema);
+// 		console.log('Valid Data:', validData);
+// 		return schema.isValidSync(validData);
+// 	})
+// );
+
 
 // --- predicates
 describe('isDictionary', () => {
