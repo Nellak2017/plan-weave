@@ -696,11 +696,9 @@ describe('dfsFns.dfs', () => {
 	/*
 	Properties known:
 
-	3. Error cases - f(a) returns atleast one error if a does not conform to the schema precisely 
 	4. Default values of schema when field is not coerceable - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
 	5. Type Default values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
 	6. Non-altering of valid data - f(a).output = a.output if a.output is valid against the schema
-	7. (NOTE: This will be implicitly tested in property 2) Field equivalence of schema and output - the fields in the schema and the fields in f(a) must recursively match exactly
 	*/
 
 	// 1. Idempotence of data - f(a).output === f(f(a).output).output 
@@ -719,7 +717,7 @@ describe('dfsFns.dfs', () => {
 	test('Type compliance - f(a) = c, where c has correct type for each field', () => {
 		fc.assert(
 			fc.property(validDataArbitrary, (input) => {
-				const c = dfs({ input, schema}) // f(a) = c
+				const c = dfs({ input, schema }) // f(a) = c
 				const isValid = isValidFieldTypes(schema, c.output) // f(a) = c, where c has correct type for each field
 				if (!isValid) {
 					console.log(isInputValid(input, schema))
@@ -730,5 +728,13 @@ describe('dfsFns.dfs', () => {
 		)
 	})
 
-	
+	// 3. Error cases - f(a) returns atleast one error if a does not conform to the schema precisely 
+	test('Error cases - f(a) returns atleast one error if a does not conform to the schema precisely ', () => {
+		fc.assert(
+			fc.property(invalidDataGenerator(schema), (input) => {
+				const errors = dfs({ input, schema }).errors // f(a) returns atleast one error, because a does not conform to the schema precisely
+				expect(errors.length).toBeGreaterThanOrEqual(1)
+			})
+		)
+	})
 })
