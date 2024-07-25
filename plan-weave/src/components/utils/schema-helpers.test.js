@@ -696,7 +696,6 @@ describe('dfsFns.dfs', () => {
 	/*
 	Properties known:
 
-	2. Type compliance - f(a) = c, where c has correct type for each field
 	3. Error cases - f(a) returns atleast one error if a does not conform to the schema precisely 
 	4. Default values of schema when field is not coerceable - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
 	5. Type Default values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
@@ -713,10 +712,23 @@ describe('dfsFns.dfs', () => {
 				const result2 = dfs({ input: result1.output, schema }) // c = f(c.output)
 				expect(result1).toStrictEqual(result2) // f(a) = c = f(c.output). f(a) = f(f(a).output)
 			}),
-			{
-				seed: -985785060,
-				numRuns: 1000
-			}
 		)
 	})
+
+	// 2. Type compliance - f(a) = c, where c has correct type for each field
+	test('Type compliance - f(a) = c, where c has correct type for each field', () => {
+		fc.assert(
+			fc.property(validDataArbitrary, (input) => {
+				const c = dfs({ input, schema}) // f(a) = c
+				const isValid = isValidFieldTypes(schema, c.output) // f(a) = c, where c has correct type for each field
+				if (!isValid) {
+					console.log(isInputValid(input, schema))
+					console.log(c)
+				}
+				expect(isValid).toBe(true)
+			})
+		)
+	})
+
+	
 })
