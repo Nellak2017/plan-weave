@@ -696,9 +696,9 @@ describe('dfsFns.dfs', () => {
 	/*
 	Properties known:
 
-	4. Default values of schema when field is not coerceable - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
-	5. Type Default values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
-	6. Non-altering of valid data - f(a).output = a.output if a.output is valid against the schema
+	5. Default values of schema when field is not coerceable - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
+	6. Type Default values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
+	7. Non-altering of valid data - f(a).output = a.output if a.output is valid against the schema
 	*/
 
 	// 1. Idempotence of data - f(a).output === f(f(a).output).output 
@@ -734,6 +734,16 @@ describe('dfsFns.dfs', () => {
 			fc.property(invalidDataGenerator(schema), (input) => {
 				const errors = dfs({ input, schema }).errors // f(a) returns atleast one error, because a does not conform to the schema precisely
 				expect(errors.length).toBeGreaterThanOrEqual(1)
+			})
+		)
+	})
+
+	// 4. No Errors on valid input - f(a) returns an empty list of errors if a conforms to the schema precisely
+	test('No Errors on valid input - f(a) returns an empty list of errors if a conforms to the schema precisely', () => {
+		fc.assert(
+			fc.property(validDataArbitrary, (input) => {
+				const errors = dfs({ input, schema }).errors // f(a).errors, where a is valid
+				expect(errors.length).toBe(0) // f(a).errors, where a is valid, should be = []
 			})
 		)
 	})
