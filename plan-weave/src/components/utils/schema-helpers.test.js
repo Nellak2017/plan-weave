@@ -416,7 +416,6 @@ describe('isValidFieldTypes', () => {
 				}
 				expect(isValidFieldTypes(schema, testData)).toBe(false)
 			})
-			, { seed: -653008252, numRuns: 1000000 }
 		)
 	})
 })

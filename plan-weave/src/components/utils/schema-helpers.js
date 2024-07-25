@@ -1,7 +1,6 @@
 /* eslint-disable max-lines */
 // File dedicated solely to schema related functions
 import * as Yup from 'yup'
-import fc from 'fast-check' // TODO: REMOVE
 
 // ------ Schema Coercion helpers
 // --- Predicates
@@ -27,6 +26,32 @@ export const isInputValid = (input, schema) => {
 	} catch (error) {
 		return { isValid: false, error: error.message || String(error) }
 	}
+}
+// true if the input has the correct types for each field in the schema, false if the input is invalid against the schema
+export const isValidFieldTypes = (schema, data) => {
+	const getTypeString = value => {
+		if (value instanceof Date) return 'date'
+		if (typeof value === 'number' && Number.isNaN(value)) return 'NaN'
+		return typeof value === 'object'
+			? Array.isArray(value)
+				? 'array'
+				: 'null'
+			: typeof value
+	}
+
+	const validateField = (fieldSchema, fieldValue) => (fieldSchema.type === 'array' || fieldSchema.type === 'object')
+		? (fieldSchema.type === 'array')
+			? Array.isArray(fieldValue) && fieldValue.every(item => validateField(fieldSchema.innerType, item))
+			: (typeof fieldValue === 'object' && !Array.isArray(fieldValue))
+			&& Object.keys(fieldSchema.fields).every(key => validateField(fieldSchema.fields[key], fieldValue?.[key]))
+		: getTypeString(fieldValue) === fieldSchema.type
+
+	// Special handling for array and primitive schemas
+	return (schema.type === 'array' || !schema.fields)
+		? schema.type === 'array'
+			? data && Array.isArray(data) ? data.every(element => validateField(schema.innerType, element)) : false
+			: getTypeString(data) === schema.type
+		: Object.keys(schema.fields).every(key => validateField(schema.fields[key], data?.[key]))
 }
 
 // --- Others
@@ -182,50 +207,4 @@ export const coerceToSchema = (input, schema) =>
 		? { output: input, errors: [edgeCasesErr] }
 		: dfsFns.dfs({ input, schema })
 
-
-// Will return true if the input has the correct types for each field in the schema
-export const isValidFieldTypes = (schema, data) => {
-	const getTypeString = value => {
-		if (value instanceof Date) return 'date'
-		if (typeof value === 'number' && Number.isNaN(value)) return 'NaN'
-		return typeof value === 'object'
-			? Array.isArray(value)
-				? 'array'
-				: 'null'
-			: typeof value
-	}
-
-	const validateField = (fieldSchema, fieldValue) => {
-		if (fieldSchema.type === 'array' || fieldSchema.type === 'object') {
-			if (fieldSchema.type === 'array') {
-				const isarr = Array.isArray(fieldValue)
-				return isarr && fieldValue.every(item => validateField(fieldSchema.innerType, item))
-			} else {
-				const a = typeof fieldValue === 'object'
-				const b = !Array.isArray(fieldValue)
-				return (a && b)
-					&& Object.keys(fieldSchema.fields).every(key => validateField(fieldSchema.fields[key], fieldValue?.[key]))
-			}
-		} else {
-			const a = getTypeString(fieldValue)
-			const b = fieldSchema.type
-			return a === b
-		}
-	}
-	// Special handling for primitive schemas
-	if (!schema.fields && schema.type !== 'array') {
-		return getTypeString(data) === schema.type
-	}
-	if (schema.type === 'array') {
-		return data && Array.isArray(data) ? data.every(element => validateField(schema.innerType, element)) : false
-	}
-	return Object.keys(schema.fields).every(key => validateField(schema.fields[key], data?.[key]))
-}
 // ------------ Experimental area
-
-// const testSchema = Yup.number()
-
-// const testData = NaN
-
-// console.log(isValidFieldTypes(testSchema, testData))
-//console.log(isInputValid(NaN, testSchema))
