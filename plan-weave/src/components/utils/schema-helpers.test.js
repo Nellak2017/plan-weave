@@ -31,24 +31,13 @@ const arrayGenerator = innerGenerator => ({
 	data: fc.array(innerGenerator.data),
 })
 
-// Object Arbitrary with Random Fields (make object schema and data at once)
-// TODO: Manual test objectGenerator
+// Object Arbitrary with Random Fields (shallow only) (make object schema and data at once)
 const objectGenerator = (fieldGenerators, maxLen = 5) => fc
 	.uniqueArray(fc.constantFrom(...Object.keys(fieldGenerators)), { minLength: 1, maxLength: maxLen }) // 1..5 from primitiveGenerator keys. ex: [ 'string' ], [ 'string', 'date', 'boolean', 'date' ], [ 'string', 'number', 'number', 'boolean', 'number' ], ... 
 	.map(keys => Object.fromEntries(keys.map(key => [key, fieldGenerators[key]()])))
 	.map(fieldEntries => ({
-		schema: Yup.object().shape(
-			Object.fromEntries(
-				Object.entries(fieldEntries)
-					.map(([key, { schema }]) => [key, schema])
-			)
-		),
-		data: fc.record(
-			Object.fromEntries(
-				Object.entries(fieldEntries)
-					.map(([key, { data }]) => [key, data])
-			)
-		)
+		schema: Yup.object().shape(Object.fromEntries(Object.entries(fieldEntries).map(([key, { schema }]) => [key, schema]))),
+		data: fc.record(Object.fromEntries(Object.entries(fieldEntries).map(([key, { data }]) => [key, data])))
 	}))
 
 // Recursive Schema and Data Generator
@@ -66,17 +55,16 @@ const schemaAndDataGenerator = fc.letrec(tie => ({
 	)
 })).schemaData
 
-// // Test Example
-// fc.assert(
-// 	fc.property(schemaAndDataGenerator, ({ schema, data }) => {
-// 		const validData = data.generate(fc.sample(fc.random()).slice(0, 1)[0]);
-// 		// Perform your test with the schema and validData
-// 		console.log('Schema:', schema);
-// 		console.log('Valid Data:', validData);
-// 		return schema.isValidSync(validData);
-// 	})
-// );
-
+const invalidDataGenerator = schema => fc.anything().filter(data => !validateAgainstSchema(data, schema))
+// TODO: Use the isInputValid function from schema-helpers instead using the .isValid field
+const validateAgainstSchema = (data, schema) => {
+	try {
+		schema.validateSync(data, { strict: true, abortEarly: false })
+		return true
+	} catch {
+		return false
+	}
+}
 
 // --- predicates
 describe('isDictionary', () => {
@@ -590,7 +578,7 @@ describe('dfsFns.dfs', () => {
 	})
 
 	// --- Property based tests (using fixed schema, arbitrary data)
-	// Fixed schema definition
+	// Fixed schema definition (Surrogate)
 	const schema = Yup.object().shape({
 		primitiveField: Yup.string().default('defaultString'),
 		arrayFieldNoInnerDict: Yup.array().of(Yup.number().default(0)),
@@ -609,15 +597,7 @@ describe('dfsFns.dfs', () => {
 		arrayFieldWithInnerDict: fc.array(fc.record({ innerField: fc.string({ minLength: 1 }) }), { minLength: 1 }),
 		dictionaryField: fc.record({ dictField: fc.integer() }),
 	})
-	const invalidDataArbitrary = fc.anything().filter(data => !validateAgainstSchema(data, schema))
-	const validateAgainstSchema = (data, schema) => {
-		try {
-			schema.validateSync(data, { strict: true, abortEarly: false })
-			return true
-		} catch {
-			return false
-		}
-	}
+
 	/*
 	Properties known:
 

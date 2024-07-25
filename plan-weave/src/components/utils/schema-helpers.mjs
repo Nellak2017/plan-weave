@@ -2,7 +2,6 @@
 // File dedicated solely to schema related functions
 import * as Yup from 'yup'
 import fc from 'fast-check' // TODO: REMOVE
-import fs from 'fs' // TODO: Remove
 
 // ------ Schema Coercion helpers
 // --- Predicates
@@ -233,7 +232,13 @@ const primitiveGenerators = {
 	date: () => ({ schema: Yup.date(), data: fc.date() })
 }
 
+const arrayGenerator = innerGenerator => ({
+	schema: Yup.array().of(innerGenerator.schema),
+	data: fc.array(innerGenerator.data),
+})
+
 const objectGeneratorTest = (fieldGenerators, maxLen = 4) => {
+	// uniqueKeys, fieldEntries, schema+data
 	const a = fc
 		.uniqueArray(fc.constantFrom(...Object.keys(fieldGenerators)), { minLength: 1, maxLength: maxLen }) // unique 1..5 from primitiveGenerator keys. (if not unique it biases to small resultant obj)
 	const b = a
@@ -257,7 +262,7 @@ const objectGeneratorTest = (fieldGenerators, maxLen = 4) => {
 				)
 			)
 		}))
-	return c
+	return fc.sample(c, 1)[0] // { schema: concrete schema, data: arbitrary } which is concrete but the data inside is arbitrary
 }
 
 const a = objectGeneratorTest({
@@ -267,12 +272,51 @@ const a = objectGeneratorTest({
 	date: primitiveGenerators.date,
 })
 
-const output = fc.sample(a, 5)
-console.log(output.map(obj => Object.keys(obj?.schema?.fields) || 'no fields'))
+// const { schema, data } = a
+// const output = fc.sample(data, 1)[0]
+// const out2 = schema
+// console.log(output.map(obj => Object.keys(obj?.schema?.fields) || 'no fields'))
 // console.log(output.map(obj => obj?.schema?.fields || 'no fields'))
+// console.log(`Is the generated schema and data compatible? ${isInputValid(output, schema).isValid ? 'Yes!' : 'No!'}`)
+// console.log(a)
 // console.log(output)
+// console.log(out2)
 
-output.forEach((obj, i) => {
-	const sampleData = fc.sample(obj.data, 1)[0]
-	console.log("Sample data:", sampleData)
-})
+
+const schemaAndDataGenerator = fc.letrec(tie => {
+	return {
+		schemaData: fc.oneof(
+			{ maxDepth: 2 , withCrossShrink: true },
+			...Object.values(primitiveGenerators).map(gen => fc.constant(gen())),
+			tie('schemaData').map(innerGen => arrayGenerator(innerGen), { maxDepth: 2 }),
+			tie('schemaData').map(innerGen => objectGeneratorTest({
+				string: primitiveGenerators.string,
+				number: primitiveGenerators.number,
+				boolean: primitiveGenerators.boolean,
+				date: primitiveGenerators.date,
+				nested: () => innerGen
+			}, 5), { maxDepth: 2 })
+		)
+	}
+}).schemaData // arbitrary for an object of the shape { schema, data }
+
+const b = fc.sample(schemaAndDataGenerator, 1)
+
+console.log(b.map(obj => (obj?.schema?.fields && Object.keys(obj?.schema?.fields)) || obj?.schema?.type || 'no fields'))
+const output = fc.sample(b[0]?.data, 1)
+const schema = b[0]?.schema || 'no schema'
+console.log(`Is the generated schema and data compatible? ${isInputValid(output, schema).isValid ? 'Yes!' : 'No!'}`)
+console.log(output)
+console.log(schema)
+
+// Property-based test (ad-hoc)
+fc.assert(
+	fc.property(schemaAndDataGenerator, ({ schema, data }) => {
+	  const sampleData = fc.sample(data, 1)[0]
+	  const testSchema = schema
+	  const ret = isInputValid(sampleData, testSchema).isValid
+	  return ret
+	}),
+	{ numRuns: 1000000 }
+  )
+console.log("HEY ALL TESTS PASSED! YAY!!")
