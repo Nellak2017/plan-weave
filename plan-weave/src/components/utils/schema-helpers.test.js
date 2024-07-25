@@ -16,8 +16,7 @@ import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
 
 // --- Global Arbitraries and test helpers
-// TODO: See if it is possible to reformulate the return type of schemaAndDataGenerator to be concrete schema and data, not just concrete schema
-
+// TODO: See if it is possible to reformulate the return type of schemaAndDataGenerator to be concrete schema and data, not just concrete schema. (It worked in schema-helpers but not here??)
 // Primitive Arbitraries (make primitive schema and data at once), concrete schema and arbitrary data
 const primitiveGenerators = {
 	string: () => ({ schema: Yup.string(), data: fc.string() }),
@@ -77,7 +76,7 @@ describe('invalidDataGenerator', () => {
 	// 1. The invalidDataGenerator must always make data that is incompatible with the schema provided
 	test('The invalidDataGenerator must always make data that is incompatible with the schema provided', () => {
 		fc.assert(
-			fc.property(schemaAndDataGenerator, ({ schema }) => !isInputValid(invalidDataGenerator(schema), schema).isValid),
+			fc.property(schemaAndDataGenerator, ({ schema }) => !isInputValid(fc.sample(invalidDataGenerator(schema), 1)[0], schema).isValid),
 		)
 	})
 })
@@ -332,12 +331,93 @@ describe('isValidFieldTypes', () => {
 			},
 			expected: false,
 			description: 'It fails validation for an object with an incorrect shape',
-		}
+		},
+		{
+			schema: Yup.object().shape({
+				number: Yup.number().nullable(true),
+				string: Yup.string().nullable(true),
+				date: Yup.date().nullable(true),
+			}),
+			data: { number: 4, date: new Date('1970-01-01T00:00:00.004Z'), string: '#}I#~FJL(' },
+			expected: true,
+			description: 'It validates an object with a date as a field',
+		},
+		{
+			schema: Yup.array().of(
+				Yup.string()
+			),
+			data: ['$%;ewoA[', 'T^.mx', '`iJnvE`[F', '5VqNS,s7F', '2)!!LoQ4L'],
+			expected: true,
+			description: 'It validates an array with a string as an innertype',
+		},
+		{
+			schema: Yup.date(),
+			data: new Date('1970-01-01T00:00:00.051Z'),
+			expected: true,
+			description: 'It validates an individual date',
+		},
+		{
+			schema: Yup.array().of(Yup.string()),
+			data: [
+				{
+					'': '#?cI1x',
+					'IbN+EY': '%',
+					",'/62TGjR": false,
+					'Vf=3e/': -1423596285076308,
+					A3: true,
+					'Vss#QH_Y(': 'hc![',
+					'e09ta)GwJ': false,
+					"@qnUDN'(": 3.55131383253773e-203,
+					'g&)8$1>4Z': -3.385747325746369e-101
+				}
+			],
+			expected: false,
+			description: 'It fails validation for an array of strings schema with an array of objects data',
+		},
+		{
+			schema: Yup.array().of(Yup.string()),
+			data: { l: null, prototypen: [')?l~b&eCw', 'J'], '': '#|' },
+			expected: false,
+			description: 'It fails validation for an array of strings schema with objects data',
+		},
+		{
+			schema: Yup.number(),
+			data: NaN,
+			expected: false,
+			description: 'It fails validation for a number schema with NaN. It considers NaN not a number',
+		},
 	]
 	testCases.forEach(({ schema, data, expected, description }) => {
 		it(description, () => {
 			expect(isValidFieldTypes(schema, data)).toBe(expected)
 		})
+	})
+
+	// --- Property based tests
+	// 1. Should return true for valid data according to schema
+	it('Should return true for valid data according to schema', () => {
+		fc.assert(
+			fc.property(schemaAndDataGenerator, ({ schema, data }) => {
+				const testData = fc.sample(data, 1)[0]
+				expect(isValidFieldTypes(schema, testData)).toBe(true)
+			}),
+		)
+	})
+	// 2. Should return false for invalid data according to the schema
+	it('Should return false for invalid data according to the schema', () => {
+		fc.assert(
+			fc.property(schemaAndDataGenerator, ({ schema }) => {
+				const testData = fc.sample(invalidDataGenerator(schema), 1)[0]
+				const res = isValidFieldTypes(schema, testData)
+				if (res) {
+					console.log(schema)
+					console.log(testData)
+					console.log(res)
+				}
+				expect(isValidFieldTypes(schema, testData)).toBe(false)
+			})
+			, { seed: -653008252, numRuns: 1000000 }
+		)
 	})
 })
 

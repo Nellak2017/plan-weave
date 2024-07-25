@@ -182,14 +182,18 @@ export const coerceToSchema = (input, schema) =>
 		? { output: input, errors: [edgeCasesErr] }
 		: dfsFns.dfs({ input, schema })
 
+
 // Will return true if the input has the correct types for each field in the schema
 export const isValidFieldTypes = (schema, data) => {
-	// const validateField = (fieldSchema, fieldValue) => (Array.isArray(fieldSchema._type) || fieldSchema._type === Object)
-	// 	? Array.isArray(fieldSchema._type)
-	// 		? Array.isArray(fieldValue) && fieldValue.every(item => validateField(fieldSchema._type[0], item))
-	// 		: (typeof fieldValue === 'object' && !Array.isArray(fieldValue))
-	// 		&& Object.keys(fieldSchema.fields).every(key => validateField(fieldSchema.fields[key], fieldValue[key]))
-	// 	: typeof fieldValue === typeof fieldSchema.type
+	const getTypeString = value => {
+		if (value instanceof Date) return 'date'
+		if (typeof value === 'number' && Number.isNaN(value)) return 'NaN'
+		return typeof value === 'object'
+			? Array.isArray(value)
+				? 'array'
+				: 'null'
+			: typeof value
+	}
 
 	const validateField = (fieldSchema, fieldValue) => {
 		if (fieldSchema.type === 'array' || fieldSchema.type === 'object') {
@@ -200,18 +204,28 @@ export const isValidFieldTypes = (schema, data) => {
 				const a = typeof fieldValue === 'object'
 				const b = !Array.isArray(fieldValue)
 				return (a && b)
-					&& Object.keys(fieldSchema.fields).every(key => validateField(fieldSchema.fields[key], fieldValue[key]))
+					&& Object.keys(fieldSchema.fields).every(key => validateField(fieldSchema.fields[key], fieldValue?.[key]))
 			}
 		} else {
-			const a = typeof fieldValue
+			const a = getTypeString(fieldValue)
 			const b = fieldSchema.type
 			return a === b
 		}
 	}
 	// Special handling for primitive schemas
-	if (!schema.fields) {
-		return typeof data === schema.type
+	if (!schema.fields && schema.type !== 'array') {
+		return getTypeString(data) === schema.type
 	}
-	return Object.keys(schema.fields).every(key => validateField(schema.fields[key], data[key]))
+	if (schema.type === 'array') {
+		return data && Array.isArray(data) ? data.every(element => validateField(schema.innerType, element)) : false
+	}
+	return Object.keys(schema.fields).every(key => validateField(schema.fields[key], data?.[key]))
 }
 // ------------ Experimental area
+
+// const testSchema = Yup.number()
+
+// const testData = NaN
+
+// console.log(isValidFieldTypes(testSchema, testData))
+//console.log(isInputValid(NaN, testSchema))
