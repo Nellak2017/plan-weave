@@ -7,17 +7,18 @@ import {
 	isInputValid, // example based only
 	isValidFieldTypes, // example based only
 	makeIterable, // example based only
-	// enhancedCastPrimitive, // property tested and example based too
 	dfsFns, // (_ sub-functions out of _ tested with _ and _)
+	// enhancedCastPrimitive, // property tested and example based too
 	// coerceToSchema, // proerty tested and examble based too
-} from './schema-helpers.mjs'
+} from './schema-helpers.js'
 // import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
 
 // --- Global Arbitraries and test helpers
+// TODO: See if it is possible to reformulate the return type of schemaAndDataGenerator to be concrete schema and data, not just concrete schema
 
-// Primitive Arbitraries (make primitive schema and data at once)
+// Primitive Arbitraries (make primitive schema and data at once), concrete schema and arbitrary data
 const primitiveGenerators = {
 	string: () => ({ schema: Yup.string(), data: fc.string() }),
 	number: () => ({ schema: Yup.number(), data: fc.integer() }), // ints only
@@ -25,46 +26,61 @@ const primitiveGenerators = {
 	date: () => ({ schema: Yup.date(), data: fc.date() })
 }
 
-// Array Arbitrary (make array schema and data at once)
+// Array Arbitrary (make array schema and data at once), concrete schema and arbitrary data
 const arrayGenerator = innerGenerator => ({
-	schema: Yup.array().of(innerGenerator.schema),
-	data: fc.array(innerGenerator.data),
+	schema: Yup.array().of(innerGenerator.schema), // concrete schema
+	data: fc.array(innerGenerator.data), // arbitrary data
 })
 
-// Object Arbitrary with Random Fields (shallow only) (make object schema and data at once)
-const objectGenerator = (fieldGenerators, maxLen = 5) => fc
-	.uniqueArray(fc.constantFrom(...Object.keys(fieldGenerators)), { minLength: 1, maxLength: maxLen }) // 1..5 from primitiveGenerator keys. ex: [ 'string' ], [ 'string', 'date', 'boolean', 'date' ], [ 'string', 'number', 'number', 'boolean', 'number' ], ... 
-	.map(keys => Object.fromEntries(keys.map(key => [key, fieldGenerators[key]()])))
+// Object Arbitrary with Random Fields (shallow only) (make object schema and data at once), concrete schema and arbitrary data
+const objectGenerator = (fieldGenerators, maxLen = 5) => fc.sample(fc
+	.uniqueArray(fc.constantFrom(...Object.keys(fieldGenerators)), { minLength: 1, maxLength: maxLen }) // unique 1..5 from primitiveGenerator keys. (if not unique it biases to small resultant obj)
+	.map(keys => Object.fromEntries(keys.map(key => [key, fieldGenerators[key]()]))) // {key, data from arbitrary}
 	.map(fieldEntries => ({
-		schema: Yup.object().shape(Object.fromEntries(Object.entries(fieldEntries).map(([key, { schema }]) => [key, schema]))),
+		schema: Yup.object().shape(Object.fromEntries(Object.entries(fieldEntries).map(([key, { schema }]) => [key, schema]))), // { [datatype]: schema }. Ex: { date: DateSchema..., boolean: BooleanSchema..., ...}
 		data: fc.record(Object.fromEntries(Object.entries(fieldEntries).map(([key, { data }]) => [key, data])))
-	}))
+	})), 1)[0]
 
 // Recursive Schema and Data Generator
 const schemaAndDataGenerator = fc.letrec(tie => ({
 	schemaData: fc.oneof(
+		{ maxDepth: 2, withCrossShrink: true },
 		...Object.values(primitiveGenerators).map(gen => fc.constant(gen())),
-		tie.schemaData.map(innerGen => arrayGenerator(innerGen)),
-		tie.schemaData.map(innerGen => objectGenerator({
+		tie('schemaData').map(innerGen => arrayGenerator(innerGen), { maxDepth: 2 }),
+		tie('schemaData').map(innerGen => objectGenerator({
 			string: primitiveGenerators.string,
 			number: primitiveGenerators.number,
 			boolean: primitiveGenerators.boolean,
 			date: primitiveGenerators.date,
-			nested: innerGen
-		}))
+			nested: () => innerGen
+		}, 5), { maxDepth: 2 }) // it is objectGenerator({...5 entries}, 5) because there are 5 entries
 	)
-})).schemaData
+})).schemaData // { schema, data }, concrete schema, arbitrary data
 
-const invalidDataGenerator = schema => fc.anything().filter(data => !validateAgainstSchema(data, schema))
-// TODO: Use the isInputValid function from schema-helpers instead using the .isValid field
-const validateAgainstSchema = (data, schema) => {
-	try {
-		schema.validateSync(data, { strict: true, abortEarly: false })
-		return true
-	} catch {
-		return false
-	}
-}
+const invalidDataGenerator = schema => fc.anything().filter(data => !isInputValid(data, schema).isValid)
+
+// --- Property and Example Based Tests
+
+// --- test helper tests
+describe('schemaAndDataGenerator', () => {
+	// --- Property Tests
+	// 1. The schemaAndDataGenerator must always make schemas and data that are compatible
+	test('schemaAndDataGenerator must always make schemas and data that are compatible', () => {
+		fc.assert(
+			fc.property(schemaAndDataGenerator, ({ schema, data }) => isInputValid(fc.sample(data, 1)[0], schema).isValid)
+		)
+	})
+})
+
+describe('invalidDataGenerator', () => {
+	// --- Property Tests
+	// 1. The invalidDataGenerator must always make data that is incompatible with the schema provided
+	test('The invalidDataGenerator must always make data that is incompatible with the schema provided', () => {
+		fc.assert(
+			fc.property(schemaAndDataGenerator, ({ schema }) => !isInputValid(invalidDataGenerator(schema), schema).isValid),
+		)
+	})
+})
 
 // --- predicates
 describe('isDictionary', () => {
