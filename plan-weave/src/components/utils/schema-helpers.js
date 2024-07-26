@@ -6,9 +6,7 @@ import * as Yup from 'yup'
 // --- Predicates
 export const isDictionary = val => Object.prototype.toString.call(val) === '[object Object]'
 export const isIterable = val => (val !== undefined && val !== null && typeof val !== 'string' && typeof val[Symbol.iterator] === 'function') || isDictionary(val)
-export const isNode = schema => (!schema || !schema?.type)
-	? false
-	: (schema.type === 'string' || schema.type === 'number' || schema.type === 'boolean' || schema.type === 'date' || (schema.type === 'array' && !schema.innerType?.fields))
+export const isNode = schema => Boolean(schema && (['string', 'number', 'boolean', 'date'].includes(schema.type) || (schema.type === 'array' && !schema.innerType?.fields)))
 // (any, Yup schema) => { isValid: bool, error: string }
 export const isInputValid = (input, schema) => {
 	try {
@@ -60,9 +58,7 @@ export const makeIterable = iterable => isIterable(iterable)
 		? Object.entries(iterable)[Symbol.iterator]()
 		: iterable[Symbol.iterator]()
 	: iterable
-const coercionEdgeCases = (input, schema) => schema
-	? { data: input, error: '' }
-	: { data: input, error: 'No Schema provided, input data is unaffected by schema coercions.' }
+const coercionEdgeCases = (input, schema) => schema ? { data: input, error: '' } : { data: input, error: 'No Schema provided, input data is unaffected by schema coercions.' }
 
 // --- Node Transformation Logic
 const labels = { 'null': 0, 'undefined': 1, 'boolean': 2, 'number': 3, 'bigint': 4, 'string': 5, 'date': 6, 'mixed': 7 }
@@ -163,7 +159,7 @@ export const dfsFns = {
 
 // --- Main Coercion function
 /**
- * Coerces any input data to conform to the provided Yup schema.
+ * Coerces any input data to try to conform to the provided Yup schema, and guarantees atleast proper typing and shape.
  * It fills in defaults for missing fields, corrects invalid fields,
  * and leaves valid data unchanged. It also returns warnings
  * if any coercions occur.

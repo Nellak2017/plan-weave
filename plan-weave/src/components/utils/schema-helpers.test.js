@@ -7,9 +7,9 @@ import {
 	isInputValid, // example based only
 	isValidFieldTypes, // example based only
 	makeIterable, // example based only
-	dfsFns, // (_ sub-functions out of _ tested with _ and _)
+	dfsFns, // (5 sub-functions out of 5 tested with example based tests and property based tests)
+	coerceToSchema, // example based only since dfs is property tested deeply
 	// enhancedCastPrimitive, // property tested and example based too
-	// coerceToSchema, // proerty tested and examble based too
 } from './schema-helpers.js'
 // import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { fc } from '@fast-check/jest'
@@ -500,7 +500,7 @@ describe('dfsFns.reachGet', () => {
 	]
 
 	testCases.forEach(({ input, path, expected }) => {
-		test(`returns ${expected} for input ${JSON.stringify(input)} and path ${path}`, () => {
+		test(`returns ${JSON.stringify(expected)} for input ${JSON.stringify(input)} and path ${path}`, () => {
 			expect(reachGet(input, path)).toStrictEqual(expected)
 		})
 	})
@@ -803,4 +803,49 @@ describe('dfsFns.dfs', () => {
 
 		So what this means is that the way to move forward is to constrain output even more by proving special cases such as when all defaults are defined and valid.
 	*/
+})
+
+// --- main coercion function
+describe('coerceToSchema', () => {
+	const testCases = [
+		{
+			description: 'Valid data with all fields correct',
+			input: { name: 'Alice', age: 25, email: 'alice@example.com' },
+			schema: Yup.object().shape({
+				name: Yup.string().default('Anonymous'),
+				age: Yup.number().default(0),
+				email: Yup.string().email().default('no-reply@example.com')
+			}),
+			expected: {
+				output: { name: 'Alice', age: 25, email: 'alice@example.com' },
+				errors: []
+			}
+		},
+		{
+			description: 'Invalid data with age and email fields incorrect',
+			input: { name: 'John Doe', age: 'invalid-age' },
+			schema: Yup.object().shape({
+				name: Yup.string().default('Anonymous'),
+				age: Yup.number().default(0),
+				email: Yup.string().email().default('no-reply@example.com').required()
+			}),
+			expected: {
+				output: { name: 'John Doe', age: 0, email: 'no-reply@example.com' },
+				errors: [
+					"email is a required field",
+					"this must be a `number` type, but the final value was: `\"invalid-age\"`.",
+					"this must be a `number` type, but the final value was: `\"invalid-age\"`. at path: \"age\", and it was coerced to 0",
+					"this is a required field",
+					"this is a required field at path: \"email\", and it was coerced to no-reply@example.com",
+				]
+			}
+		},
+	]
+	testCases.forEach(({ description, input, schema, expected }) => {
+		test(description, () => {
+			const result = coerceToSchema(input, schema)
+			expect(result.output).toEqual(expected.output)
+			expect(result.errors).toEqual(expected.errors)
+		})
+	})
 })
