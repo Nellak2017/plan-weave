@@ -124,22 +124,12 @@ export const dfsFns = {
 		, input)
 	,
 	reachUpdate: (input, path, value) => {
-		const updateValue = (obj, keys, val) => keys.reduce((acc, key, index) => {
-			if (index === keys.length - 1) {
-				acc[key] = val
-				return obj
-			}
-			acc[key] = (acc[key] !== null && acc[key] !== undefined)
-				? acc[key]
-				: (Number.isInteger(keys[index + 1]) ? [] : {})
-			return acc[key]
-		}, obj)
-		// const updateValue = (obj, keys, val) => {
-		// 	if (keys.length === 0) return val
-		// 	const [key, ...rest] = keys
-		// 	obj[key] = updateValue(obj[key] !== null && obj[key] !== undefined ? obj[key] : Number.isInteger(rest[0]) ? [] : {}, rest, val)
-		// 	return obj
-		// }
+		const updateValue = (obj, keys, val) => {
+			if (keys.length === 0) return val
+			const [key, ...rest] = keys
+			obj[key] = updateValue(obj[key] !== null && obj[key] !== undefined ? obj[key] : Number.isInteger(rest[0]) ? [] : {}, rest, val)
+			return obj
+		}
 		return (path.length === 0)
 			? value
 			: updateValue(input, path, value)
