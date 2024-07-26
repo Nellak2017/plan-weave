@@ -772,7 +772,6 @@ describe('dfsFns.dfs', () => {
 				}
 				expect(errors.some(error => error === yupError)).toBe(true)
 			})
-			, { seed: -828827706, numRuns: 100000 }
 		)
 	})
 

@@ -118,23 +118,31 @@ const enhancedCastPrimitive = (input, schema) => getTransform(input, schema)(inp
 // Note: Main dfs function does not respect defaults for arrays with dicts nor objects
 // Note: Mixed type is unsupported
 export const dfsFns = {
-	reachGet: (input, path) => {
-		const getValue = (obj, keys) => {
-			if (!obj || keys.length === 0) return obj
-			const [key, ...rest] = keys
-			return obj !== null && obj !== undefined ? getValue(obj[key], rest) : undefined
-		}
-		return getValue(input, path)
-	},
+	reachGet: (input, path) => path.reduce((acc, key) => (!acc || key.length === 0) || (acc === null || acc === undefined)
+		? (!acc || key.length === 0) ? acc : undefined
+		: acc[key]
+		, input)
+	,
 	reachUpdate: (input, path, value) => {
-		const updateValue = (obj, keys, val) => {
-			if (keys.length === 0) return val
-			const [key, ...rest] = keys
-			obj[key] = updateValue(obj[key] !== null && obj[key] !== undefined ? obj[key] : Number.isInteger(rest[0]) ? [] : {}, rest, val)
-			return obj
-		}
-		if (path.length === 0) return value
-		return updateValue(input, path, value)
+		const updateValue = (obj, keys, val) => keys.reduce((acc, key, index) => {
+			if (index === keys.length - 1) {
+				acc[key] = val
+				return obj
+			}
+			acc[key] = (acc[key] !== null && acc[key] !== undefined)
+				? acc[key]
+				: (Number.isInteger(keys[index + 1]) ? [] : {})
+			return acc[key]
+		}, obj)
+		// const updateValue = (obj, keys, val) => {
+		// 	if (keys.length === 0) return val
+		// 	const [key, ...rest] = keys
+		// 	obj[key] = updateValue(obj[key] !== null && obj[key] !== undefined ? obj[key] : Number.isInteger(rest[0]) ? [] : {}, rest, val)
+		// 	return obj
+		// }
+		return (path.length === 0)
+			? value
+			: updateValue(input, path, value)
 	},
 	processErrors: errs => Array.from(new Set(errs.filter(e => e.trim() !== ''))),
 	processNodes: ({ currentInput, currentSchema, isValid, errors, error, output, path, errProcessor = dfsFns.processErrors, reachUpdate = dfsFns.reachUpdate }) => isValid
