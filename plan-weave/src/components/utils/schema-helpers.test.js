@@ -888,6 +888,67 @@ describe('coerceToSchema', () => {
 				]
 			}
 		},
+		{
+			description: 'Valid schema, invalid ttc',
+			input: { "task": " ", "waste": 0.01, "ttc": NaN, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: ' ', waste: 0.01, ttc: 1, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					'TTC must be a number',
+					'TTC must be a number at path: "ttc", and it was coerced to 1'
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid eta',
+			input: { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": new Date(0), "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: ' ', waste: 0.01, ttc: 0.01, eta: '2024-07-26T17:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					'Eta must be a valid ISO string',
+					'Eta must be a valid ISO string at path: "eta", and it was coerced to 2024-07-26T17:00:00.000Z'
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid eta',
+			input: { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": -100, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: ' ', waste: 0.01, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					'Id must be greater than 0',
+					'Id must be greater than 0 at path: "id", and it was coerced to 1'
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid status',
+			input: { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "pending", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: ' ', waste: 0.01, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					'Invalid status value',
+					'Invalid status value at path: "status", and it was coerced to incomplete'
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid timestamp',
+			input: { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": new Date(100), "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: ' ', waste: 0.01, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					'timestamp must be a `number` type, but the final value was: `1970-01-01T00:00:00.100Z`.',
+					'this must be a `number` type, but the final value was: `1970-01-01T00:00:00.100Z`.',
+					'this must be a `number` type, but the final value was: `1970-01-01T00:00:00.100Z`. at path: "timestamp", and it was coerced to 1'
+				]
+			}
+		},
 	]
 	testCases.forEach(({ description, input, schema, expected }) => {
 		test(description, () => {

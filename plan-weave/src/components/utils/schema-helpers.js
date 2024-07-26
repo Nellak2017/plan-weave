@@ -264,10 +264,25 @@ const invalidWaste = { "task": " ", "waste": "Foobar", "ttc": 0.01, "eta": "2000
 // console.log(coerceToSchema(invalidWaste, simpleTaskSchema))
 
 // 6. valid schema, invalid ttc
+const invalidTTC = { "task": " ", "waste": 0.01, "ttc": NaN, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false }
+// console.log(coerceToSchema(invalidTTC, simpleTaskSchema))
+
 // 7. valid schema, invalid eta
+const invalidETA = { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": new Date(0), "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false }
+// console.log(coerceToSchema(invalidETA , simpleTaskSchema))
+
 // 8. valid schema, invalid id
+const invalidID = { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": -100, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false }
+// console.log(coerceToSchema(invalidID, simpleTaskSchema))
+
 // 9. valid schema, invalid status
+const invalidStatus = { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "pending", "timestamp": 1, "completedTimeStamp": 1, "hidden": false }
+// console.log(coerceToSchema(invalidStatus, simpleTaskSchema))
+
 // 10. valid schema, invalid timestamp
+const invalidTimeStamp = { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": new Date(100), "completedTimeStamp": 1, "hidden": false }
+// console.log(coerceToSchema(invalidTimeStamp, simpleTaskSchema))
+
 // 11. valid schema, invalid completedTimeStamp
 // 12. valid schema, invalid hidden
 // 13. valid schema, invalid task+waste
