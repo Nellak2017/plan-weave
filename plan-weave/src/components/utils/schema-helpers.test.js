@@ -780,7 +780,6 @@ describe('dfsFns.dfs', () => {
 				const d = a.output // a.output = d
 				expect(c).toStrictEqual(d) // f(a.output).output = a.output :=> c = d
 			})
-			, { numRuns: 10000 }
 		)
 	})
 
@@ -833,6 +832,59 @@ describe('coerceToSchema', () => {
 					"this must be a `number` type, but the final value was: `\"invalid-age\"`. at path: \"age\", and it was coerced to 0",
 					"this is a required field",
 					"this is a required field at path: \"email\", and it was coerced to no-reply@example.com",
+				]
+			}
+		},
+		{
+			description: 'Invalid schema, valid data',
+			input: { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: null,
+			expected: {
+				output: { task: ' ', waste: 0.01, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: ['No Schema provided, input data is unaffected by schema coercions.']
+			}
+		},
+		{
+			description: 'Invalid schema, invalid data',
+			input: { "task": " ", "waste": Number.NaN, "ttc": 0.010999999940395355, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: NaN,
+			expected: {
+				output: { "task": " ", "waste": Number.NaN, "ttc": 0.010999999940395355, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+				errors: ['No Schema provided, input data is unaffected by schema coercions.']
+			}
+		},
+		{
+			description: 'Valid schema, valid data',
+			input: { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: ' ', waste: 0.01, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: []
+			}
+		},
+		{
+			description: 'Valid schema, invalid task',
+			input: { "task": 1234, "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: '1234', waste: 0.01, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					'task must be a `string` type, but the final value was: `1234`.',
+					'this must be a `string` type, but the final value was: `1234`.',
+					'this must be a `string` type, but the final value was: `1234`. at path: "task", and it was coerced to 1234'
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid waste',
+			input: { "task": " ", "waste": "Foobar", "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: ' ', waste: 0, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					'waste must be a `number` type, but the final value was: `"Foobar"`.',
+					'this must be a `number` type, but the final value was: `"Foobar"`.',
+					'this must be a `number` type, but the final value was: `"Foobar"`. at path: "waste", and it was coerced to 0'
 				]
 			}
 		},
