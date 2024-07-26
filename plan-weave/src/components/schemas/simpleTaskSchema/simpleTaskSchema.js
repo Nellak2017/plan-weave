@@ -21,43 +21,22 @@ const twelve = new Date(new Date().setHours(12, 0, 0, 0))
  * @property {Yup.BooleanSchema} hidden - Validation schema for the hidden flag.
  */
 
-/**
- * Default values for a simple task, optionally overridden by provided object.
- * @callback FillDefaultsForSimpleTask
- * @param {Object} obj - Object with task properties to override defaults.
- * @returns {Object} Object with default or overridden task properties.
- */
-
-/**
- * Validation schema for a simple task with default values and transformation logic.
- * @type {SimpleTaskSchema}
- */
-
 // NOTE: transform methods not used since schema coercion function does that due to valid default being defined
 export const simpleTaskSchema = Yup.object({
 	task: Yup.string()
 		.max(50, 'Task must be at most 50 characters')
 		.default(''),
-	//.transform((value, originalValue) => (originalValue === '' || originalValue === null) ? ' ' : value)
 	waste: Yup.number()
 		.nullable(false)
-		//.min(0.01)
 		.default(0),
-	//.transform((value, originalValue) => (originalValue === '' || originalValue === null) ? 0 : value)
 	ttc: Yup.number()
 		.typeError('TTC must be a number')
 		.min(0.01)
 		.default(1),
-	//.transform((value, originalValue) => (originalValue === '' || originalValue === null || originalValue <= .01) ? 1 : value)
 	eta: Yup.string()
 		.typeError('Eta must be a valid ISO string')
 		.matches(isoStringRegex, 'Eta must be a valid ISO String, it failed the regex test')
 		.default(() => twelve.toISOString()),
-	// .transform((value, originalValue) => {
-	// 	if (!originalValue) return twelve.toISOString()
-	// 	if (typeof originalValue === 'number') return new Date(originalValue * 1000).toISOString()
-	// 	return value
-	// })
 	id: Yup.number()
 		.positive('Id must be greater than 0')
 		.required('Id is required'),
@@ -69,26 +48,39 @@ export const simpleTaskSchema = Yup.object({
 		.positive('Completed Timestamp must be a positive number').default(1),
 	hidden: Yup.boolean()
 		.default(false)
-	// .transform((value, originalValue) => (originalValue !== false && !originalValue) || (originalValue !== true && originalValue) ? '' : value),
 }).default({})
 
 /**
- * Fill default values for a simple task, optionally overridden by provided object.
- * @type {FillDefaultsForSimpleTask}
+ * Fills in default values for a simple task object, allowing overrides with provided values.
+ *
+ * This function provides default values for each property of a simple task. If any properties are 
+ * provided in the input object, those will override the default values. This is useful for ensuring 
+ * that all required properties have a valid value and that any provided values are merged correctly 
+ * with defaults.
+ *
+ * @param {Partial<SimpleTaskSchema>} obj - An object containing properties that may override the defaults.
+ *   - `task` (string): The name of the task. Defaults to a single space.
+ *   - `waste` (number): The waste value associated with the task. Defaults to 1.
+ *   - `ttc` (number): The time-to-complete value. Defaults to 1.
+ *   - `eta` (string): The estimated time of arrival in ISO string format. Defaults to noon of the current day.
+ *   - `id` (number): The unique identifier for the task. Defaults to the current timestamp.
+ *   - `status` (string): The status of the task. Defaults to `TASK_STATUSES.INCOMPLETE`.
+ *   - `timestamp` (number): The usual timestamp. Defaults to the current timestamp.
+ *   - `completedTimeStamp` (number): The timestamp when the task was completed. Defaults to the current timestamp plus 1.
+ *   - `hidden` (boolean): A flag indicating whether the task is hidden. Defaults to `false`.
+ *
+ * @returns {SimpleTaskSchema} An object representing the task with default values applied and any 
+ *   provided values merged in.
  */
-export const fillDefaultsForSimpleTask = (obj) => {
-	const objWithDefaults = {
-		task: ' ',
-		waste: 1,
-		ttc: 1,
-		eta: twelve.toISOString(),
-		id: new Date().getTime(),
-		status: TASK_STATUSES.INCOMPLETE,
-		timestamp: timestamp,
-		completedTimeStamp: timestamp + 1,
-		hidden: false,
-		...obj,
-	}
-
-	return objWithDefaults
-}
+export const fillDefaultsForSimpleTask = obj => ({
+	task: ' ',
+	waste: 1,
+	ttc: 1,
+	eta: twelve.toISOString(),
+	id: new Date().getTime(),
+	status: TASK_STATUSES.INCOMPLETE,
+	timestamp: timestamp,
+	completedTimeStamp: timestamp + 1,
+	hidden: false,
+	...obj,
+})
