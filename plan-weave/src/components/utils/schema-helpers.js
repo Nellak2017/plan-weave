@@ -195,14 +195,3 @@ export const coerceToSchema = (input, schema) =>
 		: dfsFns.dfs({ input, schema })
 
 // ------------ Experimental area
-
-const testSchema = Yup.object().shape({
-	age: Yup.number().min(1).default(5).required(),
-	name: Yup.string().required(),
-})
-
-const testData = {
-	age: 0,
-}
-
-console.log(coerceToSchema(testData, testSchema))

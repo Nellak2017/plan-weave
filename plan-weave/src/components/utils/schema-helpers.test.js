@@ -10,8 +10,9 @@ import {
 	dfsFns, // (5 sub-functions out of 5 tested with example based tests and property based tests)
 	coerceToSchema, // example based only since dfs is property tested deeply
 	// enhancedCastPrimitive, // property tested and example based too
-} from './schema-helpers.mjs'
-// import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
+} from './schema-helpers.js'
+import { TASK_STATUSES } from './constants.js'
+import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
 
@@ -673,24 +674,19 @@ describe('dfsFns.dfs', () => {
 	})
 
 	// --- Property based tests (using fixed schema, arbitrary data)
-	// Fixed schema definition (Surrogate)
-	const schema = Yup.object().shape({
-		primitiveField: Yup.string().default('defaultString'),
-		arrayFieldNoInnerDict: Yup.array().of(Yup.number().default(0)),
-		arrayFieldWithInnerDict: Yup.array().of(
-			Yup.object().shape({
-				innerField: Yup.string().required(),
-			})
-		),
-		dictionaryField: Yup.object().shape({
-			dictField: Yup.number().default(42),
-		}),
-	})
+	// Fixed schema definition (Simple Task Schema), with the associated arbitraries
+	const schema = simpleTaskSchema
+	const isoDateArbitrary = fc.date({ min: new Date(2000, 0, 1), max: new Date(2025, 11, 31) }).map(date => date.toISOString())
 	const validDataArbitrary = fc.record({
-		primitiveField: fc.string({ minLength: 1 }),
-		arrayFieldNoInnerDict: fc.array(fc.integer()),
-		arrayFieldWithInnerDict: fc.array(fc.record({ innerField: fc.string({ minLength: 1 }) }), { minLength: 1 }),
-		dictionaryField: fc.record({ dictField: fc.integer() }),
+		task: fc.string({ minLength: 1, maxLength: 50 }), // Ensures task is between 1 and 50 characters
+		waste: fc.float({ min: Math.fround(0.011), noNaN: true }), // Waste must be a non-negative number. It can't be NaN since that is coerced
+		ttc: fc.float({ min: Math.fround(0.011), noNaN: true }), // TTC must be a float greater than 0.01. It can't be NaN since that is coerced
+		eta: isoDateArbitrary, // ETA must be a valid ISO string
+		id: fc.integer({ min: 1 }), // ID must be a positive number
+		status: fc.constantFrom(...Object.values(TASK_STATUSES)), // Status must be one of the predefined values
+		timestamp: fc.integer({ min: 1 }), // Timestamp must be a positive number
+		completedTimeStamp: fc.integer({ min: 1 }), // Completed timestamp must be a positive number
+		hidden: fc.boolean() // Hidden flag must be a boolean
 	})
 
 	/*
@@ -701,14 +697,14 @@ describe('dfsFns.dfs', () => {
 	*/
 
 	// 1. Idempotence of data - f(a).output === f(f(a).output).output 
-	test('dfsFns.dfs is idempotent. f(a) === c === f(c.output)', () => {
+	test('dfsFns.dfs is idempotent. f(a).output === f(f(a).output).output', () => {
 		fc.assert(
 			fc.property(validDataArbitrary, (input) => {
 				// input is from the validDataArbitrary, schema is from fixed definition above
-				const result1 = dfs({ input, schema }) // f(a) = c
-				const result2 = dfs({ input: result1.output, schema }) // c = f(c.output)
-				expect(result1).toStrictEqual(result2) // f(a) = c = f(c.output). f(a) = f(f(a).output)
-			}),
+				const result1 = dfs({ input, schema }).output // f(a).output
+				const result2 = dfs({ input: result1, schema }).output // f(f(a).output).output
+				expect(result1).toStrictEqual(result2) // f(a).output === f(f(a).output).output
+			})
 		)
 	})
 
@@ -775,8 +771,8 @@ describe('dfsFns.dfs', () => {
 		)
 	})
 
-	// 7. Non-altering of valid data - f(a.output).output = a.output if a.output is valid against the schema
-	test('Non-altering of valid data - f(a.output).output = a.output if a.output is valid against the schema', () => {
+	// 7. Fixed point if valid (Non-altering of valid data) - f(a.output).output = a.output if a.output is valid against the schema
+	test('Fixed point if valid (Non-altering of valid data) - f(a.output).output = a.output if a.output is valid against the schema', () => {
 		fc.assert(
 			fc.property(validDataArbitrary, (input) => {
 				const a = dfs({ input, schema }) // a
