@@ -22,31 +22,47 @@ const twelve = new Date(new Date().setHours(12, 0, 0, 0))
  */
 
 // NOTE: transform methods not used since schema coercion function does that due to valid default being defined
+// NOTE: if all defaults defined and conform to schema then the schema is valid
+// NOTE: if .required() is not specified, the coercion will result in undefined for that field
+// .required() and valid default is defined for all fields so that the coercion function will guarantee a valid and data integrity preserved output 
+// TODO: Test if .nullable(false) is required for all or not
 export const simpleTaskSchema = Yup.object({
 	task: Yup.string()
 		.max(50, 'Task must be at most 50 characters')
+		.required()
 		.default(''),
 	waste: Yup.number()
 		.nullable(false)
+		.required()
 		.default(0),
 	ttc: Yup.number()
 		.typeError('TTC must be a number')
 		.min(0.01)
+		.required()
 		.default(1),
 	eta: Yup.string()
 		.typeError('Eta must be a valid ISO string')
 		.matches(isoStringRegex, 'Eta must be a valid ISO String, it failed the regex test')
+		.required()
 		.default(() => twelve.toISOString()),
 	id: Yup.number()
 		.positive('Id must be greater than 0')
-		.required('Id is required'),
+		.required('Id is required')
+		.default(1),
 	status: Yup.string()
-		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value').default(TASK_STATUSES.INCOMPLETE),
+		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value')
+		.required()
+		.default(TASK_STATUSES.INCOMPLETE),
 	timestamp: Yup.number()
-		.positive('Normal Timestamp must be a positive number').default(1),
+		.positive('Normal Timestamp must be a positive number')
+		.required()
+		.default(1),
 	completedTimeStamp: Yup.number()
-		.positive('Completed Timestamp must be a positive number').default(1),
+		.positive('Completed Timestamp must be a positive number')
+		.required()
+		.default(1),
 	hidden: Yup.boolean()
+		.required()
 		.default(false)
 }).default({})
 
