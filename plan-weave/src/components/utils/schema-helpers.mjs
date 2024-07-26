@@ -58,7 +58,7 @@ export const makeIterable = iterable => isIterable(iterable)
 		? Object.entries(iterable)[Symbol.iterator]()
 		: iterable[Symbol.iterator]()
 	: iterable
-const coercionEdgeCases = (input, schema) => schema ? { data: input, error: '' } : { data: input, error: 'No Schema provided, input data is unaffected by schema coercions.' }
+const coercionEdgeCases = (input, schema) => schema && Yup.isSchema(schema) ? { data: input, error: '' } : { data: input, error: 'No Schema provided, input data is unaffected by schema coercions.' }
 
 // --- Node Transformation Logic
 const labels = { 'null': 0, 'undefined': 1, 'boolean': 2, 'number': 3, 'bigint': 4, 'string': 5, 'date': 6, 'mixed': 7 }
@@ -140,7 +140,7 @@ export const dfsFns = {
 		const { isValid, error } = isInputValid(currentInput, schema) // see if it is valid (works for nodes and shallow non-nodes)
 		const isArrDict = schema.type === 'array' && schema.innerType.fields
 		const isDictOrArrDict = schema.type === 'object' || isArrDict
-		if (isNode(schema)) return processNodes({ currentInput, currentSchema:schema, isValid, errors, error, output, path, errProcessor: processErrors })
+		if (isNode(schema)) return processNodes({ currentInput, currentSchema: schema, isValid, errors, error, output, path, errProcessor: processErrors })
 		if (isDictOrArrDict) return Array.from(makeIterable(isArrDict ? schema.innerType.fields : schema.fields))
 			.reduce(({ output, errors }, [key, fieldSchema]) => {
 				const newPath = [...path, key]
@@ -191,7 +191,18 @@ export const dfsFns = {
  */
 export const coerceToSchema = (input, schema) =>
 	coercionEdgeCases(input, schema).error !== ''
-		? { output: input, errors: [edgeCasesErr] }
+		? { output: input, errors: [coercionEdgeCases(input, schema).error] }
 		: dfsFns.dfs({ input, schema })
 
 // ------------ Experimental area
+
+const testSchema = Yup.object().shape({
+	age: Yup.number().min(1).default(5).required(),
+	name: Yup.string().required(),
+})
+
+const testData = {
+	age: 0,
+}
+
+console.log(coerceToSchema(testData, testSchema))

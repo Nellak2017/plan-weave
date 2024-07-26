@@ -33,79 +33,43 @@ const twelve = new Date(new Date().setHours(12, 0, 0, 0))
  * @type {SimpleTaskSchema}
  */
 
+// NOTE: transform methods not used since schema coercion function does that due to valid default being defined
 export const simpleTaskSchema = Yup.object({
 	task: Yup.string()
 		.max(50, 'Task must be at most 50 characters')
-		.default('')
-		.transform((value, originalValue) => {
-			if (originalValue === '' || originalValue === null) {
-				return ' '
-			}
-			return value
-		}),
+		.default(''),
+	//.transform((value, originalValue) => (originalValue === '' || originalValue === null) ? ' ' : value)
 	waste: Yup.number()
 		.nullable(false)
 		//.min(0.01)
-		.default(0)
-		.transform((value, originalValue) => {
-			if (originalValue === '' || originalValue === null) {
-				return 0
-			}
-			return value
-		}),
+		.default(0),
+	//.transform((value, originalValue) => (originalValue === '' || originalValue === null) ? 0 : value)
 	ttc: Yup.number()
 		.typeError('TTC must be a number')
 		.min(0.01)
-		.default(1)
-		.transform((value, originalValue) => {
-			if (originalValue === '' || originalValue === null || originalValue <= .01) {
-				return 1
-			}
-			return value
-		}),
-	/*
-	eta: Yup.string()
-		.matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid HH:MM format')
-		.default('12:00')
-		.transform((value, originalValue) => {
-			if (originalValue === '' || originalValue === null) {
-				return '12:00'
-			}
-			return value
-		}),
-	*/
-	/*
-	eta: Yup.date()
-		.typeError('Eta must be a Date object')
-		.default(twelve)
-		.transform((value, originalValue) => {
-			if (!originalValue) return twelve 
-			else if (typeof originalValue === 'number') return new Date(value * 1000) // transform epoch to date  
-			return value
-		}),
-	*/
+		.default(1),
+	//.transform((value, originalValue) => (originalValue === '' || originalValue === null || originalValue <= .01) ? 1 : value)
 	eta: Yup.string()
 		.typeError('Eta must be a valid ISO string')
 		.matches(isoStringRegex, 'Eta must be a valid ISO String, it failed the regex test')
-		.default(() => twelve.toISOString()) 
-		.transform((value, originalValue) => {
-			if (!originalValue) return twelve.toISOString()
-			else if (typeof originalValue === 'number') {
-				const date = new Date(originalValue * 1000)
-				return date.toISOString()
-			}
-			return value
-		}),
-	id: Yup.number().positive('Id must be greater than 0').required('Id is required'),
+		.default(() => twelve.toISOString()),
+	// .transform((value, originalValue) => {
+	// 	if (!originalValue) return twelve.toISOString()
+	// 	if (typeof originalValue === 'number') return new Date(originalValue * 1000).toISOString()
+	// 	return value
+	// })
+	id: Yup.number()
+		.positive('Id must be greater than 0')
+		.required('Id is required'),
 	status: Yup.string()
 		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value').default(TASK_STATUSES.INCOMPLETE),
-	timestamp: Yup.number().positive('Normal Timestamp must be a positive number').default(1),
-	completedTimeStamp: Yup.number().positive('Completed Timestamp must be a positive number').default(1),
-	hidden: Yup.boolean().default(false)
-		.transform((value, originalValue) => {
-			if ((originalValue !== false && !originalValue) || (originalValue !== true && originalValue)) return ''
-			else return value
-		}),
+	timestamp: Yup.number()
+		.positive('Normal Timestamp must be a positive number').default(1),
+	completedTimeStamp: Yup.number()
+		.positive('Completed Timestamp must be a positive number').default(1),
+	hidden: Yup.boolean()
+		.default(false)
+	// .transform((value, originalValue) => (originalValue !== false && !originalValue) || (originalValue !== true && originalValue) ? '' : value),
 }).default({})
 
 /**
