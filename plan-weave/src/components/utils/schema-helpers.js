@@ -24,7 +24,7 @@ export const isInputValid = (input, schema) => {
 			}
 			: { isValid: true, error: '' }
 	} catch (error) {
-		return { isValid: false, error: error.message || String(error) }
+		return { isValid: false, error: error.message || String(error) } // was error.message
 	}
 }
 // true if the input has the correct types for each field in the schema, false if the input is invalid against the schema
@@ -139,7 +139,7 @@ export const dfsFns = {
 	processErrors: errs => Array.from(new Set(errs.filter(e => e.trim() !== ''))),
 	processNodes: ({ currentInput, currentSchema, isValid, errors, error, output, path, errProcessor = dfsFns.processErrors, reachUpdate = dfsFns.reachUpdate }) => isValid
 		? { output: reachUpdate(output, path, currentInput), errors: errProcessor(errors) }
-		: { output: reachUpdate(output, path, enhancedCastPrimitive(currentInput, currentSchema)), errors: errProcessor([...errors, error + ` at path: "${path.join('.')}", and it was coerced to ${enhancedCastPrimitive(currentInput, currentSchema)}`]) },
+		: { output: reachUpdate(output, path, enhancedCastPrimitive(currentInput, currentSchema)), errors: errProcessor([...errors, isInputValid(currentInput, currentSchema).error, error + ` at path: "${path.join('.')}", and it was coerced to ${enhancedCastPrimitive(currentInput, currentSchema)}`]) },
 	dfs: ({ input, schema, output = undefined, path = [], errors = [], reachGet = dfsFns.reachGet, reachUpdate = dfsFns.reachUpdate, processErrors = dfsFns.processErrors, processNodes = dfsFns.processNodes }) => {
 		const currentSchema = schema
 		const currentInput = reachGet(input, path)

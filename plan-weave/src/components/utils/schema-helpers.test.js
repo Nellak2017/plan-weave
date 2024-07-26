@@ -574,7 +574,7 @@ describe('dfsFns.processNodes', () => {
 				output: {},
 				path: ['b']
 			},
-			expected: { output: { b: '123' }, errors: ['Invalid type at path: "b", and it was coerced to 123'] }
+			expected: { output: { b: '123' }, errors: ["this must be a `string` type, but the final value was: `123`.", 'Invalid type at path: "b", and it was coerced to 123'] }
 		},
 		{
 			input: {
@@ -586,7 +586,7 @@ describe('dfsFns.processNodes', () => {
 				output: {},
 				path: ['c']
 			},
-			expected: { output: { c: 10 }, errors: ['Invalid type at path: "c", and it was coerced to 10'] }
+			expected: { output: { c: 10 }, errors: ["this must be a `number` type, but the final value was: `\"abc\"`.", 'Invalid type at path: "c", and it was coerced to 10'] }
 		},
 		{
 			input: {
@@ -598,7 +598,7 @@ describe('dfsFns.processNodes', () => {
 				output: {},
 				path: ['d']
 			},
-			expected: { output: { d: "" }, errors: ['Previous error', "Invalid type at path: \"d\", and it was coerced to "] }
+			expected: { output: { d: "" }, errors: ['Previous error', "this cannot be null", "Invalid type at path: \"d\", and it was coerced to "] }
 		}
 	]
 
@@ -694,11 +694,10 @@ describe('dfsFns.dfs', () => {
 	})
 
 	/*
-	Properties known:
+	Properties known, but not tested:
 
-	5. Default values of schema when field is not coerceable - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
-	6. Type Default values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
-	7. Non-altering of valid data - f(a).output = a.output if a.output is valid against the schema
+	8. Default values of schema when field is not coerceable - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
+	9. Type Default values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
 	*/
 
 	// 1. Idempotence of data - f(a).output === f(f(a).output).output 
@@ -747,4 +746,62 @@ describe('dfsFns.dfs', () => {
 			})
 		)
 	})
+
+	// 5. Errors are a list of strings - f(a).errors, where a is invalid, is a list of strings
+	test('Errors are a list of strings - f(a).errors, where a is invalid, is a list of strings', () => {
+		fc.assert(
+			fc.property(invalidDataGenerator(schema), (input) => {
+				const errors = dfs({ input, schema }).errors // should be an array of strings
+				expect(Array.isArray(errors)).toBe(true) // errors should be an array
+				expect(errors.every(error => typeof error === 'string')).toBe(true) // errors should be an array of strings
+			})
+		)
+	})
+
+	// 6. Errors contain Yup errors - f(a).errors, where a is invalid, atleast has the Yup errors contained in the list
+	test('Errors contain Yup errors - f(a).errors, where a is invalid, atleast has the Yup errors contained in the list', () => {
+		fc.assert(
+			fc.property(invalidDataGenerator(schema), (input) => {
+				const errors = dfs({ input, schema }).errors
+				const yupError = isInputValid(input, schema).error
+				const cond = errors.some(error => error === yupError)
+				if (!cond) {
+					console.log(input)
+					console.log(yupError)
+					console.log(errors)
+				}
+				expect(errors.some(error => error === yupError)).toBe(true)
+			})
+			, { seed: -828827706, numRuns: 100000 }
+		)
+	})
+
+	// 7. Non-altering of valid data - f(a.output).output = a.output if a.output is valid against the schema
+	test('Non-altering of valid data - f(a.output).output = a.output if a.output is valid against the schema', () => {
+		fc.assert(
+			fc.property(validDataArbitrary, (input) => {
+				const a = dfs({ input, schema }) // a
+				const c = dfs({ input: a.output, schema }).output // f(a.output).output = c
+				const d = a.output // a.output = d
+				expect(c).toStrictEqual(d) // f(a.output).output = a.output :=> c = d
+			})
+			, { numRuns: 10000 }
+		)
+	})
+
+	/*
+		What my 7 properties prove so far:
+
+		dfs({ input, schema }) => { 
+			output: 
+				input is valid -> valid output,
+				input is not valid -> output with correct type and shape only,
+			, 
+			errors: 
+				input is valid -> [],
+				input is not valid -> [string+] where there is Yup errors included that are informative 
+			}
+
+		So what this means is that the way to move forward is to constrain output even more by proving special cases such as when all defaults are defined and valid.
+	*/
 })
