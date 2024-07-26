@@ -113,6 +113,7 @@ const enhancedCastPrimitive = (input, schema) => getTransform(input, schema)(inp
 // Related dfs functions is in this object for readability
 // Note: Main dfs function does not respect defaults for arrays with dicts nor objects
 // Note: Mixed type is unsupported
+// Note: Unsure why changing processNodes currentSchema to schema makes tests fail?
 export const dfsFns = {
 	reachGet: (input, path) => path.reduce((acc, key) => (!acc || key.length === 0) || (acc === null || acc === undefined)
 		? (!acc || key.length === 0) ? acc : undefined
@@ -135,25 +136,17 @@ export const dfsFns = {
 		? { output: reachUpdate(output, path, currentInput), errors: errProcessor(errors) }
 		: { output: reachUpdate(output, path, enhancedCastPrimitive(currentInput, currentSchema)), errors: errProcessor([...errors, isInputValid(currentInput, currentSchema).error, error + ` at path: "${path.join('.')}", and it was coerced to ${enhancedCastPrimitive(currentInput, currentSchema)}`]) },
 	dfs: ({ input, schema, output = undefined, path = [], errors = [], reachGet = dfsFns.reachGet, reachUpdate = dfsFns.reachUpdate, processErrors = dfsFns.processErrors, processNodes = dfsFns.processNodes }) => {
-		const currentSchema = schema
 		const currentInput = reachGet(input, path)
-		const { isValid, error } = isInputValid(currentInput, currentSchema) // see if it is valid (works for nodes and shallow non-nodes)
-		const isArrDict = currentSchema.type === 'array' && currentSchema.innerType.fields
-		const isDictOrArrDict = currentSchema.type === 'object' || isArrDict
-
-		if (isNode(currentSchema)) return processNodes({ currentInput, currentSchema, isValid, errors, error, output, path, errProcessor: processErrors })
-		if (isDictOrArrDict) return Array.from(makeIterable(isArrDict ? currentSchema.innerType.fields : currentSchema.fields))
+		const { isValid, error } = isInputValid(currentInput, schema) // see if it is valid (works for nodes and shallow non-nodes)
+		const isArrDict = schema.type === 'array' && schema.innerType.fields
+		const isDictOrArrDict = schema.type === 'object' || isArrDict
+		if (isNode(schema)) return processNodes({ currentInput, currentSchema:schema, isValid, errors, error, output, path, errProcessor: processErrors })
+		if (isDictOrArrDict) return Array.from(makeIterable(isArrDict ? schema.innerType.fields : schema.fields))
 			.reduce(({ output, errors }, [key, fieldSchema]) => {
 				const newPath = [...path, key]
-				const processedNewPath = isArrDict ? [...newPath.slice(0, -1), '0', newPath[newPath.length - 1]] : newPath
-				const { output: nestedOutput, errors: nestedErrors } = dfsFns.dfs({ input, schema: fieldSchema, output, path: processedNewPath, errors })
-				return {
-					output: nestedOutput,
-					errors: nestedErrors,
-				}
+				return dfsFns.dfs({ input, schema: fieldSchema, output, path: isArrDict ? [...newPath.slice(0, -1), '0', newPath[newPath.length - 1]] : newPath, errors })
 			}, { output: reachUpdate(output, path, isArrDict ? [{}] : {}), errors: processErrors([...errors, error]) })
-
-		return { output, errors: [...errors, { message: `Schema type '${currentSchema?.type}' is not supported` }] }
+		return { output, errors: [...errors, { message: `Schema type '${schema?.type}' is not supported` }] }
 	}
 }
 
