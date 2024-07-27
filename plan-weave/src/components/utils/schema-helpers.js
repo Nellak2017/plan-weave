@@ -64,7 +64,7 @@ const coercionEdgeCases = (input, schema) => schema && Yup.isSchema(schema) ? { 
 const labels = { 'null': 0, 'undefined': 1, 'boolean': 2, 'number': 3, 'bigint': 4, 'string': 5, 'date': 6, 'mixed': 7 }
 const typeDefaults = { 'null': null, 'undefined': undefined, 'boolean': false, 'number': 0, 'bigint': 0n, 'string': '', 'date': new Date(), 'array': [], 'object': {}, 'mixed': null }
 const rules = {
-	d: (_, schema) => schema && schema?.default() ? schema?.default() : schema?.type in typeDefaults ? typeDefaults[schema?.type] : null, // d is for default. No default means type default or null if unsupported type
+	d: (_, schema) => schema && schema?.default() && !Yup.isSchema(schema?.default()) ? schema?.default() : schema?.type in typeDefaults ? typeDefaults[schema?.type] : null, // d is for default. No default means type default or null if unsupported type
 	c: (input, schema) => {
 		try {
 			return schema.cast(input)
@@ -97,14 +97,17 @@ const transformationMatrix = [
 ]
 const getLabelIndex = (input, typeLabels = labels) => {
 	const type = typeof input
-	if (typeLabels[type] !== undefined) return typeLabels[type]
 	if (input === null) return typeLabels['null']
+	if (Array.isArray(input)) return typeLabels['mixed']
 	if (input instanceof Date) return typeLabels['date']
+	if (typeLabels[type] !== undefined) return typeLabels[type]
+	return typeLabels['mixed'] // default value
 }
 const getXY = (input, schema, typeLabels = labels) => [getLabelIndex(input), typeLabels[schema?.describe()?.type || undefined] || typeLabels['mixed']] // y value is the typelabel or mixed
 const getTransform = (input, schema, matrix = transformationMatrix) => {
 	const [x, y] = getXY(input, schema)
-	return matrix[x][y]
+	const ret = matrix?.[x]?.[y] || rules.c
+	return ret
 }
 const enhancedCastPrimitive = (input, schema) => getTransform(input, schema)(input, schema) // Returns expected casting for primitives only, not bullshit one only if default is defined. If no default then null.
 
@@ -240,7 +243,7 @@ const simpleTaskSchema = Yup.object({
 		.default(1),
 	hidden: Yup.boolean()
 		.required()
-		.default(false)
+		.default(false), // NOTE: Yup does not respect boolean defaults!!!!
 }).default({})
 
 // 1. invalid schema, valid data
@@ -284,11 +287,21 @@ const invalidTimeStamp = { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000
 // console.log(coerceToSchema(invalidTimeStamp, simpleTaskSchema))
 
 // 11. valid schema, invalid completedTimeStamp
+const invalidCompletedTimeStamp = { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": {}, "hidden": false }
+// console.log(coerceToSchema(invalidCompletedTimeStamp, simpleTaskSchema))
+
 // 12. valid schema, invalid hidden
+const invalidHidden = { "hidden": [], "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1 }
+// console.log(coerceToSchema(invalidHidden, simpleTaskSchema))
+
 // 13. valid schema, invalid task+waste
+
 // 14. valid schema, invalid task+ttc
+
 // 15. valid schema, invalid task+eta
+
 // 16. valid schema, invalid task+id
+
 // 17. valid schema, invalid {}
 // 18. valid schema, invalid null
 // 19. valid schema, invalid NaN

@@ -16,6 +16,8 @@ import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.j
 import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
 
+// TODO: Cover rules.d, getLabelIndex, and getTransform later, I had issues with them reading properties of undefined
+
 // --- Global Arbitraries and test helpers
 // TODO: See if it is possible to reformulate the return type of schemaAndDataGenerator to be concrete schema and data, not just concrete schema. (It worked in schema-helpers but not here??)
 // Primitive Arbitraries (make primitive schema and data at once), concrete schema and arbitrary data
@@ -802,6 +804,8 @@ describe('dfsFns.dfs', () => {
 
 // --- main coercion function
 describe('coerceToSchema', () => {
+	const twelve = new Date(new Date().setHours(12, 0, 0, 0))
+
 	const testCases = [
 		{
 			description: 'Valid data with all fields correct',
@@ -946,6 +950,90 @@ describe('coerceToSchema', () => {
 					'timestamp must be a `number` type, but the final value was: `1970-01-01T00:00:00.100Z`.',
 					'this must be a `number` type, but the final value was: `1970-01-01T00:00:00.100Z`.',
 					'this must be a `number` type, but the final value was: `1970-01-01T00:00:00.100Z`. at path: "timestamp", and it was coerced to 1'
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid completedTimeStamp',
+			input: { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": {}, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: ' ', waste: 0.01, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					'completedTimeStamp must be a `number` type, but the final value was: `{}`.',
+					'this must be a `number` type, but the final value was: `{}`.',
+					'this must be a `number` type, but the final value was: `{}`. at path: \"completedTimeStamp\", and it was coerced to 1'
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid hidden',
+			input: { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": [] },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: ' ', waste: 0.01, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					'hidden must be a `boolean` type, but the final value was: `[]`.',
+					'this must be a `boolean` type, but the final value was: `[]`.',
+					'this must be a `boolean` type, but the final value was: `[]`. at path: \"hidden\", and it was coerced to false'
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid task+waste',
+			input: { "task": {}, "waste": [], "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: '', waste: 0, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					'waste must be a `number` type, but the final value was: `[]`.',
+					'this must be a `string` type, but the final value was: `{}`.',
+					'this must be a `string` type, but the final value was: `{}`. at path: \"task\", and it was coerced to ',
+					"this must be a `number` type, but the final value was: `[]`.",
+					"this must be a `number` type, but the final value was: `[]`. at path: \"waste\", and it was coerced to 0",
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid task+ttc',
+			input: { "task": new Date(1), "waste": 0.01, "ttc": new Set(), "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: '', waste: 0.01, ttc: 1, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					"TTC must be a number",
+					"this must be a `string` type, but the final value was: `1970-01-01T00:00:00.001Z`.",
+					"this must be a `string` type, but the final value was: `1970-01-01T00:00:00.001Z`. at path: \"task\", and it was coerced to ",
+					"TTC must be a number at path: \"ttc\", and it was coerced to 1",
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid task+eta',
+			// NOTE: using current date is hard to test for..
+			input: { "task": null, "waste": 0.01, "ttc": 1, "eta": [], "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: '', waste: 0.01, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					"Eta must be a valid ISO string",
+					"this is a required field",
+					"this is a required field at path: \"task\", and it was coerced to ",
+					"Eta must be a valid ISO string at path: \"eta\", and it was coerced to 2024-07-26T17:00:00.000Z",
+				]
+			}
+		},
+		{
+			description: 'Valid schema, invalid task+id',
+			input: { "task": NaN, "waste": 0.01, "ttc": 1, "eta": '2000-01-01T06:00:00.000Z', "id": -0, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
+			schema: simpleTaskSchema,
+			expected: {
+				output: { task: 'NaN', waste: 0.01, ttc: 1, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				errors: [
+					"Id must be greater than 0",
+					"this must be a `string` type, but the final value was: `NaN` (cast from the value `NaN`).",
+					"this must be a `string` type, but the final value was: `NaN` (cast from the value `NaN`). at path: \"task\", and it was coerced to NaN",
+					"Id must be greater than 0 at path: \"id\", and it was coerced to 1",
 				]
 			}
 		},
