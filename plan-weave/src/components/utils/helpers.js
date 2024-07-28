@@ -94,6 +94,7 @@ export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400)
 	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
 }
 
+// TODO: Remove old schema validation functions, it has been replaced by the modern coercion function 
 /**
  * Try to validate the task, removing extras and filling defaults
  * If validation fails, throw an error and warn the user
@@ -671,9 +672,9 @@ export const calculateEfficiencyList = (taskList, start) => {
 // Takes a task list with atleast objects with an id and task
 // Returns a list of options of form: [{value: id (number), label: task (string)}]
 export const predecessorOptions = (taskList, schema = taskSchema, schemaDefaultFx = fillDefaults) => {
-	const validatedTasks = validateTasks({
-		taskList, schema, schemaDefaultFx,
-		customErrorMessage: `Failed to validate Tasks in predecessorOptions function.\n taskList = ${taskList}`
-	})
-	return validatedTasks?.map(task => ({ value: task?.id, label: task?.task }))
+	// const validatedTasks = validateTasks({
+	// 	taskList, schema, schemaDefaultFx,
+	// 	customErrorMessage: `Failed to validate Tasks in predecessorOptions function.\n taskList = ${taskList}`
+	// })
+	return taskList?.map(task => ({ value: task?.id, label: task?.task }))
 }

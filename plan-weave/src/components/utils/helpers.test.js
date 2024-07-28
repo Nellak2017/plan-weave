@@ -9,7 +9,7 @@ import {
 	etaList,
 	formatTimeLeft,
 	isTimestampFromToday,
-	validateTask, // not covered by property based tests
+	//validateTask, // not covered by property based tests. WARNING: Legacy code
 	validateTaskField,
 	filterTaskList,
 	hoursToSeconds,
@@ -1411,6 +1411,8 @@ describe('validateTransformation', () => {
 	})
 })
 
+// NOTE: validateTask is no longer needed since it has been replaced
+/*
 describe('validateTask', () => {
 	const twelve = new Date(new Date().setHours(12, 0, 0, 0)).toISOString()
 	const defaultTask = {
@@ -1470,6 +1472,7 @@ describe('validateTask', () => {
 		}).toThrowError()
 	})
 })
+*/
 
 describe('relativeSortIndex', () => {
 	const sortFunction = array => array.sort((a, b) => a.id - b.id) // Sort by task ID

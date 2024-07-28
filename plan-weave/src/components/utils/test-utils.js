@@ -20,7 +20,7 @@ const Wrapper = ({ children, store }) => (
 )
 
 export const renderWithProviders = (ui, store, options = defaultOptions) =>
-	render(ui, { wrapper: () => <Wrapper store={store}>{ui}</Wrapper>, ...options })
+	render(ui, { wrapper: (props) => <Wrapper {...props} store={store}>{ui}</Wrapper>, ...options })
 
 
 Wrapper.propTypes = {

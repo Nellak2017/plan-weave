@@ -24,7 +24,7 @@ export const todoList = ({
 	return filterPages(startRange, endRange)(taskList)?.map((task, idx) => {
 		const isOld = isTaskOld(timeRange, task)
 		try {
-			const validatedFullTask = validateTask({ task, schema: taskSchema, schemaDefaultFx: fillDefaults })
+			const validatedFullTask = task //validateTask({ task, schema: taskSchema, schemaDefaultFx: fillDefaults })
 			return (
 				<TaskRow
 					services={services}

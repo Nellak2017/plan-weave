@@ -43,13 +43,15 @@ export const DEFAULT_SIMPLE_TASKS = [
 	{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4 },
 ]
 export const DEFAULT_SIMPLE_TASK = {
-	task: '',
+	task: ' ',
 	waste: 1,
 	ttc: 1,
 	eta: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // ISO Date, 12:00 noon
-	status: 'incomplete',
 	id: new Date().getTime(), // guarantees unique ids down to the millisecond! IF and ONLY IF you do this logic in the caller as well!
-	timestamp: Math.floor((new Date().getTime()) / 1000)
+	status: 'incomplete',
+	timestamp: Math.floor((new Date().getTime()) / 1000),
+	completedTimeStamp: Math.floor((new Date().getTime()) / 1000),
+	hidden: false,
 } // Used when adding a new simple task
 export const DEFAULT_FULL_TASK = {
 	...DEFAULT_SIMPLE_TASK,

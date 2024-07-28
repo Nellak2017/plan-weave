@@ -36,25 +36,20 @@ export const taskSchema = Yup.object({
 	parentThread: Yup.string()
 		.min(2, 'Parent Thread must be atleast 2 characters')
 		.max(50, 'Parent Thread must be at most 50 characters')
-		.default('')
-		.transform((value, originalValue) => {
-			if (originalValue === '' || originalValue === null) {
-				return ' '
-			}
-			return value
-		}),
+		.default(''),
+		//.transform((value, originalValue) => (originalValue === '' || originalValue === null) ? ' ' : value),
 	dueDate: Yup.string()
 		.typeError('DueDate must be a valid ISO string')
 		.matches(isoStringRegex, 'DueDate must be a valid ISO String, it failed the regex test')
-		.default(() => twelve.toISOString())
-		.transform((value, originalValue) => {
-			if (!originalValue) return twelve.toISOString()
-			else if (typeof originalValue === 'number') {
-				const date = new Date(originalValue * 1000)
-				return date.toISOString()
-			}
-			return value
-		}),
+		.default(() => twelve.toISOString()),
+		// .transform((value, originalValue) => {
+		// 	if (!originalValue) return twelve.toISOString()
+		// 	else if (typeof originalValue === 'number') {
+		// 		const date = new Date(originalValue * 1000)
+		// 		return date.toISOString()
+		// 	}
+		// 	return value
+		// }),
 	dependencies: Yup.array()
 		.of(Yup.mixed())
 		.default([]),

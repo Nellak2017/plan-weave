@@ -9,7 +9,7 @@ import { renderWithProviders } from '../../utils/test-utils.js'
 import '@testing-library/jest-dom'
 import { fc } from '@fast-check/jest'
 import configureStore from 'redux-mock-store'
-import TaskEditor from './TaskEditor'
+import TaskEditor from './TaskEditor.js'
 import { parse } from 'date-fns'
 import { SORTING_METHODS, TASK_STATUSES } from '../../utils/constants.js'
 
@@ -121,10 +121,15 @@ describe('TaskEditor Component, Order Problem', () => {
 			completedTaskArbitrary,
 			nonCompletedTaskArbitrary,
 			(completedTasks, incompleteTasks) => {
+				// Make all tasks have a unique id before adding to the store
+				const tasksWithIds = [...completedTasks, ...incompleteTasks].map((task, index) => ({...task, id: index + 1}))
+				const updatedCompletedTasks = tasksWithIds.filter(task => task.status === TASK_STATUSES.COMPLETED)
+				const updatedIncompleteTasks = tasksWithIds.filter(task => task.status !== TASK_STATUSES.COMPLETED)
+				// Add complete and incomplete tasks to the store
 				const store = mockStore({
 					...initialState,
-					globalTasks: { tasks: [...completedTasks, ...incompleteTasks] },
-					taskEditor: { ...initialState.taskEditor, tasks: [...completedTasks, ...incompleteTasks], },
+					globalTasks: { tasks: [...updatedCompletedTasks, ...incompleteTasks] },
+					taskEditor: { ...initialState.taskEditor, tasks: [...updatedCompletedTasks, ...updatedIncompleteTasks], },
 				})
 
 				renderComponent(store)
@@ -133,6 +138,7 @@ describe('TaskEditor Component, Order Problem', () => {
 
 				const taskElements = screen.queryAllByTitle('Task Name') // [<td title='Task Name'>...</td>,...]
 				if (taskElements.length === 0) return true
+
 				const completedTasksDisplayed = taskElements.filter(taskElement => taskElement.querySelector('p'))
 				const incompleteTasksDisplayed = taskElements.filter(taskElement => taskElement.querySelector('input'))
 

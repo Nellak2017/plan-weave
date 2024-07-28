@@ -910,10 +910,10 @@ describe('coerceToSchema', () => {
 			input: { "task": " ", "waste": 0.01, "ttc": 0.01, "eta": new Date(0), "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
 			schema: simpleTaskSchema,
 			expected: {
-				output: { task: ' ', waste: 0.01, ttc: 0.01, eta: '2024-07-26T17:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: ' ', waste: 0.01, ttc: 0.01, eta: twelve.toISOString(), id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					'Eta must be a valid ISO string',
-					'Eta must be a valid ISO string at path: "eta", and it was coerced to 2024-07-26T17:00:00.000Z'
+					`Eta must be a valid ISO string at path: "eta", and it was coerced to ${twelve.toISOString()}`
 				]
 			}
 		},
@@ -1020,7 +1020,7 @@ describe('coerceToSchema', () => {
 					"Eta must be a valid ISO string",
 					"this is a required field",
 					"this is a required field at path: \"task\", and it was coerced to ",
-					"Eta must be a valid ISO string at path: \"eta\", and it was coerced to 2024-07-26T17:00:00.000Z",
+					`Eta must be a valid ISO string at path: "eta", and it was coerced to ${twelve.toISOString()}`,
 				]
 			}
 		},
@@ -1043,14 +1043,14 @@ describe('coerceToSchema', () => {
 			input: {},
 			schema: simpleTaskSchema,
 			expected: {
-				output: { task: '', waste: 0, ttc: 1, eta: '2024-07-26T17:00:00.000Z', id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: '', waste: 0, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					"hidden is a required field",
 					"this is a required field",
 					"this is a required field at path: \"task\", and it was coerced to ",
 					"this is a required field at path: \"waste\", and it was coerced to 0",
 					"this is a required field at path: \"ttc\", and it was coerced to 1",
-					"this is a required field at path: \"eta\", and it was coerced to 2024-07-26T17:00:00.000Z",
+					`this is a required field at path: \"eta\", and it was coerced to ${twelve.toISOString()}`,
 					"Id is required",
 					"Id is required at path: \"id\", and it was coerced to 1",
 					"this is a required field at path: \"status\", and it was coerced to incomplete",
@@ -1065,14 +1065,14 @@ describe('coerceToSchema', () => {
 			input: null,
 			schema: simpleTaskSchema,
 			expected: {
-				output: { task: '', waste: 0, ttc: 1, eta: '2024-07-26T17:00:00.000Z', id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: '', waste: 0, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					"this cannot be null",
 					"this is a required field",
 					"this is a required field at path: \"task\", and it was coerced to ",
 					"this is a required field at path: \"waste\", and it was coerced to 0",
 					"this is a required field at path: \"ttc\", and it was coerced to 1",
-					"this is a required field at path: \"eta\", and it was coerced to 2024-07-26T17:00:00.000Z",
+					`this is a required field at path: \"eta\", and it was coerced to ${twelve.toISOString()}`,
 					"Id is required",
 					"Id is required at path: \"id\", and it was coerced to 1",
 					"this is a required field at path: \"status\", and it was coerced to incomplete",
@@ -1088,7 +1088,7 @@ describe('coerceToSchema', () => {
 			schema: simpleTaskSchema,
 			// What? task should be '' ????
 			expected: {
-				output: { task: 'NaN', waste: 0, ttc: 1, eta: '2024-07-26T17:00:00.000Z', id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: 'NaN', waste: 0, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					"this must be a `object` type, but the final value was: `NaN` (cast from the value `NaN`).",
 					"this must be a `string` type, but the final value was: `NaN` (cast from the value `NaN`).",
@@ -1098,7 +1098,7 @@ describe('coerceToSchema', () => {
 					"TTC must be a number",
 					"TTC must be a number at path: \"ttc\", and it was coerced to 1",
 					"Eta must be a valid ISO string",
-					"Eta must be a valid ISO string at path: \"eta\", and it was coerced to 2024-07-26T17:00:00.000Z",
+					`Eta must be a valid ISO string at path: \"eta\", and it was coerced to ${twelve.toISOString()}`,
 					"this must be a `number` type, but the final value was: `NaN` (cast from the value `NaN`). at path: \"id\", and it was coerced to 1",
 					"this must be a `string` type, but the final value was: `NaN` (cast from the value `NaN`). at path: \"status\", and it was coerced to incomplete",
 					"this must be a `number` type, but the final value was: `NaN` (cast from the value `NaN`). at path: \"timestamp\", and it was coerced to 1",
@@ -1113,14 +1113,14 @@ describe('coerceToSchema', () => {
 			input: 1234,
 			schema: simpleTaskSchema,
 			expected: {
-				output: { task: '', waste: 0, ttc: 1, eta: '2024-07-26T17:00:00.000Z', id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: '', waste: 0, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					"this must be a `object` type, but the final value was: `1234`.",
 					"this is a required field",
 					"this is a required field at path: \"task\", and it was coerced to ",
 					"this is a required field at path: \"waste\", and it was coerced to 0",
 					"this is a required field at path: \"ttc\", and it was coerced to 1",
-					"this is a required field at path: \"eta\", and it was coerced to 2024-07-26T17:00:00.000Z",
+					`this is a required field at path: \"eta\", and it was coerced to ${twelve.toISOString()}`,
 					"Id is required",
 					"Id is required at path: \"id\", and it was coerced to 1",
 					"this is a required field at path: \"status\", and it was coerced to incomplete",
