@@ -138,17 +138,27 @@ export const dfsFns = {
 	processNodes: ({ currentInput, currentSchema, isValid, errors, error, output, path, errProcessor = dfsFns.processErrors, reachUpdate = dfsFns.reachUpdate }) => isValid
 		? { output: reachUpdate(output, path, currentInput), errors: errProcessor(errors) }
 		: { output: reachUpdate(output, path, enhancedCastPrimitive(currentInput, currentSchema)), errors: errProcessor([...errors, isInputValid(currentInput, currentSchema).error, error + ` at path: "${path.join('.')}", and it was coerced to ${enhancedCastPrimitive(currentInput, currentSchema)}`]) },
+	// eslint-disable-next-line complexity
 	dfs: ({ input, schema, output = undefined, path = [], errors = [], reachGet = dfsFns.reachGet, reachUpdate = dfsFns.reachUpdate, processErrors = dfsFns.processErrors, processNodes = dfsFns.processNodes }) => {
 		const currentInput = reachGet(input, path)
 		const { isValid, error } = isInputValid(currentInput, schema) // see if it is valid (works for nodes and shallow non-nodes)
-		const isArrDict = schema.type === 'array' && schema.innerType.fields
-		const isDictOrArrDict = schema.type === 'object' || isArrDict
+		const isArrDict = Boolean(schema.type === 'array' && schema.innerType.fields)
+		const isDictOrArrDict = Boolean(schema.type === 'object' || isArrDict)
 		if (isNode(schema)) return processNodes({ currentInput, currentSchema: schema, isValid, errors, error, output, path, errProcessor: processErrors })
-		if (isDictOrArrDict) return Array.from(makeIterable(isArrDict ? schema.innerType.fields : schema.fields))
+		if (isDictOrArrDict && isValid) return { output: input, errors: dfsFns.processErrors(errors)} // TODO: Simplify and test. This line is sus. Also remove eslint disable complexity comment
+		const iter = Array.from(makeIterable(isArrDict ? schema.innerType.fields : schema.fields))
+		if (isDictOrArrDict) return iter
 			.reduce(({ output, errors }, [key, fieldSchema]) => {
 				const newPath = [...path, key]
-				return dfsFns.dfs({ input, schema: fieldSchema, output, path: isArrDict ? [...newPath.slice(0, -1), '0', newPath[newPath.length - 1]] : newPath, errors })
-			}, { output: reachUpdate(output, path, isArrDict ? [{}] : {}), errors: processErrors([...errors, error]) })
+				// If it is an array, we have to loop over all elements in the array and apply the function recursively
+				if (isArrDict) {
+					return currentInput.reduce(({ output, errors }, _, index) => {
+						const elementPath = [...newPath.slice(0, -1), index.toString(), newPath[newPath.length - 1]]
+						return dfsFns.dfs({ input, schema: fieldSchema, output, path: elementPath, errors})
+					}, { output, errors })
+				}
+				return dfsFns.dfs({ input, schema: fieldSchema, output, path: newPath, errors })
+			}, { output: reachUpdate(output, path, isArrDict ? [{}] : {}), errors: processErrors([...errors, error]) }) // isArrDict ? [{}] : {}
 		return { output, errors: [...errors, { message: `Schema type '${schema?.type}' is not supported` }] }
 	}
 }
@@ -198,3 +208,165 @@ export const coerceToSchema = (input, schema) =>
 		: dfsFns.dfs({ input, schema })
 
 // ------------ Experimental area
+const TASK_STATUSES = {
+	COMPLETED: 'completed',
+	INCOMPLETE: 'incomplete',
+	WAITING: 'waiting',
+	INCONSISTENT: 'inconsistent',
+}
+const timestamp = Math.floor((new Date()).getTime() / 1000)
+const isoStringRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|[+-]\d{2}:\d{2})$/
+const twelve = new Date(new Date().setHours(12, 0, 0, 0))
+const simpleTaskSchema = Yup.object({
+	task: Yup.string()
+		.max(50, 'Task must be at most 50 characters')
+		.required()
+		.default(''),
+	waste: Yup.number()
+		.nullable(false)
+		.required()
+		.default(0),
+	ttc: Yup.number()
+		.typeError('TTC must be a number')
+		.min(0.01)
+		.required()
+		.default(1),
+	eta: Yup.string()
+		.typeError('Eta must be a valid ISO string')
+		.matches(isoStringRegex, 'Eta must be a valid ISO String, it failed the regex test')
+		.required()
+		.default(() => twelve.toISOString()),
+	id: Yup.number()
+		.positive('Id must be greater than 0')
+		.required('Id is required')
+		.default(1),
+	status: Yup.string()
+		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value')
+		.required()
+		.default(TASK_STATUSES.INCOMPLETE),
+	timestamp: Yup.number()
+		.positive('Normal Timestamp must be a positive number')
+		.required()
+		.default(1),
+	completedTimeStamp: Yup.number()
+		.positive('Completed Timestamp must be a positive number')
+		.required()
+		.default(1),
+	hidden: Yup.boolean()
+		.required()
+		.default(false)
+}).default({})
+const taskSchema = Yup.object({
+	...simpleTaskSchema.fields,
+	// --- Full Task Exclusives
+	efficiency: Yup.number() // Percentage as raw number. Ex: 1 = 100%
+		.min(0)
+		.max(86400)
+		.required()
+		.default(0),
+	parentThread: Yup.string()
+		.min(2, 'Parent Thread must be atleast 2 characters')
+		.max(50, 'Parent Thread must be at most 50 characters')
+		.required()
+		.default(''),
+	dueDate: Yup.string()
+		.typeError('DueDate must be a valid ISO string')
+		.matches(isoStringRegex, 'DueDate must be a valid ISO String, it failed the regex test')
+		.required()
+		.default(() => twelve.toISOString()),
+	dependencies: Yup.array()
+		.of(Yup.mixed())
+		.required()
+		.default([]),
+	weight: Yup.number()
+		.required()
+		.min(0),
+}).default({})
+
+const fullTasksSchema = Yup.array().of(taskSchema)
+
+const testData = [
+	{
+		"id": 1716861377766,
+		"eta": "2024-07-10T02:27:46.993Z",
+		"efficiency": 1330.049240776306,
+		"ttc": 3,
+		"completedTimeStamp": 1720578466.993,
+		"timestamp": 1716687091,
+		"dueDate": "2024-05-25T17:00:00.000Z",
+		"parentThread": "default",
+		"dependencies": [],
+		"waste": -3.9975019444444446,
+		"hidden": false,
+		"task": "task 1",
+		"status": "completed",
+		"weight": 1
+	},
+	{
+		"id": 1718143126427,
+		"weight": 1,
+		"hidden": false,
+		"task": " ",
+		"waste": 673.4899841666667,
+		"parentThread": "default",
+		"status": "completed",
+		"ttc": 1,
+		"completedTimeStamp": 1720578476.943,
+		"dependencies": [],
+		"efficiency": 0,
+		"dueDate": "2024-06-11T17:00:00.000Z",
+		"eta": "2024-07-10T02:27:56.943Z",
+		"timestamp": 1718142843
+	},
+	{
+		"id": 1720578472876,
+		"hidden": false,
+		"waste": 452.06042722222224,
+		"status": "incomplete",
+		"completedTimeStamp": 1720578382,
+		"ttc": 1,
+		"timestamp": 1720578381,
+		"dependencies": [],
+		"weight": 1,
+		"task": " ",
+		"parentThread": "default",
+		"eta": 1720582066, // Invalid Eta
+		"efficiency": 0,
+		"dueDate": "2024-07-09T17:00:00.000Z"
+	},
+	{
+		"id": 1720578475320,
+		"efficiency": 0,
+		"dueDate": "2024-07-09T17:00:00.000Z",
+		"ttc": 1,
+		"waste": 0,
+		"hidden": false,
+		"status": "incomplete",
+		"eta": 1720585666, // Invalid Eta
+		"dependencies": [],
+		"completedTimeStamp": 1720578382,
+		"task": " ",
+		"timestamp": 1720578381,
+		"weight": 1,
+		"parentThread": "default"
+	},
+	{
+		"id": 1720578478240,
+		"efficiency": 0, 
+		"eta": 1720589266, // Invalid Eta
+		"dueDate": "2024-07-09T17:00:00.000Z",
+		"parentThread": "default",
+		"waste": 0,
+		"ttc": 1,
+		"status": "incomplete",
+		"timestamp": 1720578381,
+		"weight": 1,
+		"dependencies": [],
+		"task": " ",
+		"completedTimeStamp": 1720578382,
+		"hidden": false
+	}
+]
+
+// console.log(isInputValid(testData, fullTasksSchema))
+// console.log(coerceToSchema(testData, fullTasksSchema))

@@ -30,33 +30,30 @@ export const taskSchema = Yup.object({
 	...simpleTaskSchema.fields,
 	// --- Full Task Exclusives
 	efficiency: Yup.number() // Percentage as raw number. Ex: 1 = 100%
-		.default(0)
 		.min(0)
-		.max(86400),
+		.max(86400)
+		.required()
+		.default(0),
 	parentThread: Yup.string()
 		.min(2, 'Parent Thread must be atleast 2 characters')
 		.max(50, 'Parent Thread must be at most 50 characters')
+		.required()
 		.default(''),
-		//.transform((value, originalValue) => (originalValue === '' || originalValue === null) ? ' ' : value),
 	dueDate: Yup.string()
 		.typeError('DueDate must be a valid ISO string')
 		.matches(isoStringRegex, 'DueDate must be a valid ISO String, it failed the regex test')
+		.required()
 		.default(() => twelve.toISOString()),
-		// .transform((value, originalValue) => {
-		// 	if (!originalValue) return twelve.toISOString()
-		// 	else if (typeof originalValue === 'number') {
-		// 		const date = new Date(originalValue * 1000)
-		// 		return date.toISOString()
-		// 	}
-		// 	return value
-		// }),
 	dependencies: Yup.array()
 		.of(Yup.mixed())
+		.required()
 		.default([]),
 	weight: Yup.number()
+		.required()
 		.min(0),
 }).default({})
 
+export const fullTasksSchema = Yup.array().of(taskSchema)
 
 /**
  * Fill default values for a simple task, optionally overridden by provided object.

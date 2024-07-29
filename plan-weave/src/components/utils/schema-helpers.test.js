@@ -13,11 +13,13 @@ import {
 } from './schema-helpers.js'
 import { TASK_STATUSES } from './constants.js'
 import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
+import { fullTasksSchema } from '../schemas/taskSchema/taskSchema.js'
 import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
 
 // TODO: Cover rules.d, getLabelIndex, and getTransform later, I had issues with them reading properties of undefined
 // TODO: Fix Valid schema, invalid NaN test case. It has 'NaN' as the task output instead of the type default '' when it should be type default
+// TODO: Include Integrity property tests for dfs function. I noticed that sometimes it can not preserve integrity but does preseve validity
 
 // --- Global Arbitraries and test helpers
 // TODO: See if it is possible to reformulate the return type of schemaAndDataGenerator to be concrete schema and data, not just concrete schema. (It worked in schema-helpers but not here??)
@@ -807,6 +809,9 @@ describe('dfsFns.dfs', () => {
 describe('coerceToSchema', () => {
 	const twelve = new Date(new Date().setHours(12, 0, 0, 0))
 
+	// --- Example based tests
+
+	// Using individual simple task schema
 	const testCases = [
 		{
 			description: 'Valid data with all fields correct',
@@ -1132,6 +1137,202 @@ describe('coerceToSchema', () => {
 		},
 	]
 	testCases.forEach(({ description, input, schema, expected }) => {
+		test(description, () => {
+			const result = coerceToSchema(input, schema)
+			expect(result.output).toEqual(expected.output)
+			expect(result.errors).toEqual(expected.errors)
+		})
+	})
+
+	// Using full task list schema
+	const fullTaskTestCases = [
+		{
+			description: 'f([], fullTasksSchema) => { output: [], errors: [] }',
+			input: [],
+			schema: fullTasksSchema,
+			expected: {
+				output: [],
+				errors: []
+			}
+		},
+		{
+			description: 'f((5)[{...}], fullTasksSchema) => { output: (5)[valid {...}], errors: [atleast 1] }',
+			input: [
+				{
+					"id": 1716861377766,
+					"eta": "2024-07-10T02:27:46.993Z",
+					"efficiency": 1330.049240776306,
+					"ttc": 3,
+					"completedTimeStamp": 1720578466.993,
+					"timestamp": 1716687091,
+					"dueDate": "2024-05-25T17:00:00.000Z",
+					"parentThread": "default",
+					"dependencies": [],
+					"waste": -3.9975019444444446,
+					"hidden": false,
+					"task": "task 1",
+					"status": "completed",
+					"weight": 1
+				},
+				{
+					"id": 1718143126427,
+					"weight": 1,
+					"hidden": false,
+					"task": " ",
+					"waste": 673.4899841666667,
+					"parentThread": "default",
+					"status": "completed",
+					"ttc": 1,
+					"completedTimeStamp": 1720578476.943,
+					"dependencies": [],
+					"efficiency": 0,
+					"dueDate": "2024-06-11T17:00:00.000Z",
+					"eta": "2024-07-10T02:27:56.943Z",
+					"timestamp": 1718142843
+				},
+				{
+					"id": 1720578472876,
+					"hidden": false,
+					"waste": 452.06042722222224,
+					"status": "incomplete",
+					"completedTimeStamp": 1720578382,
+					"ttc": 1,
+					"timestamp": 1720578381,
+					"dependencies": [],
+					"weight": 1,
+					"task": " ",
+					"parentThread": "default",
+					"eta": 1720582066, // Invalid Eta
+					"efficiency": 0,
+					"dueDate": "2024-07-09T17:00:00.000Z"
+				},
+				{
+					"id": 1720578475320,
+					"efficiency": 0,
+					"dueDate": "2024-07-09T17:00:00.000Z",
+					"ttc": 1,
+					"waste": 0,
+					"hidden": false,
+					"status": "incomplete",
+					"eta": 1720585666, // Invalid Eta
+					"dependencies": [],
+					"completedTimeStamp": 1720578382,
+					"task": " ",
+					"timestamp": 1720578381,
+					"weight": 1,
+					"parentThread": "default"
+				},
+				{
+					"id": 1720578478240,
+					"efficiency": 0,
+					"eta": 1720589266, // Invalid Eta
+					"dueDate": "2024-07-09T17:00:00.000Z",
+					"parentThread": "default",
+					"waste": 0,
+					"ttc": 1,
+					"status": "incomplete",
+					"timestamp": 1720578381,
+					"weight": 1,
+					"dependencies": [],
+					"task": " ",
+					"completedTimeStamp": 1720578382,
+					"hidden": false
+				}
+			], // From real life example
+			schema: fullTasksSchema,
+			expected: {
+				output: [
+					{
+						task: 'task 1',
+						waste: -3.9975019444444446,
+						ttc: 3,
+						eta: '2024-07-10T02:27:46.993Z',
+						id: 1716861377766,
+						status: 'completed',
+						timestamp: 1716687091,
+						completedTimeStamp: 1720578466.993,
+						hidden: false,
+						efficiency: 1330.049240776306,
+						parentThread: 'default',
+						dueDate: '2024-05-25T17:00:00.000Z',
+						dependencies: [],
+						weight: 1
+					},
+					{
+						task: ' ',
+						waste: 673.4899841666667,
+						ttc: 1,
+						eta: '2024-07-10T02:27:56.943Z',
+						id: 1718143126427,
+						status: 'completed',
+						timestamp: 1718142843,
+						completedTimeStamp: 1720578476.943,
+						hidden: false,
+						efficiency: 0,
+						parentThread: 'default',
+						dueDate: '2024-06-11T17:00:00.000Z',
+						dependencies: [],
+						weight: 1
+					},
+					{
+						task: ' ',
+						waste: 452.06042722222224,
+						ttc: 1,
+						eta: '2024-07-28T17:00:00.000Z',
+						id: 1720578472876,
+						status: 'incomplete',
+						timestamp: 1720578381,
+						completedTimeStamp: 1720578382,
+						hidden: false,
+						efficiency: 0,
+						parentThread: 'default',
+						dueDate: '2024-07-09T17:00:00.000Z',
+						dependencies: [],
+						weight: 1
+					},
+					{
+						task: ' ',
+						waste: 0,
+						ttc: 1,
+						eta: '2024-07-28T17:00:00.000Z',
+						id: 1720578475320,
+						status: 'incomplete',
+						timestamp: 1720578381,
+						completedTimeStamp: 1720578382,
+						hidden: false,
+						efficiency: 0,
+						parentThread: 'default',
+						dueDate: '2024-07-09T17:00:00.000Z',
+						dependencies: [],
+						weight: 1
+					},
+					{
+						task: ' ',
+						waste: 0,
+						ttc: 1,
+						eta: '2024-07-28T17:00:00.000Z',
+						id: 1720578478240,
+						status: 'incomplete',
+						timestamp: 1720578381,
+						completedTimeStamp: 1720578382,
+						hidden: false,
+						efficiency: 0,
+						parentThread: 'default',
+						dueDate: '2024-07-09T17:00:00.000Z',
+						dependencies: [],
+						weight: 1
+					}
+				],
+				errors: [
+					'Eta must be a valid ISO string',
+					`Eta must be a valid ISO string at path: "2.eta", and it was coerced to ${twelve.toISOString()}`,
+					`Eta must be a valid ISO string at path: "3.eta", and it was coerced to ${twelve.toISOString()}`,
+					`Eta must be a valid ISO string at path: "4.eta", and it was coerced to ${twelve.toISOString()}`
+				  ]
+			}
+		},
+	]
+	fullTaskTestCases.forEach(({ description, input, schema, expected }) => {
 		test(description, () => {
 			const result = coerceToSchema(input, schema)
 			expect(result.output).toEqual(expected.output)

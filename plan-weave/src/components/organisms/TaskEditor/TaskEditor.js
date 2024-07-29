@@ -1,6 +1,6 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectNonHiddenTasks } from '../../../redux/selectors'
+import { selectNonHiddenTasksCoerceToFull } from '../../../redux/selectors'
 import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS, VARIANTS } from '../../utils/constants'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
@@ -10,6 +10,8 @@ import PropTypes from 'prop-types'
 import store from '../../../redux/store.js'
 import { createTaskEditorServices } from '../../../services/PlanWeavePage/TaskEditorServices'
 import { ThemeContext } from 'styled-components' // needed for theme object
+import { isInputValid, coerceToSchema } from '../../utils/schema-helpers.js'
+import { fullTasksSchema } from '../../schemas/taskSchema/taskSchema.js'
 
 const TaskEditor = ({
 	services = createTaskEditorServices(store),
@@ -22,7 +24,8 @@ const TaskEditor = ({
 
 	// --- State Objects for Children
 	const globalTasks = useSelector(state => state?.globalTasks)
-	const taskList = useSelector(selectNonHiddenTasks)
+	const taskList = useSelector(selectNonHiddenTasksCoerceToFull)
+	const { output, errors } = useMemo(() => coerceToSchema(taskList, fullTasksSchema), [taskList])
 	const fullTask = useSelector(state => state?.taskEditor?.fullTask)
 	const userId = useSelector(state => state?.taskEditor?.userId)
 
@@ -32,7 +35,7 @@ const TaskEditor = ({
 		timeRange: useSelector(state => state?.taskEditor?.timeRange),
 		owl: useSelector(state => state?.taskEditor?.owl),
 		isHighlighting: useSelector(state => state?.taskEditor?.highlighting),
-		taskList,
+		taskList: output, // TODO: was just taskList before
 		selectedTasks: useSelector(state => state?.taskEditor?.selectedTasks),
 		theme: useContext(ThemeContext),
 		fullTask,
@@ -70,6 +73,27 @@ const TaskEditor = ({
 		timeRange: useSelector(state => state?.taskEditor?.timeRange),
 	}
 
+	// Effects
+	useEffect(() => {
+		const { isValid, error } = isInputValid(output, fullTasksSchema) // { isValid: bool, error: string }
+		if (errors && Array.isArray(errors) && errors.length > 0) {
+			console.warn(errors.join('\n'))
+			console.log('old task list before coercion:', taskList)
+			console.log('new task list after coercion :', output)
+		}
+		if (!isValid) {
+			console.error(
+				`Your coerced tasks fetched failed to be properly coerced. 
+The resulting task list has atleast the right shape and types, but are not valid.
+This may cause issues in your application. 
+Verify the API endpoints and check the tasks in TaskEditor component.`
+			)
+			console.error(error)
+			console.log('old task list before coercion:', taskList)
+			console.log('new task list after coercion :', output)
+			// TODO: add toast here too
+		}
+	}, [taskList, errors]) // errors,taskList
 
 	return (
 		<TaskEditorContainer variant={processedVariant}>

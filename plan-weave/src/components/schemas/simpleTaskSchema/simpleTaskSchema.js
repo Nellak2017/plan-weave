@@ -66,6 +66,8 @@ export const simpleTaskSchema = Yup.object({
 		.default(false)
 }).default({})
 
+export const simpleTasksSchema = Yup.array().of(simpleTaskSchema)
+
 /**
  * Fills in default values for a simple task object, allowing overrides with provided values.
  *
