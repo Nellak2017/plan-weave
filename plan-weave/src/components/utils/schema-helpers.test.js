@@ -10,7 +10,7 @@ import {
 	dfsFns, // (5 sub-functions out of 5 tested with example based tests and property based tests)
 	coerceToSchema, // example based only since dfs is property tested deeply
 	// enhancedCastPrimitive, // property tested and example based too
-} from './schema-helpers.mjs'
+} from './schema-helpers.js'
 import { TASK_STATUSES } from './constants.js'
 import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { fullTasksSchema } from '../schemas/taskSchema/taskSchema.js'
@@ -842,7 +842,7 @@ describe('dfsFns.dfs', () => {
 				expect(countInput).toBe(countOutput)
 			}
 			),
-			{ seed: 837385186 }
+			{ seed: 837385186, numRuns: 1000 }
 		)
 	})
 	/*
