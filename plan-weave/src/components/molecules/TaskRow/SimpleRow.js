@@ -1,4 +1,5 @@
-import React from "react"
+/* eslint-disable complexity */
+import React, {useEffect} from "react"
 import { TASK_STATUSES, TASK_ROW_TOOLTIPS } from "../../utils/constants"
 import TaskInput from '../../atoms/TaskInput/TaskInput.js'
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
@@ -34,6 +35,7 @@ const SimpleRow = ({
 
 	const iconSize = 36
 
+	useEffect(() => console.log(taskObject), [])
 	return (
 		<>
 			<DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''}>

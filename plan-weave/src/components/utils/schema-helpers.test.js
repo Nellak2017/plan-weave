@@ -10,7 +10,7 @@ import {
 	dfsFns, // (5 sub-functions out of 5 tested with example based tests and property based tests)
 	coerceToSchema, // example based only since dfs is property tested deeply
 	// enhancedCastPrimitive, // property tested and example based too
-} from './schema-helpers.js'
+} from './schema-helpers.mjs'
 import { TASK_STATUSES } from './constants.js'
 import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
 import { fullTasksSchema } from '../schemas/taskSchema/taskSchema.js'
@@ -20,6 +20,7 @@ import * as Yup from 'yup'
 // TODO: Cover rules.d, getLabelIndex, and getTransform later, I had issues with them reading properties of undefined
 // TODO: Fix Valid schema, invalid NaN test case. It has 'NaN' as the task output instead of the type default '' when it should be type default
 // TODO: Include Integrity property tests for dfs function. I noticed that sometimes it can not preserve integrity but does preseve validity
+
 
 // --- Global Arbitraries and test helpers
 // TODO: See if it is possible to reformulate the return type of schemaAndDataGenerator to be concrete schema and data, not just concrete schema. (It worked in schema-helpers but not here??)
@@ -130,7 +131,7 @@ describe('isNode', () => {
 		{ input: { type: 'string' }, expected: true, description: 'String type should be a node' },
 		{ input: { type: 'number' }, expected: true, description: 'Number type should be a node' },
 		{ input: { type: 'array', innerType: { fields: {} } }, expected: false, description: 'Array with inner fields should not be a node' },
-		{ input: { type: 'array' }, expected: true, description: 'Array without inner fields should be a node' },
+		{ input: { type: 'array' }, expected: false, description: 'Array without inner fields should NOT be a node (we changed it)' },
 		{ input: { type: 'object' }, expected: false, description: 'Object type should not be a node' },
 		{ input: null, expected: false, description: 'Null should not be a node' },
 		{ input: undefined, expected: false, description: 'Undefined should not be a node' },
@@ -694,11 +695,47 @@ describe('dfsFns.dfs', () => {
 		hidden: fc.boolean() // Hidden flag must be a boolean
 	})
 
+	// For the integrity checks
+	const validPrimitiveTypes = { 'number': fc.integer(), 'string': fc.string(), 'boolean': fc.boolean() }
+	const validPrimitiveSchemas = { 'number': Yup.number().integer(), 'string': Yup.string(), 'boolean': Yup.boolean() }
+	const typeArbitary = (validTypes = validPrimitiveTypes) => fc.constantFrom(...Object.keys(validTypes)) // returns a string name for a type
+	const arraySchemaArbitrary = (type, validTypes = validPrimitiveTypes) => fc.array(validTypes[type], { minLength: 1 })
+	const validArrayArbitrary = schema => arraySchemaArbitrary(schema.type) // fc.array(valid fc.primitive())
+	const invalidArrayArbitrary = (schema, validTypes = validPrimitiveTypes) => {
+		const remainingTypeArbitraries = Object
+			.keys(validTypes)
+			.filter(type => type !== schema.type) // ['number', 'float', 'string', 'boolean'] - 'float' = ['number', 'string', 'boolean']
+		return arraySchemaArbitrary(fc.sample(fc.constantFrom(...remainingTypeArbitraries), 1)[0]) // fc.array(invalid fc.primitive())
+	}
+	const partiallyValidArrayArbitary = (schema, validTypes = validPrimitiveTypes) => {
+		return fc.record({ validArray: validArrayArbitrary(schema), invalidArray: invalidArrayArbitrary(schema, validTypes) })
+			.chain(({ validArray, invalidArray }) => fc.constant([...validArray, ...invalidArray]))
+	} // returns array with atleast one element that is bad against the internal type
+
+	it('should generate arrays with both valid and invalid items', () => {
+		fc.assert(
+			fc.property(typeArbitary(), (type) => {
+				const schema = validPrimitiveSchemas[type]
+				const arr = fc.sample(partiallyValidArrayArbitary(schema), 1)[0]
+				const cond = arr.some(item => schema.isValidSync(item))
+				if (!cond) {
+					console.log(type)
+					console.log(arr)
+					console.log(schema)
+				}
+				expect(arr.some(item => schema.isValidSync(item))).toBe(true)
+			})
+		)
+	})
+
 	/*
 	Properties known, but not tested:
-
-	8. Default values of schema when field is not coerceable - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
-	9. Type Default values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
+	
+	8. Integrity of Array Input element count - count(array, schema) = count(f(array, schema).output). ex: count([{...}, 42], Yup.number()) == count([42], Yup.number()) == 1 
+	9. Integrity of Array Input element type - every type in f(array, schema).output === schema.innerType
+	10. Integrity of Object Input field count -   
+	11. Default values of schema when field is not coerceable - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
+	12. Type Default values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
 	*/
 
 	// 1. Idempotence of data - f(a).output === f(f(a).output).output 
@@ -788,6 +825,26 @@ describe('dfsFns.dfs', () => {
 		)
 	})
 
+	// 8. Integrity of Array Input element count - count(array, schema) = count(f(array, schema).output). ex: count([{...}, 42], Yup.number()) == count([42], Yup.number()) == 1 
+	test('Integrity of Array Input element count - count(array, schema) = count(f(array, schema).output)', () => {
+		fc.assert(
+			fc.property(typeArbitary(), (type) => {
+				const count = (arr, schema) => arr.reduce((acc, item) => isInputValid(item, schema).isValid ? acc + 1 : acc, 0)
+				const schema = validPrimitiveSchemas[type]
+				const arr = fc.sample(partiallyValidArrayArbitary(schema), 1)[0]
+				const countInput = count(arr, schema) // count the number of valid inputs in the array according to schema
+				const res = dfs({ input: arr, schema: Yup.array().of(schema) }).output
+				const countOutput = count(res, schema) // count the number of valid outputs in the array according to the schema
+				if (countInput !== countOutput) {
+					console.log(`input: ${arr},\ncount(input, schema) = ${countInput}`)
+					console.log(`output: ${res},\ncount(output, schema) = ${countOutput}`)
+				}
+				expect(countInput).toBe(countOutput)
+			}
+			),
+			{ seed: 837385186 }
+		)
+	})
 	/*
 		What my 7 properties prove so far:
 
@@ -1246,7 +1303,7 @@ describe('coerceToSchema', () => {
 						task: 'task 1',
 						waste: -3.9975019444444446,
 						ttc: 3,
-						eta: '2024-07-10T02:27:46.993Z',
+						eta: "2024-07-10T02:27:46.993Z",
 						id: 1716861377766,
 						status: 'completed',
 						timestamp: 1716687091,
@@ -1262,7 +1319,7 @@ describe('coerceToSchema', () => {
 						task: ' ',
 						waste: 673.4899841666667,
 						ttc: 1,
-						eta: '2024-07-10T02:27:56.943Z',
+						eta:"2024-07-10T02:27:56.943Z",
 						id: 1718143126427,
 						status: 'completed',
 						timestamp: 1718142843,
@@ -1278,7 +1335,7 @@ describe('coerceToSchema', () => {
 						task: ' ',
 						waste: 452.06042722222224,
 						ttc: 1,
-						eta: '2024-07-28T17:00:00.000Z',
+						eta: twelve.toISOString(),
 						id: 1720578472876,
 						status: 'incomplete',
 						timestamp: 1720578381,
@@ -1294,7 +1351,7 @@ describe('coerceToSchema', () => {
 						task: ' ',
 						waste: 0,
 						ttc: 1,
-						eta: '2024-07-28T17:00:00.000Z',
+						eta: twelve.toISOString(),
 						id: 1720578475320,
 						status: 'incomplete',
 						timestamp: 1720578381,
@@ -1310,7 +1367,7 @@ describe('coerceToSchema', () => {
 						task: ' ',
 						waste: 0,
 						ttc: 1,
-						eta: '2024-07-28T17:00:00.000Z',
+						eta: twelve.toISOString(),
 						id: 1720578478240,
 						status: 'incomplete',
 						timestamp: 1720578381,
@@ -1328,7 +1385,7 @@ describe('coerceToSchema', () => {
 					`Eta must be a valid ISO string at path: "2.eta", and it was coerced to ${twelve.toISOString()}`,
 					`Eta must be a valid ISO string at path: "3.eta", and it was coerced to ${twelve.toISOString()}`,
 					`Eta must be a valid ISO string at path: "4.eta", and it was coerced to ${twelve.toISOString()}`
-				  ]
+				]
 			}
 		},
 	]

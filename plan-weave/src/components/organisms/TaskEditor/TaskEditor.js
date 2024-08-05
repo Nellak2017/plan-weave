@@ -10,7 +10,7 @@ import PropTypes from 'prop-types'
 import store from '../../../redux/store.js'
 import { createTaskEditorServices } from '../../../services/PlanWeavePage/TaskEditorServices'
 import { ThemeContext } from 'styled-components' // needed for theme object
-import { isInputValid, coerceToSchema } from '../../utils/schema-helpers.js'
+import { isInputValid, coerceToSchema } from '../../utils/schema-helpers.mjs'
 import { fullTasksSchema } from '../../schemas/taskSchema/taskSchema.js'
 
 const TaskEditor = ({
@@ -35,7 +35,7 @@ const TaskEditor = ({
 		timeRange: useSelector(state => state?.taskEditor?.timeRange),
 		owl: useSelector(state => state?.taskEditor?.owl),
 		isHighlighting: useSelector(state => state?.taskEditor?.highlighting),
-		taskList: output, // TODO: was just taskList before
+		taskList:  Array.isArray(taskList) && taskList.length === 0 ? [] : output, // TODO: was just taskList before, simplify
 		selectedTasks: useSelector(state => state?.taskEditor?.selectedTasks),
 		theme: useContext(ThemeContext),
 		fullTask,
@@ -51,7 +51,7 @@ const TaskEditor = ({
 		timeRange: useSelector(state => state?.taskEditor?.timeRange),
 		page: useSelector(state => state?.taskEditor?.page),
 		tasksPerPage: useSelector(state => state?.taskEditor?.tasksPerPage),
-		taskList,
+		taskList: Array.isArray(taskList) && taskList.length === 0 ? [] : output, // TODO: was just taskList before, simplify
 		sortingAlgo: useSelector(state => state?.taskEditor?.sortingAlgo),
 		owl: useSelector(state => state?.taskEditor?.owl),
 		taskTransition: useSelector(state => state?.taskEditor?.taskTransition),
@@ -89,11 +89,11 @@ This may cause issues in your application.
 Verify the API endpoints and check the tasks in TaskEditor component.`
 			)
 			console.error(error)
-			console.log('old task list before coercion:', taskList)
-			console.log('new task list after coercion :', output)
+			console.log('old task list before coercion:\n', taskList)
+			console.log('new task list after coercion :\n', output)
 			// TODO: add toast here too
 		}
-	}, [taskList, errors]) // errors,taskList
+	}, [taskList.length]) // errors,taskList
 
 	return (
 		<TaskEditorContainer variant={processedVariant}>

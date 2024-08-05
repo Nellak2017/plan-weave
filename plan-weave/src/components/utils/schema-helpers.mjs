@@ -6,7 +6,7 @@ import * as Yup from 'yup'
 // --- Predicates
 export const isDictionary = val => Object.prototype.toString.call(val) === '[object Object]'
 export const isIterable = val => (val !== undefined && val !== null && typeof val !== 'string' && typeof val[Symbol.iterator] === 'function') || isDictionary(val)
-export const isNode = schema => Boolean(schema && (['string', 'number', 'boolean', 'date'].includes(schema.type) || (schema.type === 'array' && !schema.innerType?.fields)))
+export const isNode = schema => Boolean(schema && (['string', 'number', 'boolean', 'date'].includes(schema.type))) // || (schema.type === 'array' && !schema.innerType?.fields)
 // (any, Yup schema) => { isValid: bool, error: string }
 export const isInputValid = (input, schema) => {
 	try {
@@ -141,24 +141,33 @@ export const dfsFns = {
 	// eslint-disable-next-line complexity
 	dfs: ({ input, schema, output = undefined, path = [], errors = [], reachGet = dfsFns.reachGet, reachUpdate = dfsFns.reachUpdate, processErrors = dfsFns.processErrors, processNodes = dfsFns.processNodes }) => {
 		const currentInput = reachGet(input, path)
+		// TODO: use schema by using reachGet so that you can fix the schema integrity test (The one where an array of primitives and you have to filter it and not processNodes for all)
 		const { isValid, error } = isInputValid(currentInput, schema) // see if it is valid (works for nodes and shallow non-nodes)
 		const isArrDict = Boolean(schema.type === 'array' && schema.innerType.fields)
-		const isDictOrArrDict = Boolean(schema.type === 'object' || isArrDict)
+		const isDictOrArrDict = Boolean(schema.type === 'object' || isArrDict || schema.type === 'array') // NOTE: Added schema.type === 'array' untested
 		if (isNode(schema)) return processNodes({ currentInput, currentSchema: schema, isValid, errors, error, output, path, errProcessor: processErrors })
-		if (isDictOrArrDict && isValid) return { output: input, errors: dfsFns.processErrors(errors)} // TODO: Simplify and test. This line is sus. Also remove eslint disable complexity comment
-		const iter = Array.from(makeIterable(isArrDict ? schema.innerType.fields : schema.fields))
+		//if (isDictOrArrDict && isValid) return { output: input, errors: dfsFns.processErrors(errors)} // TODO: Simplify and test this line and the nested reduce. This line is sus. Also remove eslint disable complexity comment
+		if (Array.isArray(input) && isValid && input.length === 0) return { output: input, errors } // To make the test case pass f([], array schema) = []
+		// TODO: Revise the below to either perfectly handle schema.innerType (Array with primitives only) or remove it and handle it above
+		const iter = Array.from(makeIterable(isArrDict ? schema.innerType.fields : Boolean(schema.fields) ? schema.fields : currentInput.map((el, i) => [i, schema.innerType])))
 		if (isDictOrArrDict) return iter
 			.reduce(({ output, errors }, [key, fieldSchema]) => {
 				const newPath = [...path, key]
 				// If it is an array, we have to loop over all elements in the array and apply the function recursively
+				// if you are an array that has only primitives, then loop over it verifying each passes to the schema and if not simply remove it
+				if (Number(newPath[newPath.length - 1]) === 0 && schema && schema?.innerType && !schema?.innerType?.fields) {
+					const filteredPrimitiveArray = Array.from(makeIterable(currentInput)).filter(el => isInputValid(el, schema.innerType).isValid)
+					const theOutput = reachUpdate(output, path, filteredPrimitiveArray) // TODO: Revise the casting logic for arrays of primitives..
+					return dfsFns.dfs({ input, schema: fieldSchema, output:theOutput, path: newPath, errors })
+				}
 				if (isArrDict) {
 					return currentInput.reduce(({ output, errors }, _, index) => {
 						const elementPath = [...newPath.slice(0, -1), index.toString(), newPath[newPath.length - 1]]
-						return dfsFns.dfs({ input, schema: fieldSchema, output, path: elementPath, errors})
+						return dfsFns.dfs({ input, schema: fieldSchema, output, path: elementPath, errors })
 					}, { output, errors })
 				}
 				return dfsFns.dfs({ input, schema: fieldSchema, output, path: newPath, errors })
-			}, { output: reachUpdate(output, path, isArrDict ? [{}] : {}), errors: processErrors([...errors, error]) }) // isArrDict ? [{}] : {}
+			}, { output: reachUpdate(output, path, isArrDict ? [{}] : schema.type === 'object' ? {} : []), errors: processErrors([...errors, error]) }) // isArrDict ? [{}] : {}
 		return { output, errors: [...errors, { message: `Schema type '${schema?.type}' is not supported` }] }
 	}
 }
@@ -285,88 +294,96 @@ const taskSchema = Yup.object({
 
 const fullTasksSchema = Yup.array().of(taskSchema)
 
-const testData = [
+const realTestData = [
 	{
 		"id": 1716861377766,
-		"eta": "2024-07-10T02:27:46.993Z",
+		"weight": 1,
+		"task": "task 1",
 		"efficiency": 1330.049240776306,
-		"ttc": 3,
+		"eta": "2024-07-10T02:27:46.993Z",
+		"waste": -3.9975019444444446,
+		"status": "completed",
 		"completedTimeStamp": 1720578466.993,
+		"hidden": false,
 		"timestamp": 1716687091,
-		"dueDate": "2024-05-25T17:00:00.000Z",
 		"parentThread": "default",
 		"dependencies": [],
-		"waste": -3.9975019444444446,
-		"hidden": false,
-		"task": "task 1",
-		"status": "completed",
-		"weight": 1
+		"ttc": 3,
+		"dueDate": "2024-05-25T17:00:00.000Z"
 	},
 	{
 		"id": 1718143126427,
-		"weight": 1,
-		"hidden": false,
+		"completedTimeStamp": 1720578476.943,
 		"task": " ",
 		"waste": 673.4899841666667,
-		"parentThread": "default",
-		"status": "completed",
 		"ttc": 1,
-		"completedTimeStamp": 1720578476.943,
-		"dependencies": [],
+		"hidden": false,
+		"status": "completed",
+		"weight": 1,
 		"efficiency": 0,
-		"dueDate": "2024-06-11T17:00:00.000Z",
 		"eta": "2024-07-10T02:27:56.943Z",
-		"timestamp": 1718142843
+		"dueDate": "2024-06-11T17:00:00.000Z",
+		"timestamp": 1718142843,
+		"parentThread": "default",
+		"dependencies": []
 	},
 	{
 		"id": 1720578472876,
-		"hidden": false,
-		"waste": 452.06042722222224,
-		"status": "incomplete",
-		"completedTimeStamp": 1720578382,
-		"ttc": 1,
-		"timestamp": 1720578381,
-		"dependencies": [],
-		"weight": 1,
-		"task": " ",
 		"parentThread": "default",
-		"eta": 1720582066, // Invalid Eta
-		"efficiency": 0,
-		"dueDate": "2024-07-09T17:00:00.000Z"
+		"dependencies": [],
+		"hidden": false,
+		"task": " ",
+		"weight": 1,
+		"ttc": 1,
+		"completedTimeStamp": 1720578382,
+		"waste": 452.06042722222224,
+		"dueDate": "2024-07-09T17:00:00.000Z",
+		"timestamp": 1720578381,
+		"eta": 1720582066,
+		"status": "incomplete",
+		"efficiency": 0
 	},
 	{
 		"id": 1720578475320,
-		"efficiency": 0,
-		"dueDate": "2024-07-09T17:00:00.000Z",
 		"ttc": 1,
+		"efficiency": 0,
+		"dependencies": [],
+		"dueDate": "2024-07-09T17:00:00.000Z",
+		"completedTimeStamp": 1720578382,
+		"status": "incomplete",
+		"weight": 1,
+		"task": " ",
 		"waste": 0,
 		"hidden": false,
-		"status": "incomplete",
-		"eta": 1720585666, // Invalid Eta
-		"dependencies": [],
-		"completedTimeStamp": 1720578382,
-		"task": " ",
+		"parentThread": "default",
 		"timestamp": 1720578381,
-		"weight": 1,
-		"parentThread": "default"
+		"eta": 1720585666
 	},
 	{
 		"id": 1720578478240,
-		"efficiency": 0, 
-		"eta": 1720589266, // Invalid Eta
-		"dueDate": "2024-07-09T17:00:00.000Z",
 		"parentThread": "default",
+		"status": "incomplete",
+		"completedTimeStamp": 1720578382,
+		"task": " ",
+		"dueDate": "2024-07-09T17:00:00.000Z",
+		"weight": 1,
+		"efficiency": 0,
+		"dependencies": [],
 		"waste": 0,
 		"ttc": 1,
-		"status": "incomplete",
 		"timestamp": 1720578381,
-		"weight": 1,
-		"dependencies": [],
-		"task": " ",
-		"completedTimeStamp": 1720578382,
-		"hidden": false
+		"hidden": false,
+		"eta": 1720589266
 	}
 ]
 
-// console.log(isInputValid(testData, fullTasksSchema))
-// console.log(coerceToSchema(testData, fullTasksSchema))
+
+const testData = [
+	221117417,-1690539872,1437963861,1844600114,826177164,-869063195,543652958,-1587187669,627262482,544528370,false,false,false,true,true,false,true,false,false,true
+]
+
+const testSchema = Yup.array().of(Yup.number())
+
+//console.log(isInputValid([], fullTasksSchema)) // realTestData
+console.log(coerceToSchema(testData, testSchema))
+// console.log(dfsFns.dfs({ input: testData, schema: Yup.array().of(Yup.number())}))

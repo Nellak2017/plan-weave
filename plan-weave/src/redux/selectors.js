@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect' // This would be used to memoize easily if needed
 import { fullTasksSchema } from '../components/schemas/taskSchema/taskSchema.js'
-import { coerceToSchema } from '../components/utils/schema-helpers.js'
+import { coerceToSchema } from '../components/utils/schema-helpers.mjs'
 
 // File containing many re-used selectors for the Redux Store
 
