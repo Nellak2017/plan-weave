@@ -396,3 +396,7 @@ const testSchema = Yup.array().of(Yup.number())
 // console.log(dfsFns.dfs({ input: testData, schema: Yup.array().of(Yup.number())}))
 
 // console.log(coerceToSchema(realTestData, fullTasksSchema))
+// const t = Yup.object().shape({ foo: Yup.string().required() })
+// const out = coerceToSchema({}, t).output
+// console.log(out)
+// console.log(isInputValid(out, t))

@@ -696,8 +696,8 @@ describe('dfsFns.dfs', () => {
 	})
 
 	// For the integrity checks
-	const validPrimitiveTypes = { 'number': fc.integer(), 'string': fc.string(), 'boolean': fc.boolean() }
-	const validPrimitiveSchemas = { 'number': Yup.number().integer(), 'string': Yup.string(), 'boolean': Yup.boolean() }
+	const validPrimitiveTypes = { 'number': fc.integer(), 'string': fc.string(), 'boolean': fc.boolean(), 'date': fc.date() }
+	const validPrimitiveSchemas = { 'number': Yup.number().integer(), 'string': Yup.string(), 'boolean': Yup.boolean(), 'date': Yup.date() }
 	const typeArbitary = (validTypes = validPrimitiveTypes) => fc.constantFrom(...Object.keys(validTypes)) // returns a string name for a type
 	const arraySchemaArbitrary = (type, validTypes = validPrimitiveTypes) => fc.array(validTypes[type], { minLength: 1 })
 	const validArrayArbitrary = schema => arraySchemaArbitrary(schema.type) // fc.array(valid fc.primitive())
@@ -731,11 +731,10 @@ describe('dfsFns.dfs', () => {
 	/*
 	Properties known, but not tested:
 	
-	8. Integrity of Array Input element count - count(array, schema) = count(f(array, schema).output). ex: count([{...}, 42], Yup.number()) == count([42], Yup.number()) == 1 
-	9. Integrity of Array Input element type - every type in f(array, schema).output === schema.innerType
-	10. Integrity of Object Input field count -   
-	11. Default values of schema when field is not coerceable - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
-	12. Type Default values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
+	9. Integrity of Object fields -   
+	10. User Default values when field is not coerceable AND has user default - f(a) returns each field with the default value of the schema at each point iff the field is not coercable
+	11. Coercion table values when field is coerceable AND invalid - f(a) returns each field with the Type default at each point iff the field is coercable and invalid
+	12. Type Default values when field is not coerceable AND has no user default - 
 	*/
 
 	// 1. Idempotence of data - f(a).output === f(f(a).output).output 
@@ -825,33 +824,37 @@ describe('dfsFns.dfs', () => {
 		)
 	})
 
-	// 8. Integrity of Array Input element count - count(array, schema) = count(f(array, schema).output). ex: count([{...}, 42], Yup.number()) == count([42], Yup.number()) == 1 
-	test('Integrity of Array Input element count - count(array, schema) = count(f(array, schema).output)', () => {
+	// 8. Integrity of Primitive Array elements - valid array slice = f(array, schema).output. ex: validArraySlice([{...}, 42]) == [42] == output == [42] 
+	test('Integrity of Primitive Array elements - valid array slice = f(array, schema).output.', () => {
 		fc.assert(
 			fc.property(typeArbitary(), (type) => {
-				const count = (arr, schema) => arr.reduce((acc, item) => isInputValid(item, schema).isValid ? acc + 1 : acc, 0)
+				//const count = (arr, schema) => arr.reduce((acc, item) => isInputValid(item, schema).isValid ? acc + 1 : acc, 0)
+				const validArraySlice = (arr, schema) => arr.filter(item => isInputValid(item, schema).isValid)
 				const schema = validPrimitiveSchemas[type]
 				const arr = fc.sample(partiallyValidArrayArbitary(schema), 1)[0]
-				const countInput = count(arr, schema) // count the number of valid inputs in the array according to schema
+				const expectedOutput = validArraySlice(arr, schema) // Expected valid output array
+				
 				const res = dfs({ input: arr, schema: Yup.array().of(schema) }).output
-				const countOutput = count(res, schema) // count the number of valid outputs in the array according to the schema
-				if (countInput !== countOutput) {
-					console.log(`input: ${arr},\ncount(input, schema) = ${countInput}`)
-					console.log(`output: ${res},\ncount(output, schema) = ${countOutput}`)
+				
+				//const countOutput = count(res, schema) // count the number of valid outputs in the array according to the schema
+				if (JSON.stringify(expectedOutput) !== JSON.stringify(res)) {
+					console.log(`input: ${arr}`)
+        			console.log(`expected output: ${expectedOutput}`)
+        			console.log(`actual output: ${result}`)
 				}
-				expect(countInput).toBe(countOutput)
+				expect(res).toEqual(expectedOutput) // valid array slice === f(arr, schema).output
 			}
 			),
-			{ seed: 837385186, numRuns: 1000 }
+			{ numRuns: 1000 } // seed: 837385186,
 		)
 	})
 	/*
-		What my 7 properties prove so far:
+		What my 8 properties prove so far:
 
 		dfs({ input, schema }) => { 
 			output: 
 				input is valid -> valid output,
-				input is not valid -> output with correct type and shape only,
+				input is not valid -> output with correct type and shape + Primitive Arrays remove invalid,
 			, 
 			errors: 
 				input is valid -> [],
