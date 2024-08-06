@@ -35,7 +35,6 @@ const SimpleRow = ({
 
 	const iconSize = 36
 
-	useEffect(() => console.log(taskObject), [])
 	return (
 		<>
 			<DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''}>

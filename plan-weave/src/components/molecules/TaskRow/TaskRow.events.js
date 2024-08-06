@@ -30,7 +30,7 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 	// efficiency = first task ? calcEff(timestamp,completedTimeStamp,localTtc) : calcEff(completedTimeStamp[n-1],completedTimeStamp,localTtc)
 
 	const updatedTask = {
-		...task, //...validateTask({ task: taskObject }),
+		...taskObject, //...validateTask({ task: taskObject }),
 		status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
 		task: localTask.slice(0, 50), // Ensures it is always valid if localTask is a string
 		waste: millisToHours(currentTime.getTime() - newETA.getTime()), // millisToHours(currentTime.getTime() - eta.getTime())

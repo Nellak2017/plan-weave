@@ -1,4 +1,4 @@
-import { DEFAULT_SIMPLE_TASK } from '../../utils/constants.js'
+import { DEFAULT_FULL_TASK } from '../../utils/constants.js'
 import DeleteModal from '../../atoms/DeleteModal/DeleteModal.js'
 import { hoursToMillis } from '../../utils/helpers.js'
 import { getTime, differenceInHours } from 'date-fns'
@@ -26,7 +26,7 @@ export const setOverNight = (services, owl, startTime, endTime) => {
 
 // Events
 export const addEvent = (services, userId) => {
-	services?.addTask({ ...DEFAULT_SIMPLE_TASK, id: new Date().getTime() }, userId)
+	services?.addTask({ ...DEFAULT_FULL_TASK, id: new Date().getTime() }, userId) // Full tasks are used as base representation
 }
 
 export const deleteEvent = (services, toast, setIsDeleteClicked, isHighlighting, taskList) => {

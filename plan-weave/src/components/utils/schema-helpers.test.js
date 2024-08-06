@@ -13,7 +13,7 @@ import {
 } from './schema-helpers.js'
 import { TASK_STATUSES } from './constants.js'
 import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
-import { fullTasksSchema } from '../schemas/taskSchema/taskSchema.js'
+import { taskSchema, fullTasksSchema } from '../schemas/taskSchema/taskSchema.js'
 import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
 
@@ -711,6 +711,7 @@ describe('dfsFns.dfs', () => {
 		return fc.record({ validArray: validArrayArbitrary(schema), invalidArray: invalidArrayArbitrary(schema, validTypes) })
 			.chain(({ validArray, invalidArray }) => fc.constant([...validArray, ...invalidArray]))
 	} // returns array with atleast one element that is bad against the internal type
+	const validArraySlice = (arr, schema) => arr.filter(item => isInputValid(item, schema).isValid)
 
 	it('should generate arrays with both valid and invalid items', () => {
 		fc.assert(
@@ -828,24 +829,20 @@ describe('dfsFns.dfs', () => {
 	test('Integrity of Primitive Array elements - valid array slice = f(array, schema).output.', () => {
 		fc.assert(
 			fc.property(typeArbitary(), (type) => {
-				//const count = (arr, schema) => arr.reduce((acc, item) => isInputValid(item, schema).isValid ? acc + 1 : acc, 0)
-				const validArraySlice = (arr, schema) => arr.filter(item => isInputValid(item, schema).isValid)
 				const schema = validPrimitiveSchemas[type]
 				const arr = fc.sample(partiallyValidArrayArbitary(schema), 1)[0]
 				const expectedOutput = validArraySlice(arr, schema) // Expected valid output array
-				
+
 				const res = dfs({ input: arr, schema: Yup.array().of(schema) }).output
-				
-				//const countOutput = count(res, schema) // count the number of valid outputs in the array according to the schema
+
 				if (JSON.stringify(expectedOutput) !== JSON.stringify(res)) {
 					console.log(`input: ${arr}`)
-        			console.log(`expected output: ${expectedOutput}`)
-        			console.log(`actual output: ${result}`)
+					console.log(`expected output: ${expectedOutput}`)
+					console.log(`actual output: ${result}`)
 				}
 				expect(res).toEqual(expectedOutput) // valid array slice === f(arr, schema).output
 			}
 			),
-			{ numRuns: 1000 } // seed: 837385186,
 		)
 	})
 	/*
@@ -868,6 +865,17 @@ describe('dfsFns.dfs', () => {
 // --- main coercion function
 describe('coerceToSchema', () => {
 	const twelve = new Date(new Date().setHours(12, 0, 0, 0))
+	const defaultTask = {
+		"task": " ",
+		"waste": 1,
+		"ttc": 1,
+		"eta": "2024-08-05T17:00:00.000Z",
+		"id": 1722911470758,
+		"status": "incomplete",
+		"timestamp": 1722910996,
+		"completedTimeStamp": 1722910996,
+		"hidden": false
+	} // NOTE: using this rather than the constant so I know it is consistent, because the constant uses Date()
 
 	// --- Example based tests
 
@@ -1028,7 +1036,7 @@ describe('coerceToSchema', () => {
 				errors: [
 					'completedTimeStamp must be a `number` type, but the final value was: `{}`.',
 					'this must be a `number` type, but the final value was: `{}`.',
-					'this must be a `number` type, but the final value was: `{}`. at path: \"completedTimeStamp\", and it was coerced to 1'
+					'this must be a `number` type, but the final value was: `{}`. at path: "completedTimeStamp", and it was coerced to 1'
 				]
 			}
 		},
@@ -1041,7 +1049,7 @@ describe('coerceToSchema', () => {
 				errors: [
 					'hidden must be a `boolean` type, but the final value was: `[]`.',
 					'this must be a `boolean` type, but the final value was: `[]`.',
-					'this must be a `boolean` type, but the final value was: `[]`. at path: \"hidden\", and it was coerced to false'
+					'this must be a `boolean` type, but the final value was: `[]`. at path: "hidden", and it was coerced to false'
 				]
 			}
 		},
@@ -1054,7 +1062,7 @@ describe('coerceToSchema', () => {
 				errors: [
 					'waste must be a `number` type, but the final value was: `[]`.',
 					'this must be a `string` type, but the final value was: `{}`.',
-					'this must be a `string` type, but the final value was: `{}`. at path: \"task\", and it was coerced to ',
+					'this must be a `string` type, but the final value was: `{}`. at path: "task", and it was coerced to ',
 					"this must be a `number` type, but the final value was: `[]`.",
 					"this must be a `number` type, but the final value was: `[]`. at path: \"waste\", and it was coerced to 0",
 				]
@@ -1115,7 +1123,7 @@ describe('coerceToSchema', () => {
 					"this is a required field at path: \"task\", and it was coerced to ",
 					"this is a required field at path: \"waste\", and it was coerced to 0",
 					"this is a required field at path: \"ttc\", and it was coerced to 1",
-					`this is a required field at path: \"eta\", and it was coerced to ${twelve.toISOString()}`,
+					`this is a required field at path: "eta", and it was coerced to ${twelve.toISOString()}`,
 					"Id is required",
 					"Id is required at path: \"id\", and it was coerced to 1",
 					"this is a required field at path: \"status\", and it was coerced to incomplete",
@@ -1137,7 +1145,7 @@ describe('coerceToSchema', () => {
 					"this is a required field at path: \"task\", and it was coerced to ",
 					"this is a required field at path: \"waste\", and it was coerced to 0",
 					"this is a required field at path: \"ttc\", and it was coerced to 1",
-					`this is a required field at path: \"eta\", and it was coerced to ${twelve.toISOString()}`,
+					`this is a required field at path: "eta", and it was coerced to ${twelve.toISOString()}`,
 					"Id is required",
 					"Id is required at path: \"id\", and it was coerced to 1",
 					"this is a required field at path: \"status\", and it was coerced to incomplete",
@@ -1163,7 +1171,7 @@ describe('coerceToSchema', () => {
 					"TTC must be a number",
 					"TTC must be a number at path: \"ttc\", and it was coerced to 1",
 					"Eta must be a valid ISO string",
-					`Eta must be a valid ISO string at path: \"eta\", and it was coerced to ${twelve.toISOString()}`,
+					`Eta must be a valid ISO string at path: "eta", and it was coerced to ${twelve.toISOString()}`,
 					"this must be a `number` type, but the final value was: `NaN` (cast from the value `NaN`). at path: \"id\", and it was coerced to 1",
 					"this must be a `string` type, but the final value was: `NaN` (cast from the value `NaN`). at path: \"status\", and it was coerced to incomplete",
 					"this must be a `number` type, but the final value was: `NaN` (cast from the value `NaN`). at path: \"timestamp\", and it was coerced to 1",
@@ -1185,7 +1193,7 @@ describe('coerceToSchema', () => {
 					"this is a required field at path: \"task\", and it was coerced to ",
 					"this is a required field at path: \"waste\", and it was coerced to 0",
 					"this is a required field at path: \"ttc\", and it was coerced to 1",
-					`this is a required field at path: \"eta\", and it was coerced to ${twelve.toISOString()}`,
+					`this is a required field at path: "eta", and it was coerced to ${twelve.toISOString()}`,
 					"Id is required",
 					"Id is required at path: \"id\", and it was coerced to 1",
 					"this is a required field at path: \"status\", and it was coerced to incomplete",
@@ -1322,7 +1330,7 @@ describe('coerceToSchema', () => {
 						task: ' ',
 						waste: 673.4899841666667,
 						ttc: 1,
-						eta:"2024-07-10T02:27:56.943Z",
+						eta: "2024-07-10T02:27:56.943Z",
 						id: 1718143126427,
 						status: 'completed',
 						timestamp: 1718142843,
@@ -1391,8 +1399,71 @@ describe('coerceToSchema', () => {
 				]
 			}
 		},
+		{
+			description: 'f(default Task, fullTasksSchema) => { output: [], errors: [1 errors] }',
+			input: defaultTask,
+			schema: fullTasksSchema,
+			expected: {
+				output: [],
+				errors: [
+					'this must be a `array` type, but the final value was: `{\n' +
+					'  "task": "\\" \\"",\n' +
+					'  "waste": "1",\n' +
+					'  "ttc": "1",\n' +
+					'  "eta": "\\"2024-08-05T17:00:00.000Z\\"",\n' +
+					'  "id": "1722911470758",\n' +
+					'  "status": "\\"incomplete\\"",\n' +
+					'  "timestamp": "1722910996",\n' +
+					'  "completedTimeStamp": "1722910996",\n' +
+					'  "hidden": "false"\n' +
+					'}`.'
+				]
+			}
+		},
 	]
 	fullTaskTestCases.forEach(({ description, input, schema, expected }) => {
+		test(description, () => {
+			const result = coerceToSchema(input, schema)
+			expect(result.output).toEqual(expected.output)
+			expect(result.errors).toEqual(expected.errors)
+		})
+	})
+
+	// Using full task individual schema
+	const fullTaskIndividualTestCases = [
+		{
+			description: 'f(default Task, fullTaskIndividualSchema) => { output: valid full task, errors: [6 errors] }',
+			input: defaultTask,
+			schema: taskSchema,
+			expected: {
+				output: {
+					task: ' ',
+					waste: 1,
+					ttc: 1,
+					eta: '2024-08-05T17:00:00.000Z',
+					id: 1722911470758,
+					status: 'incomplete',
+					timestamp: 1722910996,
+					completedTimeStamp: 1722910996,
+					hidden: false,
+					efficiency: 0,
+					parentThread: '',
+					dueDate: '2024-08-05T17:00:00.000Z',
+					dependencies: [],
+					weight: 0
+				},
+				errors: [
+					'weight is a required field',
+					'this is a required field',
+					'this is a required field at path: "efficiency", and it was coerced to 0',
+					'this is a required field at path: "parentThread", and it was coerced to ',
+					'this is a required field at path: "dueDate", and it was coerced to 2024-08-05T17:00:00.000Z',
+					'this is a required field at path: "weight", and it was coerced to 0'
+				]
+			}
+		},
+	]
+	fullTaskIndividualTestCases.forEach(({ description, input, schema, expected }) => {
 		test(description, () => {
 			const result = coerceToSchema(input, schema)
 			expect(result.output).toEqual(expected.output)

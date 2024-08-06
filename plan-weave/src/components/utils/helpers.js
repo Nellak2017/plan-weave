@@ -592,10 +592,16 @@ export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTi
 	const epochETA = getTime(parseISO(eta)) / 1000 // converts ISO eta to epoch
 	const prevEpochETA = getTime(parseISO(prevEta)) / 1000 // converts ISO prev eta to epoch
 
+	const normalizeToDayRange = timeInSeconds => timeInSeconds % 86400 // TODO: untested 
+
+	const normalizedEpochETA = normalizeToDayRange(epochETA)
+	const normalizedPrevEpochEta = normalizeToDayRange(prevEpochETA)
+	const normalizedCompletedTimeStamp = normalizeToDayRange(completedTimeStamp)
+
 	// No Completed Tasks
 	if (!prevCompletedTask) {
 		try {
-			return calculateEfficiency(epochETA, completedTimeStamp, localTtc)
+			return calculateEfficiency(normalizedEpochETA, normalizedCompletedTimeStamp, localTtc)
 		} catch (e) {
 			console.error(e)
 		}
@@ -604,7 +610,7 @@ export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTi
 	// Incomplete -> Completed Case
 	if (status === TASK_STATUSES.INCOMPLETE) {
 		try {
-			return calculateEfficiency(prevEpochETA, completedTimeStamp, localTtc)
+			return calculateEfficiency(normalizedPrevEpochEta, normalizedCompletedTimeStamp, localTtc)
 		} catch (e) {
 			console.error(e)
 		}

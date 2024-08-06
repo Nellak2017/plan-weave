@@ -1,3 +1,5 @@
+/* eslint-disable complexity */
+/* eslint-disable max-lines-per-function */
 import React, { useState, useEffect, useMemo } from 'react'
 import { TaskRowStyled, TrashContainer } from './TaskRow.elements.js'
 import SimpleRow from './SimpleRow.js'

@@ -31,6 +31,10 @@ import {
   deleteTasks as deleteTasksAPI,
 } from '../../../firebase/firebase_controller.js'
 
+
+import { coerceToSchema } from '../../components/utils/schema-helpers.js'
+import { taskSchema } from '../../components/schemas/taskSchema/taskSchema.js'
+
 // --- Thunks for manipulating all the Threads
 export const updateGlobalThreadsThunk = (threads) => (dispatch) => {
   try {

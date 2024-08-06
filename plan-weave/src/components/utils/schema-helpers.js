@@ -141,19 +141,19 @@ export const dfsFns = {
 	// eslint-disable-next-line complexity
 	dfs: ({ input, schema, output = undefined, path = [], errors = [], reachGet = dfsFns.reachGet, reachUpdate = dfsFns.reachUpdate, processErrors = dfsFns.processErrors, processNodes = dfsFns.processNodes }) => {
 		const currentInput = reachGet(input, path)
-		const currentSchema = Yup.reach(schema, path.join('.')) // like: 0.task.(...)
+		const currentSchema = Yup.reach(schema, path.join('.')) // TODO: Revert back to non-yup reach version, turns out I didn't need this way..
 
 		const { isValid, error } = isInputValid(currentInput, currentSchema) // see if it is valid (works for nodes and shallow non-nodes)
 		const isArrDict = Boolean(currentSchema.type === 'array' && currentSchema.innerType.fields)
 		const isDictOrArrDict = Boolean(currentSchema.type === 'object' || isArrDict || currentSchema.type === 'array') // NOTE: Added currentSchema.type === 'array' untested
 
+		// TODO: Remove hacky epicycle solution corrections added here and discover the general elegant solution.. 
+		// TODO: Fix Cyclomatic complexity!
 		if (isNode(currentSchema)) return processNodes({ currentInput, currentSchema, isValid, errors, error, output, path, errProcessor: processErrors })
-
 		if (Array.isArray(input) && isValid && input.length === 0) return { output: input, errors } // To make the test case pass f([], array schema) = []
+		if (!Array.isArray(currentInput) && isArrDict) return { output: reachUpdate(output, path, []), errors: processErrors([...errors, error])}  // to make f(default task, fullTasksSchema) = {output: [], errors: [1+]} pass
 
-		// TODO: Revise the below to either perfectly handle currentSchema.innerType (Array with primitives only) or remove it and handle it above
-
-		const iter = Array.from(makeIterable(isArrDict ? currentSchema.innerType.fields : currentSchema.fields ? currentSchema.fields : currentInput?.map((el, i) => [i, currentSchema.innerType])))
+		const iter = Array.from(makeIterable(isArrDict ? currentSchema.innerType.fields : currentSchema?.fields ? currentSchema.fields : (currentInput ?? [])?.map((el, i) => [i, currentSchema.innerType])))
 		if (isDictOrArrDict) return iter
 			.reduce(({ output, errors }, [key, fieldSchema]) => {
 				const newPath = [...path, key]
@@ -162,15 +162,14 @@ export const dfsFns = {
 				if (currentSchema && currentSchema?.innerType && !currentSchema?.innerType?.fields) { // Number(newPath[newPath.length - 1]) === 0 && 
 					const filteredPrimitiveArray = Array.from(makeIterable(currentInput)).filter(el => isInputValid(el, currentSchema.innerType).isValid)
 					const theOutput = reachUpdate(output, path, filteredPrimitiveArray) // TODO: Revise the casting logic for arrays of primitives..
-					const theInput = reachUpdate(input, path, filteredPrimitiveArray)
 					//return dfsFns.dfs({ input:theInput, schema, output: theOutput, path: newPath, errors }) // was schema: fieldSchema
 					return { output: theOutput, errors }
 				}
 				if (isArrDict) {
-					return currentInput.reduce(({ output, errors }, _, index) => {
-						const elementPath = [...newPath.slice(0, -1), index.toString(), newPath[newPath.length - 1]]
-						return dfsFns.dfs({ input, schema, output, path: elementPath, errors }) // was schema: fieldSchema
-					}, { output, errors })
+					return (Array.isArray(currentInput) ? currentInput : []).reduce(({ output, errors }, _, index) => {
+							const elementPath = [...newPath.slice(0, -1), index.toString(), newPath[newPath.length - 1]]
+							return dfsFns.dfs({ input, schema, output, path: elementPath, errors }) // was schema: fieldSchema
+						}, { output, errors })
 				}
 				return dfsFns.dfs({ input, schema, output, path: newPath, errors }) // was schema: fieldSchema
 			}, { output: reachUpdate(output, path, isArrDict ? [{}] : currentSchema.type === 'object' ? {} : []), errors: processErrors([...errors, error]) }) // isArrDict ? [{}] : {}
@@ -296,7 +295,7 @@ const taskSchema = Yup.object({
 	weight: Yup.number()
 		.required()
 		.min(0),
-}).default({})
+}).default({ })
 
 const fullTasksSchema = Yup.array().of(taskSchema)
 
@@ -385,9 +384,6 @@ const realTestData = [
 const testData = [
 	221117417, -1690539872, 1437963861, 1844600114, 826177164, -869063195, 543652958, -1587187669, 627262482, 544528370, false, false, false, true, true, false, true, false, false, true
 ]
-// const testData = [
-// 	221117417, false, 245
-// ]
 
 const testSchema = Yup.array().of(Yup.number())
 
@@ -395,8 +391,18 @@ const testSchema = Yup.array().of(Yup.number())
 // console.log(coerceToSchema(testData, testSchema))
 // console.log(dfsFns.dfs({ input: testData, schema: Yup.array().of(Yup.number())}))
 
-// console.log(coerceToSchema(realTestData, fullTasksSchema))
-// const t = Yup.object().shape({ foo: Yup.string().required() })
-// const out = coerceToSchema({}, t).output
-// console.log(out)
-// console.log(isInputValid(out, t))
+const defaultTask = {
+	"task": " ",
+	"waste": 1,
+	"ttc": 1,
+	"eta": "2024-08-05T17:00:00.000Z",
+	"id": 1722911470758,
+	"status": "incomplete",
+	"timestamp": 1722910996,
+	"completedTimeStamp": 1722910996,
+	"hidden": false
+}
+
+// const a = coerceToSchema(defaultTask, fullTasksSchema)
+// console.log(a)
+// console.log(isInputValid(a.output, fullTasksSchema))
