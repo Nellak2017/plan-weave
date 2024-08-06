@@ -30,7 +30,7 @@ export const simpleTaskSchema = Yup.object({
 	task: Yup.string()
 		.max(50, 'Task must be at most 50 characters')
 		.required()
-		.default(''),
+		.default(' '),
 	waste: Yup.number()
 		.nullable(false)
 		.required()
