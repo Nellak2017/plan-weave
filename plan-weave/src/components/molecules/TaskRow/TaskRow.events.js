@@ -1,9 +1,13 @@
+/* eslint-disable complexity */
 import { validateTask, millisToHours, correctEfficiencyCase } from '../../utils/helpers'
 import { TASK_STATUSES } from '../../utils/constants.js'
-import { parseISO } from 'date-fns'
+import { parseISO, formatISO } from 'date-fns'
+import { coerceToSchema } from '../../utils/schema-helpers.js' // TODO: remove
+import { taskSchema } from '../../schemas/taskSchema/taskSchema.js' // TODO: remove
 
 // services = (updateSelectedTasks, taskRow), setIsChecked
 // state = taskObject, prevCompletedTask, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id, localDueDate
+// eslint-disable-next-line complexity
 export const handleCheckBoxClicked = ({ services, state }) => {
 	const { updateSelectedTasks, taskRow, setIsChecked } = services || {}
 	const { taskObject, prevCompletedTask,
@@ -60,8 +64,8 @@ export const handleUpdateTask = ({ services, state }) => {
 	taskRow?.update(id, {
 		...taskObject,
 		eta: parseISO(taskObject?.eta) && parseISO(taskObject.eta) instanceof Date
-			? parseISO(taskObject.eta).getTime() / 1000
-			: new Date().getTime() / 1000,
+			? formatISO(parseISO(taskObject.eta).getTime() / 1000) // eta must be an ISO string
+			: formatISO(new Date().getTime() / 1000),
 		task: localTask.slice(0, 50), // Ensures it is always valid if localTask is a string
 		ttc: parseFloat(localTtc) || .1, // Fail-safe default
 		efficiency: correctEfficiencyCase(prevCompletedTask, taskObject, completedTimeStamp, parseFloat(localTtc) || .1),
