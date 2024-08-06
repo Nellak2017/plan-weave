@@ -1,8 +1,6 @@
 import { millisToHours, correctEfficiencyCase } from '../../utils/helpers'
 import { TASK_STATUSES } from '../../utils/constants.js'
 import { parseISO, formatISO } from 'date-fns'
-import { coerceToSchema } from '../../utils/schema-helpers.js'
-import { taskSchema } from '../../schemas/taskSchema/taskSchema.js'
 
 // ------ Helpers
 
@@ -21,13 +19,6 @@ const standardTaskUpdate = ({ task, localTask, localTtc, prevCompletedTask, task
 	parentThread: localThread,
 })
 
-// Logs errors and returns output
-const logErrors = ({ updatedTask, taskSchema }) => {
-	const { output, errors } = coerceToSchema(updatedTask, taskSchema)
-	if (errors && Array.isArray(errors) && errors.length > 0) console.warn(errors.join('\n'))
-	return output
-}
-
 const wasteFeature = ({ taskObject, isChecked, localTask, newETA, localTtc, prevCompletedTask, localDueDate, localWeight, localDependencies, localThread, taskRow, id, userId, index }) => {
 	const { currentTime, completedTimeStamp } = currentCompletedTimes() // epoch in seconds, NOT millis
 	const updatedTask = {
@@ -37,8 +28,7 @@ const wasteFeature = ({ taskObject, isChecked, localTask, newETA, localTtc, prev
 		eta: isChecked && newETA instanceof Date ? newETA.toISOString() : currentTime.toISOString(),
 		completedTimeStamp,
 	}
-	const output = logErrors({ updatedTask, taskSchema })
-	taskRow?.complete({ id, updatedTask: output, index, userId })
+	taskRow?.complete({ id, updatedTask, index, userId })
 }
 
 const multipleDeleteFeature = ({ isHighlighting, updateSelectedTasks, selectedTasks, index }) => {
@@ -87,6 +77,5 @@ export const handleUpdateTask = ({ services, state }) => {
 			? formatISO(parseISO(taskObject.eta).getTime() / 1000) // eta must be an ISO string
 			: formatISO(new Date().getTime() / 1000),
 	}
-	const output = logErrors({ updatedTask, taskSchema })
-	taskRow?.update(id, output, userId)
+	taskRow?.update(id, updatedTask, userId)
 }

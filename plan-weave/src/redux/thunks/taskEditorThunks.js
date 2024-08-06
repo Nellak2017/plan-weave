@@ -31,8 +31,7 @@ import {
   deleteTasks as deleteTasksAPI,
 } from '../../../firebase/firebase_controller.js'
 
-
-import { coerceToSchema } from '../../components/utils/schema-helpers.js'
+import { logErrors } from '../../components/utils/helpers.js'
 import { taskSchema } from '../../components/schemas/taskSchema/taskSchema.js'
 
 // --- Thunks for manipulating all the Threads
@@ -117,9 +116,10 @@ export const updateSortingAlgorithmThunk = (sortingAlgo) => (dispatch) => {
 // Thunks for tasks
 export const addNewTaskThunk = (task, userId) => (dispatch) => {
   try {
-    addTaskAPI(task, userId) // POST here
-    dispatch(addGlobalTask(task)) // TODO: Update this so that when adding you never have incomplete over completed
-    dispatch(addTask(task)) // TODO: Ensure that tasks are valid and never can have invalid values like undefined efficiency
+    const output = logErrors({ updatedTask: task, taskSchema })
+    addTaskAPI(output, userId) // POST here
+    dispatch(addGlobalTask(output)) // TODO: Update this so that when adding you never have incomplete over completed
+    dispatch(addTask(output)) // TODO: Ensure that tasks are valid and never can have invalid values like undefined efficiency
     toast.info('You added a New Default Task')
   } catch (e) {
     console.error(e)
@@ -153,9 +153,10 @@ export const removeTasksThunk = (taskIdList, userId) => (dispatch) => {
 
 export const updateTaskThunk = (taskId, updatedTask, userId) => (dispatch) => {
   try {
-    updateTaskAPI(updatedTask, userId) // PATCH here
-    dispatch(editGlobalTask({ id: taskId, updatedTask }))
-    dispatch(editTask({ id: taskId, updatedTask }))
+    const output = logErrors({ updatedTask, taskSchema })
+    updateTaskAPI(output, userId) // PATCH here
+    dispatch(editGlobalTask({ id: taskId, updatedTask: output }))
+    dispatch(editTask({ id: taskId, updatedTask: output }))
   } catch (e) {
     console.error(e)
     toast.error('The Task failed to update')
@@ -165,8 +166,9 @@ export const updateTaskThunk = (taskId, updatedTask, userId) => (dispatch) => {
 export const completedTaskThunk = ({ taskId, updatedTask, index, userId }) => (dispatch) => {
   // Same as updateTaskThunk, but with extra logic for completing tasks, like dnd config updates and source update for taskTable
   try {
-    updateTaskAPI(updatedTask, userId) // PATCH here
-    dispatch(completeTask({ id: taskId, updatedTask, index }))
+    const output = logErrors({ updatedTask, taskSchema })
+    updateTaskAPI(output, userId) // PATCH here
+    dispatch(completeTask({ id: taskId, updatedTask: output, index }))
   } catch (e) {
     console.error(e)
     toast.error('The Task failed to complete or incomplete')
