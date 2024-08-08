@@ -1,17 +1,26 @@
+/* eslint-disable fp/no-loops */
+/* eslint-disable max-nested-callbacks */
+/* eslint-disable max-lines */
 /* eslint-disable complexity */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable fp/no-let */
 // UI Tests for TaskEditor
 
 import React from 'react'
-import { screen } from '@testing-library/react' // render is used in 'renderWithProviders'
+import { fireEvent, screen, waitFor, waitForElementToBeRemoved, act } from '@testing-library/react' // render is used in 'renderWithProviders'
+import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '../../utils/test-utils.js'
 import '@testing-library/jest-dom'
 import { fc } from '@fast-check/jest'
-import configureStore from 'redux-mock-store'
+//import configureStore from 'redux-mock-store'
+import { configureStore } from '@reduxjs/toolkit'
 import TaskEditor from './TaskEditor.js'
 import { parse } from 'date-fns'
 import { SORTING_METHODS, TASK_STATUSES } from '../../utils/constants.js'
+import rootReducer from '../../../redux/reducers/index.js'
+import { createTaskEditorServices } from '../../../services/PlanWeavePage/TaskEditorServices.js'
+
+import { updateSearch } from '../../../redux/reducers/taskEditorSlice.js' // TODO: Remove
 
 const timestamp = Math.floor((new Date()).getTime() / 1000)
 const due = '2024-06-01T21:00:00.000Z' // updated due date
@@ -57,101 +66,280 @@ const initialState = {
 	},
 }
 
-const mockStore = configureStore() // No middleware needed for basic mock store
+// Used for broken userEvent.type workaround
+const typeText = async (input, text, user = userEvent.setup({ delay: null })) => {
+	for (const char of text) {
+		await user.type(input, char)
+	}
+}
 
 describe('TaskEditor Component, Order Problem', () => {
 	// --- Set-up
-	let store
-	beforeEach(() => { store = mockStore(initialState) })
-	const renderComponent = (theStore = store) => renderWithProviders(<TaskEditor />, theStore)
+	// let configuredStore
+	// beforeEach(() => { configuredStore = configureStore({ reducer: rootReducer, preloadedState: initialState }) })
 
-	// --- Example based tests
+	// from redux docs: https://redux.js.org/usage/writing-tests#setting-up-a-reusable-test-render-function
+	const renderComponent = (store = configureStore({ reducer: rootReducer, preloadedState: initialState }), preloadedState = initialState) =>
+		renderWithProviders(<TaskEditor services={createTaskEditorServices(store)} />, { preloadedState, store })
 
-	// Smoke test
+	// --- Smoke test
 	test('renders TaskEditor with title', () => {
 		renderComponent()
 		expect(screen.getByText("Today's Tasks")).toBeInTheDocument()
 	})
 
-	// 1. Completed Tasks are always on top if there exists any
-	test('If No Completed Tasks, Non-Complete tasks should be in correct sorted order', () => {
-		// Setup store to have no completed tasks
-		const incompleteTasks = mockTasks.filter(task => task.status !== TASK_STATUSES.COMPLETED)
-		store = mockStore({
-			...initialState,
-			globalTasks: { tasks: incompleteTasks },
-			taskEditor: { ...initialState.taskEditor, tasks: incompleteTasks, },
-		})
-		// The tasks we observe should be in sorted order based on existing sorting algorithm
-		const sortAlgoName = initialState.taskEditor.sortingAlgo // We do not change this, so it is valid
-		const sortAlgo = SORTING_METHODS[sortAlgoName] // sort by timestamp or whatever is in initial state
-		const sortedTasks = sortAlgo(incompleteTasks) // We expect to see this in the rendered component as well
-		const taskTitlesSorted = sortedTasks.map(task => task.task) // Get the name of the tasks out like ["Meal Prep", "Shower+", ...]
-		renderComponent()
+	// --- Basic redux reducer test
+	test('renders TaskEditor with functioning search reducer', async () => {
+		// --- Set-up (Arrange)
+		const configuredStore = configureStore({ reducer: rootReducer, preloadedState: initialState })
+		renderComponent(configuredStore) // you can destructure { container } out to get the screen.debug for a particular selector like tbody
 
-		// Assertion: Check if the tasks displayed match the sorted tasks based on the sorting algorithm
-		//const taskElements = screen.getAllByRole('cell') // Debugging only
-		const taskElements = screen.getAllByTitle('Task Name') // Each task has a Title 'Task Name'
-		expect(taskElements.length > 0).toBe(true)
-		const taskTitlesDisplayed = taskElements.map(taskElement => {
-			const completedElTaskName = taskElement.querySelector('p')?.textContent
-			const notCompletedElTaskName = taskElement.querySelector('input')?.value
-			const displayedTaskName = !completedElTaskName ? notCompletedElTaskName : completedElTaskName
-			return displayedTaskName
-		}) // Select text inside <p> or <input> elements
+		// --- Act
+		const searchInput = screen.getByPlaceholderText('Search for a Task')
+		const searchTerm = 'new search term'
+		await typeText(searchInput, searchTerm) // Helper used since the raw way doesn't work
 
-		// Compare the titles of displayed tasks with the sorted tasks
-		expect(taskTitlesDisplayed).toEqual(taskTitlesSorted)
-	})
-
-	// --- Property based tests
-	const completedTaskArbitrary = fc.array(fc.record({
-		status: fc.constant(TASK_STATUSES.COMPLETED),
-		task: fc.string(),
-	}))
-	const nonCompletedTaskArbitrary = fc.array(fc.record({
-		status: fc.constantFrom(...Object.values(TASK_STATUSES).filter(status => status !== TASK_STATUSES.COMPLETED)),
-		task: fc.string(),
-	}))
-
-	// 1. Completed Tasks are always on top if there exists any
-	fc.configureGlobal({ seed: 1772384420 })
-	test('Completed Tasks are always on top if there exists any', () => {
-		fc.assert(fc.property(
-			completedTaskArbitrary,
-			nonCompletedTaskArbitrary,
-			(completedTasks, incompleteTasks) => {
-				// Make all tasks have a unique id before adding to the store
-				const tasksWithIds = [...completedTasks, ...incompleteTasks].map((task, index) => ({...task, id: index + 1}))
-				const updatedCompletedTasks = tasksWithIds.filter(task => task.status === TASK_STATUSES.COMPLETED)
-				const updatedIncompleteTasks = tasksWithIds.filter(task => task.status !== TASK_STATUSES.COMPLETED)
-				// Add complete and incomplete tasks to the store
-				const store = mockStore({
-					...initialState,
-					globalTasks: { tasks: [...updatedCompletedTasks, ...incompleteTasks] },
-					taskEditor: { ...initialState.taskEditor, tasks: [...updatedCompletedTasks, ...updatedIncompleteTasks], },
-				})
-
-				renderComponent(store)
-
-				// Do a random series of allowed operations here (Search, Add, FullTaskToggle, AutoSort, DnD, Complete, ...rest)
-
-				const taskElements = screen.queryAllByTitle('Task Name') // [<td title='Task Name'>...</td>,...]
-				if (taskElements.length === 0) return true
-
-				const completedTasksDisplayed = taskElements.filter(taskElement => taskElement.querySelector('p'))
-				const incompleteTasksDisplayed = taskElements.filter(taskElement => taskElement.querySelector('input'))
-
-				if (completedTasks.length > 0 && incompleteTasks.length > 0) completedTasksDisplayed.length > 0 && incompleteTasksDisplayed.length > 0 && completedTasksDisplayed[0] && !incompleteTasksDisplayed[0]
-				if (completedTasks.length > 0) completedTasksDisplayed.length > 0 && incompleteTasksDisplayed.length === 0 && completedTasksDisplayed[0]
-				if (incompleteTasks.length > 0) completedTasksDisplayed.length === 0 && incompleteTasksDisplayed.length > 0 && incompleteTasksDisplayed[0]
-				return true // Test passed if there are no tasks
-			}
-		), {
-			numRuns: 10, // must limit it for UI tests
+		// --- Assert
+		await waitFor(() => expect(searchInput.value).toBe(searchTerm)) // input.value === searchTerm
+		await waitFor(() => expect(configuredStore.getState().taskEditor.search).toBe(searchTerm)) // search in the store === searchTerm
+		const hiddenTasks = mockTasks.filter(task => !task.task.toLowerCase().includes(searchTerm.toLowerCase()))
+		for (const task of hiddenTasks) {
+			const taskElement = screen.queryByTestId(`task-${task.id}-testId`)
+			expect(taskElement).not.toBeInTheDocument()
 		}
-		)
 	})
+
+	// --- Feature UI tests
+	/*
+	describe('Search feature', () => {
+		// --- Set-up
+		// beforeEach(() => {
+		// 	store = mockStore({
+		// 		...initialState,
+		// 		taskEditor: {
+		// 			...initialState.taskEditor,
+		// 			search: '',
+		// 		}
+		// 	})
+		// })
+
+		// --- Example based tests for Search Feature
+		test('should display all tasks initially', () => {
+			renderComponent()
+			mockTasks.forEach(task => {
+				expect(screen.getByTestId(`task-${task.id}-testId`)).toBeInTheDocument()
+			})
+		})
+
+		test('should filter tasks based on search input', async () => {
+			// const filterTestCases = ['Prep']
+
+			// for (const searchTerm of filterTestCases) {
+			// 	renderComponent()
+
+			// 	// Find search bar and type the search term
+			// 	const searchInput = screen.getByPlaceholderText('Search for a Task')
+			// 	act(async () => {
+			// 		await userEvent.clear(searchInput) // Clear input if there was any text
+			// 		await userEvent.type(searchInput, searchTerm) // Type into search bar
+			// 	})
+
+			// 	// Wait for the DOM to update
+			// 	// Check that tasks containing the search term are displayed
+			// 	const visibleTasks = mockTasks.filter(task => task.task.toLowerCase().includes(searchTerm.toLowerCase()))
+			// 	for(const task of visibleTasks) {
+			// 		const taskElement = await screen.findByTestId(`task-${task.id}-testId`)
+			// 		expect(taskElement).toBeInTheDocument()
+			// 	}
+
+			// 	// Check that tasks not containing the search term are not displayed
+			// 	const hiddenTasks = mockTasks.filter(task => !task.task.toLowerCase().includes(searchTerm.toLowerCase()))
+			// 	for(const task of hiddenTasks) {
+			// 		const taskElement = await screen.findByTestId(`task-${task.id}-testId`)
+			// 		console.log("HELL WORLD")
+			// 		expect(taskElement).not.toBeInTheDocument()
+			// 	}
+			// }
+
+			const searchTerm = "Prep"
+			const { container } = renderComponent()
+			const searchInput = screen.getByPlaceholderText('Search for a Task')
+
+			const user = userEvent.setup({ delay: null })
+			await user.click(searchInput)
+			await user.keyboard('Prep')
+			// await user.clear(searchInput)
+			// await user.type(searchInput, 'Prep')
+			screen.debug(searchInput)
+			const tbody = container.querySelector('tbody')
+			
+			const visibleTasks = mockTasks.filter(task => task.task.toLowerCase().includes(searchTerm.toLowerCase()))
+			await waitFor(() => {
+				expect(searchInput).toHaveValue(searchTerm)
+			})
+			await waitFor(() => {
+				const rows = screen.getAllByRole('row')
+				expect(rows.length).toBe(visibleTasks.length) // Replace with your expectation
+			}, {
+				timeout: 5000, // wait for up to 5 seconds
+				interval: 100, // check every 100 milliseconds
+				onTimeout: (error) => {
+					console.error('Timeout error:', error)
+					return new Error('Tasks never updated on client side')
+				}
+			})
+
+			const allRows = screen.getAllByRole('row')
+
+
+			for (const task of visibleTasks) {
+				const taskElement = screen.queryByTestId(`task-${task.id}-testId`)
+				expect(taskElement).toBeInTheDocument()
+			}
+			const hiddenTasks = mockTasks.filter(task => !task.task.toLowerCase().includes(searchTerm.toLowerCase()))
+			for (const task of hiddenTasks) {
+				const taskElement = screen.queryByTestId(`task-${task.id}-testId`)
+				if (taskElement) {
+					console.log("Hidden")
+				}
+			}
+		})
+
+	})
+	*/
+
+	describe('Start Time feature', () => {
+
+	})
+
+	describe('End Time feature', () => {
+
+	})
+
+	describe('Add Task feature', () => {
+
+	})
+
+	describe('Toggle Simple Task feature', () => {
+
+	})
+
+	describe('Delete Multiple Tasks feature', () => {
+
+	})
+
+	describe('Sort tasks drop down feature', () => {
+
+	})
+
+	describe('Drag and Drop feature', () => {
+
+	})
+
+	/*
+	describe('Complete Task feature', () => {
+		// --- Example based tests
+		// 1. Completed Tasks are always on top if there exists any
+		test('If No Completed Tasks, Non-Complete tasks should be in correct sorted order', () => {
+			// Setup store to have no completed tasks
+			const incompleteTasks = mockTasks.filter(task => task.status !== TASK_STATUSES.COMPLETED)
+			store = mockStore({
+				...initialState,
+				globalTasks: { tasks: incompleteTasks },
+				taskEditor: { ...initialState.taskEditor, tasks: incompleteTasks, },
+			})
+			// The tasks we observe should be in sorted order based on existing sorting algorithm
+			const sortAlgoName = initialState.taskEditor.sortingAlgo // We do not change this, so it is valid
+			const sortAlgo = SORTING_METHODS[sortAlgoName] // sort by timestamp or whatever is in initial state
+			const sortedTasks = sortAlgo(incompleteTasks) // We expect to see this in the rendered component as well
+			const taskTitlesSorted = sortedTasks.map(task => task.task) // Get the name of the tasks out like ["Meal Prep", "Shower+", ...]
+			renderComponent()
+
+			// Assertion: Check if the tasks displayed match the sorted tasks based on the sorting algorithm
+			//const taskElements = screen.getAllByRole('cell') // Debugging only
+			const taskElements = screen.getAllByTitle('Task Name') // Each task has a Title 'Task Name'
+			expect(taskElements.length > 0).toBe(true)
+			const taskTitlesDisplayed = taskElements.map(taskElement => {
+				const completedElTaskName = taskElement.querySelector('p')?.textContent
+				const notCompletedElTaskName = taskElement.querySelector('input')?.value
+				const displayedTaskName = !completedElTaskName ? notCompletedElTaskName : completedElTaskName
+				return displayedTaskName
+			}) // Select text inside <p> or <input> elements
+
+			// Compare the titles of displayed tasks with the sorted tasks
+			expect(taskTitlesDisplayed).toEqual(taskTitlesSorted)
+		})
+
+		// --- Property based tests
+		const completedTaskArbitrary = fc.array(fc.record({
+			status: fc.constant(TASK_STATUSES.COMPLETED),
+			task: fc.string(),
+		}))
+		const nonCompletedTaskArbitrary = fc.array(fc.record({
+			status: fc.constantFrom(...Object.values(TASK_STATUSES).filter(status => status !== TASK_STATUSES.COMPLETED)),
+			task: fc.string(),
+		}))
+
+		// 1. Completed Tasks are always on top if there exists any
+		test('Completed Tasks are always on top if there exists any', () => {
+			fc.assert(fc.property(
+				completedTaskArbitrary,
+				nonCompletedTaskArbitrary,
+				(completedTasks, incompleteTasks) => {
+					// Make all tasks have a unique id before adding to the store
+					const tasksWithIds = [...completedTasks, ...incompleteTasks].map((task, index) => ({ ...task, id: index + 1 }))
+					const updatedCompletedTasks = tasksWithIds.filter(task => task.status === TASK_STATUSES.COMPLETED)
+					const updatedIncompleteTasks = tasksWithIds.filter(task => task.status !== TASK_STATUSES.COMPLETED)
+					// Add complete and incomplete tasks to the store
+					const store = mockStore({
+						...initialState,
+						globalTasks: { tasks: [...updatedCompletedTasks, ...incompleteTasks] },
+						taskEditor: { ...initialState.taskEditor, tasks: [...updatedCompletedTasks, ...updatedIncompleteTasks], },
+					})
+
+					renderComponent(store)
+
+					// Do a random series of allowed operations here (Search, Add, FullTaskToggle, AutoSort, DnD, Complete, ...rest)
+
+					const taskElements = screen.queryAllByTitle('Task Name') // [<td title='Task Name'>...</td>,...]
+					if (taskElements.length === 0) return true
+
+					const completedTasksDisplayed = taskElements.filter(taskElement => taskElement.querySelector('p'))
+					const incompleteTasksDisplayed = taskElements.filter(taskElement => taskElement.querySelector('input'))
+
+					if (completedTasks.length > 0 && incompleteTasks.length > 0) completedTasksDisplayed.length > 0 && incompleteTasksDisplayed.length > 0 && completedTasksDisplayed[0] && !incompleteTasksDisplayed[0]
+					if (completedTasks.length > 0) completedTasksDisplayed.length > 0 && incompleteTasksDisplayed.length === 0 && completedTasksDisplayed[0]
+					if (incompleteTasks.length > 0) completedTasksDisplayed.length === 0 && incompleteTasksDisplayed.length > 0 && incompleteTasksDisplayed[0]
+					return true // Test passed if there are no tasks
+				}
+			), {
+				numRuns: 10, // must limit it for UI tests
+			}
+			)
+		})
+	})
+	*/
+
+	describe('Update Task feature', () => {
+
+	})
+
+	describe('Refresh Task feature', () => {
+
+	})
+
+	describe('Back/Forward page buttons feature', () => {
+
+	})
+
+	describe('Jump to page feature', () => {
+
+	})
+
+	describe('Display x tasks per page dropdown feature', () => {
+
+	})
+
 	/* 
 	Possible Relevant user actions for TaskEditor:
 

@@ -83,3 +83,4 @@ export const TASK_ROW_TOOLTIPS = {
 	thread: 'Task Thread/Group',
 	dependencies: 'Task Predecessors. What needs to be done Before this?'
 }
+export const DEV = false // is it development or production?

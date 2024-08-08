@@ -6,6 +6,7 @@ import theme from '../../styles/theme.js'
 import GlobalStyle from '../../styles/globalStyles.js'
 import { ToastContainer } from 'react-toastify'
 import PropTypes from 'prop-types'
+import { setupStore } from '../../redux/store.js'
 
 const defaultOptions = {} // we used to do stuff here now not
 
@@ -19,12 +20,21 @@ const Wrapper = ({ children, store }) => (
 	</ThemeProvider>
 )
 
-export const renderWithProviders = (ui, store, options = defaultOptions) =>
-	render(ui, { wrapper: (props) => <Wrapper {...props} store={store}>{ui}</Wrapper>, ...options })
-
+export const renderWithProviders = (
+	ui,
+	{ preloadedState = {}, store = setupStore(preloadedState) } = defaultOptions,
+) => (
+	{
+		store,
+		...render(ui, { wrapper: (props) => <Wrapper {...props} store={store} />, })
+		//...render(ui, { wrapper: Wrapper, ...renderOptions })
+	}
+)
+// https://www.freecodecamp.org/news/how-to-write-unit-tests-in-react-redux/
 
 Wrapper.propTypes = {
-	children: PropTypes.any
+	children: PropTypes.any,
+	store: PropTypes.object.isRequired
 }
 
 renderWithProviders.propTypes = {

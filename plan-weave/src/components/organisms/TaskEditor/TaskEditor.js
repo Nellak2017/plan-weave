@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasksCoerceToFull } from '../../../redux/selectors'
-import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS, VARIANTS } from '../../utils/constants'
+import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS, VARIANTS, DEV } from '../../utils/constants'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import Pagination from '../../molecules/Pagination/Pagination'
@@ -76,18 +76,20 @@ const TaskEditor = ({
 
 	// Effects
 	useEffect(() => {
-		const displayBeforeAfter = (taskList, output) => {
-			console.log('old task list before coercion:\n', taskList)
-			console.log('new task list after coercion :\n', output)
+		const displayBeforeAfter = (taskList, output, isDev = DEV) => {
+			if (isDev) {
+				console.log('old task list before coercion:\n', taskList)
+				console.log('new task list after coercion :\n', output)
+			}
 		}
 		const { isValid, error } = isInputValid(output, fullTasksSchema) // { isValid: bool, error: string }
 		// Coercion made the output valid, but had errors it had to fix
-		if (errors && Array.isArray(errors) && errors.length > 0) {
+		if (errors && Array.isArray(errors) && errors.length > 0 && DEV) {
 			console.warn(errors.join('\n'))
 			displayBeforeAfter(taskList, output)
 		}
 		// Coercion made the output invalid, but atleast the right shape and has errors to report
-		if (!isValid) {
+		if (!isValid && DEV) {
 			console.error(
 				`Your coerced tasks fetched failed to be properly coerced. 
 The resulting task list has atleast the right shape and types, but are not valid.
@@ -142,7 +144,9 @@ TaskEditor.propTypes = {
 			updateDnD: PropTypes.func.isRequired,
 			updateSelectedTasks: PropTypes.func.isRequired,
 			updateTasks: PropTypes.func.isRequired,
-			timeRange: PropTypes.func.isRequired,
+			updateTimeRange: PropTypes.func.isRequired,
+			addThread: PropTypes.func.isRequired,
+			updateFirstLoad: PropTypes.func.isRequired,
 		}).isRequired,
 		taskControl: PropTypes.shape({
 			search: PropTypes.func.isRequired,

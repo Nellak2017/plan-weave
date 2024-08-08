@@ -1058,11 +1058,11 @@ describe('coerceToSchema', () => {
 			input: { "task": {}, "waste": [], "ttc": 0.01, "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
 			schema: simpleTaskSchema,
 			expected: {
-				output: { task: '', waste: 0, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: ' ', waste: 0, ttc: 0.01, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					'waste must be a `number` type, but the final value was: `[]`.',
 					'this must be a `string` type, but the final value was: `{}`.',
-					'this must be a `string` type, but the final value was: `{}`. at path: "task", and it was coerced to ',
+					'this must be a `string` type, but the final value was: `{}`. at path: "task", and it was coerced to  ',
 					"this must be a `number` type, but the final value was: `[]`.",
 					"this must be a `number` type, but the final value was: `[]`. at path: \"waste\", and it was coerced to 0",
 				]
@@ -1073,11 +1073,11 @@ describe('coerceToSchema', () => {
 			input: { "task": new Date(1), "waste": 0.01, "ttc": new Set(), "eta": "2000-01-01T06:00:00.000Z", "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
 			schema: simpleTaskSchema,
 			expected: {
-				output: { task: '', waste: 0.01, ttc: 1, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: ' ', waste: 0.01, ttc: 1, eta: '2000-01-01T06:00:00.000Z', id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					"TTC must be a number",
 					"this must be a `string` type, but the final value was: `1970-01-01T00:00:00.001Z`.",
-					"this must be a `string` type, but the final value was: `1970-01-01T00:00:00.001Z`. at path: \"task\", and it was coerced to ",
+					"this must be a `string` type, but the final value was: `1970-01-01T00:00:00.001Z`. at path: \"task\", and it was coerced to  ",
 					"TTC must be a number at path: \"ttc\", and it was coerced to 1",
 				]
 			}
@@ -1088,11 +1088,11 @@ describe('coerceToSchema', () => {
 			input: { "task": null, "waste": 0.01, "ttc": 1, "eta": [], "id": 1, "status": "completed", "timestamp": 1, "completedTimeStamp": 1, "hidden": false },
 			schema: simpleTaskSchema,
 			expected: {
-				output: { task: '', waste: 0.01, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: ' ', waste: 0.01, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'completed', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					"Eta must be a valid ISO string",
 					"this is a required field",
-					"this is a required field at path: \"task\", and it was coerced to ",
+					"this is a required field at path: \"task\", and it was coerced to  ",
 					`Eta must be a valid ISO string at path: "eta", and it was coerced to ${twelve.toISOString()}`,
 				]
 			}
@@ -1116,11 +1116,11 @@ describe('coerceToSchema', () => {
 			input: {},
 			schema: simpleTaskSchema,
 			expected: {
-				output: { task: '', waste: 0, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: ' ', waste: 0, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					"hidden is a required field",
 					"this is a required field",
-					"this is a required field at path: \"task\", and it was coerced to ",
+					"this is a required field at path: \"task\", and it was coerced to  ",
 					"this is a required field at path: \"waste\", and it was coerced to 0",
 					"this is a required field at path: \"ttc\", and it was coerced to 1",
 					`this is a required field at path: "eta", and it was coerced to ${twelve.toISOString()}`,
@@ -1138,11 +1138,11 @@ describe('coerceToSchema', () => {
 			input: null,
 			schema: simpleTaskSchema,
 			expected: {
-				output: { task: '', waste: 0, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: ' ', waste: 0, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					"this cannot be null",
 					"this is a required field",
-					"this is a required field at path: \"task\", and it was coerced to ",
+					"this is a required field at path: \"task\", and it was coerced to  ",
 					"this is a required field at path: \"waste\", and it was coerced to 0",
 					"this is a required field at path: \"ttc\", and it was coerced to 1",
 					`this is a required field at path: "eta", and it was coerced to ${twelve.toISOString()}`,
@@ -1186,11 +1186,11 @@ describe('coerceToSchema', () => {
 			input: 1234,
 			schema: simpleTaskSchema,
 			expected: {
-				output: { task: '', waste: 0, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
+				output: { task: ' ', waste: 0, ttc: 1, eta: twelve.toISOString(), id: 1, status: 'incomplete', timestamp: 1, completedTimeStamp: 1, hidden: false },
 				errors: [
 					"this must be a `object` type, but the final value was: `1234`.",
 					"this is a required field",
-					"this is a required field at path: \"task\", and it was coerced to ",
+					"this is a required field at path: \"task\", and it was coerced to  ",
 					"this is a required field at path: \"waste\", and it was coerced to 0",
 					"this is a required field at path: \"ttc\", and it was coerced to 1",
 					`this is a required field at path: "eta", and it was coerced to ${twelve.toISOString()}`,
@@ -1448,7 +1448,7 @@ describe('coerceToSchema', () => {
 					hidden: false,
 					efficiency: 0,
 					parentThread: '',
-					dueDate: '2024-08-05T17:00:00.000Z',
+					dueDate: twelve.toISOString(),
 					dependencies: [],
 					weight: 0
 				},
@@ -1457,7 +1457,7 @@ describe('coerceToSchema', () => {
 					'this is a required field',
 					'this is a required field at path: "efficiency", and it was coerced to 0',
 					'this is a required field at path: "parentThread", and it was coerced to ',
-					'this is a required field at path: "dueDate", and it was coerced to 2024-08-05T17:00:00.000Z',
+					`this is a required field at path: "dueDate", and it was coerced to ${twelve.toISOString()}`,
 					'this is a required field at path: "weight", and it was coerced to 0'
 				]
 			}
