@@ -64,13 +64,6 @@ function TimePickerWrapper({
   // --- Memo for time display
   const timeDisplayMemo = useMemo(() => ampm ? format(currentTime, 'hh:mm a') : format(currentTime, 'HH:mm'), [currentTime, ampm])
 
-
-  useEffect(() => {
-    console.log(`showClock: ${showClock}`)
-  },[showClock])
-  useEffect(() => {
-    console.log(`time: ${time}`)
-  }, [time])
   // BEFORE Controlled code, time was used to be displayed, not currentTime
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>

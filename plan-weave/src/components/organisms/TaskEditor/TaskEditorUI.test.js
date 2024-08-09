@@ -126,6 +126,7 @@ describe('TaskEditor Component, Order Problem', () => {
 		})
 
 		// --- Example based tests for Search Feature
+		// 1. should display all tasks initially
 		test('should display all tasks initially', () => {
 			renderComponent()
 			mockTasks.forEach(task => {
@@ -133,7 +134,8 @@ describe('TaskEditor Component, Order Problem', () => {
 			})
 		})
 
-		test.skip('should filter tasks based on search input', async () => {
+		// 2. should filter tasks based on search input
+		describe.skip('should filter tasks based on search input', () => {
 			const filterTestCases = [
 				'Prep', // Partial Match
 				'Meal Prep', // Full Match
@@ -149,119 +151,76 @@ describe('TaskEditor Component, Order Problem', () => {
 			]
 
 			for (const searchTerm of filterTestCases) {
-				// --- Arrange
-				const configuredStore = configureStore({ reducer: rootReducer, preloadedState: initialState })
-				act(() => renderComponent(configuredStore)) // you can destructure { container } out to get the screen.debug for a particular selector like tbody
+				test(`should filter tasks based on search ${searchTerm}`, async () => {
+					// --- Arrange
+					const configuredStore = configureStore({ reducer: rootReducer, preloadedState: initialState })
+					renderComponent(configuredStore) // you can destructure { container } out to get the screen.debug for a particular selector like tbody
 
-				// --- Act
-				const searchInput = await screen.findByPlaceholderText(TASKEDITOR_SEARCH_PLACEHOLDER)
-				typeText(searchInput, searchTerm) // Used so I can get accurate results
+					// --- Act
+					const searchInput = await screen.findByPlaceholderText(TASKEDITOR_SEARCH_PLACEHOLDER)
+					fireEvent.change(searchInput, { target: { value: searchTerm } }) // for faster results
+					//typeText(searchInput, searchTerm) // Used so I can get accurate results
 
-				// --- Assert
-				const visibleTasks = mockTasks.filter(task => task.task.toLowerCase().includes(searchTerm.trim().toLowerCase()))
-				const hiddenTasks = mockTasks.filter(task => !task.task.toLowerCase().includes(searchTerm.trim().toLowerCase()))
+					// --- Assert
+					const visibleTasks = mockTasks.filter(task => task.task.toLowerCase().includes(searchTerm.trim().toLowerCase()))
+					const hiddenTasks = mockTasks.filter(task => !task.task.toLowerCase().includes(searchTerm.trim().toLowerCase()))
 
-				await waitFor(() => { expect(screen.getAllByRole('row').slice(1).length).toBe(visibleTasks.length === 0 ? 1 : visibleTasks.length) }) // NOTE: getAllByRole('row') also returns the tr for the head of the table too
-				await waitFor(() => { expect(searchInput).toHaveValue(searchTerm) })
+					await waitFor(() => { expect(screen.getAllByRole('row').slice(1).length).toBe(visibleTasks.length === 0 ? 1 : visibleTasks.length) }) // NOTE: getAllByRole('row') also returns the tr for the head of the table too
+					await waitFor(() => { expect(searchInput).toHaveValue(searchTerm) })
 
-				for (const task of visibleTasks) { expect(screen.queryByTestId(`task-${task.id}-testId`)).toBeInTheDocument() }
-				for (const task of hiddenTasks) { expect(screen.queryByTestId(`task-${task.id}-testId`)).not.toBeInTheDocument() }
+					for (const task of visibleTasks) { expect(screen.queryByTestId(`task-${task.id}-testId`)).toBeInTheDocument() }
+					for (const task of hiddenTasks) { expect(screen.queryByTestId(`task-${task.id}-testId`)).not.toBeInTheDocument() }
 
-				cleanup()
+					cleanup()
+				})
 			}
 		})
 	})
 
-	// NOTE: Impossible to Test in RTL, must use Cypress
-	describe.skip('Start Time feature', () => {
-		// NOTE: It is literally impossible to do this Test in RTL because RTL doesn't render it properly.
-		// NOTE: To test this, I must use Cypress or something else
 
-		// --- Helper that can not work in RTL
-		// Used for the broken MUI TimeClock onMouseDown workaround (Not accepting mouseDown on hour or minute element) 
-		// Returns String if Error or undefined if no error (does a side-effect)
-		const mouseDownClockHack = element => {
-			// Step 1: Get the clientX, clientY, screenX, screenY from that element. 
-			// const { left, top, width, height } = element.getBoundingClientRect() // https://github.com/jsdom/jsdom/issues/1590 (Always returns 0 in RTL because RTL is retarded) 
-			const clientX = 688.40 //left + width / 2
-			const clientY = 264 //top + height / 2
-			const screenX = 688.40 // clientX + window.scrollX
-			const screenY = 264 // clientY + window.scrollY
-
-			// Step 2: Select the squareMask using the CSS class name (or data-test-id if possible)
-			const squareMaskElement = document.querySelector('.MuiClock-squareMask')
-			if (!squareMaskElement) { return 'squareMask element not found' }
-
-			// Step 3: Use custom code to replicate the event with the x, y coordinates and dispatch it
-			const mouseDownEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window, clientX, clientY, screenX, screenY, button: 0, buttons: 0, relatedTarget: squareMaskElement })
-			//squareMaskElement.dispatchEvent(mouseDownEvent)
-			fireEvent(squareMaskElement, mouseDownEvent)
-		}
+	describe('Add Task feature', () => {
 		// --- Set-up
 		afterEach(() => {
 			cleanup()
 		})
-		test.skip('Should allow for selecting a time and display it properly', async () => {
-			// --- Arrange
-			renderComponent()
-			const user = userEvent.setup()
 
-			const hour = /^1 hours$/i
-			const minute = /^5 minutes$/i
+		// 1. Adding a task will result in a table that is bigger IF the table is less than tasks per page length
+		describe('Adding a task will result in a table that is bigger IF the table is less than tasks per page length', () => {
+			// NOTE: To generalize this with example or property tests, you need to parameterize the input tasks
+			test('Adding a task will result in a table that is bigger if the table is 8 long and the max per page is 10', async () => {
+				// --- Arrange
+				const configuredStore = configureStore({ reducer: rootReducer, preloadedState: initialState })
+				const { container } = renderComponent(configuredStore)
+				const user = userEvent.setup()
 
-			// --- Act and Assert
+				// --- Act and Assert
+				// 1. Select Add and tr from tbody (tasks from first page only)
+				const addButton = screen.getByTestId('add-button')
+				const taskTableBody = container.querySelector('tbody')
+				const taskRows = within(taskTableBody).getAllByRole('row')
 
-			// 0. Dropdown should not be visible initially
-			expect(screen.getByTestId(`Dropdown for ${TASK_CONTROL_TITLES.startButton}`)).not.toBeVisible() // https://github.com/styled-components/styled-components/issues/4081 (Solves the styled component not rendering properly issue in Jest)
+				// 2. Expect the initial visible tasks from the redux store to have the same length as the taskRows selected
+				const initialVisibleTasks = mockTasks // Should be everything since we didn't call search action
+				expect(initialVisibleTasks.length).toBe(taskRows.length)
 
-			// 1. Get start button
-			const timeButtons = screen.getAllByRole('button', { name: /Toggle clock/i })
-			const startTimeButton = timeButtons.find(button => within(button).queryByTitle(TASK_CONTROL_TITLES.startButton) !== null)
+				// 3. Click Add button
+				await user.click(addButton)
+				//fireEvent.click(addButton)
 
-			// 2. Click that start button
-			fireEvent.mouseDown(startTimeButton)
+				// 4. Reselect visible tasks and the tr elements list (We may have to wait for it to happen)
+				const newVisibleTasks = configuredStore.getState().taskEditor.tasks
+				const newTaskRows = within(container.querySelector('tbody')).getAllByRole('row')
 
-			// 3. Expect the dropdown to be visible
-			const dropDown = screen.getByTestId(`Dropdown for ${TASK_CONTROL_TITLES.startButton}`)
-			await waitFor(() => expect(dropDown).toBeVisible())//.toHaveStyle('visibility: visible')
+				// 5. Expect the new taskRows to have length that is 1 more than what it was before
+				expect(newTaskRows.length).toBe(taskRows.length + 1)
 
-			// 4. Select the hour option and click it
-			const hourOption = within(dropDown).getByRole('option', { name: hour })
-			mouseDownClockHack(hourOption) // Used because the standard mouseDown doesn't work on hourOption, I had to find a hack to work around MUI's limitations
-			screen.debug(hourOption)
-
-			// 5. Expect the dropDown to still be visible
-			expect(dropDown).toBeVisible()
-
-			// 6. Wait for the dropdown to update and minute options to appear
-			const newDropDown = screen.getByTestId(`Dropdown for ${TASK_CONTROL_TITLES.startButton}`)
-			screen.debug(newDropDown)
-			await waitFor(() => {
-				const minuteOption = within(newDropDown).getByRole('option', { name: minute })
-				expect(minuteOption).toBeInTheDocument()
+				// 6. Expect the new taskRows to be exactly equal in length to the newVisible tasks (which is everything since it is on same page)
+				expect(newVisibleTasks.length).toBe(newTaskRows.length)
 			})
-
-			// 7. Select the minute option and click it
-			const minuteOption = within(dropDown).getByRole('option', { name: minute })
-			user.click(minuteOption)
-
-			// 8. Expect the dropDown to Not be visible
-			expect(dropDown).not.toBeVisible()
-
-			// 9. Select the time display for the start button
-			const timeDisplay = screen.getByLabelText(/time display: start time/i)
-			screen.debug(timeDisplay)
 		})
-	})
-
-	// NOTE: Impossible to Test in RTL, must use Cypress
-	describe.skip('End Time feature', () => {
-		// Too hard to simulate mouse movements perfectly, skipped
-	})
-
-	describe('Add Task feature', () => {
-
-		
+		// 2. Adding a task will result in a table that is the same size on the first page, but bigger on the last page if the tasks exceed maximum
+		// 3. Adding a task will result in the task being added to the end of the table not the beginning
+		// 4. Repeated adding a task will result in the first three properties being respected
 
 	})
 
@@ -274,10 +233,6 @@ describe('TaskEditor Component, Order Problem', () => {
 	})
 
 	describe('Sort tasks drop down feature', () => {
-
-	})
-
-	describe('Drag and Drop feature', () => {
 
 	})
 
@@ -382,6 +337,99 @@ describe('TaskEditor Component, Order Problem', () => {
 	})
 
 	describe('Display x tasks per page dropdown feature', () => {
+
+	})
+
+	// --- Cypress only (Refactor later)
+
+	// NOTE: Impossible to Test in RTL, must use Cypress
+	describe.skip('Start Time feature', () => {
+		// NOTE: It is literally impossible to do this Test in RTL because RTL doesn't render it properly.
+		// NOTE: To test this, I must use Cypress or something else
+
+		// --- Helper that can not work in RTL
+		// Used for the broken MUI TimeClock onMouseDown workaround (Not accepting mouseDown on hour or minute element) 
+		// Returns String if Error or undefined if no error (does a side-effect)
+		const mouseDownClockHack = element => {
+			// Step 1: Get the clientX, clientY, screenX, screenY from that element. 
+			// const { left, top, width, height } = element.getBoundingClientRect() // https://github.com/jsdom/jsdom/issues/1590 (Always returns 0 in RTL because RTL is retarded) 
+			const clientX = 688.40 //left + width / 2
+			const clientY = 264 //top + height / 2
+			const screenX = 688.40 // clientX + window.scrollX
+			const screenY = 264 // clientY + window.scrollY
+
+			// Step 2: Select the squareMask using the CSS class name (or data-test-id if possible)
+			const squareMaskElement = document.querySelector('.MuiClock-squareMask')
+			if (!squareMaskElement) { return 'squareMask element not found' }
+
+			// Step 3: Use custom code to replicate the event with the x, y coordinates and dispatch it
+			const mouseDownEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window, clientX, clientY, screenX, screenY, button: 0, buttons: 0, relatedTarget: squareMaskElement })
+			//squareMaskElement.dispatchEvent(mouseDownEvent)
+			fireEvent(squareMaskElement, mouseDownEvent)
+		}
+		// --- Set-up
+		afterEach(() => {
+			cleanup()
+		})
+		test.skip('Should allow for selecting a time and display it properly', async () => {
+			// --- Arrange
+			renderComponent()
+			const user = userEvent.setup()
+
+			const hour = /^1 hours$/i
+			const minute = /^5 minutes$/i
+
+			// --- Act and Assert
+
+			// 0. Dropdown should not be visible initially
+			expect(screen.getByTestId(`Dropdown for ${TASK_CONTROL_TITLES.startButton}`)).not.toBeVisible() // https://github.com/styled-components/styled-components/issues/4081 (Solves the styled component not rendering properly issue in Jest)
+
+			// 1. Get start button
+			const timeButtons = screen.getAllByRole('button', { name: /Toggle clock/i })
+			const startTimeButton = timeButtons.find(button => within(button).queryByTitle(TASK_CONTROL_TITLES.startButton) !== null)
+
+			// 2. Click that start button
+			fireEvent.mouseDown(startTimeButton)
+
+			// 3. Expect the dropdown to be visible
+			const dropDown = screen.getByTestId(`Dropdown for ${TASK_CONTROL_TITLES.startButton}`)
+			await waitFor(() => expect(dropDown).toBeVisible())//.toHaveStyle('visibility: visible')
+
+			// 4. Select the hour option and click it
+			const hourOption = within(dropDown).getByRole('option', { name: hour })
+			mouseDownClockHack(hourOption) // Used because the standard mouseDown doesn't work on hourOption, I had to find a hack to work around MUI's limitations
+			screen.debug(hourOption)
+
+			// 5. Expect the dropDown to still be visible
+			expect(dropDown).toBeVisible()
+
+			// 6. Wait for the dropdown to update and minute options to appear
+			const newDropDown = screen.getByTestId(`Dropdown for ${TASK_CONTROL_TITLES.startButton}`)
+			screen.debug(newDropDown)
+			await waitFor(() => {
+				const minuteOption = within(newDropDown).getByRole('option', { name: minute })
+				expect(minuteOption).toBeInTheDocument()
+			})
+
+			// 7. Select the minute option and click it
+			const minuteOption = within(dropDown).getByRole('option', { name: minute })
+			user.click(minuteOption)
+
+			// 8. Expect the dropDown to Not be visible
+			expect(dropDown).not.toBeVisible()
+
+			// 9. Select the time display for the start button
+			const timeDisplay = screen.getByLabelText(/time display: start time/i)
+			screen.debug(timeDisplay)
+		})
+	})
+
+	// NOTE: Impossible to Test in RTL, must use Cypress
+	describe.skip('End Time feature', () => {
+		// Too hard to simulate mouse movements perfectly, skipped
+	})
+
+	describe.skip('Drag and Drop feature', () => {
 
 	})
 

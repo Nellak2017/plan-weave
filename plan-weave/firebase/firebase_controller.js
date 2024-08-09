@@ -2,6 +2,7 @@ import { getFirestore, collection, setDoc, query, doc, getDocs, deleteDoc } from
 import { fillDefaults } from '../src/components/schemas/taskSchema/taskSchema.js'
 import app from '../firebase/config.js'
 import { toast } from 'react-toastify'
+import { DEV } from '../src/components/utils/constants.js'
 
 const db = getFirestore(app)
 
@@ -28,10 +29,12 @@ export async function fetchTasksFromFirebase(userId, serialize = x => x) {
 
 export async function addTask(task, userId) {
 	// TODO: Add Task schema verification here too
-	if (!task || !userId) {
-		console.error('Invalid task or userId when trying to add tasks. Failed to add tasks')
-		toast.error('Failed to add tasks')
-		throw new Error('Invalid task or userId when trying to add tasks. Failed to add tasks')
+	if ((!task || !userId)) {
+		if (DEV) {
+			console.error('Invalid task or userId when trying to add tasks. Failed to add tasks to Firebase.')
+			toast.error('Failed to add tasks to database, your tasks will not persist after refresh')
+		}
+		return
 	}
 	try {
 		const TaskCollection = getTaskCollection(userId)
@@ -70,7 +73,7 @@ export async function deleteTasks(taskIds, userId) {
 	try {
 		const TaskCollection = getTaskCollection(userId)
 		const taskIdsArray = Array.isArray(taskIds) ? taskIds : [taskIds]
-		
+
 		// Use Promise.all to delete multiple tasks concurrently
 		await Promise.all(
 			taskIdsArray.map(async (taskId) => {
