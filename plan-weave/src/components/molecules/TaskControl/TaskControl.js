@@ -17,7 +17,7 @@ import { format, parseISO } from 'date-fns'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { formatTimeLeft } from '../../utils/helpers.js'
-import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS, SORTING_METHODS, OPTION_NOTIFICATIONS, VARIANTS } from '../../utils/constants.js'
+import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS, SORTING_METHODS, OPTION_NOTIFICATIONS, VARIANTS, TASK_CONTROL_TITLES } from '../../utils/constants.js'
 import Button from '../../atoms/Button/Button.js'
 import {
 	shiftEndTime,
@@ -100,7 +100,7 @@ function TaskControl({
 				<TimePickerContainer onBlur={checkTimeRange}>
 					<TimePickerWrapper
 						tabIndex={0}
-						title={'Enter Start Time'}
+						title={TASK_CONTROL_TITLES.startButton}
 						variant={processedVariant}
 						defaultTime={handleFormat(startTime)}
 						displayText={clock1Text}
@@ -113,7 +113,7 @@ function TaskControl({
 					/>
 					<TimePickerWrapper
 						tabIndex={0}
-						title={'Enter End Time'}
+						title={TASK_CONTROL_TITLES.endButton}
 						variant={processedVariant}
 						defaultTime={format(endTime, 'HH:mm')}
 						displayText={clock2Text}

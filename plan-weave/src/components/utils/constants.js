@@ -83,4 +83,9 @@ export const TASK_ROW_TOOLTIPS = {
 	thread: 'Task Thread/Group',
 	dependencies: 'Task Predecessors. What needs to be done Before this?'
 }
+export const TASK_CONTROL_TITLES = {
+	startButton: 'Enter Start Time',
+	endButton: 'Enter End Time',
+}
+export const TASKEDITOR_SEARCH_PLACEHOLDER = 'Search for a Task'
 export const DEV = false // is it development or production?

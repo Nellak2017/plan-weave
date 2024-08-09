@@ -43,6 +43,7 @@ export const TimeClockWrapper = styled.div`
 		}
 	}
 `
+TimeClockWrapper.displayName = 'TimeClockWrapper' // https://javascript.plainenglish.io/test-styled-components-in-react-efficiently-using-displayname-53281a0c1f2d
 
 export const ClockIconWrapper = styled.div`
 	display: flex;

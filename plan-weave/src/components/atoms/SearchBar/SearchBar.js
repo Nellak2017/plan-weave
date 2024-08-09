@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { SearchBarStyled } from './SearchBar.elements'
 import { MdSearch } from 'react-icons/md'
-import { THEMES, VARIANTS } from '../../utils/constants'
+import { THEMES, VARIANTS, TASKEDITOR_SEARCH_PLACEHOLDER } from '../../utils/constants'
 import PropTypes from 'prop-types'
 
 // Icon is placed AFTER input but displayed before 
@@ -10,7 +10,7 @@ import PropTypes from 'prop-types'
 function SearchBar({
 	services,
 	variant = VARIANTS[0],
-	placeholder = "Search for a Task",
+	placeholder = TASKEDITOR_SEARCH_PLACEHOLDER,
 	maxwidth = 240,
 	tabIndex,
 	onChange,

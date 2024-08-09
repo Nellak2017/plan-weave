@@ -64,18 +64,27 @@ function TimePickerWrapper({
   // --- Memo for time display
   const timeDisplayMemo = useMemo(() => ampm ? format(currentTime, 'hh:mm a') : format(currentTime, 'HH:mm'), [currentTime, ampm])
 
+
+  useEffect(() => {
+    console.log(`showClock: ${showClock}`)
+  },[showClock])
+  useEffect(() => {
+    console.log(`time: ${time}`)
+  }, [time])
   // BEFORE Controlled code, time was used to be displayed, not currentTime
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <TimePickerWrapperStyled variant={processedVariant} >
         <Display><p>{displayText}</p><p aria-label={`Time display: ${timeDisplayMemo}`}>{timeDisplayMemo}</p></Display>
-        <ClockIconWrapper role="button" onMouseDown={toggleClock} onKeyDown={(e) => { if (e.key === 'Enter') { toggleClock() } }}>
+        <ClockIconWrapper role="button" aria-label="Toggle clock" onMouseDown={toggleClock} onKeyDown={(e) => { if (e.key === 'Enter') { toggleClock() } }}>
           <AiOutlineClockCircle tabIndex={tabIndex} size={32} title={title} />
         </ClockIconWrapper>
         <TimeClockWrapper
           $showclock={showClock}
           $verticalOffset={verticalOffset}
-          $horizontalOffset={horizontalOffset}>
+          $horizontalOffset={horizontalOffset}
+          data-testid={`Dropdown for ${title}`}
+        >
           <TimeClock
             value={currentTime}
             onChange={handleTimeChange}
