@@ -35,7 +35,7 @@ const mockTasks = [
 	{ status: TASK_STATUSES.COMPLETED, task: 'Driving Practice', ttc: 1.5, id: 5, timestamp: timestamp - 4, dueDate: due },
 	{ status: 'incomplete', task: 'Plan Weave', ttc: 2, id: 6, timestamp: timestamp - 5, dueDate: due },
 	{ status: 'incomplete', task: 'Walk', ttc: 1, id: 7, timestamp: timestamp - 6, dueDate: due },
-	{ status: 'incomplete', task: 'Clojure / Backend study', ttc: 1.5, id: 9, timestamp: timestamp - 9, dueDate: due },
+	{ status: 'incomplete', task: 'Clojure / Backend study', ttc: 1.5, id: 8, timestamp: timestamp - 7, dueDate: due },
 ]
 const initialState = {
 	globalTasks: {
@@ -186,7 +186,8 @@ describe('TaskEditor Component, Order Problem', () => {
 
 		// 1. Adding a task will result in a table that is bigger IF the table is less than tasks per page length
 		describe('Adding a task will result in a table that is bigger IF the table is less than tasks per page length', () => {
-			// NOTE: To generalize this with example or property tests, you need to parameterize the input tasks
+			// TODO: To generalize this with example or property tests, you need to parameterize the input tasks
+			// NOTE: This test does not check the max per page
 			test('Adding a task will result in a table that is bigger if the table is 8 long and the max per page is 10', async () => {
 				// --- Arrange
 				const configuredStore = configureStore({ reducer: rootReducer, preloadedState: initialState })
@@ -219,6 +220,71 @@ describe('TaskEditor Component, Order Problem', () => {
 			})
 		})
 		// 2. Adding a task will result in a table that is the same size on the first page, but bigger on the last page if the tasks exceed maximum
+		describe("Adding a task if tasks > max means first page tasks len = same, last page tasks len++", () => {
+
+			test('Adding a task if 10 tasks > 10 per page, means 1st = 10, last = last + 1', async () => {
+				// --- Arrange
+				const newTwoTasks = [
+					{ status: 'incomplete', task: 'Take a Break', ttc: .75, id: 9, timestamp: timestamp - 8, dueDate: due },
+					{ status: 'incomplete', task: 'Enjoy nature', ttc: 1.5, id: 10, timestamp: timestamp - 9, dueDate: due },
+				]
+				const newMockTasks = [
+					...mockTasks,
+					...newTwoTasks
+				]
+				const configuredStore = configureStore({
+					reducer: rootReducer,
+					preloadedState: {
+						...initialState,
+						globalTasks: {
+							...initialState.globalTasks,
+							tasks: newMockTasks,
+						},
+						taskEditor: {
+							...initialState.taskEditor,
+							tasks: newMockTasks,
+						}
+					}
+				}) // This is assuming the initial tasks is inititally size 8. 
+				// NOTE: if you change the original initial tasks to be less than 8, this test will fail. Consider hard coding it if you need to.
+				const { container } = renderComponent(configuredStore)
+				const user = userEvent.setup()
+
+				// --- Act and Assert
+				// 1. Select Add and tr from tbody (tasks from first page only)
+				const addButton = screen.getByTestId('add-button')
+				const taskTableBody = container.querySelector('tbody')
+				const taskRows = within(taskTableBody).getAllByRole('row')
+
+				// 2. Expect the initial visible tasks from the redux store to have the same length as the taskRows selected
+				//const initialVisibleTasks = mockTasks // Should be everything since we didn't call search action
+				expect(10).toBe(taskRows.length) // TODO: Change hardcoded 10 to be the Tasks per page number selected instead of default
+
+				// 3. Click Add button
+				await user.click(addButton)
+				//fireEvent.click(addButton)
+
+				/* 
+				TODO: 
+
+				Next steps include:
+
+				1. click the next page button
+				2. expect there to be exactly 1 task row visible (the default task added)
+				3. ...other expectations
+				*/
+
+				// // 4. Reselect visible tasks and the tr elements list (We may have to wait for it to happen)
+				// const newVisibleTasks = configuredStore.getState().taskEditor.tasks
+				// const newTaskRows = within(container.querySelector('tbody')).getAllByRole('row')
+
+				// // 5. Expect the new taskRows to have length that is 1 more than what it was before
+				// expect(newTaskRows.length).toBe(taskRows.length + 1)
+
+				// // 6. Expect the new taskRows to be exactly equal in length to the newVisible tasks (which is everything since it is on same page)
+				// expect(newVisibleTasks.length).toBe(newTaskRows.length)
+			})
+		})
 		// 3. Adding a task will result in the task being added to the end of the table not the beginning
 		// 4. Repeated adding a task will result in the first three properties being respected
 
