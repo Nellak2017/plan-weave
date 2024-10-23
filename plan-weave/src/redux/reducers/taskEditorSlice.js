@@ -2,8 +2,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { parse, parseISO } from 'date-fns'
 import { SORTING_METHODS } from '../../components/utils/constants.js'
-import { relativeSortIndex, rearrangeDnD, hoursToMillis } from '../../components/utils/helpers.js'
-import { dateToToday } from '../../components/utils/helpers.res.js'
+import { relativeSortIndex, rearrangeDnD, hoursToMillis, dateToToday } from '../../components/utils/helpers.js'
 
 const initialState = {
 	search: '',

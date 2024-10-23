@@ -12,7 +12,14 @@ import { coerceToSchema } from './schema-helpers.js'
 // --- Private Functions
 
 // validate function private helpers
-const validateTransformation = (task, schema, customErrorMessage) => { if (!schema.isValidSync(task, { strict: true })) throw new Error(customErrorMessage + ` task : ${JSON.stringify(task)}`) }
+export const validateTransformation = (task, schema, customErrorMessage) => {
+	// Rescript port
+	const customErrorProcessed = customErrorMessage !== undefined ? customErrorMessage : ""
+	const str = JSON.stringify(task)
+	const errorMessage = str !== undefined ? customErrorProcessed + " task : " + str : "Failed to stringify task for error message"
+	return (schema.isValidSync(task, { strict: true })) ? { TAG: "Ok", _0: undefined } : { TAG: "Error", _0: errorMessage }
+	//if (!schema.isValidSync(task, { strict: true })) throw new Error(customErrorMessage + ` task : ${JSON.stringify(task)}`) 
+}
 
 const isRequired = (field, schema) => schema.describe().fields[field] ? !schema?.describe()?.fields[field]?.optional : false
 const requiredFields = (schema) => Object.keys(schema.describe().fields)
@@ -20,6 +27,7 @@ const requiredFields = (schema) => Object.keys(schema.describe().fields)
 	.filter(field => field !== null)
 
 // calculate waste helpers
+const step = (x, thresholdOpt) => (x > (thresholdOpt !== undefined ? thresholdOpt : 0)) ? 1 : 0
 export const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
 export const add = (start, hours) => new Date(clamp(start.getTime() + hoursToMillis(hours), 0, MAX_SAFE_DATE)) // (Date: start, hours: hours) -> Date(start + hours)
 export const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
@@ -497,6 +505,15 @@ export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
  * }
  */
 export const dateToToday = (start) => {
+	// ReScript port
+	const now = new Date(Date.now())
+	if (!(start instanceof Date) || isNaN(start.getTime())) {
+		return { TAG: "Error", _0: "Invalid input. Expected a Date for dateToToday function."}
+	}
+	const initOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).valueOf()
+	const initOfStart = new Date(start.getFullYear(), start.getMonth(), start.getDate()).valueOf()
+	return { TAG: "Ok", _0: new Date(initOfToday + (start.valueOf() - initOfStart))}
+	/*
 	if (!(start instanceof Date) || isNaN(start.getTime())) {
 		throw new TypeError(`Invalid input. Expected a Date for dateToToday function.\n${start}`)
 	}
@@ -504,7 +521,11 @@ export const dateToToday = (start) => {
 	const initOfStart = new Date(start).setHours(0, 0, 0, 0)
 	const timeSinceStart = start.getTime() - initOfStart // millis since start's start of day
 	return new Date(initOfToday + timeSinceStart) // start but with today's date
+	*/
 }
+
+// ReScript port
+const floatToStringNullable = (num, fallbackOpt) => (num === null || num === undefined) ? fallbackOpt !== undefined ? fallbackOpt : "undefined or null" : num.toString()
 
 /**
  * Calculate efficiency based on start time, end time, and estimated time of arrival (ETA).
@@ -516,7 +537,43 @@ export const dateToToday = (start) => {
  * @throws {TypeError} If any of the input parameters is not a number.
  * @throws {RangeError} If any of the input is a number, but not in the range [0, 86400]
  */
+// eslint-disable-next-line complexity
 export const calculateEfficiency = (startTime, endTime, ttcHours) => {
+	// Rescript Port
+	const timeDiff = endTime - startTime
+	const efficiencyFormula = hoursToSeconds(ttcHours) / (timeDiff * step(timeDiff, undefined))
+	const parametersString = "\nstartTime = " + floatToStringNullable(startTime, undefined) + "}\nendTime = " + floatToStringNullable(endTime, undefined) + "}\nttcHours = " + floatToStringNullable(ttcHours, undefined) + "}"
+	const undefinedString = "Type Error. Expected (startTime, endTime, ttcHours := Not undefined)." + parametersString
+	const invalidTypeString = "Type Error. Expected (startTime, endTime, ttcHours := Float)." + parametersString
+	const parameterRangeString = "Invalid input parameter Range."
+	const beyondMaxDateString = parameterRangeString + " Expected (startTime, endTime := [0,max safe date (8.64e15)))." + parametersString
+	const belowZeroErrorString = parameterRangeString + " Expected (startTime, endTime := [0,max safe date (8.64e15)]), (ttcHours := (0,24])." + parametersString
+	const moreThanDayString = parameterRangeString + " Expected (endTime - startTime <= 86400), (ttcHours <= 24)." + parametersString
+	const startEqualsEndString = parameterRangeString + " Expected (startTime === endTime)." + parametersString
+	const startGreaterEndString = parameterRangeString + " Expected (startTime < endTime).No longer supporting domain extension." + parametersString
+	const unknownErrorString = "Unknown Error has occurred in calculateEfficiency function." + parametersString
+	const undefinedError = startTime === undefined || endTime === undefined || ttcHours === undefined
+	const invalidInputTypeError = !Number.isFinite(startTime) || !Number.isFinite(endTime) || !Number.isFinite(ttcHours)
+	if (undefinedError) {
+		return { TAG: "Error", _0: undefinedString }
+	} else if (invalidInputTypeError) {
+		return { TAG: "Error", _0: invalidTypeString }
+	} else if (startTime < 0.0 || endTime < 0.0 || ttcHours <= 0.0) {
+		return { TAG: "Error", _0: belowZeroErrorString }
+	} else if (startTime > 8.64e15 || endTime > 8.64e15) {
+		return { TAG: "Error", _0: beyondMaxDateString }
+	} else if (endTime - startTime > 86400.0 || ttcHours > 24.0) {
+		return { TAG: "Error", _0: moreThanDayString }
+	} else if (startTime === endTime) {
+		return { TAG: "Error", _0: startEqualsEndString }
+	} else if (startTime > endTime || !Number.isFinite(efficiencyFormula)) {
+		return { TAG: "Error", _0: startGreaterEndString }
+	} else if (startTime < endTime) {
+		return { TAG: "Ok", _0: efficiencyFormula }
+	} else {
+		return { TAG: "Error", _0: unknownErrorString }
+	}
+	/*
 	if (typeof startTime !== 'number' || typeof endTime !== 'number' || typeof ttcHours !== 'number') {
 		throw new TypeError(`All input parameters must be numbers.\nstartTime = ${startTime}, type => ${typeof startTime}\nendTime = ${endTime}, type => ${typeof endTime}\nttcHours = ${ttcHours}, type => ${typeof ttcHours}`)
 	}
@@ -527,6 +584,7 @@ export const calculateEfficiency = (startTime, endTime, ttcHours) => {
 	return startTime > endTime
 		? -1 / normalFormula // Domain Extension
 		: normalFormula // efficiency = (ttc) seconds / (end - start) seconds
+	*/
 }
 
 export const isValidDate = date => (new Date(date) != "Invalid Date") && !isNaN(new Date(date))

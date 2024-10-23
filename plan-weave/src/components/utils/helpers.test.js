@@ -30,13 +30,10 @@ import {
 	relativeSortIndex,
 	highlightTaskRow,
 	diagonalize,
-
-} from './helpers'
-import {
 	dateToToday,
 	calculateEfficiency,
 	validateTransformation,
-} from './helpers.res.js'
+} from './helpers'
 import { TASK_STATUSES, MAX_SAFE_DATE, MAX_SAFE_DATE_SMALL } from './constants'
 import { format } from 'date-fns-tz'
 import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
