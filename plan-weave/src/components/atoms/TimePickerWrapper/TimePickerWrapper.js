@@ -9,12 +9,10 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { format, parse } from 'date-fns'
 import { AiOutlineClockCircle } from 'react-icons/ai'
-import { THEMES, CLOCK_DEBOUNCE } from '../../utils/constants'
+import { THEMES, CLOCK_DEBOUNCE, VARIANTS } from '../../utils/constants'
 import { debounce } from 'lodash'
 import PropTypes from 'prop-types'
-
 import { TimeClock } from '@mui/x-date-pickers'
-import { VARIANTS } from '../../utils/constants'
 
 function TimePickerWrapper({
   variant = VARIANTS[0],

@@ -1,17 +1,17 @@
-import styled from 'styled-components'
-import { space, layout, typography } from 'styled-system'
-import { getPresetCSS, taskEditorPresets } from '../../../styles/theme'
+import styled, { css } from 'styled-components'
+import { getPresetCSS } from '../../../styles/theme'
+
+const taskEditorPresets = {
+	variant: {
+		light: css` h1 { color: ${props => props.theme.colors.lightNeutral};} `,
+		dark: css` h1 { color: ${props => props.theme.colors.lightNeutralLight};}`
+	},
+}
 
 // TODO: Finish Styling this
 export const StyledTaskEditor = styled.div`
- 	${space};
-	${layout};
-	${typography};
   	${getPresetCSS(taskEditorPresets, 'variant')};
-	${getPresetCSS(taskEditorPresets, 'color')};
-
 	background-color: black; // Stand-in color
-	//height: 1000px;
 	width: 100%;
 	max-width: ${props => props.maxwidth}px;
 	border-radius: 36px;
@@ -22,15 +22,9 @@ export const TaskEditorContainer = styled.section`
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-
 	h1 {
 		font-size: ${props => props.theme.fontSizes.larger};
 		font-weight: 300;
 	}
-
-	${space};
-	${layout};
-	${typography};
   	${getPresetCSS(taskEditorPresets, 'variant')};
-	${getPresetCSS(taskEditorPresets, 'color')};
 `

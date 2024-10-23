@@ -1,6 +1,21 @@
-import styled from 'styled-components'
-import { space, layout, typography } from 'styled-system'
-import { getPresetCSS, infoSectionPresets } from '../../../styles/theme'
+import styled, { css } from 'styled-components'
+import { getPresetCSS } from '../../../styles/theme'
+
+const infoSectionPresets = {
+	variant: {
+		light: css`
+			background-color: #fff; // To pass contrast WGAG requirement. See also: https://accessibleweb.com/color-contrast-checker/
+			.reverse { flex-direction: row-reverse;}
+			h2 { color: ${props => props.theme.colors.primary};}
+			h1 { color: ${props => props.theme.colors.darkNeutralDark};}
+			p { color: ${props => props.theme.colors.darkNeutral};}
+		`,
+		dark: css`
+			background-color: ${props => props.theme.colors.darkNeutralDark};
+			h2, p { color: ${props => props.theme.colors.backgroundTextColor};}
+		`
+	},
+}
 
 // Top level container for Info Section
 export const StyledInfoContainer = styled.section`
@@ -12,10 +27,6 @@ export const StyledInfoContainer = styled.section`
 	width: 100vw;
 	margin: 0;
 	padding: 0;
-
-	${space};
-	${layout};
-	${typography};
   	${getPresetCSS(infoSectionPresets, 'variant')};
 `
 
@@ -44,7 +55,6 @@ export const TextContainer = styled.div`
 	flex-direction: column;
 	max-width: 540px;
 	width: 100%;
-	
 	h2 {
 		font-size: ${props => props.theme.fontSizes.medium};
 		line-height: ${props => props.theme.fontSizes.medium};

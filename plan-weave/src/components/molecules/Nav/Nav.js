@@ -87,9 +87,7 @@ function Nav({
 				<Logo className='logo' tabIndex={0} onClick={handleLogo}>
 					<NavLogo />
 				</Logo>
-
 				<MiddleComponent handler={handleApp} />
-
 				<LoginContainer>
 					<AppComponent handler={handleApp} />
 					<LoginComponent style={{ width: '62px' }} handler={handleLogIn} />

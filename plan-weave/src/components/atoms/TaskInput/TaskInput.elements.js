@@ -1,7 +1,5 @@
 import styled from 'styled-components'
-import { space, layout, typography } from 'styled-system'
 import { getPresetCSS, taskInputPreSets } from '../../../styles/theme.js'
-
 
 export const TaskInputStyled = styled.input`
 	outline: 1px solid ${props => props.theme.colors.lightNeutralLight};
@@ -16,10 +14,5 @@ export const TaskInputStyled = styled.input`
 		outline-color: ${props => props.theme.colors.primary};
 		background: none;
 	}
-
-  	${space} 
-	${layout}
-	${typography}
-	${getPresetCSS(taskInputPreSets, 'color')} 
 	${getPresetCSS(taskInputPreSets, 'variant')} 
 `;

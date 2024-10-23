@@ -1,23 +1,13 @@
-import styled from 'styled-components'
-import { space, layout, typography } from 'styled-system'
-import { getPresetCSS, nextButtonPreSets } from '../../../styles/theme'
+import styled, { css } from 'styled-components'
+import { getPresetCSS, colorPreset } from '../../../styles/theme'
 
+const nextButtonPreSets = { variant: { left: css``, right: css`` }, size: {}, color: colorPreset }
 export const NextButtonStyled = styled.button`
-	// --- Common Styles of most button variants ---
 	border-radius: 50%; // This makes it a circle shape
 	display: flex;
 	padding: 0;
-
-	&:hover {
-        box-shadow: ${props => props.theme.elevations.small};
-      }
-	&:active {
-        box-shadow: ${props => props.theme.insets.normal};
-    }
-	// ---
-	${space} // lowest precedence
-    ${layout}
-    ${typography}
+	&:hover { box-shadow: ${props => props.theme.elevations.small};}
+	&:active { box-shadow: ${props => props.theme.insets.normal};}
     ${getPresetCSS(nextButtonPreSets, 'variant')}
     ${getPresetCSS(nextButtonPreSets, 'size')}
     ${getPresetCSS(nextButtonPreSets, 'color')} // highest precedence

@@ -1,33 +1,62 @@
-import styled from "styled-components"
-import {
-	MdDragIndicator,
-} from 'react-icons/md'
-import { space, layout, typography } from 'styled-system'
-import { getPresetCSS, taskRowPresets } from '../../../styles/theme.js'
+import styled, { css } from "styled-components"
+import { MdDragIndicator } from 'react-icons/md'
+import { getPresetCSS } from '../../../styles/theme.js'
 
-// TODO: Clean up uneeded styled components when you know you won't need it anymore
+const commonOverlayStyles = css`
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+	pointer-events: none; /* Make the overlay non-interactive */
+`
+const tdStyle = color => css`
+  td {
+    position: relative;
+    &::before {
+      ${commonOverlayStyles}
+      background-color: ${color}70;
+    }
+  }
+`
+const variantStyle = ({ bg, color }) => css`
+	background-color: ${bg};
+	color: ${color};
+	p, svg { color: ${color};}
+`
+const taskRowPresets = {
+	variant: {
+		light: variantStyle({ bg: props => props.theme.colors.lightNeutralLight, color: props => props.theme.colors.darkNeutralDark }),
+		dark: variantStyle({ bg: props => props.theme.colors.lightNeutral, color: props => props.theme.colors.lightNeutralLight }),
+	},
+	status: {
+		completed: tdStyle(props => props.theme.colors.success),
+		incomplete: tdStyle(),
+		waiting: tdStyle(props => props.theme.colors.warning),
+		inconsistent: tdStyle(props => props.theme.colors.danger),
+	},
+	highlight: {
+		old: tdStyle(props => props.theme.colors.lightNeutral),
+		selected: css`outline: 1px solid ${props => props.theme.colors.lightNeutralLight};`
+	},
+}
 
 // Style the td's from here unless specifics are needed
 export const TaskRowStyled = styled.tr`
-	${space};
-	${layout};
-	${typography};
   	${getPresetCSS(taskRowPresets, 'variant')};
 	${getPresetCSS(taskRowPresets, 'status')};
-	${getPresetCSS(taskRowPresets, 'color')};
 	${getPresetCSS(taskRowPresets, 'highlight')}; // intended to gray out old tasks if old prop ='old'
 
 	* > svg:hover {
 		cursor: pointer;
 		color: ${props => props.theme.colors.primary};
 	}
-
 	td {
 		display: table-cell;
 		vertical-align: middle;
-		svg {
-			vertical-align: middle;
-		}
+		svg { vertical-align: middle;}
 	}
 `
 
@@ -38,13 +67,10 @@ export const DragIndicator = styled(MdDragIndicator)`
 	}
 `
 // Containers
-
 export const TaskContainer = styled.td`
 	width: 375px;
 	padding: ${props => props.theme.spaces.small};
-	p, pre {
-		font-size: ${props => props.theme.fontSizes.medium};
-	}
+	p, pre { font-size: ${props => props.theme.fontSizes.medium};}
 	input {
 		vertical-align: middle;
 		min-width: 200px;
@@ -58,14 +84,9 @@ export const WasteContainer = styled.td`
 	max-width: 170px;
 	min-width: 100px;
 	text-align: left;
-	input {
-		min-width: 40px;
-	}
-	p, pre {
-		font-size: ${props => props.theme.fontSizes.medium};
-	}
+	input { min-width: 40px;}
+	p, pre { font-size: ${props => props.theme.fontSizes.medium};}
 `
-
 
 export const TimeContainer = styled.td`
 	padding: ${props => props.theme.spaces.small};
@@ -82,19 +103,13 @@ export const TimeContainer = styled.td`
 		font-family: var(--font-poppins);
 	}
 `
-export const IconContainer = styled.td`
-	
-`
-export const TrashContainer = styled.td`
-	padding-right: 5px;
-`
+export const IconContainer = styled.td``
+export const TrashContainer = styled.td`padding-right: 5px;`
 export const DragContainer = styled.td`
 	padding-left: 0px;
 	max-width: 32px;
 `
-
 // Full Task Exclusives
-
 export const EfficiencyContainer = styled.td`
 	width: 50px;
 	font-size: ${props => props.theme.fontSizes.medium};
@@ -105,12 +120,9 @@ export const EfficiencyContainer = styled.td`
 		justify-content: center;
 	}
 `
-
 export const DueContainer = styled.td`
 	min-width: 160px;
-	input {
-		width: 160px;
-	}
+	input { width: 160px;}
 	padding: ${props => props.theme.spaces.small};
 `
 
@@ -124,29 +136,20 @@ export const WeightContainer = styled.td`
 	}
 `
 
-export const ThreadContainer = styled.td`
-	padding: ${props => props.theme.spaces.small};
-`
+export const ThreadContainer = styled.td`padding: ${props => props.theme.spaces.small};`
 
 export const DependencyContainer = styled.td`
 	padding: ${props => props.theme.spaces.small};
-
-	& > div {
-		width: 100%;
-	}
+	& > div { width: 100%;}
 	.css-3w2yfm-ValueContainer {
 		-webkit-flex-wrap: nowrap;
 		flex-wrap: nowrap;
 		column-gap: 5px;
-
 		padding-right: 45px;
 		max-width: 370px;
 		width: 100%;
 		overflow-x: auto;
 		overflow-y: hidden;
-
-		div {
-			flex: none;	
-		}
+		div { flex: none;}
 	}
 `

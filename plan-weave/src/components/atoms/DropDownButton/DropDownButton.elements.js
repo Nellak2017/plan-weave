@@ -1,6 +1,32 @@
-import styled from 'styled-components'
-import { space, layout, typography } from 'styled-system'
-import { getPresetCSS, dropDownButtonPreSets } from '../../../styles/theme.js'
+import styled, { css } from 'styled-components'
+import { getPresetCSS, colorPreset } from '../../../styles/theme.js'
+
+const dropDownButtonPreSets = { // normal medium, but small default
+  size: {
+    xs: css`
+      padding: ${props => props.theme.spaces.smaller} ${props => props.theme.spaces.smaller};
+      border-radius: ${props => props.theme.spaces.small};
+      font-size: ${props => props.theme.fontSizes.extraSmall};
+    `,
+    s: css`
+      padding: ${props => props.theme.spaces.small} ${props => props.theme.spaces.small};
+      font-size: ${props => props.theme.fontSizes.smaller};
+    `,
+    m: css`
+      padding: ${props => props.theme.spaces.medium} ${props => props.theme.spaces.medium};
+      font-size: ${props => props.theme.fontSizes.medium};
+    `,
+    l: css`
+      padding: ${props => props.theme.spaces.large} ${props => props.theme.spaces.large};
+      font-size: ${props => props.theme.fontSizes.large};
+    `,
+    xl: css`
+      padding: ${props => props.theme.spaces.larger} ${props => props.theme.spaces.larger};
+      font-size: ${props => props.theme.fontSizes.larger};
+    `
+  },
+  color: colorPreset,
+}
 
 // Styled component for the dropdown button
 export const DropDownButtonStyled = styled.button`
@@ -17,16 +43,8 @@ export const DropDownButtonStyled = styled.button`
     overflow: hidden;
     text-overflow: ellipsis;
     padding: ${props => props.theme.spaces.small} ${props => props.theme.spaces.small};
-
-    &:hover {
-        box-shadow: ${props => props.theme.elevations.small};
-    }
-    &:active {
-        box-shadow: ${props => props.theme.insets.normal};
-    }
-    ${space} 
-    ${layout}
-    ${typography}
+    &:hover { box-shadow: ${props => props.theme.elevations.small};}
+    &:active { box-shadow: ${props => props.theme.insets.normal};}
     ${getPresetCSS(dropDownButtonPreSets, 'size')}
     ${getPresetCSS(dropDownButtonPreSets, 'color')} 
 `
@@ -56,10 +74,6 @@ export const DropdownMenuItem = styled.li`
   align-items: center;
   background-color: ${props => props.theme.colors.lightNeutralLight};
   color: ${props => props.theme.colors.lightNeutral};
-  &:hover {
-    background-color: ${props => props.theme.colors.lightNeutralLightHover};
-  }
-  &:active {
-    background-color: ${props => props.theme.colors.lightNeutralLightActive};
-  }
+  &:hover { background-color: ${props => props.theme.colors.lightNeutralLightHover};}
+  &:active { background-color: ${props => props.theme.colors.lightNeutralLightActive};}
 `;

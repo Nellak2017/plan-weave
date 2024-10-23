@@ -78,7 +78,7 @@ const TaskTable = ({
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
-			<TaskTableContainer maxwidth={maxwidth}>
+			<TaskTableContainer variant={processedVariant} maxwidth={maxwidth}>
 				<table>
 					<TableHeader variant={processedVariant} labels={headerLabels} />
 					<Droppable droppableId="taskTable" type="TASK">

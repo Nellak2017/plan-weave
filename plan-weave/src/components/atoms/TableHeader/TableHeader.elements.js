@@ -1,14 +1,19 @@
-import styled from 'styled-components'
-import { space, layout, typography } from 'styled-system'
-import { getPresetCSS, tableHeaderPresets } from '../../../styles/theme'
+import styled, { css } from 'styled-components'
+import { getPresetCSS } from '../../../styles/theme'
 
-// This is here in case we need custom styles for this
-export const TableHeaderContainer = styled.th`
- 	${space};
-	${layout};
-	${typography};
+const variantStyles = ({ bg, color }) => css`
+	background-color: ${bg};
+	color: ${color};
+`
+const tableHeaderPresets = {
+	variant: {
+		light: variantStyles({ bg: props => props.theme.colors.lightNeutralLight, color: props => props.theme.colors.darkNeutralDark }),
+		dark: variantStyles({ bg: props => props.theme.colors.lightNeutral, color: props => props.theme.colors.lightNeutralLight }),
+	},
+}
+
+export const TableHeaderContainer = styled.th` // This is here in case we need custom styles for this
   	${getPresetCSS(tableHeaderPresets, 'variant')};
-	${getPresetCSS(tableHeaderPresets, 'color')};
 `
 
 export const StyledRow = styled.tr`
@@ -17,5 +22,4 @@ export const StyledRow = styled.tr`
 		padding: ${props => props.theme.spaces.smaller};
   	}
 	${getPresetCSS(tableHeaderPresets, 'variant')};
-	${getPresetCSS(tableHeaderPresets, 'color')};
 `

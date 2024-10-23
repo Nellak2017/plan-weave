@@ -1,9 +1,25 @@
-import styled from 'styled-components'
-import { space, layout, typography } from 'styled-system'
-import { getPresetCSS, taskControlPresets } from '../../../styles/theme'
+import styled, { css } from 'styled-components'
+import { getPresetCSS, colorPreset } from '../../../styles/theme'
 
 // TODO: Fix sizing prop. It needs to switch based on xs,s,m, l,.. not custom px values
 // TODO: Add Size switch
+const variantStyle = ({ bg, color, italicBg }) => css`
+	background-color: ${bg};
+	color: ${color};
+	p { color: ${color};}
+	span > p, span > svg {
+		color: ${color};
+		font-size: ${props => props.theme.fontSizes.medium};
+	}
+	i { background-color: ${italicBg};}
+`
+const taskControlPresets = {
+	variant: {
+		light: variantStyle({ bg: props => props.theme.colors.lightNeutralLight, color: props => props.theme.colors.darkNeutral, italicBg: props => props.theme.colors.lightNeutralLightActive}),
+		dark: variantStyle({ bg: props => props.theme.colors.darkNeutralDark, color: props => props.theme.colors.lightNeutralLight, italicBg: props => props.theme.colors.darkNeutralLightActive}),
+	},
+	color: colorPreset
+}
 export const TaskControlContainer = styled.div`
 	display: flex;
 	align-items: center;
@@ -14,11 +30,7 @@ export const TaskControlContainer = styled.div`
 	max-width: ${props => props.maxwidth}px;
 	border-radius: 36px 36px 0 0;
 	padding-left: ${props => props.theme.spaces.smaller};
-	${space};
-	${layout};
-	${typography};
   	${getPresetCSS(taskControlPresets, 'variant')};
-	${getPresetCSS(taskControlPresets, 'color')};
 	svg {
 		cursor: pointer;
 		border-radius: 50%;
@@ -41,15 +53,7 @@ export const TopContainer = styled.div`
 	padding-top: ${props => props.theme.spaces.small};
 	padding-left: ${props => props.theme.spaces.medium};
 	padding-right: ${props => props.theme.spaces.medium};
-	${space};
-	${layout};
-	${typography};
-  	${getPresetCSS(taskControlPresets, 'variant')};
-	${getPresetCSS(taskControlPresets, 'color')};
-
-	& > p {
-		font-size: ${props => props.theme.fontSizes.large};
-	}
+	& > p { font-size: ${props => props.theme.fontSizes.large};}
 `
 
 export const BottomContainer = styled.div`
@@ -62,11 +66,6 @@ export const BottomContainer = styled.div`
 	border-radius: 36px 36px 0 0;
 	padding-left: ${props => props.theme.spaces.medium};
 	padding-right: ${props => props.theme.spaces.medium};
-	${space};
-	${layout};
-	${typography};
-  	${getPresetCSS(taskControlPresets, 'variant')};
-	${getPresetCSS(taskControlPresets, 'color')};
 `
 
 export const BottomContentContainer = styled.span`
@@ -82,9 +81,6 @@ export const Separator = styled.i`
 	width: 1px;
 	height: ${props => props.theme.fontSizes.large}; 
 	margin: 0 5px;
-	${space};
-	${layout};
-	${typography};
   	${getPresetCSS(taskControlPresets, 'variant')};
 	${getPresetCSS(taskControlPresets, 'color')}; 
 `;

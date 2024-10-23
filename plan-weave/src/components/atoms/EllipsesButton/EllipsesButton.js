@@ -1,4 +1,3 @@
-import React from 'react'
 import { EllipsesButtonStyled } from './EllipsesButton.elements'
 import { THEMES, VARIANTS } from '../../utils/constants'
 import PropTypes from 'prop-types'
