@@ -1,4 +1,4 @@
-import { taskEditorOptionsSchema, fillWithOptionDefaults } from "./TaskEditorOptionsSchema"
+import { taskEditorOptionsSchema, fillWithOptionDefaults } from "../../../Core/schemas/taskEditorOptionsSchema"
 
 describe('Task Editor Options Schema', () => {
 

@@ -13,7 +13,7 @@ import DateTimePickerWrapper from '../../atoms/DateTimePickerWrapper/DateTimePic
 import { TASK_ROW_TOOLTIPS } from '../../../Core/utils/constants.js'
 import Select from '../../atoms/Select/Select.js'
 import { validateTaskField } from '../../../Core/utils/helpers.js'
-import { taskSchema } from '../../../Core/schemas/taskSchema/taskSchema.js'
+import { taskSchema } from '../../../Core/schemas/taskSchema.js'
 import PropTypes from 'prop-types'
 import ReactSelectWrapper from '../../atoms/ReactSelectWrapper/ReactSelectWrapper.js'
 

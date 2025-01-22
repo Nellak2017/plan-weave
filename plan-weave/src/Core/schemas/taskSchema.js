@@ -1,6 +1,6 @@
 import * as Yup from 'yup'
-import { TASK_STATUSES } from '../../utils/constants.js'
-import { simpleTaskSchema } from '../simpleTaskSchema/simpleTaskSchema.js'
+import { TASK_STATUSES } from '../utils/constants.js'
+import { simpleTaskSchema } from './simpleTaskSchema.js'
 
 const timestamp = Math.floor((new Date()).getTime() / 1000)
 const isoStringRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|[+-]\d{2}:\d{2})$/

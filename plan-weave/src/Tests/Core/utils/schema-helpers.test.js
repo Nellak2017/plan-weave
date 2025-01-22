@@ -10,10 +10,10 @@ import {
 	dfsFns, // (5 sub-functions out of 5 tested with example based tests and property based tests)
 	coerceToSchema, // example based only since dfs is property tested deeply
 	// enhancedCastPrimitive, // property tested and example based too
-} from './schema-helpers.js'
-import { TASK_STATUSES } from './constants.js'
-import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
-import { taskSchema, fullTasksSchema } from '../schemas/taskSchema/taskSchema.js'
+} from '../../../Core/utils/schema-helpers.js'
+import { TASK_STATUSES } from '../../../Core/utils/constants.js'
+import { simpleTaskSchema } from '../../../Core/schemas/simpleTaskSchema.js'
+import { taskSchema, fullTasksSchema } from '.../../../Core/schemas/taskSchema.js'
 import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
 

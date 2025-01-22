@@ -31,7 +31,7 @@ import {
 } from '../../../Infra/firebase/firebase_controller.js'
 
 import { logErrors } from '../../../Core/utils/helpers.js' 
-import { taskSchema } from '../../../Core/schemas/taskSchema/taskSchema.js'
+import { taskSchema } from '../../../Core/schemas/taskSchema.js'
 
 // --- Thunks for manipulating all the Threads
 export const updateGlobalThreadsThunk = (threads) => (dispatch) => {

@@ -1,5 +1,5 @@
 /* eslint-disable max-lines-per-function */
-import { sortFilterPipe } from './TaskTable.helpers'
+import { sortFilterPipe } from '../../../UI/molecules/TaskTable/TaskTable.helpers.js'
 import { TASK_STATUSES, SORTING_METHODS } from '../../../Core/utils/constants.js'
 import { fc } from '@fast-check/jest'
 

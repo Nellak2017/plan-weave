@@ -33,10 +33,10 @@ import {
 	dateToToday,
 	calculateEfficiency,
 	validateTransformation,
-} from './helpers'
-import { TASK_STATUSES, MAX_SAFE_DATE, MAX_SAFE_DATE_SMALL } from './constants'
+} from '../../../Core/utils/helpers.js'
+import { TASK_STATUSES, MAX_SAFE_DATE, MAX_SAFE_DATE_SMALL } from '../../../Core/utils/constants.js'
 import { format } from 'date-fns-tz'
-import { simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
+import { simpleTaskSchema } from '../../../Core/schemas/simpleTaskSchema.js'
 import { fc } from '@fast-check/jest'
 import * as Yup from 'yup'
 import { formatISO } from 'date-fns'

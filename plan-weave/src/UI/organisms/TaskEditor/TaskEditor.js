@@ -12,7 +12,7 @@ import store from '../../../Application/redux/store.js'
 import { createTaskEditorServices } from '../../../Application/services/pages/PlanWeavePage/TaskEditorServices.js'
 import { ThemeContext } from 'styled-components' // needed for theme object
 import { isInputValid, coerceToSchema } from '../../../Core/utils/schema-helpers.js'
-import { fullTasksSchema } from '../../../Core/schemas/taskSchema/taskSchema.js'
+import { fullTasksSchema } from '../../../Core/schemas/taskSchema.js'
 
 const TaskEditor = ({
 	services = createTaskEditorServices(store),

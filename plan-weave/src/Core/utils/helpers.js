@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
-import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema/simpleTaskSchema.js'
-import { taskSchema, fillDefaults } from '../schemas/taskSchema/taskSchema.js'
+import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema.js'
+import { taskSchema, fillDefaults } from '../schemas/taskSchema.js'
 import { getTime, formatISO, parseISO } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE } from './constants.js'
 import * as Yup from 'yup'

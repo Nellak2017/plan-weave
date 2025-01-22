@@ -9,14 +9,14 @@
 import React from 'react'
 import { fireEvent, screen, waitFor, act, cleanup, within } from '@testing-library/react' // render is used in 'renderWithProviders'
 import userEvent from '@testing-library/user-event'
-import { renderWithProviders } from '../../../Core/utils/test-utils.js'
+import { renderWithProviders } from '../../../test-utils.js'
 import '@testing-library/jest-dom'
 import { configureStore } from '@reduxjs/toolkit'
-import TaskEditor from './TaskEditor.js'
+import TaskEditor from '../../../../UI/organisms/TaskEditor/TaskEditor.js'
 import { parse } from 'date-fns'
-import { TASK_STATUSES, TASKEDITOR_SEARCH_PLACEHOLDER, TASK_CONTROL_TITLES } from '../../../Core/utils/constants.js'
-import rootReducer from '../../../Application/redux/reducers/index.js'
-import { createTaskEditorServices } from '../../../Application/services/pages/PlanWeavePage/TaskEditorServices.js'
+import { TASK_STATUSES, TASKEDITOR_SEARCH_PLACEHOLDER, TASK_CONTROL_TITLES } from '../../../../Core/utils/constants.js'
+import rootReducer from '../../../../Application/redux/reducers/index.js'
+import { createTaskEditorServices } from '../../../../Application/services/pages/PlanWeavePage/TaskEditorServices.js'
 
 // --- Test Global Variables
 const timestamp = Math.floor((new Date()).getTime() / 1000)

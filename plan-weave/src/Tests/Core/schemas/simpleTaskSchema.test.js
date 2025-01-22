@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 /* eslint-disable max-lines-per-function */
-import { simpleTaskSchema, fillDefaultsForSimpleTask } from "./simpleTaskSchema"
-import { TASK_STATUSES } from '../../utils/constants'
+import { simpleTaskSchema, fillDefaultsForSimpleTask } from '../../../Core/schemas/simpleTaskSchema.js'
+import { TASK_STATUSES } from '../../../Core/utils/constants.js'
 
 const timestamp = Math.floor((new Date()).getTime() / 1000)
 const fourteenThirty = new Date(new Date().setHours(14, 30, 0, 0)).toISOString()

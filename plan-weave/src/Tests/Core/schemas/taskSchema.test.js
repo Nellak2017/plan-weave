@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
-import { taskSchema, fillDefaults } from "./taskSchema"
-import { DEFAULT_FULL_TASK, TASK_STATUSES } from "../../utils/constants"
+import { taskSchema, fillDefaults } from "../../../Core/schemas/taskSchema"
+import { DEFAULT_FULL_TASK, TASK_STATUSES } from "../../../Core/utils/constants"
 
 const twelve = new Date(new Date().setHours(12, 0, 0, 0))
 

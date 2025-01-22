@@ -2,11 +2,11 @@ import React from 'react'
 import { render } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { ThemeProvider } from 'styled-components'
-import theme from '../../UI/styles/theme.js' // TODO: Remove UI layer dependency
-import GlobalStyle from '../../UI/styles/globalStyles.js' // TODO: Remove UI layer dependency
+import theme from '../UI/styles/theme.js' // TODO: Remove UI layer dependency
+import GlobalStyle from '../UI/styles/globalStyles.js' // TODO: Remove UI layer dependency
 import { ToastContainer } from 'react-toastify'
 import PropTypes from 'prop-types'
-import { setupStore } from '../../Application/redux/store.js'
+import { setupStore } from '../Application/redux/store.js'
 
 // TODO: Move test-utils.js to Test folder
 

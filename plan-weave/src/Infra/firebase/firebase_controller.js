@@ -1,5 +1,5 @@
 import { getFirestore, collection, setDoc, query, doc, getDocs, deleteDoc } from 'firebase/firestore'
-import { fillDefaults } from '../../Core/schemas/taskSchema/taskSchema.js'
+import { fillDefaults } from '../../Core/schemas/taskSchema.js'
 import app from '../firebase/config.js'
 import { toast } from 'react-toastify'
 import { DEV } from '../../Core/utils/constants.js'
