@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import { sortFilterPipe } from './TaskTable.helpers'
-import { TASK_STATUSES, SORTING_METHODS } from '../../utils/constants'
+import { TASK_STATUSES, SORTING_METHODS } from '../../../Core/utils/constants.js'
 import { fc } from '@fast-check/jest'
 
 describe('sortFilterPipe', () => {
