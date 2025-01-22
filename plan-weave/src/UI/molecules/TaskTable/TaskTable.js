@@ -14,7 +14,7 @@ import {
 import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
 import PropTypes from 'prop-types'
-import { useInterval } from '../../../hooks/useInterval.js'
+import { useInterval } from '../../hooks/useInterval.js'
 import { sortFilterPipe } from './TaskTable.helpers.js'
 
 // services: updateTasks, updateDnD

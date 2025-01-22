@@ -29,7 +29,7 @@ import {
 	startTimeChangeEvent,
 	endTimeChangeEvent,
 } from './TaskControl.events.js'
-import { useInterval } from '../../../hooks/useInterval.js'
+import { useInterval } from '../../hooks/useInterval.js'
 import { IoIosInformationCircleOutline } from "react-icons/io"
 
 const handleFormat = time => {
