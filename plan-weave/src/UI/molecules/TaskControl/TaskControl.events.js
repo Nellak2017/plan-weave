@@ -1,6 +1,6 @@
-import { DEFAULT_FULL_TASK } from '../../utils/constants.js'
+import { DEFAULT_FULL_TASK } from '../../../Core/utils/constants.js'
 import DeleteModal from '../../atoms/DeleteModal/DeleteModal.js'
-import { hoursToMillis } from '../../utils/helpers.js'
+import { hoursToMillis } from '../../../Core/utils/helpers.js'
 import { getTime, differenceInHours } from 'date-fns'
 
 // --- The Events for TaskControl Extracted to this file

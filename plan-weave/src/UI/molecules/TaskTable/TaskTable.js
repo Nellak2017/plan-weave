@@ -3,17 +3,14 @@ import TableHeader from '../../atoms/TableHeader/TableHeader'
 import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import 'react-toastify/dist/ReactToastify.css'
-import { THEMES, SORTING_METHODS, VARIANTS } from '../../utils/constants'
+import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
 import {
-	filterTaskList,
-	completedOnTopSorted,
 	calculateEfficiencyList,
 	calculateWaste,
 	calculateRange,
 	transformAll,
 	predecessorOptions,
-	pipe,
-} from '../../utils/helpers.js'
+} from '../../../Core/utils/helpers.js'
 import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
 import PropTypes from 'prop-types'

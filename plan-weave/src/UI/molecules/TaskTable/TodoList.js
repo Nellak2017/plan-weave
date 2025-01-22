@@ -1,8 +1,6 @@
-import React from "react"
-import { validateTask, isTaskOld, findLastCompletedTask, filterPages } from '../../utils/helpers'
-import { taskSchema, fillDefaults } from "../../schemas/taskSchema/taskSchema"
+import { isTaskOld, findLastCompletedTask, filterPages } from '../../../Core/utils/helpers.js'
 import TaskRow from '../TaskRow/TaskRow'
-import { VARIANTS } from "../../utils/constants"
+import { VARIANTS } from "../../../Core/utils/constants.js"
 
 // --- Extracted view logic for Task Table (Covers both Simple and Full Tasks)
 export const todoList = ({

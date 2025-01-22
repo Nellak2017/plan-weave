@@ -1,6 +1,6 @@
 import React from 'react'
 import { TableHeaderContainer, StyledRow } from './TableHeader.elements'
-import { THEMES, VARIANTS } from '../../utils/constants'
+import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
 import PropTypes from 'prop-types'
 
 const TableHeader = ({ variant = VARIANTS[0], labels }) => {

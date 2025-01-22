@@ -1,8 +1,8 @@
 import { getFirestore, collection, setDoc, query, doc, getDocs, deleteDoc } from 'firebase/firestore'
-import { fillDefaults } from '../src/UI/schemas/taskSchema/taskSchema.js'
+import { fillDefaults } from '../src/Core/schemas/taskSchema/taskSchema.js'
 import app from '../firebase/config.js'
 import { toast } from 'react-toastify'
-import { DEV } from '../src/UI/utils/constants.js'
+import { DEV } from '../src/Core/utils/constants.js'
 
 const db = getFirestore(app)
 

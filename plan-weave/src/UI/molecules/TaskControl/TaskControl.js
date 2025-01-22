@@ -16,8 +16,8 @@ import { BiPlusCircle, BiTrash } from 'react-icons/bi'
 import { format, parseISO } from 'date-fns'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { formatTimeLeft } from '../../utils/helpers.js'
-import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS, SORTING_METHODS, OPTION_NOTIFICATIONS, VARIANTS, TASK_CONTROL_TITLES } from '../../utils/constants.js'
+import { formatTimeLeft } from '../../../Core/utils/helpers.js'
+import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS, SORTING_METHODS, OPTION_NOTIFICATIONS, VARIANTS, TASK_CONTROL_TITLES } from '../../../Core/utils/constants.js'
 import Button from '../../atoms/Button/Button.js'
 import {
 	shiftEndTime,

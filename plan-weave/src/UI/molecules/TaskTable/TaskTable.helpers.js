@@ -1,10 +1,9 @@
 import {
 	filterTaskList,
 	completedOnTopSorted,
-	calculateWaste,
 	pipe,
-} from '../../utils/helpers.js'
-import { SORTING_METHODS } from '../../utils/constants'
+} from '../../../Core/utils/helpers.js'
+import { SORTING_METHODS } from '../../../Core/utils/constants.js'
 
 // --- Pipelines
 

@@ -1,6 +1,6 @@
 /* eslint-disable complexity */
-import React, {useEffect} from "react"
-import { TASK_STATUSES, TASK_ROW_TOOLTIPS } from "../../utils/constants"
+import React, { useEffect } from "react"
+import { TASK_STATUSES, TASK_ROW_TOOLTIPS } from "../../../Core/utils/constants.js"
 import TaskInput from '../../atoms/TaskInput/TaskInput.js'
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
 import {
@@ -15,7 +15,7 @@ import {
 	IconContainer,
 	DragContainer, // last in row
 } from './TaskRow.elements.js'
-import { formatTimeLeft } from '../../utils/helpers.js'
+import { formatTimeLeft } from '../../../Core/utils/helpers.js'
 import { format, parseISO } from 'date-fns'
 import PropTypes from 'prop-types'
 
@@ -89,7 +89,7 @@ const SimpleRow = ({
 						'0 minutes'}</pre>
 					: <HoursInput
 						onValueChange={value => setLocalTtc(value)}
-						onBlur={() => setLocalTtc(localTtc)} 
+						onBlur={() => setLocalTtc(localTtc)}
 						controlledValue={localTtc}
 						initialValue={localTtc && localTtc > .01 ? localTtc : 1}
 						variant={variant}

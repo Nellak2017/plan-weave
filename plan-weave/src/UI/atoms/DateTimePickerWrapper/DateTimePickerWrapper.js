@@ -7,7 +7,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers'
 import { parse } from 'date-fns'
-import { THEMES, VARIANTS } from '../../utils/constants'
+import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
 
 import PropTypes from 'prop-types'
 

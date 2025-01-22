@@ -1,8 +1,8 @@
 // reducers/taskReducer.js
 import { createSlice } from '@reduxjs/toolkit'
 import { parse, parseISO } from 'date-fns'
-import { SORTING_METHODS } from '../../UI/utils/constants.js'
-import { relativeSortIndex, rearrangeDnD, hoursToMillis, dateToToday } from '../../UI/utils/helpers.js'
+import { SORTING_METHODS } from '../../Core/utils/constants.js'
+import { relativeSortIndex, rearrangeDnD, hoursToMillis, dateToToday } from '../../Core/utils/helpers.js'
 
 const initialState = {
 	search: '',

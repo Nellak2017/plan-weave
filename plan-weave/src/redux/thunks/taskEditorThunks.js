@@ -31,8 +31,8 @@ import {
   deleteTasks as deleteTasksAPI,
 } from '../../../firebase/firebase_controller.js'
 
-import { logErrors } from '../../UI/utils/helpers.js'
-import { taskSchema } from '../../UI/schemas/taskSchema/taskSchema.js'
+import { logErrors } from '../../Core/utils/helpers.js' 
+import { taskSchema } from '../../Core/schemas/taskSchema/taskSchema.js'
 
 // --- Thunks for manipulating all the Threads
 export const updateGlobalThreadsThunk = (threads) => (dispatch) => {

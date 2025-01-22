@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasksCoerceToFull } from '../../../redux/selectors'
-import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS, VARIANTS, DEV } from '../../utils/constants'
+import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS, VARIANTS, DEV } from '../../../Core/utils/constants.js'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import Pagination from '../../molecules/Pagination/Pagination'
@@ -11,8 +11,8 @@ import PropTypes from 'prop-types'
 import store from '../../../redux/store.js'
 import { createTaskEditorServices } from '../../../services/PlanWeavePage/TaskEditorServices'
 import { ThemeContext } from 'styled-components' // needed for theme object
-import { isInputValid, coerceToSchema } from '../../utils/schema-helpers.js'
-import { fullTasksSchema } from '../../schemas/taskSchema/taskSchema.js'
+import { isInputValid, coerceToSchema } from '../../../Core/utils/schema-helpers.js'
+import { fullTasksSchema } from '../../../Core/schemas/taskSchema/taskSchema.js'
 
 const TaskEditor = ({
 	services = createTaskEditorServices(store),

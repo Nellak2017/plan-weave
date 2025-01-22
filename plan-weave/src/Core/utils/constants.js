@@ -1,5 +1,5 @@
 // File containing many constants
-import colors from '../styles/theme'
+import colors from '../../UI/styles/theme.js' // TODO: Do not depend on UI layer at all: ;
 import { toast } from 'react-toastify'
 import { parseISO } from 'date-fns'
 
