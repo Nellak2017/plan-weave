@@ -1,6 +1,6 @@
 import React from 'react'
 import AuthForm from '../UI/organisms/AuthForm/AuthForm.js'
-import { VARIANTS } from '../UI/utils/constants.js'
+import { VARIANTS } from '../Core/utils/constants.js'
 import PropTypes from 'prop-types'
 
 function Login({ variant = VARIANTS[0], state = { maxwidth: 409, signup: false } }) {

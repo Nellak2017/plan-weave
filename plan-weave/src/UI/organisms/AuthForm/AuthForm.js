@@ -26,7 +26,7 @@ import {
 	handleSignInWithEmail,
 	handleSignInWithGoogle
 } from './AuthForm.handlers.js'
-import { VARIANTS } from '../../utils/constants.js'
+import { VARIANTS } from '../../../Core/utils/constants.js'
 import PropTypes from 'prop-types'
 
 function AuthForm({ variant = VARIANTS[0], state = { maxwidth: 409, signup: false } }) {

@@ -8,7 +8,7 @@ import store from '../Application/redux/store.js'
 import { initialTaskUpdate, initialUserIdUpdate } from '../Application/redux/thunks/planWeavePageThunks.js'
 import { loadingOrError } from '../pageUtils/helper-components.js'
 import { useRedirectIfUnauthorized } from '../UI/hooks/useRedirectIfUnauthorized.js'
-import { options, title, defaultLogout } from '../Data/PlanWeave/Data.js'
+import { options, title, defaultLogout } from '../Infra/Data/PlanWeave/Data.js'
 import { useTaskFetching } from '../UI/hooks/useTaskFetching.js'
 
 function PlanWeave() {

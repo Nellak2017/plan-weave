@@ -4,7 +4,7 @@ import { makeLink, defaultLogin } from '../UI/molecules/Nav/Nav.helpers.js'
 import { auth } from '../../firebase/firebase_auth.js'
 import { useRouter } from 'next/router'
 import { useAuthState } from 'react-firebase-hooks/auth'
-import { body } from '../Data/HomePage/Data.js'
+import { body } from '../Infra/Data/HomePage/Data.js'
 import { handleLogout } from '../pageUtils/page-handlers.js'
 
 export default function Home() {
