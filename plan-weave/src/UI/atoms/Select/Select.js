@@ -6,7 +6,6 @@ import {
 } from './Select.elements.js'
 import TaskInput from '../TaskInput/TaskInput.js'
 import { toast } from 'react-toastify'
-import PropTypes from 'prop-types'
 
 export function Select({ variant, services, state }) {
 	const { onChange, onBlur } = services || {}
@@ -66,22 +65,4 @@ export function Select({ variant, services, state }) {
 		</StyledContainer>
 	)
 }
-
-Select.propTypes = {
-	variant: PropTypes.string, 
-	services: PropTypes.shape({
-	  onChange: PropTypes.func,
-	  onBlur: PropTypes.func,
-	}),
-	state: PropTypes.shape({
-	  options: PropTypes.arrayOf(PropTypes.string),
-	  initialValue: PropTypes.string,
-	  placeholder: PropTypes.string,
-	  title: PropTypes.string,
-	  controlledValue: PropTypes.string,
-	  minLength: PropTypes.number,
-	  maxLength: PropTypes.number,
-	}),
-  }
-
 export default Select

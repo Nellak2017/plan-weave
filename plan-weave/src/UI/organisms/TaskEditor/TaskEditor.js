@@ -7,7 +7,6 @@ import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import Pagination from '../../molecules/Pagination/Pagination'
 import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
-import PropTypes from 'prop-types'
 import store from '../../../Application/redux/store.js'
 import { createTaskEditorServices } from '../../../Application/services/pages/PlanWeavePage/TaskEditorServices.js'
 import { ThemeContext } from 'styled-components' // needed for theme object
@@ -138,43 +137,4 @@ Verify the API endpoints and check the tasks in TaskEditor component.`
 		</TaskEditorContainer>
 	)
 }
-TaskEditor.propTypes = {
-	services: PropTypes.shape({
-		global: PropTypes.shape({
-			updateDnD: PropTypes.func.isRequired,
-			updateSelectedTasks: PropTypes.func.isRequired,
-			updateTasks: PropTypes.func.isRequired,
-			updateTimeRange: PropTypes.func.isRequired,
-			addThread: PropTypes.func.isRequired,
-			updateFirstLoad: PropTypes.func.isRequired,
-		}).isRequired,
-		taskControl: PropTypes.shape({
-			search: PropTypes.func.isRequired,
-			owl: PropTypes.func.isRequired,
-			highlighting: PropTypes.func.isRequired,
-			addTask: PropTypes.func.isRequired,
-			deleteMany: PropTypes.func.isRequired,
-			sort: PropTypes.func.isRequired,
-		}).isRequired,
-		taskTable: PropTypes.shape({
-			taskRow: PropTypes.shape({
-				complete: PropTypes.func.isRequired,
-				delete: PropTypes.func.isRequired,
-				update: PropTypes.func.isRequired,
-			}).isRequired,
-		}).isRequired,
-		pagination: PropTypes.shape({
-			updatePage: PropTypes.func.isRequired,
-			prevPage: PropTypes.func.isRequired,
-			nextPage: PropTypes.func.isRequired,
-			refresh: PropTypes.func.isRequired,
-			tasksPerPageUpdate: PropTypes.func.isRequired,
-		}).isRequired,
-	}),
-	variant: PropTypes.oneOf(VARIANTS),
-	maxwidth: PropTypes.number,
-	title: PropTypes.string,
-}
-
 export default TaskEditor
-

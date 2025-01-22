@@ -11,7 +11,6 @@ import { format, parse } from 'date-fns'
 import { AiOutlineClockCircle } from 'react-icons/ai'
 import { THEMES, CLOCK_DEBOUNCE, VARIANTS } from '../../../Core/utils/constants.js'
 import { debounce } from 'lodash'
-import PropTypes from 'prop-types'
 import { TimeClock } from '@mui/x-date-pickers'
 
 function TimePickerWrapper({
@@ -93,20 +92,4 @@ function TimePickerWrapper({
     </LocalizationProvider>
   )
 }
-
-TimePickerWrapper.propTypes = {
-  variant: PropTypes.oneOf(VARIANTS),
-  defaultTime: PropTypes.string,
-  displayText: PropTypes.string,
-  ampm: PropTypes.bool,
-  verticalOffset: PropTypes.number,
-  horizontalOffset: PropTypes.number,
-  onTimeChange: PropTypes.func,
-  controlled: PropTypes.bool,
-  time: PropTypes.instanceOf(Date),
-  tabIndex: PropTypes.number,
-  title: PropTypes.string,
-  testid: PropTypes.string,
-}
-
 export default TimePickerWrapper

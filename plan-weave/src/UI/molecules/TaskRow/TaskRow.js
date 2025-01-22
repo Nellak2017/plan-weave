@@ -10,8 +10,6 @@ import 'react-toastify/dist/ReactToastify.css'
 import { highlightTaskRow } from '../../../Core/utils/helpers.js'
 import { parseISO } from 'date-fns'
 import { handleCheckBoxClicked, handleUpdateTask } from './TaskRow.events.js'
-import PropTypes from 'prop-types'
-
 import { BiTrash } from 'react-icons/bi'
 
 // services: {...others, updateSelectedTasks}
@@ -178,38 +176,4 @@ function TaskRow({
 		</>
 	)
 }
-
-TaskRow.propTypes = {
-	services: PropTypes.shape({
-		taskRow: PropTypes.object,
-	}),
-	state: PropTypes.shape({
-		isHighlighting: PropTypes.bool,
-		selectedTasks: PropTypes.array,
-	}),
-	taskObject: PropTypes.shape({
-		task: PropTypes.string,
-		waste: PropTypes.number,
-		ttc: PropTypes.number,
-		eta: PropTypes.string, // Expects ISO String
-		status: PropTypes.string,
-		id: PropTypes.number,
-		timestamp: PropTypes.any,
-	}),
-	variant: PropTypes.oneOf(VARIANTS),
-	maxwidth: PropTypes.number,
-	index: PropTypes.number,
-	old: PropTypes.bool,
-	prevCompletedTask: PropTypes.shape({
-		task: PropTypes.string,
-		waste: PropTypes.number,
-		ttc: PropTypes.number,
-		eta: PropTypes.string, // Expects ISO String
-		status: PropTypes.string,
-		id: PropTypes.number,
-		timestamp: PropTypes.any,
-	}),
-	options: PropTypes.array,
-}
-
 export default TaskRow

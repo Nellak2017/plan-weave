@@ -1,7 +1,6 @@
 import React from 'react'
 import { TableHeaderContainer, StyledRow } from './TableHeader.elements'
 import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
-import PropTypes from 'prop-types'
 
 const TableHeader = ({ variant = VARIANTS[0], labels }) => {
 	const processedVariant = variant && !THEMES.includes(variant) ? VARIANTS[0] : variant
@@ -20,10 +19,4 @@ const TableHeader = ({ variant = VARIANTS[0], labels }) => {
 		</thead>
 	)
 }
-
-TableHeader.propTypes = {
-	variant: PropTypes.oneOf(VARIANTS),
-	labels: PropTypes.arrayOf(PropTypes.string).isRequired,
-}
-
 export default TableHeader

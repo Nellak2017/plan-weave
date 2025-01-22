@@ -13,7 +13,6 @@ import {
 } from '../../../Core/utils/helpers.js'
 import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
-import PropTypes from 'prop-types'
 import { useInterval } from '../../hooks/useInterval.js'
 import { sortFilterPipe } from './TaskTable.helpers.js'
 
@@ -97,28 +96,6 @@ const TaskTable = ({
 		</DragDropContext>
 	)
 }
-
-TaskTable.propTypes = {
-	services: PropTypes.shape({
-		updateTasks: PropTypes.func,
-		updateDnD: PropTypes.func
-	}),
-	state: PropTypes.shape({
-		globalTasks: PropTypes.object,
-		search: PropTypes.string,
-		timeRange: PropTypes.object,
-		page: PropTypes.number,
-		tasksPerPage: PropTypes.number,
-		taskList: PropTypes.array,
-		sortingAlgo: PropTypes.string,
-		owl: PropTypes.any,
-		taskRowState: PropTypes.any
-	}),
-	variant: PropTypes.oneOf(VARIANTS),
-	headerLabels: PropTypes.array,
-	maxwidth: PropTypes.number
-}
-
 export default TaskTable
 
 /* 

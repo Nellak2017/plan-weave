@@ -5,7 +5,6 @@ import NextButton from '../../atoms/NextButton/NextButton'
 import HoursInput from '../../atoms/HoursInput/HoursInput'
 import NumberPicker from '../../atoms/NumberPicker/NumberPicker'
 import { BiRecycle } from 'react-icons/bi'
-import PropTypes from 'prop-types'
 
 // services: updatePage, prevPage, nextPage, refresh, tasksPerPageUpdate 
 // state: pageNumber, tasksPerPage, maxPage (Computed by Pagination)
@@ -76,28 +75,4 @@ function Pagination({
 		</PaginationContainer>
 	)
 }
-
-Pagination.propTypes = {
-	services: PropTypes.shape({
-		updatePage: PropTypes.func,
-		prevPage: PropTypes.func,
-		nextPage: PropTypes.func,
-		refresh: PropTypes.func,
-		tasksPerPageUpdate: PropTypes.func,
-	}),
-	state: PropTypes.shape({
-		pageNumber: PropTypes.number,
-		tasksPerPage: PropTypes.number,
-		taskList: PropTypes.array,
-	}),
-	variant: PropTypes.oneOf(VARIANTS),
-	min: PropTypes.number,
-	hoursText: PropTypes.string,
-	defaultNumber: PropTypes.number,
-	options: PropTypes.arrayOf(PropTypes.number),
-	pickerText: PropTypes.string,
-	maxWidth: PropTypes.number,
-	size: PropTypes.string,
-}
-
 export default Pagination

@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-
 /**
  * Custom hook to execute a callback function on a specified interval.
  *
@@ -14,7 +13,6 @@ export const useInterval = (callback, delay, dependencies) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callback, delay, ...dependencies])
 }
-
 export default useInterval
 
 // Example usage:

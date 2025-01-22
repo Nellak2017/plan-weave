@@ -5,7 +5,6 @@ import {
 	DropdownWrapper,
 	StyledNumberPicker
 } from './NumberPicker.elements'
-import PropTypes from 'prop-types'
 
 function NumberPicker({
 	variant = VARIANTS[0],
@@ -41,14 +40,4 @@ function NumberPicker({
 		</PickerContainer>
 	)
 }
-
-NumberPicker.propTypes = {
-	variant: PropTypes.oneOf(VARIANTS),
-	defaultNumber: PropTypes.number,
-	options: PropTypes.arrayOf(PropTypes.number),
-	text: PropTypes.string,
-	onValueChange: PropTypes.func,
-	controlledValue: PropTypes.number,
-}
-
 export default NumberPicker

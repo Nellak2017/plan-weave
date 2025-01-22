@@ -3,7 +3,6 @@ import {
 } from './HoursInput.elements'
 import React, { useState, useMemo } from 'react'
 import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
-import PropTypes from 'prop-types'
 
 const HoursInput = ({
 	placeholder = '0',
@@ -72,20 +71,4 @@ const HoursInput = ({
 		</HoursContainer>
 	)
 }
-
-HoursInput.propTypes = {
-	placeholder: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-	text: PropTypes.string,
-	variant: PropTypes.oneOf(VARIANTS),
-	maxwidth: PropTypes.number,
-	color: PropTypes.string,
-	initialValue: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-	controlledValue: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-	onValueChange: PropTypes.func,
-	onBlur: PropTypes.func,
-	step: PropTypes.number,
-	min: PropTypes.number,
-	max: PropTypes.number,
-  }
-
 export default HoursInput

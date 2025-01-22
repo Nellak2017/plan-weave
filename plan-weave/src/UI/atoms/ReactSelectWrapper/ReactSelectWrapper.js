@@ -2,7 +2,6 @@
 import React, { useState } from 'react'
 import { default as ReactSelect } from 'react-select' // You alias this to be clear about what it is
 import { StyledReactSelectContainer } from './ReactSelectWrapper.elements.js'
-import PropTypes from 'prop-types'
 
 function ReactSelectWrapper({
 	variant = 'dark',
@@ -36,17 +35,4 @@ function ReactSelectWrapper({
 		</StyledReactSelectContainer>
 	)
 }
-
-ReactSelectWrapper.propTypes = {
-	variant: PropTypes.string,
-	value: PropTypes.any,
-	onChange: PropTypes.func,
-	options: PropTypes.arrayOf(PropTypes.object),
-	isMulti: PropTypes.bool,
-	isSearchable: PropTypes.bool,
-	isClearable: PropTypes.bool,
-	isDisabled: PropTypes.bool,
-	initialSelectedPredecessors: PropTypes.array,
-  }
-
 export default ReactSelectWrapper

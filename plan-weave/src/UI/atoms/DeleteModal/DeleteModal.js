@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import Button from '../Button/Button.js'
 
 // Styles here because it is so basic, no styled components needed
@@ -53,19 +52,6 @@ const DeleteModal = ({
 			</div>
 		</div>
 	)
-}
-
-DeleteModal.propTypes = {
-	services: PropTypes.shape({
-		deleteMany: PropTypes.func.isRequired,
-		highlighting: PropTypes.func.isRequired,
-	}).isRequired,
-	selectedTasks: PropTypes.arrayOf(PropTypes.bool),
-	taskList: PropTypes.arrayOf(PropTypes.object),
-	warningText: PropTypes.string,
-	options: PropTypes.arrayOf(PropTypes.string),
-	setIsDeleteClicked: PropTypes.func,
-	closeToast: PropTypes.func,
 }
 
 export default DeleteModal

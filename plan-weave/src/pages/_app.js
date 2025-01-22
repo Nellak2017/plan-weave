@@ -8,7 +8,6 @@ import theme from '../UI/styles/theme.js'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import isPropValid from '@emotion/is-prop-valid' // automatic unknown prop filtering
-import PropTypes from 'prop-types'
 
 // eslint-disable-next-line camelcase
 import { Poppins, Courier_Prime, Roboto } from 'next/font/google'
@@ -65,10 +64,4 @@ function MyApp({ Component, pageProps }) {
     </StyleSheetManager>
   )
 }
-
-MyApp.propTypes = {
-  Component: PropTypes.elementType.isRequired,
-  pageProps: PropTypes.object.isRequired,
-}
-
 export default MyApp

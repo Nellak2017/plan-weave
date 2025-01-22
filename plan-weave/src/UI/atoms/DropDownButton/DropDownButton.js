@@ -6,7 +6,6 @@ import {
 } from './DropDownButton.elements'
 import { AiFillCaretDown } from 'react-icons/ai'
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
 
 function DropDownButton({ size = 's', color = 'primary', options, children = 'Auto Sort', tabIndex, ...rest }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -39,19 +38,6 @@ function DropDownButton({ size = 's', color = 'primary', options, children = 'Au
       </DropdownMenu>
     </DropdownContainer>
   )
-}
-
-DropDownButton.propTypes = {
-  size: PropTypes.string,
-  color: PropTypes.string,
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string,
-      listener: PropTypes.func,
-    })
-  ),
-  children: PropTypes.node,
-  tabIndex: PropTypes.number,
 }
 
 export default DropDownButton

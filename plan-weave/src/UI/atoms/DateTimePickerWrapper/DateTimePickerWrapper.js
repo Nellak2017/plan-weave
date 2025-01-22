@@ -9,8 +9,6 @@ import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers'
 import { parse } from 'date-fns'
 import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
 
-import PropTypes from 'prop-types'
-
 // Styled Components can't be used on MUI DateTimePicker! 
 function DateTimePickerWrapper({
 	variant = VARIANTS[0],
@@ -55,18 +53,6 @@ function DateTimePickerWrapper({
 			</PickerContainer>
 		</LocalizationProvider>
 	)
-}
-
-DateTimePickerWrapper.propTypes = {
-	variant: PropTypes.oneOf(VARIANTS),
-	services: PropTypes.shape({
-		onTimeChange: PropTypes.func,
-	}),
-	state: PropTypes.shape({
-		label: PropTypes.string,
-		defaultTime: PropTypes.string,
-		defaultDate: PropTypes.instanceOf(Date),
-	}),
 }
 
 export default DateTimePickerWrapper

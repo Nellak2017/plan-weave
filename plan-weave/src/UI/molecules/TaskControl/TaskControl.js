@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import PropTypes from 'prop-types'
 import SearchBar from '../../atoms/SearchBar/SearchBar.js'
 import DropDownButton from '../../atoms/DropDownButton/DropDownButton'
 import {
@@ -194,47 +193,4 @@ function TaskControl({
 		</TaskControlContainer>
 	)
 }
-
-TaskControl.propTypes = {
-	services: PropTypes.shape({
-		search: PropTypes.func,
-		timeRange: PropTypes.func,
-		owl: PropTypes.func,
-		addTask: PropTypes.func,
-		deleteMany: PropTypes.func,
-		highlighting: PropTypes.func,
-		updateSelectedTasks: PropTypes.func,
-		sort: PropTypes.func,
-	}).isRequired,
-
-	state: PropTypes.shape({
-		timeRange: PropTypes.object,
-		owl: PropTypes.bool,
-		isHighlighting: PropTypes.bool,
-		taskList: PropTypes.array,
-		selectedTasks: PropTypes.array,
-		theme: PropTypes.object,
-	}).isRequired,
-
-	variant: PropTypes.oneOf(VARIANTS),
-	color: PropTypes.string,
-	maxwidth: PropTypes.number,
-	maxwidthsearch: PropTypes.number,
-	owlSize: PropTypes.string,
-	clock1Text: PropTypes.string,
-	clock2Text: PropTypes.string,
-	coords: PropTypes.shape({
-		y0: PropTypes.number,
-		y1: PropTypes.number,
-		x0: PropTypes.number,
-		x1: PropTypes.number,
-	}),
-	toolTips: PropTypes.shape({
-		owlToolTip: PropTypes.string,
-		addToolTip: PropTypes.string,
-		deleteToolTip: PropTypes.string,
-		dropDownToolTip: PropTypes.string,
-	}),
-}
-
 export default TaskControl

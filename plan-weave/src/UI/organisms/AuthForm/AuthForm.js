@@ -27,7 +27,6 @@ import {
 	handleSignInWithGoogle
 } from './AuthForm.handlers.js'
 import { VARIANTS } from '../../../Core/utils/constants.js'
-import PropTypes from 'prop-types'
 
 function AuthForm({ variant = VARIANTS[0], state = { maxwidth: 409, signup: false } }) {
 	const { maxwidth, signup } = state
@@ -124,13 +123,4 @@ function AuthForm({ variant = VARIANTS[0], state = { maxwidth: 409, signup: fals
 		</CenteredContainer>
 	)
 }
-
-AuthForm.propTypes = {
-	variant: PropTypes.oneOf(VARIANTS),
-	state: PropTypes.shape({
-		maxwidth: PropTypes.number,
-		signup: PropTypes.bool,
-	}),
-}
-
 export default AuthForm
