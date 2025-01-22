@@ -1,14 +1,14 @@
 /* eslint-disable max-lines-per-function */
 import React, { useContext, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectNonHiddenTasksCoerceToFull } from '../../../redux/selectors'
+import { selectNonHiddenTasksCoerceToFull } from '../../../Application/redux/selectors.js'
 import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS, VARIANTS, DEV } from '../../../Core/utils/constants.js'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import Pagination from '../../molecules/Pagination/Pagination'
 import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
 import PropTypes from 'prop-types'
-import store from '../../../redux/store.js'
+import store from '../../../Application/redux/store.js'
 import { createTaskEditorServices } from '../../../services/PlanWeavePage/TaskEditorServices'
 import { ThemeContext } from 'styled-components' // needed for theme object
 import { isInputValid, coerceToSchema } from '../../../Core/utils/schema-helpers.js'

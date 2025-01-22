@@ -1,10 +1,10 @@
-import store from '../redux/store.js'
+import store from '../Application/redux/store.js'
 import { Provider } from 'react-redux'
 import Head from 'next/head'
 
 import GlobalStyle from '../UI/styles/globalStyles.js'
 import { ThemeProvider, StyleSheetManager } from 'styled-components'
-import theme from '../UI/styles/theme.js'//'../styles/theme.js'
+import theme from '../UI/styles/theme.js'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import isPropValid from '@emotion/is-prop-valid' // automatic unknown prop filtering

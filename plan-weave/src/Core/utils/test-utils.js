@@ -6,7 +6,7 @@ import theme from '../styles/theme.js'//'../../styles/theme.js'
 import GlobalStyle from '../../styles/globalStyles.js'
 import { ToastContainer } from 'react-toastify'
 import PropTypes from 'prop-types'
-import { setupStore } from '../../redux/store.js'
+import { setupStore } from '../../Application/redux/store.js'
 
 const defaultOptions = {} // we used to do stuff here now not
 

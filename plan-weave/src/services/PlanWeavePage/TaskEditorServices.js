@@ -11,7 +11,7 @@ import {
 	updateTasksPerPage,
 	fullToggle,
 	updateFirstLoad,
-} from "../../redux/reducers/taskEditorSlice.js"
+} from "../../Application/redux/reducers/taskEditorSlice.js"
 import {
 	updateTimeRangeThunk,
 	updateOwlThunk,
@@ -23,7 +23,7 @@ import {
 	completedTaskThunk,
 
 	addGlobalThreadThunk,
-} from "../../redux/thunks/taskEditorThunks.js"
+} from "../../Application/redux/thunks/taskEditorThunks.js"
 
 export const createTaskEditorServices = store => {
 	const dispatch = store.dispatch
