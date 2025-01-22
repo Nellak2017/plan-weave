@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify'
-import { handleLogout } from '../../../pageUtils/page-handlers'
+import { handleLogout } from '../../../UI/pageUtils/page-handlers'
 import { makeLink } from '../../../UI/molecules/Nav/Nav.helpers.js' // TODO: Fix this trainwreck bullshit
 
 export const options = [

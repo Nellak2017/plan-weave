@@ -5,7 +5,7 @@ import { auth } from '../Infra/firebase/firebase_auth.js'
 import { useRouter } from 'next/router'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { body } from '../Infra/Data/HomePage/Data.js'
-import { handleLogout } from '../pageUtils/page-handlers.js'
+import { handleLogout } from '../UI/pageUtils/page-handlers.js'
 
 export default function Home() {
   const router = useRouter()
