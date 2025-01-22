@@ -9,7 +9,7 @@ import Pagination from '../../molecules/Pagination/Pagination'
 import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
 import PropTypes from 'prop-types'
 import store from '../../../Application/redux/store.js'
-import { createTaskEditorServices } from '../../../services/PlanWeavePage/TaskEditorServices'
+import { createTaskEditorServices } from '../../../Application/services/pages/PlanWeavePage/TaskEditorServices.js'
 import { ThemeContext } from 'styled-components' // needed for theme object
 import { isInputValid, coerceToSchema } from '../../../Core/utils/schema-helpers.js'
 import { fullTasksSchema } from '../../../Core/schemas/taskSchema/taskSchema.js'

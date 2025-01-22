@@ -17,7 +17,7 @@ import TaskEditor from './TaskEditor.js'
 import { parse } from 'date-fns'
 import { TASK_STATUSES, TASKEDITOR_SEARCH_PLACEHOLDER, TASK_CONTROL_TITLES } from '../../utils/constants.js'
 import rootReducer from '../../../redux/reducers/index.js'
-import { createTaskEditorServices } from '../../../services/PlanWeavePage/TaskEditorServices.js'
+import { createTaskEditorServices } from '../../../Application/services/pages/PlanWeavePage/TaskEditorServices.js'
 
 // --- Test Global Variables
 const timestamp = Math.floor((new Date()).getTime() / 1000)
