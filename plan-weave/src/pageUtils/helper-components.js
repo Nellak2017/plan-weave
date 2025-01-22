@@ -1,4 +1,4 @@
-import Spinner from '../components/atoms/Spinner/Spinner.js'
+import Spinner from '../UI/atoms/Spinner/Spinner.js'
 
 // --- Loading or Error
 export const loadingOrError = ({ loading, error, user, spinnerComponent }) => {

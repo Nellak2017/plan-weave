@@ -1,4 +1,4 @@
-import theme from '../src/components/styles/theme.js' //'../src/styles/theme.js'
+import theme from '../src/UI/styles/theme.js' //'../src/styles/theme.js'
 import GlobalStyle from '../src/styles/globalStyles.js'
 import { ThemeProvider, StyleSheetManager } from 'styled-components'
 import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport'

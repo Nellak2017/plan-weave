@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify'
 import { handleLogout } from "../../pageUtils/page-handlers"
-import { makeLink } from '../../components/molecules/Nav/Nav.helpers'
+import { makeLink } from '../../UI/molecules/Nav/Nav.helpers'
 
 export const options = [
 	{ name: 'name', listener: () => toast.info('Name Sorting applied. Tasks now appear alphabetically.'), algorithm: 'name' },
