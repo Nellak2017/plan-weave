@@ -1,10 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
-import {
-	PickerContainer,
-	DropdownWrapper,
-	StyledNumberPicker
-} from './NumberPicker.elements'
+import { PickerContainer, DropdownWrapper, StyledNumberPicker } from './NumberPicker.elements'
 
 function NumberPicker({
 	variant = VARIANTS[0],
@@ -15,18 +11,13 @@ function NumberPicker({
 	controlledValue
 }) {
 	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
-
 	const [number, setNumber] = useState(defaultNumber)
 	const value = useMemo(() => controlledValue || number, [controlledValue, number])
-
 	const handleNumberChange = e => {
-		// Pass the new value to the parent component
-		if (onValueChange) onValueChange(e.target.value)
+		if (onValueChange) onValueChange(e.target.value) // Pass the new value to the parent component
 		setNumber(e.target.value)
-		// If it's not being controlled, update the local state
-		if (controlledValue !== 0 && !controlledValue) setNumber(e.target.value)
+		if (controlledValue !== 0 && !controlledValue) setNumber(e.target.value) // If it's not being controlled, update the local state
 	}
-
 	return (
 		<PickerContainer variant={processedVariant}>
 			{text && <p>{text}</p>}

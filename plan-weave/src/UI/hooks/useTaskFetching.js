@@ -5,7 +5,6 @@ export const useTaskFetching = ({ user, serialize, dispatch, taskFetcher, taskUp
 		const tasks = await taskFetcher(userId, serialize)
 		dispatch(taskUpdateReducer(tasks))
 	}, [dispatch, taskFetcher, taskUpdateReducer])
-
 	useEffect(() => {
 		if (user) {
 			const userId = user?.uid

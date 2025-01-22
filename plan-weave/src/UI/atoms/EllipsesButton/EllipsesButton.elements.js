@@ -34,7 +34,6 @@ const ellipsesButtonPreSets = {
 	},
 	color: colorPreset
 }
-
 export const EllipsesButtonStyled = styled.button`
 	background-color: transparent;
 	display: flex;

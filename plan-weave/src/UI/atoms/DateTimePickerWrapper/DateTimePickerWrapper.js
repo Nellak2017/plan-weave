@@ -21,21 +21,14 @@ function DateTimePickerWrapper({
 		defaultDate: new Date(),
 	},
 }) {
-	// --- Verify Input
 	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
-
 	const { onTimeChange } = services || {}
 	const { label, defaultTime, defaultDate } = state || {}
-	//console.log(defaultDate)
-	// --- Local State
 	const [dateTime, setDateTime] = useState(parse(defaultTime, 'HH:mm', defaultDate))
-
-	// --- Handlers
 	const handleDateTimeChange = newDateTime => {
 		setDateTime(newDateTime)
 		if (onTimeChange) onTimeChange(newDateTime) // Pass state to parent
 	}
-
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns}>
 			<PickerContainer variant={processedVariant}>
@@ -44,15 +37,10 @@ function DateTimePickerWrapper({
 					value={dateTime}
 					onChange={handleDateTimeChange}
 					slotProps={{ textField: { readOnly: true } }}
-					viewRenderers={{
-						hours: renderTimeViewClock,
-						minutes: renderTimeViewClock,
-						seconds: renderTimeViewClock,
-					}}
+					viewRenderers={{ hours: renderTimeViewClock, minutes: renderTimeViewClock, seconds: renderTimeViewClock, }}
 				/>
 			</PickerContainer>
 		</LocalizationProvider>
 	)
 }
-
 export default DateTimePickerWrapper

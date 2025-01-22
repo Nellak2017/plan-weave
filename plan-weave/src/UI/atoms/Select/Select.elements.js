@@ -11,7 +11,6 @@ export const StyledContainer = styled.div`
 	width: 200px;
 	${getPresetCSS(selectWrapperPresets, 'variant')}
 `
-
 export const DropdownMenu = styled.ul`
 	position: absolute;
 	width: 100%;
@@ -22,7 +21,6 @@ export const DropdownMenu = styled.ul`
 	z-index: 999; // be above all other stuff
 	overflow-y: auto;
 `
-
 export const DropdownMenuItem = styled.li`
 	display: ${props => (props.open ? 'block' : 'none')};
 	cursor: pointer;

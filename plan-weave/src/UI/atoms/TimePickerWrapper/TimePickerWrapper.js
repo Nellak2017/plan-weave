@@ -1,15 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import {
-  TimePickerWrapperStyled,
-  ClockIconWrapper,
-  TimeClockWrapper,
-  Display
-} from './TimePickerWrapper.elements'
+import { useState, useEffect, useMemo } from 'react'
+import { TimePickerWrapperStyled, ClockIconWrapper, TimeClockWrapper, Display } from './TimePickerWrapper.elements'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { format, parse } from 'date-fns'
 import { AiOutlineClockCircle } from 'react-icons/ai'
-import { THEMES, CLOCK_DEBOUNCE, VARIANTS } from '../../../Core/utils/constants.js'
+import { CLOCK_DEBOUNCE, VARIANTS } from '../../../Core/utils/constants.js'
 import { debounce } from 'lodash'
 import { TimeClock } from '@mui/x-date-pickers'
 
@@ -25,29 +20,18 @@ function TimePickerWrapper({
   time: controlledTime, // Controlled time passed from the parent
   tabIndex, // used for selecting the icon
   title, // used to tell the user what clicking the icon will do whenever they hover over it (tool tip)
-  testid // used for unit testing
 }) {
-  // --- Verify Input
-  const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
-
-  // --- State for component
   const [time, setTime] = useState(parse(defaultTime, 'HH:mm', new Date()))
   const [showClock, setShowClock] = useState(false)
   const [view, setView] = useState('hours')
   const [buttonClicked, setButtonClicked] = useState(false)
-
-  // --- Code For Controlled Component Feature
   useEffect(() => {
     if (!controlled) setTime(parse(defaultTime, 'HH:mm', new Date()))
   }, [controlled, defaultTime]) // Update internal time state if not controlled
   const currentTime = controlled ? controlledTime : time // Use controlledTime if controlled by the parent
-
-  // --- Debouncing the Clock Feature
-  const debouncedChangeHandler = useMemo(() => debounce(newTime => onTimeChange(newTime), CLOCK_DEBOUNCE), [onTimeChange])
+  const debouncedChangeHandler = useMemo(() => debounce(newTime => onTimeChange(newTime), CLOCK_DEBOUNCE), [onTimeChange]) // --- Debouncing the Clock Feature
   useEffect(() => { return () => { debouncedChangeHandler.cancel() } }, [debouncedChangeHandler])
-
-  // --- Clock FSM (implemented without State machines) Feature
-  const handleTimeChange = newTime => {
+  const handleTimeChange = newTime => { // --- Clock FSM (implemented without State machines) Feature
     setTime(newTime)
     onTimeChange && debouncedChangeHandler(newTime) // Pass the updated time back to the parent component
   }
@@ -57,24 +41,15 @@ function TimePickerWrapper({
     if (!buttonClicked) { setShowClock(false); setView('hours') }
     setButtonClicked(false)
   }
-
-  // --- Memo for time display
   const timeDisplayMemo = useMemo(() => ampm ? format(currentTime, 'hh:mm a') : format(currentTime, 'HH:mm'), [currentTime, ampm])
-
-  // BEFORE Controlled code, time was used to be displayed, not currentTime
-  return (
+  return ( // BEFORE Controlled code, time was used to be displayed, not currentTime
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <TimePickerWrapperStyled variant={processedVariant} >
+      <TimePickerWrapperStyled variant={variant} >
         <Display><p>{displayText}</p><p aria-label={`Time display: ${timeDisplayMemo}`}>{timeDisplayMemo}</p></Display>
         <ClockIconWrapper role="button" aria-label="Toggle clock" onMouseDown={toggleClock} onKeyDown={(e) => { if (e.key === 'Enter') { toggleClock() } }}>
           <AiOutlineClockCircle tabIndex={tabIndex} size={32} title={title} />
         </ClockIconWrapper>
-        <TimeClockWrapper
-          $showclock={showClock}
-          $verticalOffset={verticalOffset}
-          $horizontalOffset={horizontalOffset}
-          data-testid={`Dropdown for ${title}`}
-        >
+        <TimeClockWrapper $showclock={showClock} $verticalOffset={verticalOffset} $horizontalOffset={horizontalOffset} data-testid={`Dropdown for ${title}`}>
           <TimeClock
             value={currentTime}
             onChange={handleTimeChange}

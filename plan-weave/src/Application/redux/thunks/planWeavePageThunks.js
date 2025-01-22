@@ -1,12 +1,7 @@
 // Thunks that are for all Organisms on PlanWeave
 import { toast } from 'react-toastify'
-import {
-	updateGlobalTasks
-} from '../reducers/globalTasksSlice.js'
-import {
-	updateTasks,
-	updateUserId
-} from '../reducers/taskEditorSlice.js'
+import { updateGlobalTasks } from '../reducers/globalTasksSlice.js'
+import { updateTasks, updateUserId } from '../reducers/taskEditorSlice.js'
 
 // Used for Initial Fetch of Task Data
 export const initialTaskUpdate = (tasks) => (dispatch) => {
@@ -18,7 +13,6 @@ export const initialTaskUpdate = (tasks) => (dispatch) => {
 		toast.error('Failed to do the initial Task Update')
 	}
 }
-
 // Used to update the userId stored in the store, used in initial load of Plan-Weave
 export const initialUserIdUpdate = (userId) => (dispatch) => {
 	try {

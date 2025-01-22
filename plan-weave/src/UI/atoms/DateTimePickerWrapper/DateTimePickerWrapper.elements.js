@@ -14,7 +14,6 @@ const dateTimePickerPresets = {
 		dark: variantStyle({ color: props => props.theme.colors.lightNeutralLight, hoverColor: props => props.theme.colors.lightNeutralLight, hoverBg: props => props.theme.colors.darkNeutralHover}),
 	},
 }
-
 export const PickerContainer = styled.div`
 	margin: 0px;
 	border: 0px solid transparent;

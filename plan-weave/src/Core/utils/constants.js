@@ -2,7 +2,6 @@
 import colors from '../../UI/styles/theme.js' // TODO: Do not depend on UI layer at all: ;
 import { toast } from 'react-toastify'
 import { parseISO } from 'date-fns'
-
 const twelve = new Date(new Date().setHours(12, 0, 0, 0))
 export const VARIANTS = ['dark', 'light']
 export const MILLISECONDS_PER_HOUR = 60 * 60 * 1000
@@ -76,16 +75,12 @@ export const TASK_ROW_TOOLTIPS = {
 	ttc: 'Time To Complete Task',
 	eta: 'Estimated Time to Finish Task',
 	delete: 'Delete this task',
-
 	efficiency: 'Task Efficiency',
 	due: 'Task Due Date',
 	weight: 'Task Weight/Importance',
 	thread: 'Task Thread/Group',
 	dependencies: 'Task Predecessors. What needs to be done Before this?'
 }
-export const TASK_CONTROL_TITLES = {
-	startButton: 'Enter Start Time',
-	endButton: 'Enter End Time',
-}
+export const TASK_CONTROL_TITLES = { startButton: 'Enter Start Time', endButton: 'Enter End Time',}
 export const TASKEDITOR_SEARCH_PLACEHOLDER = 'Search for a Task'
 export const DEV = false // is it development or production?

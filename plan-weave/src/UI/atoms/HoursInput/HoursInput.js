@@ -1,9 +1,6 @@
-import {
-	HoursInputStyled, HoursContainer
-} from './HoursInput.elements'
-import React, { useState, useMemo } from 'react'
+import { HoursInputStyled, HoursContainer } from './HoursInput.elements'
+import { useState, useMemo } from 'react'
 import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
-
 const HoursInput = ({
 	placeholder = '0',
 	text,
@@ -21,32 +18,19 @@ const HoursInput = ({
 	...props
 }) => {
 	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
-
 	const [localValue, setLocalValue] = useState(initialValue)
-
-	// Use the controlledValue prop if it exists, otherwise, use localValue
-	const value = useMemo(() => controlledValue || localValue, [controlledValue,localValue])
-
+	const value = useMemo(() => controlledValue || localValue, [controlledValue, localValue]) // Use the controlledValue prop if it exists, otherwise, use localValue
 	const handleChange = e => {
 		const newValue = e.target.value
 		const cleanedValue = (parseFloat(newValue) >= min && parseFloat(newValue) <= max) || newValue === '' || newValue === '.' ? String(newValue) : String(min)
-		
 		setLocalValue(cleanedValue) // if it is in range, then it is that, default to min
-		
-		// Pass the new value to the parent component
-		if (onValueChange) onValueChange(cleanedValue) 
+		if (onValueChange) onValueChange(cleanedValue) // Pass the new value to the parent component
 	}
-
-	// TODO: remove this function or make it work still
-	const handleBlur = () => {
+	const handleBlur = () => { // TODO: remove this function or make it work still
 		const sanitizedValue = (parseFloat(localValue) || .1).toFixed(2) // Fail-safe default on blur, fixes ttc crash site bug on edge case
-
 		if (onBlur) onBlur(String(sanitizedValue))
-
 		setLocalValue(String(sanitizedValue))
-
-		// If it's being controlled, call the parent's onValueChange
-		if (onValueChange && controlledValue !== undefined) onValueChange(String(sanitizedValue))
+		if (onValueChange && controlledValue !== undefined) onValueChange(String(sanitizedValue)) // If it's being controlled, call the parent's onValueChange
 	}
 	return (
 		<HoursContainer variant={processedVariant} color={color}>

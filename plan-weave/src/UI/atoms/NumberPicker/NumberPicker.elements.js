@@ -8,19 +8,16 @@ const numberPickerPresets = {
 		dark: variantStyle(props => props.theme.colors.lightNeutralLight),
 	},
 }
-
 export const PickerContainer = styled.section`
 	display: flex; 
 	column-gap: 10px; 
 	align-items: center;
 	${getPresetCSS(numberPickerPresets, 'variant')}
 `
-
 export const DropdownWrapper = styled.div`
 	position: relative;
   	display: inline-block;
 `
-
 export const StyledNumberPicker = styled.select`
 	padding: 5px; 
 	border: 1px solid #ccc; 

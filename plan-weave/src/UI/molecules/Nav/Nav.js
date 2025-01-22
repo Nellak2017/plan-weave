@@ -1,4 +1,3 @@
-import React from 'react'
 import {
 	StyledNav,
 	Logo,
@@ -18,20 +17,8 @@ const defaultImage = ({
 	width = 64, height = 61,
 	title = 'Organize your tasks with Plan Weave',
 	label = 'Organize your tasks with Plan Weave',
-}) => (
-	<Image
-		src={image.src} //'/Plan-Weave-Logo.png'
-		alt={alt}
-		width={width}
-		height={height}
-		title={title}
-		aria-label={label}
-		priority={true}
-	/>
-)
-
+}) => (<Image src={image.src} alt={alt} width={width} height={height} title={title} aria-label={label} priority={true}/>)
 const defaultAppLink = () => (makeLink({}))
-
 const defaultMiddle = ({
 	text = 'Plan Weave',
 	link = '/plan-weave',
@@ -39,17 +26,13 @@ const defaultMiddle = ({
 	label = 'Go to Plan Weave App',
 	handler,
 	index = 0 }) => (
-	<SiteTitle>
-		{makeLink({ text, link, title, label, handler, index })}
-	</SiteTitle>
+	<SiteTitle>{makeLink({ text, link, title, label, handler, index })}</SiteTitle>
 )
-
 const defaultSignUp = ({
 	text = 'Sign up',
 	title = 'Sign up',
 	label = 'Sign up for Plan-Weave',
 	handler,
-	index = 0,
 	Icon = BsArrowRightShort
 }) => (
 	<Button

@@ -15,7 +15,6 @@ const taskTablePresets = {
 	  `
 	},
 }
-
 export const TaskTableContainer = styled.div`
 	display: block;
 	max-width: -moz-fit-content;

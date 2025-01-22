@@ -3,11 +3,7 @@ import { TASK_STATUSES } from '../../../Core/utils/constants.js'
 import { parseISO, formatISO } from 'date-fns'
 
 // ------ Helpers
-
-// it returns { currentTime, completedTimeStamp }
-const currentCompletedTimes = () => ({ currentTime: new Date(), completedTimeStamp: new Date().getTime() / 1000 })
-
-// Standard update for a task (what is shared in the updates for the tasks, to make it DRY)
+const currentCompletedTimes = () => ({ currentTime: new Date(), completedTimeStamp: new Date().getTime() / 1000 }) // it returns { currentTime, completedTimeStamp }
 const standardTaskUpdate = ({ task, localTask, localTtc, prevCompletedTask, taskObject, completedTimeStamp, localDueDate, localWeight, localDependencies, localThread }) => ({
 	...task,
 	task: localTask.slice(0, 50),
@@ -17,8 +13,7 @@ const standardTaskUpdate = ({ task, localTask, localTtc, prevCompletedTask, task
 	weight: parseFloat(localWeight) || 1,
 	dependencies: localDependencies,
 	parentThread: localThread,
-})
-
+}) // Standard update for a task (what is shared in the updates for the tasks, to make it DRY)
 const wasteFeature = ({ taskObject, isChecked, localTask, newETA, localTtc, prevCompletedTask, localDueDate, localWeight, localDependencies, localThread, taskRow, id, userId, index }) => {
 	const { currentTime, completedTimeStamp } = currentCompletedTimes() // epoch in seconds, NOT millis
 	const updatedTask = {
@@ -30,7 +25,6 @@ const wasteFeature = ({ taskObject, isChecked, localTask, newETA, localTtc, prev
 	}
 	taskRow?.complete({ id, updatedTask, index, userId })
 }
-
 const multipleDeleteFeature = ({ isHighlighting, updateSelectedTasks, selectedTasks, index }) => {
 	if (isHighlighting) {
 		updateSelectedTasks((() => {
@@ -43,7 +37,6 @@ const multipleDeleteFeature = ({ isHighlighting, updateSelectedTasks, selectedTa
 }
 
 // ------ Handlers
-
 // services = (updateSelectedTasks, taskRow), setIsChecked
 // state = taskObject, prevCompletedTask, isChecked, isHighlighting, selectedTasks, index, localTask, localTtc, newETA, id, localDueDate
 export const handleCheckBoxClicked = ({ services, state }) => {
@@ -55,10 +48,8 @@ export const handleCheckBoxClicked = ({ services, state }) => {
 		userId } = state || {}
 	// Change the Checkmark first before all so we don't forget!
 	setIsChecked(!isChecked) // It is placed before the redux dispatch because updating local state is faster than api
-
 	// Multiple Deletion feature (Multi-Delete) : update tasks for multi-delete feature locally 
 	if (multipleDeleteFeature({ isHighlighting, updateSelectedTasks, selectedTasks, index }) === null) return
-
 	// Waste Feature (Task Completed) : update task with current waste, eta, efficiency, etc. when a task completes 
 	wasteFeature({ taskObject, isChecked, localTask, newETA, localTtc, prevCompletedTask, localDueDate, localWeight, localDependencies, localThread, taskRow, id, userId, index })
 }

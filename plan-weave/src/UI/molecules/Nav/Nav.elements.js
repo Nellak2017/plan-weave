@@ -21,7 +21,6 @@ const navPresets = {
 		`
 	},
 }
-
 export const StyledNav = styled.nav`
 	margin: 0;
 	padding: 0 ${props => props.theme.spaces.small};
@@ -36,14 +35,11 @@ export const StyledNav = styled.nav`
 	* { color: #fff; }
   	${getPresetCSS(navPresets, 'variant')};
 `
-
 export const Logo = styled.span` cursor: pointer; `
-
 export const SiteTitle = styled.h1`
 	font-size: ${props => props.theme.fontSizes.larger};
 	a { font-size: ${props => props.theme.fontSizes.larger};}
 `
-
 export const LoginContainer = styled.span`
 	display: flex;
 	align-items: center;
@@ -67,9 +63,7 @@ export const LoginContainer = styled.span`
 		svg { font-size: ${props => props.theme.fontSizes.large};}
 	}
 `
-
-// This is to make the spacing proper even for large desktops
-export const ContentContainer = styled.section`
+export const ContentContainer = styled.section` // This is to make the spacing proper even for large desktops
 	display: flex;
 	flex-wrap: wrap; // 2 rows when it is small screen
 	align-items: center;

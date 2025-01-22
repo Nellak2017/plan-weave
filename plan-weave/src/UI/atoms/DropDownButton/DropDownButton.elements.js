@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components'
-import { getPresetCSS, colorPreset } from '../../styles/theme.js' //'../../styles/theme.js.js'
+import { getPresetCSS, colorPreset } from '../../styles/theme.js'
 
 const dropDownButtonPreSets = { // normal medium, but small default
   size: {

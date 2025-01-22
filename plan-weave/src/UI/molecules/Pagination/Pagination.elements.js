@@ -5,19 +5,14 @@ const paginationPresets = {
 	variant: {
 		light: css`
 			background-color: ${props => props.theme.colors.lightNeutralLight};
-			.pagination-icon {
-				color: ${props => props.theme.colors.darkNeutralDark};
-			}
+			.pagination-icon { color: ${props => props.theme.colors.darkNeutralDark}; }
 	  `,
 		dark: css`
 			background-color: ${props => props.theme.colors.darkNeutralDark};
-			.pagination-icon {
-				color: ${props => props.theme.colors.lightNeutralLight};
-			}
+			.pagination-icon { color: ${props => props.theme.colors.lightNeutralLight}; }
 		`
 	},
 }
-// TODO: Switch based on size, using xs, s, m, l, etc. based on the theme
 export const PaginationContainer = styled.div`
 	display: flex;
 	align-items: center;
@@ -34,9 +29,8 @@ export const PaginationContainer = styled.div`
           	box-shadow: ${props => props.theme.elevations.small};
 		}
 	}
-	// Styles To remove the up/down buttons on the number inputs 
 	input[type=number]::-webkit-inner-spin-button,
-	input[type=number]::-webkit-outer-spin-button {
+	input[type=number]::-webkit-outer-spin-button { // Styles To remove the up/down buttons on the number inputs 
 		-webkit-appearance: none;
 		appearance: none;
 		margin: 0;
@@ -45,7 +39,6 @@ export const PaginationContainer = styled.div`
 	input { text-align: center;} // Style to center the number in the input
 	${getPresetCSS(paginationPresets, 'variant')}
 `
-
 export const PageChooserContainer = styled.div`
 	display: flex;
 	align-items: center;

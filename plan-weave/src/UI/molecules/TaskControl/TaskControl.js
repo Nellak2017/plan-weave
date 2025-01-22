@@ -1,14 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import SearchBar from '../../atoms/SearchBar/SearchBar.js'
 import DropDownButton from '../../atoms/DropDownButton/DropDownButton'
-import {
-	TaskControlContainer,
-	TopContainer,
-	BottomContainer,
-	BottomContentContainer,
-	Separator,
-	TimePickerContainer
-} from './TaskControl.elements'
+import { TaskControlContainer, TopContainer, BottomContainer, BottomContentContainer, Separator, TimePickerContainer } from './TaskControl.elements'
 import TimePickerWrapper from '../../atoms/TimePickerWrapper/TimePickerWrapper.js'
 import { GiOwl } from 'react-icons/gi'
 import { BiPlusCircle, BiTrash } from 'react-icons/bi'
@@ -16,7 +9,7 @@ import { format, parseISO } from 'date-fns'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { formatTimeLeft } from '../../../Core/utils/helpers.js'
-import { THEMES, DEFAULT_TASK_CONTROL_TOOL_TIPS, SORTING_METHODS, OPTION_NOTIFICATIONS, VARIANTS, TASK_CONTROL_TITLES } from '../../../Core/utils/constants.js'
+import { DEFAULT_TASK_CONTROL_TOOL_TIPS, SORTING_METHODS, OPTION_NOTIFICATIONS, VARIANTS, TASK_CONTROL_TITLES } from '../../../Core/utils/constants.js'
 import Button from '../../atoms/Button/Button.js'
 import {
 	shiftEndTime,
@@ -30,7 +23,6 @@ import {
 } from './TaskControl.events.js'
 import { useInterval } from '../../hooks/useInterval.js'
 import { IoIosInformationCircleOutline } from "react-icons/io"
-
 const handleFormat = time => {
 	try {
 		return format(time, 'HH:mm')
@@ -39,7 +31,6 @@ const handleFormat = time => {
 		return
 	}
 }
-
 // services are: search, timeRange, owl, addTask, deleteMany, highlighting, updateSelectedTasks, sort, updateFirstLoad
 // state is: timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme, firstLoad
 function TaskControl({
@@ -53,16 +44,13 @@ function TaskControl({
 	clock1Text = '', clock2Text = '',
 	coords = { y0: 0, y1: 0, x0: 0, x1: -36 },
 	...rest }) {
-
-	// Input Validation and Destructuring
-	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
+	// Input Destructuring
 	const { y0, y1, x0, x1 } = { ...coords }
 	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip, fullTaskToggleTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
 	const { search, sort, fullToggle, updateFirstLoad } = services || {}
 	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme, fullTask, firstLoad, userId } = state || {}
 	const startTime = useMemo(() => timeRange?.start ? parseISO(timeRange?.start) : new Date(), [timeRange])
 	const endTime = useMemo(() => timeRange?.end ? parseISO(timeRange?.end) : new Date(), [timeRange])
-
 	// Local State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
 	const [isDeleteClicked, setIsDeleteClicked] = useState(false) // used to track if delete has been presed once or not (HOF didn't work)
@@ -73,7 +61,6 @@ function TaskControl({
 			sort(name) // service for changing the sortingAlgo based on the name
 		}
 	})), [sort]) // Drop-down options for sorting methods. 
-
 	// Effects
 	useEffect(() => checkTimeRange(services, toast, endTime, startTime, owl), [owl, services, endTime, startTime])
 	useInterval(() => setCurrentTime(new Date()), 33, [currentTime])
@@ -83,15 +70,14 @@ function TaskControl({
 		if (owl) { shiftEndTime(services, 24, startTime, endTime, 2 * 24) }
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
-
 	return (
-		<TaskControlContainer variant={processedVariant} maxwidth={maxwidth}>
+		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
 			<TopContainer>
 				<SearchBar
 					services={{ search }}
 					tabIndex={0}
 					title={'Search for Tasks'}
-					variant={processedVariant}
+					variant={variant}
 					maxwidth={maxwidthsearch}
 					{...rest}
 				/>
@@ -100,7 +86,7 @@ function TaskControl({
 					<TimePickerWrapper
 						tabIndex={0}
 						title={TASK_CONTROL_TITLES.startButton}
-						variant={processedVariant}
+						variant={variant}
 						defaultTime={handleFormat(startTime)}
 						displayText={clock1Text}
 						verticalOffset={y0}
@@ -113,7 +99,7 @@ function TaskControl({
 					<TimePickerWrapper
 						tabIndex={0}
 						title={TASK_CONTROL_TITLES.endButton}
-						variant={processedVariant}
+						variant={variant}
 						defaultTime={format(endTime, 'HH:mm')}
 						displayText={clock2Text}
 						verticalOffset={y1}
@@ -173,21 +159,14 @@ function TaskControl({
 							Delete
 						</Button>
 					}
-					<Separator variant={processedVariant} color={color} />
+					<Separator variant={variant} color={color} />
 				</BottomContentContainer>
 				<BottomContentContainer>
 					<p title={'Time left until End of Task Period'}>{formatTimeLeft({ currentTime, endTime, owl })}</p>
 				</BottomContentContainer>
 				<BottomContentContainer>
-					<Separator variant={processedVariant} color={color} />
-					<DropDownButton
-						tabIndex={0}
-						title={dropDownToolTip}
-						variant={processedVariant}
-						color={color}
-						options={options}
-						{...rest}
-					/>
+					<Separator variant={variant} color={color} />
+					<DropDownButton tabIndex={0} title={dropDownToolTip} variant={variant} color={color} options={options} {...rest} />
 				</BottomContentContainer>
 			</BottomContainer>
 		</TaskControlContainer>

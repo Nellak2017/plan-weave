@@ -1,9 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-const initialState = {
-	threads: ['default']
-}
-
+const initialState = { threads: ['default'] }
 const globalThreadsSlice = createSlice({
 	name: 'globalThreads',
 	initialState,
@@ -25,21 +22,10 @@ const globalThreadsSlice = createSlice({
 			console.log([action.payload, ...state.threads])
 			state.threads = [action.payload, ...state.threads] // Add a new thread to the state
 		},
-		deleteGlobalThread: (state, action) => {
-			const threadName = action.payload
-			state.threads = state?.threads?.filter(thread => thread !== threadName)
-		},
-		deleteGlobalThreads: (state, action) => {
-			const threadsToDelete = action.payload
-			state.threads = state?.threads?.filter(thread => !threadsToDelete.includes(thread))
-		},
+		deleteGlobalThread: (state, action) => { state.threads = state?.threads?.filter(thread => thread !== action.payload) },
+		deleteGlobalThreads: (state, action) => { state.threads = state?.threads?.filter(thread => !action.payload.includes(thread)) },
 	},
 })
 
-export const {
-	updateGlobalThreads,
-	addGlobalThread,
-	deleteGlobalThread,
-	deleteGlobalThreads,
-} = globalThreadsSlice.actions
+export const { updateGlobalThreads, addGlobalThread, deleteGlobalThread, deleteGlobalThreads, } = globalThreadsSlice.actions
 export default globalThreadsSlice.reducer

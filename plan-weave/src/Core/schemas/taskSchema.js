@@ -1,11 +1,9 @@
 import * as Yup from 'yup'
 import { TASK_STATUSES } from '../utils/constants.js'
 import { simpleTaskSchema } from './simpleTaskSchema.js'
-
 const timestamp = Math.floor((new Date()).getTime() / 1000)
 const isoStringRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|[+-]\d{2}:\d{2})$/
 const twelve = new Date(new Date().setHours(12, 0, 0, 0))
-
 /**
  * Schema for a full task with validation rules.
  * @typedef {Object} TaskSchema
@@ -70,7 +68,6 @@ export const fillDefaults = (obj) => {
 		timestamp: timestamp,
 		completedTimeStamp: timestamp + 1,
 		hidden: false,
-
 		efficiency: 0,
 		parentThread: 'default',
 		dueDate: twelve.toISOString(),
@@ -78,6 +75,5 @@ export const fillDefaults = (obj) => {
 		weight: 1, // Idk what value range for this to be honest
 		...obj,
 	}
-
 	return objWithDefaults
 }

@@ -42,13 +42,11 @@ const taskRowPresets = {
 		selected: css`outline: 1px solid ${props => props.theme.colors.lightNeutralLight};`
 	},
 }
-
 // Style the td's from here unless specifics are needed
 export const TaskRowStyled = styled.tr`
   	${getPresetCSS(taskRowPresets, 'variant')};
 	${getPresetCSS(taskRowPresets, 'status')};
 	${getPresetCSS(taskRowPresets, 'highlight')}; // intended to gray out old tasks if old prop ='old'
-
 	* > svg:hover {
 		cursor: pointer;
 		color: ${props => props.theme.colors.primary};
@@ -59,7 +57,6 @@ export const TaskRowStyled = styled.tr`
 		svg { vertical-align: middle;}
 	}
 `
-
 export const DragIndicator = styled(MdDragIndicator)`
 	&:hover {
 		cursor: grab!important; // Important is needed bc * > svg:hover has more precedence than this
@@ -78,7 +75,6 @@ export const TaskContainer = styled.td`
 		width: 100%;
 	}
 `
-
 export const WasteContainer = styled.td`
 	padding: ${props => props.theme.spaces.small};
 	max-width: 170px;
@@ -87,7 +83,6 @@ export const WasteContainer = styled.td`
 	input { min-width: 40px;}
 	p, pre { font-size: ${props => props.theme.fontSizes.medium};}
 `
-
 export const TimeContainer = styled.td`
 	padding: ${props => props.theme.spaces.small};
 	max-width: 200px;
@@ -125,7 +120,6 @@ export const DueContainer = styled.td`
 	input { width: 160px;}
 	padding: ${props => props.theme.spaces.small};
 `
-
 export const WeightContainer = styled.td`
 	padding: ${props => props.theme.spaces.small};
 	padding-left: 25px;
@@ -135,9 +129,7 @@ export const WeightContainer = styled.td`
 		padding-right: 0;
 	}
 `
-
 export const ThreadContainer = styled.td`padding: ${props => props.theme.spaces.small};`
-
 export const DependencyContainer = styled.td`
 	padding: ${props => props.theme.spaces.small};
 	& > div { width: 100%;}

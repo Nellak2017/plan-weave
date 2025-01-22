@@ -11,15 +11,10 @@ export const isNode = schema => Boolean(schema && (['string', 'number', 'boolean
 export const isInputValid = (input, schema) => {
 	try {
 		schema.validateSync(input, { strict: true, abortEarly: true, recursive: true })
-		// Check if there are extra fields in the input
 		const extraFields = typeof input !== 'object' || typeof schema.fields !== 'object'
-			? []
-			: Object.keys(input).filter(field => !Object.keys(schema.fields).includes(field))
+			? [] : Object.keys(input).filter(field => !Object.keys(schema.fields).includes(field))
 		return (extraFields.length > 0)
-			? {
-				isValid: false,
-				error: `Extra fields present in input: ${extraFields.join(', ')}.`
-			}
+			? { isValid: false, error: `Extra fields present in input: ${extraFields.join(', ')}.`}
 			: { isValid: true, error: '' }
 	} catch (error) {
 		return { isValid: false, error: error.message || String(error) } // was error.message
@@ -31,9 +26,7 @@ export const isValidFieldTypes = (schema, data) => {
 		if (value instanceof Date) return 'date'
 		if (typeof value === 'number' && Number.isNaN(value)) return 'NaN'
 		return typeof value === 'object'
-			? Array.isArray(value)
-				? 'array'
-				: 'null'
+			? Array.isArray(value) ? 'array' : 'null'
 			: typeof value
 	}
 
@@ -43,7 +36,6 @@ export const isValidFieldTypes = (schema, data) => {
 			: (typeof fieldValue === 'object' && !Array.isArray(fieldValue))
 			&& Object.keys(fieldSchema.fields).every(key => validateField(fieldSchema.fields[key], fieldValue?.[key]))
 		: getTypeString(fieldValue) === fieldSchema.type
-
 	// Special handling for array and primitive schemas
 	return (schema.type === 'array' || !schema.fields)
 		? schema.type === 'array'
@@ -51,7 +43,6 @@ export const isValidFieldTypes = (schema, data) => {
 			: getTypeString(data) === schema.type
 		: Object.keys(schema.fields).every(key => validateField(schema.fields[key], data?.[key]))
 }
-
 // --- Others
 export const makeIterable = iterable => isIterable(iterable)
 	? isDictionary(iterable)
@@ -59,7 +50,6 @@ export const makeIterable = iterable => isIterable(iterable)
 		: iterable[Symbol.iterator]()
 	: iterable
 const coercionEdgeCases = (input, schema) => schema && Yup.isSchema(schema) ? { data: input, error: '' } : { data: input, error: 'No Schema provided, input data is unaffected by schema coercions.' }
-
 // --- Node Transformation Logic
 const labels = { 'null': 0, 'undefined': 1, 'boolean': 2, 'number': 3, 'bigint': 4, 'string': 5, 'date': 6, 'mixed': 7 }
 const typeDefaults = { 'null': null, 'undefined': undefined, 'boolean': false, 'number': 0, 'bigint': 0n, 'string': '', 'date': new Date(), 'array': [], 'object': {}, 'mixed': null }
@@ -110,9 +100,7 @@ const getTransform = (input, schema, matrix = transformationMatrix) => {
 	return ret
 }
 const enhancedCastPrimitive = (input, schema) => getTransform(input, schema)(input, schema) // Returns expected casting for primitives only, not bullshit one only if default is defined. If no default then null.
-
 // --- DFS
-
 // Related dfs functions is in this object for readability
 // Note: Main dfs function does not respect defaults for arrays with dicts nor objects
 // Note: Mixed type is unsupported
@@ -142,17 +130,14 @@ export const dfsFns = {
 	dfs: ({ input, schema, output = undefined, path = [], errors = [], reachGet = dfsFns.reachGet, reachUpdate = dfsFns.reachUpdate, processErrors = dfsFns.processErrors, processNodes = dfsFns.processNodes }) => {
 		const currentInput = reachGet(input, path)
 		const currentSchema = Yup.reach(schema, path.join('.')) // TODO: Revert back to non-yup reach version, turns out I didn't need this way..
-
 		const { isValid, error } = isInputValid(currentInput, currentSchema) // see if it is valid (works for nodes and shallow non-nodes)
 		const isArrDict = Boolean(currentSchema.type === 'array' && currentSchema.innerType.fields)
 		const isDictOrArrDict = Boolean(currentSchema.type === 'object' || isArrDict || currentSchema.type === 'array') // NOTE: Added currentSchema.type === 'array' untested
-
 		// TODO: Remove hacky epicycle solution corrections added here and discover the general elegant solution.. 
 		// TODO: Fix Cyclomatic complexity!
 		if (isNode(currentSchema)) return processNodes({ currentInput, currentSchema, isValid, errors, error, output, path, errProcessor: processErrors })
 		if (Array.isArray(input) && isValid && input.length === 0) return { output: input, errors } // To make the test case pass f([], array schema) = []
 		if (!Array.isArray(currentInput) && isArrDict) return { output: reachUpdate(output, path, []), errors: processErrors([...errors, error])}  // to make f(default task, fullTasksSchema) = {output: [], errors: [1+]} pass
-
 		const iter = Array.from(makeIterable(isArrDict ? currentSchema.innerType.fields : currentSchema?.fields ? currentSchema.fields : (currentInput ?? [])?.map((el, i) => [i, currentSchema.innerType])))
 		if (isDictOrArrDict) return iter
 			.reduce(({ output, errors }, [key, fieldSchema]) => {
@@ -176,7 +161,6 @@ export const dfsFns = {
 		return { output, errors: [...errors, { message: `Schema type '${currentSchema?.type}' is not supported` }] }
 	}
 }
-
 // --- Main Coercion function
 /**
  * Coerces any input data to try to conform to the provided Yup schema, and guarantees atleast proper typing and shape.
@@ -220,189 +204,3 @@ export const coerceToSchema = (input, schema) =>
 	coercionEdgeCases(input, schema).error !== ''
 		? { output: input, errors: [coercionEdgeCases(input, schema).error] }
 		: dfsFns.dfs({ input, schema })
-
-// ------------ Experimental area
-const TASK_STATUSES = {
-	COMPLETED: 'completed',
-	INCOMPLETE: 'incomplete',
-	WAITING: 'waiting',
-	INCONSISTENT: 'inconsistent',
-}
-const timestamp = Math.floor((new Date()).getTime() / 1000)
-const isoStringRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|[+-]\d{2}:\d{2})$/
-const twelve = new Date(new Date().setHours(12, 0, 0, 0))
-const simpleTaskSchema = Yup.object({
-	task: Yup.string()
-		.max(50, 'Task must be at most 50 characters')
-		.required()
-		.default(''),
-	waste: Yup.number()
-		.nullable(false)
-		.required()
-		.default(0),
-	ttc: Yup.number()
-		.typeError('TTC must be a number')
-		.min(0.01)
-		.required()
-		.default(1),
-	eta: Yup.string()
-		.typeError('Eta must be a valid ISO string')
-		.matches(isoStringRegex, 'Eta must be a valid ISO String, it failed the regex test')
-		.required()
-		.default(() => twelve.toISOString()),
-	id: Yup.number()
-		.positive('Id must be greater than 0')
-		.required('Id is required')
-		.default(1),
-	status: Yup.string()
-		.oneOf(Object.values(TASK_STATUSES), 'Invalid status value')
-		.required()
-		.default(TASK_STATUSES.INCOMPLETE),
-	timestamp: Yup.number()
-		.positive('Normal Timestamp must be a positive number')
-		.required()
-		.default(1),
-	completedTimeStamp: Yup.number()
-		.positive('Completed Timestamp must be a positive number')
-		.required()
-		.default(1),
-	hidden: Yup.boolean()
-		.required()
-		.default(false)
-}).default({})
-const taskSchema = Yup.object({
-	...simpleTaskSchema.fields,
-	// --- Full Task Exclusives
-	efficiency: Yup.number() // Percentage as raw number. Ex: 1 = 100%
-		.min(0)
-		.max(86400)
-		.required()
-		.default(0),
-	parentThread: Yup.string()
-		.min(2, 'Parent Thread must be atleast 2 characters')
-		.max(50, 'Parent Thread must be at most 50 characters')
-		.required()
-		.default(''),
-	dueDate: Yup.string()
-		.typeError('DueDate must be a valid ISO string')
-		.matches(isoStringRegex, 'DueDate must be a valid ISO String, it failed the regex test')
-		.required()
-		.default(() => twelve.toISOString()),
-	dependencies: Yup.array()
-		.of(Yup.mixed())
-		.required()
-		.default([]),
-	weight: Yup.number()
-		.required()
-		.min(0),
-}).default({ })
-
-const fullTasksSchema = Yup.array().of(taskSchema)
-
-const realTestData = [
-	{
-		"id": 1716861377766,
-		"eta": "2024-07-10T02:27:46.993Z",
-		"efficiency": 1330.049240776306,
-		"ttc": 3,
-		"completedTimeStamp": 1720578466.993,
-		"timestamp": 1716687091,
-		"dueDate": "2024-05-25T17:00:00.000Z",
-		"parentThread": "default",
-		"dependencies": [],
-		"waste": -3.9975019444444446,
-		"hidden": false,
-		"task": "task 1",
-		"status": "completed",
-		"weight": 1
-	},
-	{
-		"id": 1718143126427,
-		"weight": 1,
-		"hidden": false,
-		"task": " ",
-		"waste": 673.4899841666667,
-		"parentThread": "default",
-		"status": "completed",
-		"ttc": 1,
-		"completedTimeStamp": 1720578476.943,
-		"dependencies": [],
-		"efficiency": 0,
-		"dueDate": "2024-06-11T17:00:00.000Z",
-		"eta": "2024-07-10T02:27:56.943Z",
-		"timestamp": 1718142843
-	},
-	{
-		"id": 1720578472876,
-		"hidden": false,
-		"waste": 452.06042722222224,
-		"status": "incomplete",
-		"completedTimeStamp": 1720578382,
-		"ttc": 1,
-		"timestamp": 1720578381,
-		"dependencies": [],
-		"weight": 1,
-		"task": " ",
-		"parentThread": "default",
-		"eta": 1720582066, // Invalid Eta
-		"efficiency": 0,
-		"dueDate": "2024-07-09T17:00:00.000Z"
-	},
-	{
-		"id": 1720578475320,
-		"efficiency": 0,
-		"dueDate": "2024-07-09T17:00:00.000Z",
-		"ttc": 1,
-		"waste": 0,
-		"hidden": false,
-		"status": "incomplete",
-		"eta": 1720585666, // Invalid Eta
-		"dependencies": [],
-		"completedTimeStamp": 1720578382,
-		"task": " ",
-		"timestamp": 1720578381,
-		"weight": 1,
-		"parentThread": "default"
-	},
-	{
-		"id": 1720578478240,
-		"efficiency": 0,
-		"eta": 1720589266, // Invalid Eta
-		"dueDate": "2024-07-09T17:00:00.000Z",
-		"parentThread": "default",
-		"waste": 0,
-		"ttc": 1,
-		"status": "incomplete",
-		"timestamp": 1720578381,
-		"weight": 1,
-		"dependencies": [],
-		"task": " ",
-		"completedTimeStamp": 1720578382,
-		"hidden": false
-	}
-]
-const testData = [
-	221117417, -1690539872, 1437963861, 1844600114, 826177164, -869063195, 543652958, -1587187669, 627262482, 544528370, false, false, false, true, true, false, true, false, false, true
-]
-
-const testSchema = Yup.array().of(Yup.number())
-
-//console.log(isInputValid([], fullTasksSchema)) // realTestData
-// console.log(coerceToSchema(testData, testSchema))
-// console.log(dfsFns.dfs({ input: testData, schema: Yup.array().of(Yup.number())}))
-
-const defaultTask = {
-	"task": " ",
-	"waste": 1,
-	"ttc": 1,
-	"eta": "2024-08-05T17:00:00.000Z",
-	"id": 1722911470758,
-	"status": "incomplete",
-	"timestamp": 1722910996,
-	"completedTimeStamp": 1722910996,
-	"hidden": false
-}
-
-// const a = coerceToSchema(defaultTask, fullTasksSchema)
-// console.log(a)
-// console.log(isInputValid(a.output, fullTasksSchema))

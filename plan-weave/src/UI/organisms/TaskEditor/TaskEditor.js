@@ -1,5 +1,5 @@
 /* eslint-disable max-lines-per-function */
-import React, { useContext, useEffect, useMemo } from 'react'
+import { useContext, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNonHiddenTasksCoerceToFull } from '../../../Application/redux/selectors.js'
 import { THEMES, SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS, VARIANTS, DEV } from '../../../Core/utils/constants.js'
@@ -13,22 +13,15 @@ import { ThemeContext } from 'styled-components' // needed for theme object
 import { isInputValid, coerceToSchema } from '../../../Core/utils/schema-helpers.js'
 import { fullTasksSchema } from '../../../Core/schemas/taskSchema.js'
 
-const TaskEditor = ({
-	services = createTaskEditorServices(store),
-	variant = VARIANTS[0],
-	maxwidth = 818,
-	title = "Today's Tasks"
-}) => {
+const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARIANTS[0], maxwidth = 818, title = "Today's Tasks"}) => {
 	// --- Input Verification
 	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
-
 	// --- State Objects for Children
 	const globalTasks = useSelector(state => state?.globalTasks)
 	const taskList = useSelector(selectNonHiddenTasksCoerceToFull)
 	const { output, errors } = useMemo(() => coerceToSchema(taskList, fullTasksSchema), [taskList])
 	const fullTask = useSelector(state => state?.taskEditor?.fullTask)
 	const userId = useSelector(state => state?.taskEditor?.userId)
-
 	// State for TaskControl
 	const TaskControlState = {
 		globalTasks,
@@ -42,7 +35,6 @@ const TaskEditor = ({
 		firstLoad: useSelector(state => state?.taskEditor?.firstLoad),
 		userId,
 	}
-
 	// State for TaskTable 
 	const TaskTableState = {
 		globalTasks,
@@ -63,16 +55,8 @@ const TaskEditor = ({
 			userId,
 		},
 	}
-
 	// State for Pagination
-	const PaginationState = {
-		globalTasks,
-		taskList,
-		pageNumber: useSelector(state => state?.taskEditor?.page),
-		tasksPerPage: useSelector(state => state?.taskEditor?.tasksPerPage),
-		timeRange: useSelector(state => state?.taskEditor?.timeRange),
-	}
-
+	const PaginationState = { globalTasks, taskList, pageNumber: useSelector(state => state?.taskEditor?.page), tasksPerPage: useSelector(state => state?.taskEditor?.tasksPerPage), timeRange: useSelector(state => state?.taskEditor?.timeRange),}
 	// Effects
 	useEffect(() => {
 		const displayBeforeAfter = (taskList, output, isDev = DEV) => {
@@ -100,39 +84,25 @@ Verify the API endpoints and check the tasks in TaskEditor component.`
 			// TODO: add toast here too
 		}
 	}, [taskList.length]) // errors,taskList
-
 	return (
 		<TaskEditorContainer variant={processedVariant}>
 			<h1>{title}</h1>
 			<StyledTaskEditor variant={processedVariant} maxwidth={maxwidth}>
 				<TaskControl
-					services={{
-						...services?.global,
-						...services?.taskControl,
-					}}
+					services={{ ...services?.global, ...services?.taskControl,}}
 					state={TaskControlState}
 					variant={processedVariant}
 					clock1Text={''}
 					clock2Text={''}
 				/>
 				<TaskTable
-					services={{
-						...services?.global,
-						...services?.taskTable,
-					}}
+					services={{ ...services?.global, ...services?.taskTable,}}
 					state={TaskTableState}
 					variant={processedVariant}
 					headerLabels={fullTask ? FULL_TASK_HEADERS : SIMPLE_TASK_HEADERS}
 					maxwidth={maxwidth}
 				/>
-				<Pagination
-					services={{
-						...services?.global,
-						...services?.pagination,
-					}}
-					state={PaginationState}
-					variant={processedVariant}
-				/>
+				<Pagination services={{ ...services?.global, ...services?.pagination,}} state={PaginationState} variant={processedVariant} />
 			</StyledTaskEditor>
 		</TaskEditorContainer>
 	)

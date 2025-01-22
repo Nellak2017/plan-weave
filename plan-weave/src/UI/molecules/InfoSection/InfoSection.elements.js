@@ -16,9 +16,7 @@ const infoSectionPresets = {
 		`
 	},
 }
-
-// Top level container for Info Section
-export const StyledInfoContainer = styled.section`
+export const StyledInfoContainer = styled.section` // Top level container for Info Section
 	display: flex;
     align-items: center;
 	justify-content: center;
@@ -29,9 +27,7 @@ export const StyledInfoContainer = styled.section`
 	padding: 0;
   	${getPresetCSS(infoSectionPresets, 'variant')};
 `
-
-// Contains the columns so we can get accurate heights
-export const ColumnContainer = styled.div`
+export const ColumnContainer = styled.div` // Contains the columns so we can get accurate heights
 	display: flex;
 	align-items: center;
 	@media screen and (max-width:${props => props.theme.breakpoints.md}){
@@ -42,15 +38,11 @@ export const ColumnContainer = styled.div`
 		align-items: center;
     }
 `
-
-// Column where text or images will be
-export const Column = styled.div`
+export const Column = styled.div` // Column where text or images will be
 	padding: 0 ${props => props.theme.spaces.medium};
 	width: 100%;
 `
-
-// Container for Text in Column
-export const TextContainer = styled.div`
+export const TextContainer = styled.div` // Container for Text in Column
 	display: flex;
 	flex-direction: column;
 	max-width: 540px;

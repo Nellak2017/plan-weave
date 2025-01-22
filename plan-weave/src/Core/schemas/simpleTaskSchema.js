@@ -1,12 +1,9 @@
 import * as Yup from 'yup'
 import { TASK_STATUSES } from '../utils/constants.js'
-
 const timestamp = Math.floor((new Date()).getTime() / 1000)
 const isoStringRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|[+-]\d{2}:\d{2})$/
 const twelve = new Date(new Date().setHours(12, 0, 0, 0))
-
 // This schema is for the Simple Task
-
 /**
  * Schema for a simple task with validation rules.
  * @typedef {Object} SimpleTaskSchema
@@ -65,9 +62,7 @@ export const simpleTaskSchema = Yup.object({
 		.required()
 		.default(false)
 }).default({})
-
 export const simpleTasksSchema = Yup.array().of(simpleTaskSchema)
-
 /**
  * Fills in default values for a simple task object, allowing overrides with provided values.
  *
@@ -90,15 +85,4 @@ export const simpleTasksSchema = Yup.array().of(simpleTaskSchema)
  * @returns {SimpleTaskSchema} An object representing the task with default values applied and any 
  *   provided values merged in.
  */
-export const fillDefaultsForSimpleTask = obj => ({
-	task: ' ',
-	waste: 1,
-	ttc: 1,
-	eta: twelve.toISOString(),
-	id: new Date().getTime(),
-	status: TASK_STATUSES.INCOMPLETE,
-	timestamp: timestamp,
-	completedTimeStamp: timestamp + 1,
-	hidden: false,
-	...obj,
-})
+export const fillDefaultsForSimpleTask = obj => ({ task: ' ', waste: 1, ttc: 1, eta: twelve.toISOString(), id: new Date().getTime(), status: TASK_STATUSES.INCOMPLETE, timestamp: timestamp, completedTimeStamp: timestamp + 1, hidden: false, ...obj,})

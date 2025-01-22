@@ -1,36 +1,9 @@
 import { toast } from 'react-toastify'
-import {
-  updateTimeRange,
-  updateOwl,
-  updateSortingAlgorithm,
-  addTask,
-  deleteTask,
-  deleteTasks,
-  editTask,
-  completeTask,
-} from '../reducers/taskEditorSlice.js'
-
-import {
-  addGlobalTask,
-  deleteGlobalTask,
-  deleteGlobalTasks,
-  editGlobalTask,
-} from '../reducers/globalTasksSlice.js'
-
-import {
-  updateGlobalThreads,
-  addGlobalThread,
-  deleteGlobalThread,
-  deleteGlobalThreads,
-} from '../reducers/globalThreadsSlice.js'
-
-import {
-  addTask as addTaskAPI,
-  updateTask as updateTaskAPI,
-  deleteTasks as deleteTasksAPI,
-} from '../../../Infra/firebase/firebase_controller.js'
-
-import { logErrors } from '../../../Core/utils/helpers.js' 
+import { updateTimeRange, updateOwl, updateSortingAlgorithm, addTask, deleteTask, deleteTasks, editTask, completeTask, } from '../reducers/taskEditorSlice.js'
+import { addGlobalTask, deleteGlobalTask, deleteGlobalTasks, editGlobalTask, } from '../reducers/globalTasksSlice.js'
+import { updateGlobalThreads, addGlobalThread, deleteGlobalThread, deleteGlobalThreads, } from '../reducers/globalThreadsSlice.js'
+import { addTask as addTaskAPI, updateTask as updateTaskAPI, deleteTasks as deleteTasksAPI, } from '../../../Infra/firebase/firebase_controller.js'
+import { logErrors } from '../../../Core/utils/helpers.js'
 import { taskSchema } from '../../../Core/schemas/taskSchema.js'
 
 // --- Thunks for manipulating all the Threads
@@ -42,7 +15,6 @@ export const updateGlobalThreadsThunk = (threads) => (dispatch) => {
     toast.error('Failed to update global threads')
   }
 }
-
 export const addGlobalThreadThunk = (thread) => (dispatch) => {
   try {
     dispatch(addGlobalThread(thread))
@@ -51,7 +23,6 @@ export const addGlobalThreadThunk = (thread) => (dispatch) => {
     toast.error('Failed to add global thread')
   }
 }
-
 export const deleteGlobalThreadThunk = (thread) => (dispatch) => {
   try {
     dispatch(deleteGlobalThread(thread))
@@ -60,7 +31,6 @@ export const deleteGlobalThreadThunk = (thread) => (dispatch) => {
     toast.error('Failed to delete global thread')
   }
 }
-
 export const deleteGlobalThreadsThunk = (threads) => (dispatch) => {
   try {
     dispatch(deleteGlobalThreads(threads))
@@ -69,7 +39,6 @@ export const deleteGlobalThreadsThunk = (threads) => (dispatch) => {
     toast.error('Failed to delete global threads')
   }
 }
-
 // Thunks for misc other
 export const updateTimeRangeThunk = (start, end) => (dispatch) => {
   try {
@@ -79,13 +48,11 @@ export const updateTimeRangeThunk = (start, end) => (dispatch) => {
     console.error(e)
     toast.error('Failed to update Time Range')
   }
-
 }
 
 export const updateOwlThunk = (prev = false) => (dispatch) => {
   // prev is optional for the thunk only. It lets you easily have the text for either case
   try {
-
     if (prev) {
       toast.info('Overnight Mode is off: Tasks must be scheduled between 12 pm and 12 am. End time must be after the start time.', {
         autoClose: 5000,
@@ -101,7 +68,6 @@ export const updateOwlThunk = (prev = false) => (dispatch) => {
     toast.error('Failed to update Owl')
   }
 }
-
 export const updateSortingAlgorithmThunk = (sortingAlgo) => (dispatch) => {
   // Potentially PATCH request here
   try {
@@ -111,7 +77,6 @@ export const updateSortingAlgorithmThunk = (sortingAlgo) => (dispatch) => {
     toast.error('Failed to update sorting algorithm')
   }
 }
-
 // Thunks for tasks
 export const addNewTaskThunk = (task, userId) => (dispatch) => {
   try {
@@ -125,7 +90,6 @@ export const addNewTaskThunk = (task, userId) => (dispatch) => {
     toast.error('Failed to add new task')
   }
 }
-
 export const removeTaskThunk = (taskId, userId) => (dispatch) => {
   try {
     deleteTasksAPI(taskId, userId) // DELETE here
@@ -137,7 +101,6 @@ export const removeTaskThunk = (taskId, userId) => (dispatch) => {
     toast.error('The Task failed to be deleted')
   }
 }
-
 export const removeTasksThunk = (taskIdList, userId) => (dispatch) => {
   try {
     deleteTasksAPI(taskIdList, userId) // DELETE here
@@ -149,7 +112,6 @@ export const removeTasksThunk = (taskIdList, userId) => (dispatch) => {
     toast.error('The Tasks failed to be deleted')
   }
 }
-
 export const updateTaskThunk = (taskId, updatedTask, userId) => (dispatch) => {
   try {
     const output = logErrors({ updatedTask, taskSchema })
@@ -161,7 +123,6 @@ export const updateTaskThunk = (taskId, updatedTask, userId) => (dispatch) => {
     toast.error('The Task failed to update')
   }
 }
-
 export const completedTaskThunk = ({ taskId, updatedTask, index, userId }) => (dispatch) => {
   // Same as updateTaskThunk, but with extra logic for completing tasks, like dnd config updates and source update for taskTable
   try {

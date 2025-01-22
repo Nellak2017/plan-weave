@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { TaskInputStyled } from './TaskInput.elements'
 
 const TaskInput = ({ placeholder = 'Task Name', maxLength = '50', maxwidth, initialValue, controlledValue, ...rest }) => {

@@ -1,12 +1,5 @@
-import React from 'react'
 import SimpleRow from './SimpleRow.js'
-import {
-	EfficiencyContainer,
-	DueContainer,
-	WeightContainer,
-	ThreadContainer,
-	DependencyContainer
-} from './TaskRow.elements.js'
+import { EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer } from './TaskRow.elements.js'
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from 'date-fns'
 import DateTimePickerWrapper from '../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js'
@@ -18,47 +11,22 @@ import ReactSelectWrapper from '../../atoms/ReactSelectWrapper/ReactSelectWrappe
 
 const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
 
-function FullRow({
-	simpleTaskProps,
-	services,
-	state,
-}) {
+function FullRow({ simpleTaskProps, services, state, }) {
 	const { provided, taskObject, variant, isChecked, setLocalTask, localTask, localTtc, setLocalTtc, handleCheckBoxClicked } = simpleTaskProps
 	const { setLocalDueDate, setLocalWeight, setLocalThread, setLocalDependencies, addThread } = services || {}
 	const { availableThreads, localThread, localDueDate, localDependencies, localWeight, options } = state || {}
 	const { efficiency: efficencyToolTip, due: dueToolTip, weight: weightToolTip, thread: threadToolTip, dependencies: dependencyToolTip } = TASK_ROW_TOOLTIPS
 	const fullTask = { ...taskObject, ...state }
-
 	return (
 		<>
-			<SimpleRow
-				provided={provided}
-				variant={variant}
-				state={{ taskObject, isChecked, localTask, localTtc }}
-				services={{ setLocalTask, setLocalTtc, handleCheckBoxClicked }}
-			/>
+			<SimpleRow provided={provided} variant={variant} state={{ taskObject, isChecked, localTask, localTtc }} services={{ setLocalTask, setLocalTtc, handleCheckBoxClicked }} />
 			<EfficiencyContainer title={efficencyToolTip}>
-				<p>
-					{
-						!fullTask?.efficiency || fullTask?.efficiency <= 0
-							? '-'
-							: `${(parseFloat(fullTask?.efficiency) * 100).toFixed(0)}%`
-					}
-				</p>
+				<p>{!fullTask?.efficiency || fullTask?.efficiency <= 0 ? '-' : `${(parseFloat(fullTask?.efficiency) * 100).toFixed(0)}%`}</p>
 			</EfficiencyContainer>
 			<DueContainer title={dueToolTip}>
 				{isChecked
 					? formatDate(localDueDate)
-					: <DateTimePickerWrapper
-						variant={variant}
-						services={{
-							onTimeChange: (newDateTime) => setLocalDueDate(newDateTime.toISOString())
-						}}
-						state={{
-							defaultTime: format(parseISO(localDueDate), 'HH:mm'),
-							defaultDate: parseISO(localDueDate),
-						}}
-					/>
+					: <DateTimePickerWrapper variant={variant} services={{ onTimeChange: (newDateTime) => setLocalDueDate(newDateTime.toISOString()) }} state={{ defaultTime: format(parseISO(localDueDate), 'HH:mm'), defaultDate: parseISO(localDueDate), }} />
 				}
 			</DueContainer>
 			<WeightContainer title={weightToolTip}>
@@ -79,34 +47,20 @@ function FullRow({
 					// NOTE: You do the 'addThread' service here because the taskRow events file already updates the task itself!
 					<Select
 						variant={variant}
-						services={
-							{
-								onChange: e => setLocalThread(e),
-								onBlur: e => {
-									const isValidTask = validateTaskField({ field: 'parentThread', payload: e, schema: taskSchema })?.valid
-									const isUniqueThread = !availableThreads.includes(e)
-									if (isValidTask && isUniqueThread) addThread(e)
-								},
-							}
-						}
-						state={
-							{
-								initialValue: localThread,
-								options: availableThreads,
-								minLength: 2, // Select stops onBlur, and even if it didn't the schema validation would (defensive programming)
-								maxLength: 50,// This is here to ensure valid range no matter what (defense in depth)
-							}
-						}
+						services={{
+							onChange: e => setLocalThread(e),
+							onBlur: e => {
+								const isValidTask = validateTaskField({ field: 'parentThread', payload: e, schema: taskSchema })?.valid
+								const isUniqueThread = !availableThreads.includes(e)
+								if (isValidTask && isUniqueThread) addThread(e)
+							},
+						}}
+						state={{ initialValue: localThread, options: availableThreads, minLength: 2, maxLength: 50, }}
 					/>
 				}
 			</ThreadContainer>
 			<DependencyContainer title={dependencyToolTip}>
-				<ReactSelectWrapper
-					variant={variant}
-					initialSelectedPredecessors={localDependencies}
-					options={options}
-					onChange={setLocalDependencies}
-				/>
+				<ReactSelectWrapper variant={variant} initialSelectedPredecessors={localDependencies} options={options} onChange={setLocalDependencies} />
 			</DependencyContainer>
 		</>
 	)

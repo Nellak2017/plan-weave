@@ -1,7 +1,6 @@
 import Link from 'next/link'
 
-// Uses App as default
-export const makeLink = ({
+export const makeLink = ({ // Uses App as default
 	text = 'App',
 	link = '/plan-weave',
 	title = 'Go to Plan Weave App',
@@ -11,25 +10,11 @@ export const makeLink = ({
 	...props
 }) => (
 	<Link
-		href={link}
-		title={title}
-		role={'link'}
-		aria-label={label}
-		onClick={handler}
+		href={link} title={title} role={'link'} aria-label={label} onClick={handler}
 		onKeyDown={e => { if (e.key === 'Enter') { if (handler){handler()} } }}
-		tabIndex={index}
-		{...props}
+		tabIndex={index} {...props}
 	>
 		{text}
 	</Link>
 )
-
-export const defaultLogin = ({
-	text = 'Log in',
-	link = '/login',
-	title = 'Log in',
-	label = 'Log in to Plan-Weave',
-	handler,
-	index = 0,
-	...props
-}) => (makeLink({text, link, title, label, handler, index, ...props}))
+export const defaultLogin = ({ text = 'Log in', link = '/login', title = 'Log in', label = 'Log in to Plan-Weave', handler, index = 0, ...props}) => (makeLink({text, link, title, label, handler, index, ...props}))

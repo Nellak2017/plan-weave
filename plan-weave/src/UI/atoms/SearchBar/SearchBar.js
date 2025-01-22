@@ -2,9 +2,6 @@ import React, { useState } from 'react'
 import { SearchBarStyled } from './SearchBar.elements'
 import { MdSearch } from 'react-icons/md'
 import { THEMES, VARIANTS, TASKEDITOR_SEARCH_PLACEHOLDER } from '../../../Core/utils/constants.js'
-// Icon is placed AFTER input but displayed before 
-// because of ~ sibling selector limitations (SMH)
-// services = {search}
 function SearchBar({
 	services,
 	variant = VARIANTS[0],
@@ -12,28 +9,18 @@ function SearchBar({
 	maxwidth = 240,
 	tabIndex,
 	onChange,
-	...rest }) {
-
+	...rest }) { // Icon is placed AFTER input but displayed before because of ~ sibling selector limitations (SMH) services = {search}
 	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
 	const [searchValue, setSearchValue] = useState('')
-
 	const handleSearchChange = e => {
 		const newValue = e.target.value.trimStart() // remove left whitespace
 		services?.search(newValue)
 		setSearchValue(newValue)
-		// Call the onChange function from props to pass the value to the parent
-		if (onChange) onChange(newValue)
+		if (onChange) onChange(newValue) // Call the onChange function from props to pass the value to the parent
 	}
-
 	return (
 		<SearchBarStyled variant={processedVariant} maxwidth={maxwidth} {...rest}>
-			<input
-				tabIndex={tabIndex}
-				type="text"
-				placeholder={placeholder}
-				value={searchValue}
-				onChange={handleSearchChange}
-			/>
+			<input tabIndex={tabIndex} type="text" placeholder={placeholder} value={searchValue} onChange={handleSearchChange} />
 			<MdSearch size={32} />
 		</SearchBarStyled>
 	)

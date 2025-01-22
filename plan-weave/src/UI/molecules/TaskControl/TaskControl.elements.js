@@ -40,7 +40,6 @@ export const TaskControlContainer = styled.div`
 		}
 	}
 `
-
 export const TopContainer = styled.div`
 	display: flex;
 	align-items: center;
@@ -55,7 +54,6 @@ export const TopContainer = styled.div`
 	padding-right: ${props => props.theme.spaces.medium};
 	& > p { font-size: ${props => props.theme.fontSizes.large};}
 `
-
 export const BottomContainer = styled.div`
 	display: flex;
 	align-items: center;
@@ -67,7 +65,6 @@ export const BottomContainer = styled.div`
 	padding-left: ${props => props.theme.spaces.medium};
 	padding-right: ${props => props.theme.spaces.medium};
 `
-
 export const BottomContentContainer = styled.span`
 	display: inline-flex;
 	flex-direction: row;
@@ -76,15 +73,13 @@ export const BottomContentContainer = styled.span`
 	column-gap: ${props => props.theme.spaces.small};
 	padding-bottom: ${props => props.theme.spaces.small};
 `
-
 export const Separator = styled.i`
 	width: 1px;
 	height: ${props => props.theme.fontSizes.large}; 
 	margin: 0 5px;
   	${getPresetCSS(taskControlPresets, 'variant')};
 	${getPresetCSS(taskControlPresets, 'color')}; 
-`;
-
+`
 export const TimePickerContainer = styled.div`
 	display: flex;
 	column-gap: 8px;

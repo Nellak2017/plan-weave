@@ -12,7 +12,6 @@ export const supportedErrors = {
 		const [startIndex, endIndex] = indexRange
 		const invalidRange = startIndex < 0 || endIndex < startIndex || endIndex >= dnd.length
 		if (invalidRange) return { ok: false, error: `Invalid index range in deleteDnDEvent.\nRange = ${indexRange}` }
-
 		return { ok: deleteDnDEvent(dnd, indexRange), error: false }
 	}
 }
@@ -46,10 +45,6 @@ export const supportedErrors = {
  * const result = errorAspect(supportedFunctions, deleteDnDEvent)(dnd, indexRange)
  * console.log(result) // -> [1, 0, 2, 3]
  */
-export const errorAspect = (supportedFunctions, fx) => {
-	if (typeof fx !== 'function') return () => { }
-	const fxName = fx.name
-	return (supportedFunctions.hasOwnProperty(fxName))
-		? supportedFunctions[fxName]
-		: fx
-}
+export const errorAspect = (supportedFunctions, fx) => (typeof fx !== 'function')
+	? () => { }
+	: (supportedFunctions.hasOwnProperty(fx.name)) ? supportedFunctions[fx.name] : fx

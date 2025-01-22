@@ -31,7 +31,6 @@ const authFormPresets = {
 	  `
 	},
 }
-
 export const AuthContainer = styled.div`
 	margin: auto;
 	padding: ${props => props.theme.spaces.small} 0;
@@ -43,10 +42,8 @@ export const AuthContainer = styled.div`
 	border-radius: ${props => props.theme.spaces.medium};
 	max-width: ${props => props.maxwidth}px;
 	width: 100%;
-
   	${getPresetCSS(authFormPresets, 'variant')};
 `
-
 export const StyledAuthForm = styled.form`
 	display: flex;
 	flex-direction: column;
@@ -61,7 +58,6 @@ export const StyledAuthForm = styled.form`
 		cursor: pointer;
 	}
 `
-
 export const InputSection = styled.div`
 	width: 100%;
 	display: flex;
@@ -75,7 +71,6 @@ export const InputSection = styled.div`
 		margin-left: 10%;
 	}
 `
-
 export const SignInContainer = styled.div`
 	width: 100%;
 	display: flex;
@@ -87,7 +82,6 @@ export const SignInContainer = styled.div`
 		width: 80%;
 	}
 `
-
 export const OrSeparator = styled.span`
 	display: flex;
 	align-items: center;
@@ -95,21 +89,17 @@ export const OrSeparator = styled.span`
 	width: 80%;
 	user-select: none;
 `
-
 export const Line = styled.section`
 	width: 100%;
 	height: 1px;
 `
-
 export const Or = styled.div` padding: 0 10px; `
-
 export const CenteredContainer = styled.div`
   display: flex;
   justify-content: center; 
   align-items: center; 
   height: 100vh; 
 `
-
 export const SubtitleContainer = styled.div`
 	display: flex;
 	column-gap: ${props => props.theme.spaces.small};

@@ -6,14 +6,12 @@ import { DEV } from '../../Core/utils/constants.js'
 
 const db = getFirestore(app)
 const getTaskCollection = userId => `users/${userId}/tasks`
-
 export async function fetchTasksFromFirebase(userId, serialize = x => x) {
 	if (!userId) {
 		console.error("Can't fetch tasks without a userId defined")
 		toast.error('Failed to fetch tasks')
 		return
 	}
-
 	try {
 		const TaskCollection = getTaskCollection(userId)
 		const tasksQuery = query(collection(db, TaskCollection))
@@ -60,7 +58,6 @@ export async function updateTask(updatedTask, userId) {
 		toast.error('Failed to update task')
 	}
 }
-
 // accepts taskIds array or singular taskId
 export async function deleteTasks(taskIds, userId) {
 	if (!taskIds || !userId) {
@@ -68,31 +65,18 @@ export async function deleteTasks(taskIds, userId) {
 		toast.error('Failed to delete tasks')
 		throw new Error('Invalid taskIds or userId when trying to delete tasks. Failed to delete tasks')
 	}
-
 	try {
 		const TaskCollection = getTaskCollection(userId)
 		const taskIdsArray = Array.isArray(taskIds) ? taskIds : [taskIds]
-
-		// Use Promise.all to delete multiple tasks concurrently
-		await Promise.all(
-			taskIdsArray.map(async (taskId) => {
-				const taskDocRef = doc(db, TaskCollection, taskId.toString())
-				await deleteDoc(taskDocRef)
-			})
+		await Promise.all(taskIdsArray.map(async (taskId) => {
+			const taskDocRef = doc(db, TaskCollection, taskId.toString())
+			await deleteDoc(taskDocRef)
+		})
 		)
 	} catch (e) {
 		console.error(e)
 		toast.error('Failed to delete tasks')
 	}
 }
-
-// Converts tasks from Firebase version to Redux version
-// Was messing with Firebase timestamps, now just uses numbers
-export function serialize(tasks) {
-	const processedTasks = tasks?.map(task => {
-		return {
-			...task
-		}
-	})
-	return processedTasks
-}
+// Converts tasks from Firebase version to Redux version. Was messing with Firebase timestamps, now just uses numbers
+export const serialize = tasks => tasks?.map(task => ({ ...task }))

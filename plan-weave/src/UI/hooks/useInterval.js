@@ -14,6 +14,4 @@ export const useInterval = (callback, delay, dependencies) => {
   }, [callback, delay, ...dependencies])
 }
 export default useInterval
-
-// Example usage:
-// useInterval(() => update(), 50, [taskList])
+// Example usage: useInterval(() => update(), 50, [taskList])

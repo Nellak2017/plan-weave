@@ -1,18 +1,12 @@
-import {
-  DropDownButtonStyled,
-  DropdownContainer,
-  DropdownMenu,
-  DropdownMenuItem
-} from './DropDownButton.elements'
+import { DropDownButtonStyled, DropdownContainer, DropdownMenu, DropdownMenuItem } from './DropDownButton.elements'
 import { AiFillCaretDown } from 'react-icons/ai'
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 function DropDownButton({ size = 's', color = 'primary', options, children = 'Auto Sort', tabIndex, ...rest }) {
   const [isOpen, setIsOpen] = useState(false)
   const handleToggle = () => { setIsOpen(!isOpen) }
   const handleOptionClick = (e, listener) => {
-    // Call the event listener provided for the clicked option
-    if (listener) { listener(e) }
+    if (listener) { listener(e) } // Call the event listener provided for the clicked option
     setIsOpen(false) // Close the dropdown menu
   }
   return (
@@ -39,5 +33,4 @@ function DropDownButton({ size = 's', color = 'primary', options, children = 'Au
     </DropdownContainer>
   )
 }
-
 export default DropDownButton

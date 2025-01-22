@@ -20,7 +20,6 @@ export const HoursInputStyled = styled.input`
 	${getPresetCSS(taskInputPreSets, 'variant')};
 	${getPresetCSS(taskInputPreSets, 'color')};
 `
-
 export const HoursContainer = styled.section`
 	display: inline-flex;
 	justify-content: center;
@@ -29,7 +28,3 @@ export const HoursContainer = styled.section`
 	${getPresetCSS(taskInputPreSets, 'variant')};
 	${getPresetCSS(taskInputPreSets, 'color')};
 `
-
-
-
-

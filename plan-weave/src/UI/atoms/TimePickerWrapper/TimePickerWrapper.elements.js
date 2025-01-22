@@ -1,12 +1,7 @@
 import styled, { css } from 'styled-components'
 import { getPresetCSS } from '../../styles/theme.js'
 
-const timePickerPresets = {
-	variant: {
-		light: css`p, svg { color: ${props => props.theme.colors.darkNeutralDark};}`,
-		dark: css`p, svg { color: ${props => props.theme.colors.lightNeutralLight};}`
-	}
-}
+const timePickerPresets = { variant: { light: css`p, svg { color: ${props => props.theme.colors.darkNeutralDark};}`, dark: css`p, svg { color: ${props => props.theme.colors.lightNeutralLight};}` } }
 export const TimePickerWrapperStyled = styled.div`
 	position: relative;
 	display: inline-flex;

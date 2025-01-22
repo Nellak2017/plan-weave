@@ -11,11 +11,7 @@ const tableHeaderPresets = {
 		dark: variantStyles({ bg: props => props.theme.colors.lightNeutral, color: props => props.theme.colors.lightNeutralLight }),
 	},
 }
-
-export const TableHeaderContainer = styled.th` // This is here in case we need custom styles for this
-  	${getPresetCSS(tableHeaderPresets, 'variant')};
-`
-
+export const TableHeaderContainer = styled.th`${getPresetCSS(tableHeaderPresets, 'variant')};` // This is here in case we need custom styles for this
 export const StyledRow = styled.tr`
 	:nth-child(1), :nth-child(2) {
     	width: 5px; /* You can adjust the value to make them skinnier */

@@ -4,7 +4,6 @@ import homeImgTwo from '../../../../public/Home-Page/svg-2-todo.svg'
 
 // nav of the homepage
 // TODO: Make data for this
-
 // body of the homepage, such as for the sections
 export const body = [
 	{

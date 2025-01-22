@@ -8,9 +8,7 @@ import { isEqual as lodashIsEqual } from 'lodash'
 import { coerceToSchema } from './schema-helpers.js'
 
 // This file contains many helpers used through out the application
-
 // --- Private Functions
-
 // validate function private helpers
 export const validateTransformation = (task, schema, customErrorMessage) => {
 	// Rescript port
@@ -18,14 +16,11 @@ export const validateTransformation = (task, schema, customErrorMessage) => {
 	const str = JSON.stringify(task)
 	const errorMessage = str !== undefined ? customErrorProcessed + " task : " + str : "Failed to stringify task for error message"
 	return (schema.isValidSync(task, { strict: true })) ? { TAG: "Ok", _0: undefined } : { TAG: "Error", _0: errorMessage }
-	//if (!schema.isValidSync(task, { strict: true })) throw new Error(customErrorMessage + ` task : ${JSON.stringify(task)}`) 
 }
-
 const isRequired = (field, schema) => schema.describe().fields[field] ? !schema?.describe()?.fields[field]?.optional : false
 const requiredFields = (schema) => Object.keys(schema.describe().fields)
 	.map(field => isRequired(field, schema) ? field : null)
 	.filter(field => field !== null)
-
 // calculate waste helpers
 const step = (x, thresholdOpt) => (x > (thresholdOpt !== undefined ? thresholdOpt : 0)) ? 1 : 0
 export const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
@@ -36,7 +31,6 @@ export const etaList = (taskList, start = 0) => (taskList.length === 0)
 	: taskList.reduce((acc, task, index) =>
 		[...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)],
 		[start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
-
 // --- Helpers Exported
 /**
  * Format time left for tasks in a pure way.
@@ -51,45 +45,24 @@ export const etaList = (taskList, start = 0) => (taskList.length === 0)
  * @param {number} [options.timeDifference=0] - Time difference.
  * @returns {string} Formatted time left.
  */
-export const formatTimeLeft = ({
-	minuteText = 'minutes left',
-	hourText = 'hour',
-	hourText2 = 'hours left',
-	overNightMode = false,
-	currentTime = new Date(),
-	endTime,
-	timeDifference = 0,
-}) => {
-	// Returns Time in Milliseconds, given the constaints of the application
-	const calculateTimeDifference = ({ endTime, currentTime = new Date(), timeDifference = 0, overNightMode = false }) => {
-		if (timeDifference > 0) return timeDifference * MILLISECONDS_PER_HOUR // Convert hours to milliseconds
-
-		const adjustedEndTimeValue = overNightMode
-			? getTime(new Date(endTime)) + MILLISECONDS_PER_DAY // Add one day's worth of milliseconds
-			: getTime(endTime)
-
-		return Math.max(0, adjustedEndTimeValue - currentTime.getTime())
-	}
-
-	// Returns proper format of time, given the time and other relevant information
-	const formatTime = timeMillis => {
+export const formatTimeLeft = ({ minuteText = 'minutes left', hourText = 'hour', hourText2 = 'hours left', overNightMode = false, currentTime = new Date(), endTime, timeDifference = 0, }) => {
+	const calculateTimeDifference = ({ endTime, currentTime = new Date(), timeDifference = 0, overNightMode = false }) => (timeDifference > 0) // Returns Time in Milliseconds, given the constaints of the application
+		? timeDifference * MILLISECONDS_PER_HOUR
+		: Math.max(0, (overNightMode
+			? getTime(new Date(endTime)) + MILLISECONDS_PER_DAY
+			: getTime(endTime)) - currentTime.getTime())
+	const formatTime = timeMillis => { // Returns proper format of time, given the time and other relevant information
 		const totalHours = timeMillis / MILLISECONDS_PER_HOUR
 		const timeLeftInHours = Math.floor(totalHours)
 		const timeLeftInMinutes = Math.floor((totalHours - timeLeftInHours) * 60)
-
-		if (timeLeftInHours > 0) {
-			const secondsText = timeLeftInHours > 1 ? 's' : ''
-			return (timeLeftInMinutes > 0
-				? `${timeLeftInHours} ${hourText}${secondsText} ${timeLeftInMinutes} ${minuteText}`
+		return (timeLeftInHours > 0)
+			? (timeLeftInMinutes > 0
+				? `${timeLeftInHours} ${hourText}${timeLeftInHours > 1 ? 's' : ''} ${timeLeftInMinutes} ${minuteText}`
 				: `${timeLeftInHours} ${hourText2}`)
-		} else {
-			return `${timeLeftInMinutes} ${minuteText}`
-		}
+			: `${timeLeftInMinutes} ${minuteText}`
 	}
-
 	return formatTime(calculateTimeDifference({ endTime, currentTime, timeDifference, overNightMode }))
 }
-
 /**
  * Checks if a timestamp is from today.
  * 
@@ -102,7 +75,6 @@ export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400)
 	const startOfTodaySeconds = new Date(today).setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
 	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
 }
-
 // TODO: Remove old schema validation functions, it has been replaced by the modern coercion function 
 /**
  * Try to validate the task, removing extras and filling defaults
@@ -115,8 +87,7 @@ export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400)
  * @param {string} [options.customErrorMessage] - Custom error message.
  * @returns {Object|Error} - The validated and modified task, or an error if validation fails.
  */
-export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
-	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
+export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
 	try {
 		// Case 1: If the Task is valid, but missing/extra field, strip and fill defaults. Return list
 		const validatedTask = schema.validateSync(task, { abortEarly: false, stripUnknown: true, })
@@ -126,27 +97,18 @@ export const validateTask = ({ task, schema = simpleTaskSchema, schemaDefaultFx 
 	} catch (validationError) {
 		// Case 2: If the Task is invalid and missing required fields. Display errors and throw Error.
 		if (!requiredFields(schema).every(field => schema?.fields[field]?.isValidSync(task[field]))) throw new Error(validationError.message)
-
 		// Case 3: If the Task is invalid, but has required fields. Update it and return list.
 		// Iterate through fields and apply defaults to invalid ones, or delete it if it isn't in the attribute list
 		const updatedTask = schemaDefaultFx(task) // fill defaults if there are other undefined attributes too
-
 		const finalTask = Object.keys(updatedTask).reduce((acc, field) => {
 			const fieldExists = schema?.fields[field]
-			const isValid = fieldExists?.isValidSync(updatedTask[field])
-			return { ...acc, [field]: (isValid || !fieldExists) ? updatedTask[field] : fieldExists.getDefault() }
+			return { ...acc, [field]: (fieldExists?.isValidSync(updatedTask[field]) || !fieldExists) ? updatedTask[field] : fieldExists.getDefault() }
 		}, {})
-
 		validateTransformation(finalTask, schema, customErrorMessage)
 		return finalTask
 	}
 }
-
-export const validateTasks = ({ taskList, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask
-	, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => {
-	return taskList?.map(task => validateTask({ task, schema, schemaDefaultFx, customErrorMessage }))
-}
-
+export const validateTasks = ({ taskList, schema = simpleTaskSchema, schemaDefaultFx = fillDefaultsForSimpleTask, customErrorMessage = `Failed to validate Task in validateTask function. This is likely a programming bug.` }) => taskList?.map(task => validateTask({ task, schema, schemaDefaultFx, customErrorMessage }))
 // Validates a particular task field against the schema
 // Example: Validate({ field: 'parentThread', payload: "t", schema: fullTaskSchema }) => {valid: false, error: 'Parent Thread must be atleast 2 characters'}
 export const validateTaskField = ({ field, payload, schema = simpleTaskSchema, logger = console.error }) => {
@@ -159,7 +121,6 @@ export const validateTaskField = ({ field, payload, schema = simpleTaskSchema, l
 		return { valid: false, error: e.errors }
 	}
 }
-
 /**
  * Filters a list of items based on a given attribute and filter string.
  * [{attribute: string}, ...] => [{attribute: string}, ...]
@@ -170,10 +131,7 @@ export const validateTaskField = ({ field, payload, schema = simpleTaskSchema, l
  * @param {string} options.attribute - The attribute to filter by.
  * @returns {Array} - The filtered list.
  */
-export const filterTaskList = (filter, attribute) => list => (!filter || !attribute)
-	? list
-	: list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
-
+export const filterTaskList = (filter, attribute) => list => (!filter || !attribute) ? list : list.filter(item => item[attribute]?.toLowerCase()?.includes(filter?.toLowerCase()))
 /**
  * Converts hours to seconds.
  * 
@@ -181,7 +139,6 @@ export const filterTaskList = (filter, attribute) => list => (!filter || !attrib
  * @returns {number} - The equivalent seconds.
  */
 export const hoursToSeconds = hours => hours * 60 * 60
-
 /**
  * Converts hours to milliseconds.
  * 
@@ -189,7 +146,6 @@ export const hoursToSeconds = hours => hours * 60 * 60
  * @returns {number} - The equivalent milliseconds.
  */
 export const hoursToMillis = hours => hours * 60000 * 60
-
 /**
  * Converts milliseconds to hours.
  * 
@@ -197,7 +153,6 @@ export const hoursToMillis = hours => hours * 60000 * 60
  * @returns {number} - The equivalent milliseconds.
  */
 export const millisToHours = milliseconds => (milliseconds / 60000) / 60
-
 /**
  * Calculates and updates task waste and estimated time of arrival (ETA).
  *
@@ -224,7 +179,6 @@ export const calculateWaste = ({ start, taskList, time = new Date() }) => {
 		return task?.status === TASK_STATUSES.COMPLETED ? { ...task } : { ...task, waste, eta: formatISO(eta) }
 	})
 }
-
 /**
  * Checks if a value is an integer.
  *
@@ -232,7 +186,6 @@ export const calculateWaste = ({ start, taskList, time = new Date() }) => {
  * @returns {boolean} Returns `true` if the value is an integer, `false` otherwise.
  */
 export const isInt = number => ((!!number || number === 0) && typeof number === 'number' && Math.floor(number) === number && isFinite(number))
-
 /**
  * Reorders an array of tasks based on a provided transformation list.
  *
@@ -241,7 +194,6 @@ export const isInt = number => ((!!number || number === 0) && typeof number === 
  * @returns {Array<Object>} Returns a new array of tasks reordered based on the transform list. Like [{a:1},{b:2},{c:0}]
  */
 export const reorderList = (tasks, reordering) => tasks.map((_, i) => tasks[reordering[i]])
-
 /**
  * Applies a sequence of transformation functions to an initial array of tasks.
  *
@@ -250,7 +202,6 @@ export const reorderList = (tasks, reordering) => tasks.map((_, i) => tasks[reor
  * @returns {Array<Object>} Returns a new array of tasks after applying all specified transformations.
  */
 export const transformAll = (tasks, transforms) => transforms.reduce((task, f) => f(task), tasks)
-
 /**
  * Rearranges an array using a drag-and-drop (DnD) operation by moving an item from the source index to the destination index.
  *
@@ -270,7 +221,6 @@ export const rearrangeDnD = (dnd, source, destination) => {
 		...both.slice(destination)
 	]
 }
-
 /**
  * Generates an ordinal set from an array of numbers.
  * An ordinal set assigns ordinal values starting from 0 to unique numbers in the input array.
@@ -288,7 +238,6 @@ export const ordinalSet = dnd => {
 	uniqueSortedArr.forEach((num, index) => { mapping[num] = index })
 	return dnd.map(num => mapping[num])
 }
-
 /**
  * Deletes the specified range of indices, inclusive, from the DnD configuration, while maintaining dnd config invariants.
  *
@@ -314,11 +263,7 @@ export const ordinalSet = dnd => {
  * const result3 = deleteDnDEvent(dnd, [2, 3])
  * // Result: [0, 1, 2]
  */
-export const deleteDnDEvent = (dnd, indexRange) => {
-	const [startIndex, endIndex] = indexRange
-	return ordinalSet(dnd.filter((_, i) => i < startIndex || i > endIndex))
-}
-
+export const deleteDnDEvent = (dnd, indexRange) => ordinalSet(dnd.filter((_, i) => i < indexRange.startIndex || i > indexRange.endIndex))
 /**
  * Checks if two lists have the same relative ordering of their elements.
  * 
@@ -346,16 +291,13 @@ export const deleteDnDEvent = (dnd, indexRange) => {
  * // returns false
  * isRelativelyOrdered([1, 3, 2], [1, 0, 2])
  */
-export const isRelativelyOrdered = (list1, list2) => {
-	if (list1.length !== list2.length) return false
-	if (list1.length <= 1) return true
-	return list1.slice(0, -1).reduce((acc, a, i) => {
+export const isRelativelyOrdered = (list1, list2) => ((list1.length !== list2.length) || list1.length <= 1) 
+	? list1.length <= 1
+	: list1.slice(0, -1).reduce((acc, a, i) => {
 		if (!acc) return false
 		const [b, c, d] = [list1[i + 1], list2[i], list2[i + 1]]
 		return (a < b && c < d) || (a > b && c > d)
 	}, true)
-}
-
 /**
  * Composes a series of functions into a single function.
  * The functions are executed in sequence from left to right.
@@ -372,7 +314,6 @@ export const isRelativelyOrdered = (list1, list2) => {
  * console.log(addThenMultiply(5)) // Output: 12
  */
 export const pipe = (...f) => x => f.reduce((acc, fn) => fn(acc), x)
-
 /**
  * Sorts tasks with completed tasks on top and applies transformation functions.
  *
@@ -387,7 +328,6 @@ export const completedOnTopSorted = (sort = t => t.slice(), status = TASK_STATUS
 	...sort([...reduxTasks || []].filter(task => task?.status === status.COMPLETED)),
 	...sort([...reduxTasks || []].filter(task => task?.status !== status.COMPLETED))
 ]
-
 /**
  * Calculates the range of tasks to display based on the number of tasks per page and the current page.
  *
@@ -397,14 +337,10 @@ export const completedOnTopSorted = (sort = t => t.slice(), status = TASK_STATUS
  * and the second element is the ending index (exclusive). If either tasksPerPage or page is not a valid integer, [0, undefined]
  * is returned.
  */
-
 export const calculateRange = (tasksPerPage, page) => (isInt(tasksPerPage) && isInt(page))
 	? [(page - 1) * tasksPerPage + 1, page * tasksPerPage]
 	: [0, undefined]
-
-
 export const filterPages = (startRange, endRange) => taskList => taskList?.slice(startRange - 1, endRange)
-
 /**
  * Constructs a string that is not present in the original list of strings using the diagonal argument.
  *
@@ -425,7 +361,6 @@ export const filterPages = (startRange, endRange) => taskList => taskList?.slice
 export const diagonalize = strList => (!Array.isArray(strList) || !strList.every(str => typeof str === 'string'))
 	? ''
 	: strList.map((str, i) => i < str.length ? String.fromCharCode(str[i].charCodeAt(0) + 1) : 'a').join('')
-
 /**
  * Calculates the index at which a task should be inserted in order to maintain DnD index invariants.
  *
@@ -447,7 +382,6 @@ export const diagonalize = strList => (!Array.isArray(strList) || !strList.every
  * 
  * // Result: indexOfInsertion is 1, maintaining DnD index invariants after completing task with ID 3.
  */
-
 export const relativeSortIndex = (tasks, sort, id, complete = TASK_STATUSES.COMPLETED, incomplete = TASK_STATUSES.INCOMPLETE) => {
 	const newTasks = tasks.map(el => ({ ...el })) // ensures no proxies used
 	const completed = newTasks.filter(t => t.status === complete)
@@ -457,7 +391,6 @@ export const relativeSortIndex = (tasks, sort, id, complete = TASK_STATUSES.COMP
 		? sort(completed).indexOf(task) 					 // Incomplete --> Complete Case
 		: completed.length + sort(incompleted).indexOf(task) // Complete   --> Incomplete Case
 }
-
 /**
  * Determines the highlight style for a task row based on provided conditions.
  *
@@ -476,12 +409,10 @@ export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
 	if (typeof isHighlighting !== 'boolean' || typeof isChecked !== 'boolean' || typeof isOld !== 'boolean') {
 		throw new TypeError(`All parameters must be of type boolean.\nisHighlighting = ${isHighlighting}\nisChecked = ${isChecked}\nisOld = ${isOld}`)
 	}
-
 	if (isHighlighting && isChecked) return 'selected'
 	else if (!isHighlighting && !isChecked && isOld) return 'old'
 	return ''
 }
-
 /**
  * Transforms a given date by setting its time to match today's date.
  *
@@ -508,25 +439,14 @@ export const dateToToday = (start) => {
 	// ReScript port
 	const now = new Date(Date.now())
 	if (!(start instanceof Date) || isNaN(start.getTime())) {
-		return { TAG: "Error", _0: "Invalid input. Expected a Date for dateToToday function."}
+		return { TAG: "Error", _0: "Invalid input. Expected a Date for dateToToday function." }
 	}
 	const initOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).valueOf()
 	const initOfStart = new Date(start.getFullYear(), start.getMonth(), start.getDate()).valueOf()
-	return { TAG: "Ok", _0: new Date(initOfToday + (start.valueOf() - initOfStart))}
-	/*
-	if (!(start instanceof Date) || isNaN(start.getTime())) {
-		throw new TypeError(`Invalid input. Expected a Date for dateToToday function.\n${start}`)
-	}
-	const initOfToday = new Date().setHours(0, 0, 0, 0) // beginning of today in millis
-	const initOfStart = new Date(start).setHours(0, 0, 0, 0)
-	const timeSinceStart = start.getTime() - initOfStart // millis since start's start of day
-	return new Date(initOfToday + timeSinceStart) // start but with today's date
-	*/
+	return { TAG: "Ok", _0: new Date(initOfToday + (start.valueOf() - initOfStart)) }
 }
-
 // ReScript port
 const floatToStringNullable = (num, fallbackOpt) => (num === null || num === undefined) ? fallbackOpt !== undefined ? fallbackOpt : "undefined or null" : num.toString()
-
 /**
  * Calculate efficiency based on start time, end time, and estimated time of arrival (ETA).
  *
@@ -573,22 +493,9 @@ export const calculateEfficiency = (startTime, endTime, ttcHours) => {
 	} else {
 		return { TAG: "Error", _0: unknownErrorString }
 	}
-	/*
-	if (typeof startTime !== 'number' || typeof endTime !== 'number' || typeof ttcHours !== 'number') {
-		throw new TypeError(`All input parameters must be numbers.\nstartTime = ${startTime}, type => ${typeof startTime}\nendTime = ${endTime}, type => ${typeof endTime}\nttcHours = ${ttcHours}, type => ${typeof ttcHours}`)
-	}
-	if (startTime < 0 || (endTime - startTime) > 86400 || endTime < 0 || ttcHours <= 0 || ttcHours > 86400) {
-		throw new RangeError(`Start/End Time should be in the Range [startTime, startTime + 86400]. etaHours should be in range [0, 86400].\nstartTime = ${startTime}\nendTime = ${endTime}\netaHours = ${ttcHours}`)
-	}
-	const normalFormula = hoursToSeconds(ttcHours) / (endTime - startTime)
-	return startTime > endTime
-		? -1 / normalFormula // Domain Extension
-		: normalFormula // efficiency = (ttc) seconds / (end - start) seconds
-	*/
 }
 
 export const isValidDate = date => (new Date(date) != "Invalid Date") && !isNaN(new Date(date))
-
 /**
  * Checks if a task is considered old based on a given time range.
  * Used in TodoList to simplify things and make it clearer.
@@ -601,14 +508,12 @@ export const isTaskOld = (timeRange, task) => {
 	const { start, end } = { ...timeRange }
 		? { start: parseISO(timeRange?.start), end: parseISO(timeRange?.end) }
 		: { 0: new Date(new Date().setHours(0, 0, 0, 0)), 1: new Date(new Date().setHours(24, 59, 59, 59)) }
-
 	const epochDiff = (end - start) / 1000 // seconds between end and start
 	const epochTimeSinceStart = (start.getTime() - new Date(start).setHours(0, 0, 0, 0)) / 1000 // seconds between 00:00 and start
 	const epochTotal = epochDiff >= 0 ? epochDiff + epochTimeSinceStart : epochTimeSinceStart // seconds in our modified day. If negative, then default to full day
 	const epochETA = parseISO(task?.eta)?.getTime() / 1000
 	return !isTimestampFromToday(start, epochETA, epochTotal)
 }
-
 /**
  * Finds the last completed task in a given list of tasks, or null if there is none.
  * Used by TodoList to help with calculating efficiency.
@@ -621,7 +526,6 @@ export const findLastCompletedTask = tasks => {
 	const len = completedTasks?.length
 	return len > 0 ? completedTasks[len - 1] : null
 }
-
 /**
  * Finds the first incomplete task in a given list of tasks or null if there is none.
  * Used by calculateEfficiencyList for the interval calculation of efficiency.
@@ -631,10 +535,8 @@ export const findLastCompletedTask = tasks => {
  */
 export const findFirstIncompleteTask = tasks => {
 	const incompleteTasks = tasks.filter(task => task?.status === TASK_STATUSES.INCOMPLETE)
-	const len = incompleteTasks?.length
-	return len > 0 ? incompleteTasks[0] : null
+	return incompleteTasks?.length > 0 ? incompleteTasks[0] : null
 }
-
 /**
  * Chooses the correct calculateEfficiency function based on the given parameters.
  *
@@ -647,16 +549,12 @@ export const findFirstIncompleteTask = tasks => {
 export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTimeStamp, localTtc) => {
 	const { status, eta } = taskObject
 	const prevEta = prevCompletedTask?.eta
-
 	const epochETA = getTime(parseISO(eta)) / 1000 // converts ISO eta to epoch
 	const prevEpochETA = getTime(parseISO(prevEta)) / 1000 // converts ISO prev eta to epoch
-
 	const normalizeToDayRange = timeInSeconds => timeInSeconds % 86400 // TODO: untested 
-
 	const normalizedEpochETA = normalizeToDayRange(epochETA)
 	const normalizedPrevEpochEta = normalizeToDayRange(prevEpochETA)
 	const normalizedCompletedTimeStamp = normalizeToDayRange(completedTimeStamp)
-
 	// No Completed Tasks
 	if (!prevCompletedTask) {
 		try {
@@ -665,7 +563,6 @@ export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTi
 			console.error(e)
 		}
 	}
-
 	// Incomplete -> Completed Case
 	if (status === TASK_STATUSES.INCOMPLETE) {
 		try {
@@ -674,11 +571,9 @@ export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTi
 			console.error(e)
 		}
 	}
-
 	// Completed -> Incomplete Case (And the else Case)
 	return 0
 }
-
 /**
  * Calculates efficiency for the tasks in the given list, considering the completion status of tasks.
  * It will also auto-correct start times that are out of the established date range, effectively automatically shifting the start of day.
@@ -700,12 +595,10 @@ export const correctEfficiencyCase = (prevCompletedTask, taskObject, completedTi
 // TODO: BUG The start time will sometimes be out of the accepted date range
 //		-> Solution: If end - start > 86400 then make the start time for today in all the tasks. (Update it in calcEfficiencyList)
 export const calculateEfficiencyList = (taskList, start) => {
-
 	// 1. Figure out last complete task
 	const lastComplete = findLastCompletedTask(taskList)
 	const lastCompleteEta = lastComplete?.eta ? getTime(dateToToday(new Date(lastComplete.eta))) / 1000 : NaN
 	const lenCompleted = taskList?.filter(task => task?.status === TASK_STATUSES.COMPLETED).length
-
 	// 2. Figure out what task is first incomplete and assume completedTimestamp to be current moment
 	const firstIncomplete = findFirstIncompleteTask(taskList)
 	const { ttc, eta } = { ...firstIncomplete }
@@ -715,13 +608,11 @@ export const calculateEfficiencyList = (taskList, start) => {
 		? noCompleteTasksCase // If no complete tasks -> firstIncompleteStartTime is start time. Adjusted to be today to avoid date bugs.
 		: completeTasksCase // If complete tasks -> firstIncompleteStartTime is eta. Adjusted to be today to avoid date bugs.
 	const completedTimeStamp = getTime(new Date()) / 1000 // We assume the incomplete task is being completed at this instant
-
 	try {
 		// 3. for the first incomplete task, calculate its efficiency by: 
 		const firstIncompleteTaskCalculated = lastComplete
 			? calculateEfficiency(lastCompleteEta, completedTimeStamp, parseFloat(ttc) || .01)
 			: calculateEfficiency(firstIncompleteStartTime, completedTimeStamp, parseFloat(ttc) || .01)
-
 		// 4. return a copy of taskList with the first incomplete task being firstIncompleteTaskCalculated
 		return taskList.map(task =>
 			lodashIsEqual(task, firstIncomplete)
@@ -733,17 +624,9 @@ export const calculateEfficiencyList = (taskList, start) => {
 		console.error(e)
 	}
 }
-
 // Takes a task list with atleast objects with an id and task
 // Returns a list of options of form: [{value: id (number), label: task (string)}]
-export const predecessorOptions = (taskList, schema = taskSchema, schemaDefaultFx = fillDefaults) => {
-	// const validatedTasks = validateTasks({
-	// 	taskList, schema, schemaDefaultFx,
-	// 	customErrorMessage: `Failed to validate Tasks in predecessorOptions function.\n taskList = ${taskList}`
-	// })
-	return taskList?.map(task => ({ value: task?.id, label: task?.task }))
-}
-
+export const predecessorOptions = (taskList) => taskList?.map(task => ({ value: task?.id, label: task?.task }))
 // Logs errors and returns output when coercing
 export const logErrors = ({ updatedTask, taskSchema }) => {
 	const { output, errors } = coerceToSchema(updatedTask, taskSchema)
