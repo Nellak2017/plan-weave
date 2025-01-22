@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components"
 import { MdDragIndicator } from 'react-icons/md'
-import { getPresetCSS } from '../../../styles/theme.js'
+import { getPresetCSS } from '../../styles/theme.js'
 
 const commonOverlayStyles = css`
 	content: '';

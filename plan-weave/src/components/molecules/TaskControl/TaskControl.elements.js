@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components'
-import { getPresetCSS, colorPreset } from '../../../styles/theme'
+import { getPresetCSS, colorPreset } from '../../styles/theme.js'
 
 // TODO: Fix sizing prop. It needs to switch based on xs,s,m, l,.. not custom px values
 // TODO: Add Size switch

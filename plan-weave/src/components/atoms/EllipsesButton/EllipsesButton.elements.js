@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components'
-import { getPresetCSS, colorPreset } from '../../../styles/theme'
+import { getPresetCSS, colorPreset } from '../../styles/theme.js'
 
 const ellipsesButtonPreSets = {
 	variant: {

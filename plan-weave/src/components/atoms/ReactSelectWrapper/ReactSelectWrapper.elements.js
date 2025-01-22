@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { getPresetCSS, selectWrapperPresets,} from '../../../styles/theme'
+import { getPresetCSS, selectWrapperPresets,} from '../../styles/theme'
 
 export const StyledReactSelectContainer = styled.div`
 	& * { font-family: var(--font-poppins), sans-serif;}

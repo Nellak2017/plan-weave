@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { getPresetCSS, taskInputPreSets } from '../../../styles/theme.js'
+import { getPresetCSS, taskInputPreSets } from '../../styles/theme.js'
 
 export const TaskInputStyled = styled.input`
 	outline: 1px solid ${props => props.theme.colors.lightNeutralLight};

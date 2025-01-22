@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components'
-import { getPresetCSS, colorPreset } from '../../../styles/theme'
+import { getPresetCSS, colorPreset } from '../../styles/theme.js'
 
 const nextButtonPreSets = { variant: { left: css``, right: css`` }, size: {}, color: colorPreset }
 export const NextButtonStyled = styled.button`

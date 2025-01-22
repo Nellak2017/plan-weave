@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components'
-import { getPresetCSS } from '../../../styles/theme'
+import { getPresetCSS } from '../../styles/theme'
 
 const taskTablePresets = {
 	variant: {

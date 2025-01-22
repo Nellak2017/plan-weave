@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { getPresetCSS, taskInputPreSets } from '../../../styles/theme'
+import { getPresetCSS, taskInputPreSets } from '../../styles/theme.js' 
 
 // TODO: Add switch based on size in the theme.js
 export const HoursInputStyled = styled.input`

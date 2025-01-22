@@ -1,5 +1,5 @@
 import styled, { css } from "styled-components"
-import { getPresetCSS } from '../../../styles/theme.js'
+import { getPresetCSS } from '../../styles/theme.js'
 
 const variantStyle = color => css`p { color: ${color};}`
 const numberPickerPresets = {

@@ -1,5 +1,5 @@
 // File containing many constants
-import colors from '../../styles/theme'
+import colors from '../styles/theme'
 import { toast } from 'react-toastify'
 import { parseISO } from 'date-fns'
 
