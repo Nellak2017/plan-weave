@@ -1,7 +1,7 @@
 import Nav from '../UI/molecules/Nav/Nav.js'
 import InfoSection from '../UI/molecules/InfoSection/InfoSection.js'
 import { makeLink, defaultLogin } from '../UI/molecules/Nav/Nav.helpers.js'
-import { auth } from '../../firebase/firebase_auth.js'
+import { auth } from '../Infra/firebase/firebase_auth.js'
 import { useRouter } from 'next/router'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { body } from '../Infra/Data/HomePage/Data.js'

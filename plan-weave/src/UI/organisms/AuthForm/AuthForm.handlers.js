@@ -2,7 +2,7 @@ import {
 	signInWithEmail,
 	signUpWithEmail,
 	signInWithGoogle
-} from '../../../../firebase/firebase_auth.js'
+} from '../../../Infra/firebase/firebase_auth.js'
 import { toast } from 'react-toastify'
 
 export const handleHomePage = (router) => router.push('/')

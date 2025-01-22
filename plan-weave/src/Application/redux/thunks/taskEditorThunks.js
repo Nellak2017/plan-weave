@@ -3,7 +3,6 @@ import {
   updateTimeRange,
   updateOwl,
   updateSortingAlgorithm,
-
   addTask,
   deleteTask,
   deleteTasks,
@@ -29,7 +28,7 @@ import {
   addTask as addTaskAPI,
   updateTask as updateTaskAPI,
   deleteTasks as deleteTasksAPI,
-} from '../../../../firebase/firebase_controller.js'
+} from '../../../Infra/firebase/firebase_controller.js'
 
 import { logErrors } from '../../../Core/utils/helpers.js' 
 import { taskSchema } from '../../../Core/schemas/taskSchema/taskSchema.js'
