@@ -39,7 +39,7 @@ function MyApp({ Component, pageProps }) {
         `}</style>
       </Head>
       <MUIThemeProvider theme={MUITheme}>
-        <CssBaseline />
+        {/* <CssBaseline /> */}
         <ThemeProvider theme={theme}>
           <GlobalStyle />
           <ToastContainer position="bottom-left" autoClose={3000} />

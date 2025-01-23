@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
 	PickerContainer,
 } from './DateTimePickerWrapper.elements.js'
@@ -7,21 +7,18 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers'
 import { parse } from 'date-fns'
-import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
+import { VARIANTS } from '../../../Core/utils/constants.js'
 
 // Styled Components can't be used on MUI DateTimePicker! 
-function DateTimePickerWrapper({
+const DateTimePickerWrapper = ({
 	variant = VARIANTS[0],
-	services = {
-		onTimeChange: (newDateTime) => console.log(newDateTime)
-	},
+	services = { onTimeChange: (newDateTime) => console.log(newDateTime) },
 	state = {
 		label: 'Choose Due Date',
 		defaultTime: '14:00',
 		defaultDate: new Date(),
 	},
-}) {
-	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
+}) => {
 	const { onTimeChange } = services || {}
 	const { label, defaultTime, defaultDate } = state || {}
 	const [dateTime, setDateTime] = useState(parse(defaultTime, 'HH:mm', defaultDate))
@@ -31,7 +28,7 @@ function DateTimePickerWrapper({
 	}
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns}>
-			<PickerContainer variant={processedVariant}>
+			<PickerContainer variant={variant}>
 				<DateTimePicker
 					label={label}
 					value={dateTime}

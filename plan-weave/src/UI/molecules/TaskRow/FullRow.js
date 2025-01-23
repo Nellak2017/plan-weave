@@ -26,7 +26,13 @@ function FullRow({ simpleTaskProps, services, state, }) {
 			<DueContainer title={dueToolTip}>
 				{isChecked
 					? formatDate(localDueDate)
-					: <DateTimePickerWrapper variant={variant} services={{ onTimeChange: (newDateTime) => setLocalDueDate(newDateTime.toISOString()) }} state={{ defaultTime: format(parseISO(localDueDate), 'HH:mm'), defaultDate: parseISO(localDueDate), }} />
+					: <DateTimePickerWrapper
+						variant={variant}
+						services={{ onTimeChange: (newDateTime) => setLocalDueDate(newDateTime.toISOString()) }}
+						state={{
+							defaultTime: format(parseISO(localDueDate), 'HH:mm'),
+							defaultDate: parseISO(localDueDate),
+						}} />
 				}
 			</DueContainer>
 			<WeightContainer title={weightToolTip}>

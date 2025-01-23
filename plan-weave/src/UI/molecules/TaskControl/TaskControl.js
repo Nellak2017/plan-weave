@@ -27,7 +27,7 @@ const handleFormat = time => {
 	try {
 		return format(time, 'HH:mm')
 	} catch (e) {
-		console.error(`startTime = ${startTime}`,e)
+		console.error(`startTime = ${startTime}`, e)
 		return
 	}
 }
@@ -153,8 +153,8 @@ function TaskControl({
 							tabIndex={0}
 							variant={'delete'}
 							title={'Delete Selected Tasks'}
-							onClick={() => deleteMultipleEvent(services, toast, taskList, setIsDeleteClicked, selectedTasks, isDeleteClicked, userId)}
-							onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent(services, toast, taskList, setIsDeleteClicked, selectedTasks, isDeleteClicked, userId) } }}
+							onClick={() => deleteMultipleEvent({ state: { userId, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, })}
+							onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent({ state: { userId, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } }}
 						>
 							Delete
 						</Button>

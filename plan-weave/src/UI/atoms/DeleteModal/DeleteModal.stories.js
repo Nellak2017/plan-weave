@@ -10,13 +10,10 @@ const DeleteModalStories = {
 
 const Template = args => <DeleteModal {...args} />
 
-
 export const Light = Template.bind({})
-Light.args = {
-}
+Light.args = {}
 
 export const Dark = Template.bind({})
-Dark.args = {
-}
+Dark.args = {}
 
 export default DeleteModalStories
