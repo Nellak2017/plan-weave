@@ -7,12 +7,17 @@ import theme from '../UI/styles/theme.js'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import isPropValid from '@emotion/is-prop-valid' // automatic unknown prop filtering
+
+import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline' // normalizes css for MUI
+import { theme as MUITheme } from '../UI/styles/MUITheme.js'
+
 // eslint-disable-next-line camelcase
 import { Poppins, Courier_Prime, Roboto } from 'next/font/google'
 
-const poppins = Poppins({ weight: ['300', '400', '700'], style: ['normal', 'italic'], subsets: ['latin'], display: 'swap',})
-const courierPrime = Courier_Prime({ weight: ['400', '700'], style: ['normal', 'italic'], subsets: ['latin'], display: 'swap',})
-const roboto = Roboto({ weight: ['500'], style: ['normal'], subsets: ['latin'], display: 'swap',})
+const poppins = Poppins({ weight: ['300', '400', '700'], style: ['normal', 'italic'], subsets: ['latin'], display: 'swap', })
+const courierPrime = Courier_Prime({ weight: ['400', '700'], style: ['normal', 'italic'], subsets: ['latin'], display: 'swap', })
+const roboto = Roboto({ weight: ['500'], style: ['normal'], subsets: ['latin'], display: 'swap', })
 // TODO: When you add support for light/dark mode, see the NutriSync project to add support for initial variant regardless of page
 function MyApp({ Component, pageProps }) {
   return (
@@ -33,9 +38,16 @@ function MyApp({ Component, pageProps }) {
           }
         `}</style>
       </Head>
-      <ThemeProvider theme={theme}>
-        <GlobalStyle /><ToastContainer position="bottom-left" autoClose={3000} /><Provider store={store}><Component {...pageProps} /></Provider>
-      </ThemeProvider>
+      <MUIThemeProvider theme={MUITheme}>
+        <CssBaseline />
+        <ThemeProvider theme={theme}>
+          <GlobalStyle />
+          <ToastContainer position="bottom-left" autoClose={3000} />
+          <Provider store={store}>
+            <Component {...pageProps} />
+          </Provider>
+        </ThemeProvider>
+      </MUIThemeProvider>
     </StyleSheetManager>
   )
 }

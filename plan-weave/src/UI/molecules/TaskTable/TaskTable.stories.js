@@ -1,9 +1,9 @@
 // This story uses Redux to get the task information
 
 import TaskTable from './TaskTable'
-import { SIMPLE_TASK_HEADERS } from '../../utils/constants.js'
+import { SIMPLE_TASK_HEADERS } from '../../../Core/utils/constants.js'
 // redux stuff
-import store from '../../../redux/store'
+import store from '../../../Application/redux/store.js'
 import { Provider } from 'react-redux'
 
 const TaskTableStories = {

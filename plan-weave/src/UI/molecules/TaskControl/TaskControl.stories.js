@@ -1,6 +1,6 @@
 import TaskControl from './TaskControl'
 // redux stuff
-import store from '../../../redux/store'
+import store from '../../../Application/redux/store.js'
 import { Provider } from 'react-redux'
 
 const TaskControlStories = {

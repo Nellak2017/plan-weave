@@ -2,9 +2,9 @@ import TaskRow from './TaskRow'
 import { DragDropContext } from 'react-beautiful-dnd'
 import StrictModeDroppable from '../../atoms/StrictModeDroppable/StrictModeDroppable.js' // Wrapper for the unmaintained Droppable component
 // redux stuff
-import store from '../../../redux/store'
+import store from '../../../Application/redux/store.js'
 import { Provider } from 'react-redux'
-import { DEFAULT_SIMPLE_TASKS } from '../../utils/constants.js'
+import { DEFAULT_SIMPLE_TASKS } from '../../../Core/utils/constants.js'
 
 const TaskRowStories = {
 	title: 'Molecules/TaskRow',

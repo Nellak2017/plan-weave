@@ -1,3 +1,3 @@
 import { ButtonStyled } from './Button.elements.js'
-const Button = ({ size = 's', variant = 'standardButton', children, ...rest }) => (<ButtonStyled $size={size} variant={variant} {...rest}>{children}</ButtonStyled>)
+const Button = ({ variant, children, ...rest }) => (<ButtonStyled variant={'contained'} variantprop={variant} {...rest}>{children}</ButtonStyled>)
 export default Button

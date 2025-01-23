@@ -1,13 +1,15 @@
-import theme from '../src/UI/styles/theme.js' //'../src/styles/theme.js'
-import GlobalStyle from '../src/styles/globalStyles.js'
+import theme from '../src/UI/styles/theme.js'
+import GlobalStyle from '../src/UI/styles/globalStyles.js'
 import { ThemeProvider, StyleSheetManager } from 'styled-components'
 import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import isPropValid from '@emotion/is-prop-valid'
 
-// Storybook 7 syntax for parameters and decorators
-// See also: https://storybook.js.org/docs/react/writing-stories/parameters
+import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline' // normalizes css for MUI
+import { theme as MUITheme } from '../src/UI/styles/MUITheme.js'
+
 export default {
   parameters: {
     actions: { argTypesRegex: "^on[A-Z].*" },
@@ -25,11 +27,14 @@ export default {
   decorators: [
     (Story) => (
       <StyleSheetManager shouldForwardProp={prop => isPropValid(prop)}>
-        <ThemeProvider theme={theme}>
-          <ToastContainer position="bottom-left" autoClose={3000} />
-          <GlobalStyle />
-          <Story />
-        </ThemeProvider>
+        <MUIThemeProvider theme={MUITheme}>
+          <CssBaseline />
+          <ThemeProvider theme={theme}>
+            <ToastContainer position="bottom-left" autoClose={3000} />
+            <GlobalStyle />
+            <Story />
+          </ThemeProvider>
+        </MUIThemeProvider>
       </StyleSheetManager>
     )
   ]

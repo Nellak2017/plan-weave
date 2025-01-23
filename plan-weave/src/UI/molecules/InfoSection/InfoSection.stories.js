@@ -1,5 +1,5 @@
 import InfoSection from './InfoSection'
-import { body } from '../../../Data/HomePage/Data'
+import { body } from '../../../Infra/Data/HomePage/Data.js'
 
 const InfoSectionStories = {
 	title: 'Molecules/InfoSection',
