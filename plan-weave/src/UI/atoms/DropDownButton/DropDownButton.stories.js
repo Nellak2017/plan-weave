@@ -4,7 +4,6 @@ const DropDownButtonStories = {
   title: 'Atoms/Buttons/DropDownButton',
   component: DropDownButton,
   argTypes: {
-    size: { control: 'text' },
     color: { control: 'text' },
   }
 }
