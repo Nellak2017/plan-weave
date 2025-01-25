@@ -1,21 +1,16 @@
-import styled, { css } from 'styled-components'
-import { getPresetCSS } from '../../styles/theme.js'
+import { styled } from "@mui/material"
 
-const variantStyles = ({ bg, color }) => css`
-	background-color: ${bg};
-	color: ${color};
-`
-const tableHeaderPresets = {
-	variant: {
-		light: variantStyles({ bg: props => props.theme.colors.lightNeutralLight, color: props => props.theme.colors.darkNeutralDark }),
-		dark: variantStyles({ bg: props => props.theme.colors.lightNeutral, color: props => props.theme.colors.lightNeutralLight }),
+// TODO: Refactor to use theme properly
+const variantStyles = ({ bg, color }) => ({ backgroundColor: bg, color })
+const tableHeaderPresets = ({ theme, variant }) => ({
+	light: variantStyles({ bg: '#eeedee', color: '#2b252c' }),
+	dark: variantStyles({ bg: '#504651', color: '#eeedee' }),
+}?.[variant])
+export const TableHeaderContainer = styled('th')(({ theme, variant }) => ({ ...tableHeaderPresets({ theme, variant }) }))
+export const StyledRow = styled('tr')(({ theme, variant }) => ({
+	':nth-child(1), :nth-child(2)': {
+		width: '5px',
+		padding: '4px', // props.theme.spaces.smaller  
 	},
-}
-export const TableHeaderContainer = styled.th`${getPresetCSS(tableHeaderPresets, 'variant')};` // This is here in case we need custom styles for this
-export const StyledRow = styled.tr`
-	:nth-child(1), :nth-child(2) {
-    	width: 5px; /* You can adjust the value to make them skinnier */
-		padding: ${props => props.theme.spaces.smaller};
-  	}
-	${getPresetCSS(tableHeaderPresets, 'variant')};
-`
+	...tableHeaderPresets({ theme, variant })
+}))

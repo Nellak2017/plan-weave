@@ -7,12 +7,11 @@ const NumberPicker = ({
 	services: { onValueChange } = {}, ...rest
 }) => {
 	const value = useMemo(() => controlledValue, [controlledValue])
-	const handleNumberChange = e => { if (onValueChange) onValueChange(e.target.value) }
 	return (
 		<PickerContainer variant={variant}>
 			{pickerText && <p>{pickerText}</p>}
 			<DropdownWrapper {...rest}>
-				<StyledNumberPicker onChange={handleNumberChange} value={value}>
+				<StyledNumberPicker onChange={e => { if (onValueChange) onValueChange(e.target.value) }} value={value}>
 					{options?.map((opt, index) => (<option key={opt.toString().concat(index)} value={opt}>{opt}</option>))}
 				</StyledNumberPicker>
 			</DropdownWrapper>

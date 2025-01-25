@@ -11,14 +11,9 @@ const SpinnerStories = {
 const Template = args => <Spinner {...args} />
 
 export const Light = Template.bind({})
-Light.args = {
-	variant: 'light',
-	width: 200
-}
+Light.args = { width: 200}
 
 export const Dark = Template.bind({})
-Dark.args = {
-	variant: 'dark',
-}
+Dark.args = {}
 
 export default SpinnerStories
