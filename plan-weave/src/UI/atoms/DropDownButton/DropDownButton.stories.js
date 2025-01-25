@@ -3,9 +3,7 @@ import DropDownButton from './DropDownButton'
 const DropDownButtonStories = {
   title: 'Atoms/Buttons/DropDownButton',
   component: DropDownButton,
-  argTypes: {
-    color: { control: 'text' },
-  }
+  argTypes: {}
 }
 
 const Template = args => <DropDownButton {...args} />
@@ -17,10 +15,9 @@ const options = [
 ]
 
 export const DropDownButtonStory = Template.bind({})
-DropDownButton.args = {
+DropDownButtonStory.args = {
   children: 'Auto Sort',
-  color: 'primary',
-  options: options
+  options
 }
 
 export default DropDownButtonStories

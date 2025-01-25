@@ -150,9 +150,7 @@ function TaskControl({
 					/>
 					{isHighlighting &&
 						<Button
-							tabIndex={0}
-							variant={'delete'}
-							title={'Delete Selected Tasks'}
+							variant={'delete'} tabIndex={0} title={'Delete Selected Tasks'}
 							onClick={() => deleteMultipleEvent({ state: { userId, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, })}
 							onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent({ state: { userId, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } }}
 						>
@@ -166,7 +164,7 @@ function TaskControl({
 				</BottomContentContainer>
 				<BottomContentContainer>
 					<Separator variant={variant} color={color} />
-					<DropDownButton tabIndex={0} title={dropDownToolTip} variant={variant} color={color} options={options} {...rest} />
+					<DropDownButton options={options} tabIndex={0} title={dropDownToolTip} {...rest} />
 				</BottomContentContainer>
 			</BottomContainer>
 		</TaskControlContainer>

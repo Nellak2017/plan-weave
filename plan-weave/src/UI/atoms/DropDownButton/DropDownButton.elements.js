@@ -1,49 +1,22 @@
-import styled from 'styled-components'
+import { Button } from '../Button/Button.js'
+import { styled } from '@mui/material'
 
-// Styled component for the dropdown button
-export const DropDownButtonStyled = styled.button`
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    column-gap: 10px;
-    max-height: 32px;
-    max-width: 150px;
-    /* Apply ellipsis for text overflow */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: ${props => props.theme.spaces.small} ${props => props.theme.spaces.small};
-    &:hover { box-shadow: ${props => props.theme.elevations.small};}
-    &:active { box-shadow: ${props => props.theme.insets.normal};}
-`
-// Styled component for the dropdown relative container
-export const DropdownContainer = styled.div`
-  position: relative;
-  display: inline-block;
-`;
-
-// Styled component for the dropdown menu
-export const DropdownMenu = styled.ul`
-  position: absolute;
-  width: 100%;
-  top: 100%;
-  left: 0;
-  display: ${props => (props.open ? 'block' : 'none')};
-  z-index: 999; // be above all other stuff
-`;
-
-// Styled component for dropdown menu items
-export const DropdownMenuItem = styled.li`
-  display: ${props => (props.open ? 'block' : 'none')};
-  cursor: pointer;
-  height: 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: ${props => props.theme.colors.lightNeutralLight};
-  color: ${props => props.theme.colors.lightNeutral};
-  &:hover { background-color: ${props => props.theme.colors.lightNeutralLightHover};}
-  &:active { background-color: ${props => props.theme.colors.lightNeutralLightActive};}
-`;
+export const DropDownButtonStyled = styled(Button)(({ theme }) => ({
+  position: 'relative', padding: theme.spacing(1),
+  display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', columnGap: '10px',
+  maxHeight: '32px', maxWidth: '150px',
+  /* Apply ellipsis for text overflow */
+  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+}))
+export const DropdownContainer = styled('div')({ position: 'relative', display: 'inline-block' })
+export const DropdownMenu = styled('ul')(({ open }) => ({
+  position: 'absolute', width: '100%', top: '100%', left: '0',
+  display: `${open ? 'block' : 'none'}`, zIndex: '999',
+}))
+// TODO: Fix not using theme issues
+export const DropdownMenuItem = styled('li')(({ theme, open }) => ({
+  display: `${open ? 'block' : 'none'}`,
+  cursor: 'pointer', height: '2rem', backgroundColor: 'white', color: 'black',
+  display: 'flex', justifyContent: 'center', alignItems: 'center',
+  '&:hover': { backgroundColor: 'gray' }, '&:active': { backgroundColor: 'gray' }
+}))
