@@ -1,14 +1,8 @@
-import styled, { css } from 'styled-components'
-import { getPresetCSS, colorPreset } from '../../styles/theme.js'
+import { styled } from '@mui/material/styles'
+import { Button } from '../Button/Button.js'
 
-const nextButtonPreSets = { variant: { left: css``, right: css`` }, size: {}, color: colorPreset }
-export const NextButtonStyled = styled.button`
-	border-radius: 50%; // This makes it a circle shape
-	display: flex;
-	padding: 0;
-	&:hover { box-shadow: ${props => props.theme.elevations.small};}
-	&:active { box-shadow: ${props => props.theme.insets.normal};}
-    ${getPresetCSS(nextButtonPreSets, 'variant')}
-    ${getPresetCSS(nextButtonPreSets, 'size')}
-    ${getPresetCSS(nextButtonPreSets, 'color')} // highest precedence
-`
+export const NextButtonStyled = styled(Button)(({ theme }) => ({
+	minWidth: 0, borderRadius: '50%', display: 'flex', padding: 0,
+	'&:hover': { boxShadow: theme.shadows[3], },
+	'&:active': { boxShadow: theme.insets?.normal, },
+}))

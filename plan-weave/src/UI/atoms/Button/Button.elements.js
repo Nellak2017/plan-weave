@@ -13,5 +13,5 @@ export const ButtonStyled = styled(MUIButton)(({ theme, variantprop }) => {
             '&:active': { backgroundColor: theme.palette.error.light },
         },
     }
-    return { textTransform: 'none', borderRadius: theme.spacing(1), minWidth: '85px', ...styles?.[variantprop], }
+    return { minWidth: '85px', ...styles?.[variantprop], }
 })

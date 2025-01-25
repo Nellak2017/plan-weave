@@ -4,9 +4,8 @@ const NextButtonStories = {
   title: 'Atoms/Buttons/NextButton',
   component: NextButton,
   argTypes: {
-	variant: {control: 'text'},
+    variant: { control: 'text' },
     size: { control: 'text' },
-    color: { control: 'text' },
   }
 }
 
@@ -14,14 +13,12 @@ const Template = args => <NextButton {...args} />
 
 export const NextButtonLeft = Template.bind({})
 NextButtonLeft.args = {
-	variant: 'left',
-  	color: 'primary',
+  variant: 'left',
 }
 
 export const NextButtonRight = Template.bind({})
 NextButtonRight.args = {
-	variant: 'right',
-  	color: 'primary'
+  variant: 'right',
 }
 
 export default NextButtonStories

@@ -1,30 +1,18 @@
-import styled, { css } from 'styled-components'
-import { getPresetCSS } from '../../styles/theme.js'
+import { styled } from '@mui/system'
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 
-const variantStyle = ({ color, hoverColor, hoverBg }) => css`
-	& svg, input, label { color: ${color};}
-	& input:hover, div:hover {
-		color: ${hoverColor};
-		background: ${hoverBg};
-	}
-`
-const dateTimePickerPresets = {
-	variant: {
-		light: variantStyle({ color: props => props.theme.colors.darkNeutralDark, hoverColor: props => props.theme.colors.darkNeutralDark, hoverBg: props => props.theme.colors.lightNeutralLight}),
-		dark: variantStyle({ color: props => props.theme.colors.lightNeutralLight, hoverColor: props => props.theme.colors.lightNeutralLight, hoverBg: props => props.theme.colors.darkNeutralHover}),
-	},
-}
-export const PickerContainer = styled.div`
-	margin: 0px;
-	border: 0px solid transparent;
-	& div { border-radius: ${props => props.theme.spaces.small};}
-	input {
-		border: 0px solid transparent;
-		box-shadow: none;
-		border-radius: 0px;
-		padding-top: ${props => props.theme.spaces.smaller};
-		padding-bottom: ${props => props.theme.spaces.smaller};
-	} 
-	& svg:hover { color: ${props => props.theme.colors.primary};}
-	${getPresetCSS(dateTimePickerPresets, 'variant')};
-`
+// TODO: Fix theme colors
+const variantStyle = ({ color, hoverColor, hoverBg }) => ({
+	'& svg, input, label': { color, },
+	'& input:hover, div:hover': { color: hoverColor, background: hoverBg, },
+})
+const dateTimePickerPresets = ({ theme, variant }) => ({
+	light: variantStyle({ color: 'black', hoverColor: 'white', hoverBg: 'gray',}),
+	dark: variantStyle({ color: 'white', hoverColor: 'white', hoverBg: 'gray',}),
+}?.[variant])
+export const StyledDateTimePicker = styled(DateTimePicker)(({ theme, variant }) => ({
+	'& input': { boxShadow: 'none', borderRadius: `${theme.shape.borderRadius}px 0px 0px ${theme.shape.borderRadius}px`, paddingTop: '4px', paddingBottom: '4px', },
+	'& svg:hover': { color: theme.palette.primary.main, },
+	'& button:hover': { backgroundColor: 'transparent', boxShadow: 'none', },
+	...dateTimePickerPresets({ theme, variant })
+}))

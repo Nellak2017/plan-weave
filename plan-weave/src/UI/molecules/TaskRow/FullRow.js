@@ -27,11 +27,11 @@ function FullRow({ simpleTaskProps, services, state, }) {
 				{isChecked
 					? formatDate(localDueDate)
 					: <DateTimePickerWrapper
-						variant={variant}
 						services={{ onTimeChange: (newDateTime) => setLocalDueDate(newDateTime.toISOString()) }}
 						state={{
 							defaultTime: format(parseISO(localDueDate), 'HH:mm'),
 							defaultDate: parseISO(localDueDate),
+							variant
 						}} />
 				}
 			</DueContainer>

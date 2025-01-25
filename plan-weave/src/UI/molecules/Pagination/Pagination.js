@@ -18,7 +18,6 @@ function Pagination({
 	options = [10, 20],
 	pickerText = 'Tasks per page', // optional
 	maxWidth, // optional
-	size = 'l', // optional
 }) {
 	// --- Input verification
 	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
@@ -34,8 +33,8 @@ function Pagination({
 	// --- Handlers (not substantial enough to move to other file)
 	const handleTasksPerPage = e => tasksPerPageUpdate(parseInt(e) || 1)
 	const handlePageNumber = e => setLocalPageNumber(parseInt(e) || "")
-	const handleNextPage = () => { nextPage(); setLocalPageNumber(old => old < maxPage ? old + 1 : old) } 
-	const handlePrevPage = () => { prevPage(); setLocalPageNumber(old => old > min ? old - 1 : old) } 
+	const handleNextPage = () => { nextPage(); setLocalPageNumber(old => old < maxPage ? old + 1 : old) }
+	const handlePrevPage = () => { prevPage(); setLocalPageNumber(old => old > min ? old - 1 : old) }
 
 	return (
 		<PaginationContainer variant={processedVariant} maxWidth={maxWidth}>
@@ -46,7 +45,7 @@ function Pagination({
 				onClick={() => refresh()}
 			/>
 			<PageChooserContainer>
-				<NextButton variant={'left'} onClick={handlePrevPage} size={size} tabIndex={-1} />
+				<NextButton variant={'left'} onClick={handlePrevPage} tabIndex={-1} />
 				<HoursInput
 					variant={processedVariant}
 					placeholder={1}
@@ -61,15 +60,11 @@ function Pagination({
 					onBlur={() => updatePage(localPageNumber)}
 					tabIndex={-1}
 				/>
-				<NextButton variant={'right'} onClick={handleNextPage} size={size} tabIndex={-1} />
+				<NextButton variant={'right'} onClick={handleNextPage} tabIndex={-1} />
 			</PageChooserContainer>
 			<NumberPicker
-				variant={processedVariant}
-				defaultNumber={parseInt(defaultNumber)}
-				options={options}
-				pickerText={pickerText}
-				onValueChange={handleTasksPerPage}
-				controlledValue={tasksPerPage}
+				state={{ variant, options, pickerText, controlledValue: tasksPerPage }}
+				services={{ onValueChange: handleTasksPerPage }}
 				tabIndex={0}
 			/>
 		</PaginationContainer>

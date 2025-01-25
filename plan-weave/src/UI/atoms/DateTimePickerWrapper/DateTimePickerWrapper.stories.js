@@ -4,7 +4,6 @@ const DateTimePickerWrapperStories =  {
 	title: 'Atoms/Pickers/DateTimePicker',
 	component: DateTimePickerWrapper,
 	argTypes: {
-		variant: { control: 'text' },
 	},
 }
 
@@ -16,12 +15,12 @@ const Template = args => {
 
 export const Light = Template.bind({})
 Light.args = {
-	variant: 'light',
+	state: { variant: 'light'},
 }
 
 export const Dark = Template.bind({})
 Dark.args = {
-	variant: 'dark',
+	state: { variant: 'dark'},
 }
 
 export default DateTimePickerWrapperStories

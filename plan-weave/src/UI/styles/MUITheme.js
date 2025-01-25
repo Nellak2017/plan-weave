@@ -5,10 +5,13 @@ export const theme = createTheme({
         primary: { main: '#815af1', },
     },
     components: {
-        MuiButton: {
-            styleOverrides: {
-                root: ({ theme }) => ({ textTransform: 'none', borderRadius: theme.spacing(1), })
-            }
-        }
-    }
+        MuiButton: { styleOverrides: { root: ({ textTransform: 'none', }) } }
+    },
+    shape: {
+        borderRadius: 8,
+    },
+    // Custom attributes
+    insets: {
+        normal: '1px 1px 5px rgba(1, 1, 0, 0.7) inset',
+    },
 })
