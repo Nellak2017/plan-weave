@@ -8,11 +8,7 @@ const SelectStories = {
 	},
 }
 
-const Template = args => {
-	return (
-		<Select {...args} />
-	)
-}
+const Template = args => <Select {...args} />
 
 const options = [
 	'Option 1',

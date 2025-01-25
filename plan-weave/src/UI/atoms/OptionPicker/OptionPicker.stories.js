@@ -1,18 +1,14 @@
-import ReactSelectWrapper from './ReactSelectWrapper'
+import OptionPicker from './OptionPicker'
 
 const ReactSelectWrapperStories = {
-	title: 'Atoms/input/ReactSelectWrapper',
-	component: ReactSelectWrapper,
+	title: 'Atoms/Pickers/OptionPicker',
+	component: OptionPicker,
 	argTypes: {
 		variant: { control: 'text' },
 	},
 }
 
-const Template = args => {
-	return (
-		<ReactSelectWrapper {...args} />
-	)
-}
+const Template = args => <OptionPicker {...args} />
 
 const options = [
 	{ value: 'predecessor1', label: 'Predecessor 1' },
@@ -21,15 +17,16 @@ const options = [
 
 export const Light = Template.bind({})
 Light.args = {
-	variant: 'light',
-	options
+	state: { variant: 'light', options },
 }
 
 export const Dark = Template.bind({})
 Dark.args = {
-	variant: 'dark',
-	options,
-	initialSelectedPredecessors: options
+	state: { 
+		variant: 'dark',
+		initialSelectedPredecessors: options,
+		options,
+	}
 }
 
 export default ReactSelectWrapperStories

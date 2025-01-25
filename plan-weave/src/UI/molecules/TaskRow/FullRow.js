@@ -7,7 +7,7 @@ import { TASK_ROW_TOOLTIPS } from '../../../Core/utils/constants.js'
 import Select from '../../atoms/Select/Select.js'
 import { validateTaskField } from '../../../Core/utils/helpers.js'
 import { taskSchema } from '../../../Core/schemas/taskSchema.js'
-import ReactSelectWrapper from '../../atoms/ReactSelectWrapper/ReactSelectWrapper.js'
+import OptionPicker from '../../atoms/OptionPicker/OptionPicker.js'
 
 const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
 
@@ -66,7 +66,7 @@ function FullRow({ simpleTaskProps, services, state, }) {
 				}
 			</ThreadContainer>
 			<DependencyContainer title={dependencyToolTip}>
-				<ReactSelectWrapper variant={variant} initialSelectedPredecessors={localDependencies} options={options} onChange={setLocalDependencies} />
+				<OptionPicker state={{ variant, initialSelectedPredecessors: localDependencies, options }} services={{ onChange: setLocalDependencies }} />
 			</DependencyContainer>
 		</>
 	)
