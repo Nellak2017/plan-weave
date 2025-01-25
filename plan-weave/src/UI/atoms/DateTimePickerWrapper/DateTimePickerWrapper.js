@@ -6,9 +6,10 @@ import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers'
 import { parse } from 'date-fns'
 import { VARIANTS } from '../../../Core/utils/constants.js'
 
-export const DateTimePickerWrapper = ({ services, state, }) => {
-	const { onTimeChange = newDateTime => console.log(newDateTime) } = services || {}
-	const { variant = VARIANTS[0], label = 'Choose Due Date', defaultTime = '14:00', defaultDate = new Date() } = state || {}
+export const DateTimePickerWrapper = ({
+	state: { variant = VARIANTS[0], label = 'Choose Due Date', defaultTime = '14:00', defaultDate = new Date() } = {},
+	services: { onTimeChange = newDateTime => console.log(newDateTime) } = {}
+}) => {
 	const [dateTime, setDateTime] = useState(parse(defaultTime, 'HH:mm', defaultDate))
 	const handleDateTimeChange = newDateTime => {
 		setDateTime(newDateTime)

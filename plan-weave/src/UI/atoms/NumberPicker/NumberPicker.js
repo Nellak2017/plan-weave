@@ -2,9 +2,10 @@ import { useMemo } from 'react'
 import { VARIANTS } from '../../../Core/utils/constants.js'
 import { PickerContainer, DropdownWrapper, StyledNumberPicker } from './NumberPicker.elements'
 
-const NumberPicker = ({ state, services, ...rest}) => {
-	const { variant = VARIANTS[0], options = [10], pickerText = 'Tasks per page', controlledValue } = state || {}
-	const { onValueChange } = services || {}
+const NumberPicker = ({
+	state: { variant = VARIANTS[0], options = [10], pickerText = 'Tasks per page', controlledValue } = {},
+	services: { onValueChange } = {}, ...rest
+}) => {
 	const value = useMemo(() => controlledValue, [controlledValue])
 	const handleNumberChange = e => { if (onValueChange) onValueChange(e.target.value) }
 	return (

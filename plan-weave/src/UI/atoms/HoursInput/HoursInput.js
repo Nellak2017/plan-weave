@@ -3,9 +3,11 @@ import { useState, useMemo } from 'react'
 import { VARIANTS } from '../../../Core/utils/constants.js'
 
 // TODO: Test this input and verify invalid input can not go into it
-const HoursInput = ({ state, services, ...props }) => {
-	const { variant = VARIANTS[0], placeholder = 0, text, initialValue, maxwidth = 45, controlledValue, step = .01, min = 0, max = 24, maxLength = '5' } = state || {}
-	const { onValueChange, onBlur } = services || {}
+// TODO: Simplify this Input so that it has the least local state as possible
+const HoursInput = ({
+	state: { variant = VARIANTS[0], placeholder = 0, text, initialValue, maxwidth = 45, controlledValue, step = .01, min = 0, max = 24, maxLength = '5' } = {},
+	services: { onValueChange, onBlur } = {}, ...props
+}) => {
 	const [localValue, setLocalValue] = useState(initialValue)
 	const value = useMemo(() => controlledValue || localValue, [controlledValue, localValue]) // Use the controlledValue prop if it exists, otherwise, use localValue
 	const handleChange = e => {

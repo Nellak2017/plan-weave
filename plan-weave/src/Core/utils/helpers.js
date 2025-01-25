@@ -1,11 +1,9 @@
 /* eslint-disable max-lines */
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema.js'
-import { taskSchema, fillDefaults } from '../schemas/taskSchema.js'
 import { getTime, formatISO, parseISO } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE } from './constants.js'
 import * as Yup from 'yup'
 import { isEqual as lodashIsEqual } from 'lodash'
-import { coerceToSchema } from './schema-helpers.js'
 
 // This file contains many helpers used through out the application
 // --- Private Functions
@@ -627,9 +625,3 @@ export const calculateEfficiencyList = (taskList, start) => {
 // Takes a task list with atleast objects with an id and task
 // Returns a list of options of form: [{value: id (number), label: task (string)}]
 export const predecessorOptions = (taskList) => taskList?.map(task => ({ value: task?.id, label: task?.task }))
-// Logs errors and returns output when coercing
-export const logErrors = ({ updatedTask, taskSchema }) => {
-	const { output, errors } = coerceToSchema(updatedTask, taskSchema)
-	if (errors && Array.isArray(errors) && errors.length > 0) console.warn(errors.join('\n'))
-	return output
-}

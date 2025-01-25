@@ -12,12 +12,12 @@ const Template = args => <SearchBar {...args} />
 
 export const LightSearchBar = Template.bind({})
 LightSearchBar.args = {
-  variant: 'light',
+  state: { variant: 'light' },
 }
 
 export const DarkSearchBar = Template.bind({})
 DarkSearchBar.args = {
-  variant: 'dark',
+  state: { variant: 'dark' },
 }
 
 export default SearchBarStories

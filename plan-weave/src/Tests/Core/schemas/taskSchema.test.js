@@ -1,6 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import { taskSchema, fillDefaults } from "../../../Core/schemas/taskSchema"
 import { DEFAULT_FULL_TASK, TASK_STATUSES } from "../../../Core/utils/constants"
+import { isInputValid } from "../../../Core/utils/schema-helpers"
 
 const twelve = new Date(new Date().setHours(12, 0, 0, 0))
 
@@ -109,25 +110,6 @@ describe('Task Schema', () => {
 			expectValid: false,
 		},
 	]
-
-	const isInputValid = (input, schema) => {
-		try {
-			schema.validateSync(input, { strict: true, abortEarly: true, recursive: true })
-			// Check if there are extra fields in the input
-			const extraFields = typeof input !== 'object' || typeof schema.fields !== 'object'
-				? []
-				: Object.keys(input).filter(field => !Object.keys(schema.fields).includes(field))
-			return (extraFields.length > 0)
-				? {
-					isValid: false,
-					error: `Extra fields present in input: ${extraFields.join(', ')}.`
-				}
-				: { isValid: true, error: '' }
-		} catch (error) {
-			return { isValid: false, error: error.message || String(error) } // was error.message
-		}
-	}
-
 	// Run parameterized tests
 	testData.forEach(({ description, input, expectValid }) => {
 		it(description, async () => {

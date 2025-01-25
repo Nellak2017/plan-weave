@@ -1,6 +1,5 @@
 import TaskRow from './TaskRow'
-import { DragDropContext } from 'react-beautiful-dnd'
-import StrictModeDroppable from '../../atoms/StrictModeDroppable/StrictModeDroppable.js' // Wrapper for the unmaintained Droppable component
+import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 // redux stuff
 import store from '../../../Application/redux/store.js'
 import { Provider } from 'react-redux'
@@ -16,27 +15,21 @@ const TaskRowStories = {
 }
 
 // dummy store included to avoid errors
-const TemplateWithProvider = args => {
-	return (
-		<Provider store={store}>
-			<Template {...args} />
-		</Provider>
-	)
-}
+const TemplateWithProvider = args => <Provider store={store}><Template {...args} /></Provider>
 
 // dummy context included to avoid errors
 const Template = args =>
 	<DragDropContext onDragEnd={() => { console.log('dummy context') }}>
 		<table style={{borderCollapse: 'collapse'}}>
 			<thead></thead>
-			<StrictModeDroppable droppableId="taskTable" type="TASK">
+			<Droppable droppableId="taskTable" type="TASK">
 				{(provided) => (
 					<tbody ref={provided.innerRef} {...provided.droppableProps}>
 						<TaskRow {...args} index={0} />
 						{provided.placeholder}
 					</tbody>
 				)}
-			</StrictModeDroppable>
+			</Droppable>
 		</table>
 	</DragDropContext>
 

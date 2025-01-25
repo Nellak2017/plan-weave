@@ -34,8 +34,7 @@ function Pagination({
 
 	return (
 		<PaginationContainer variant={variant} maxWidth={maxWidth}>
-			<BiRecycle className='pagination-icon' title={'Re-use tasks by making all tasks current'}
-				onClick={() => refresh()} tabIndex={0} />
+			<BiRecycle className='pagination-icon' title={'Re-use tasks by making all tasks current'} onClick={() => refresh()} tabIndex={0} />
 			<PageChooserContainer>
 				<NextButton variant={'left'} onClick={handlePrevPage} tabIndex={-1} />
 				<HoursInput

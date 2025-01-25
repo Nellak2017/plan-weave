@@ -74,12 +74,9 @@ function TaskControl({
 		<TaskControlContainer variant={variant} maxwidth={maxwidth}>
 			<TopContainer>
 				<SearchBar
+					state={{ variant, maxwidth: maxwidthsearch, }}
 					services={{ search }}
-					tabIndex={0}
-					title={'Search for Tasks'}
-					variant={variant}
-					maxwidth={maxwidthsearch}
-					{...rest}
+					title={'Search for Tasks'} tabIndex={0} {...rest}
 				/>
 				<p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>
 				<TimePickerContainer onBlur={checkTimeRange}>

@@ -1,27 +1,14 @@
-import styled from 'styled-components'
-import { getPresetCSS, taskInputPreSets } from '../../styles/theme.js' 
+import { styled } from '@mui/material'
 
-export const HoursInputStyled = styled.input`
-	outline: 1px solid ${props => props.theme.colors.lightNeutralLight};
-	line-height: 25px;
-	text-align: center;
-	font-family: var(--font-poppins), sans-serif;
-	border-radius: 10px;
-	font-size: ${props => props.theme.fontSizes.small};
-	padding: ${props => props.theme.spaces.smaller} ${props => props.theme.spaces.small};
-	width: 100%;
-	max-width: ${props => (props.maxwidth ? props.maxwidth + 'px' : '100%')};
-	background: none;
-	&:hover {
-		outline-color: ${props => props.theme.colors.primary};
-		background: none;
-	};
-	${getPresetCSS(taskInputPreSets, 'variant')};
-`
-export const HoursContainer = styled.section`
-	display: inline-flex;
-	justify-content: center;
-	align-items: center;
-	column-gap: ${props => props.theme.spaces.smaller};
-	${getPresetCSS(taskInputPreSets, 'variant')};
-`
+// TODO: taskInputPreSets needs to be used in HoursContainer
+export const HoursInputStyled = styled('input')(({ theme, maxwidth }) => ({
+	outline: '1px solid white', lineHeight: '25px', borderRadius: '10px',
+	textAlign: 'center', fontSize: theme.typography.button, padding: '4px 8px', width: '100%',
+	maxWidth: `${maxwidth ? maxwidth + 'px' : '100%'}`, background: 'none',
+	'&:hover': { outlineColor: theme.palette.primary.main, background: 'none', },
+	// ${getPresetCSS(taskInputPreSets, 'variant')},
+}))
+export const HoursContainer = styled('section')(({ theme, variant }) => ({
+	display: 'inline-flex', justifyContent: 'center', alignItems: 'center', columnGap: '4px',
+	// 	${getPresetCSS(taskInputPreSets, 'variant')};
+}))

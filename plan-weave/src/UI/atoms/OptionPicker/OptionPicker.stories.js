@@ -26,6 +26,9 @@ Dark.args = {
 		variant: 'dark',
 		initialSelectedPredecessors: options,
 		options,
+	},
+	services: {
+		onChange: selectedOptions => console.log(selectedOptions)
 	}
 }
 
