@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react'
-import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
+import { useState, useMemo } from 'react'
+import { VARIANTS } from '../../../Core/utils/constants.js'
 import { PaginationContainer, PageChooserContainer } from '../Pagination/Pagination.elements'
 import NextButton from '../../atoms/NextButton/NextButton'
 import HoursInput from '../../atoms/HoursInput/HoursInput'
@@ -9,19 +9,15 @@ import { BiRecycle } from 'react-icons/bi'
 // services: updatePage, prevPage, nextPage, refresh, tasksPerPageUpdate 
 // state: pageNumber, tasksPerPage, maxPage (Computed by Pagination)
 function Pagination({
-	services,
 	state,
+	services,
 	variant = VARIANTS[0],
 	min = 1, // optional
 	hoursText, // optional, if defined it overrides the default of ${num} text
-	defaultNumber = 10,
 	options = [10, 20],
 	pickerText = 'Tasks per page', // optional
 	maxWidth, // optional
 }) {
-	// --- Input verification
-	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
-
 	// --- Destructuring
 	const { updatePage, prevPage, nextPage, refresh, tasksPerPageUpdate } = services || {}
 	const { pageNumber, tasksPerPage, taskList } = state || {}
@@ -37,27 +33,19 @@ function Pagination({
 	const handlePrevPage = () => { prevPage(); setLocalPageNumber(old => old > min ? old - 1 : old) }
 
 	return (
-		<PaginationContainer variant={processedVariant} maxWidth={maxWidth}>
-			<BiRecycle
-				className='pagination-icon'
-				tabIndex={0}
-				title={'Re-use tasks by making all tasks current'}
-				onClick={() => refresh()}
-			/>
+		<PaginationContainer variant={variant} maxWidth={maxWidth}>
+			<BiRecycle className='pagination-icon' title={'Re-use tasks by making all tasks current'}
+				onClick={() => refresh()} tabIndex={0} />
 			<PageChooserContainer>
 				<NextButton variant={'left'} onClick={handlePrevPage} tabIndex={-1} />
 				<HoursInput
-					variant={processedVariant}
-					placeholder={1}
-					text={hoursText || ` of ${maxPage}`}
-					maxwidth={35}
-					initialValue={1}
-					controlledValue={localPageNumber}
-					step={1}
-					min={parseInt(min)}
-					max={parseInt(maxPage)}
-					onValueChange={handlePageNumber}
-					onBlur={() => updatePage(localPageNumber)}
+					state={{
+						variant, maxwidth: 35,
+						placeholder: 1, initialValue: 1,
+						text: (hoursText || ` of ${maxPage}`), controlledValue: localPageNumber,
+						step: 1, min: parseInt(min), max: parseInt(maxPage),
+					}}
+					services={{ onValueChange: handlePageNumber, onBlur: () => updatePage(localPageNumber), }}
 					tabIndex={-1}
 				/>
 				<NextButton variant={'right'} onClick={handleNextPage} tabIndex={-1} />

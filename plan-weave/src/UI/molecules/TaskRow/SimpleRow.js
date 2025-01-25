@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { TASK_STATUSES, TASK_ROW_TOOLTIPS } from "../../../Core/utils/constants.js"
 import TaskInput from '../../atoms/TaskInput/TaskInput.js'
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
@@ -7,7 +6,15 @@ import { DragIndicator, TaskContainer, WasteContainer, TimeContainer, IconContai
 import { formatTimeLeft } from '../../../Core/utils/helpers.js'
 import { format, parseISO } from 'date-fns'
 
-const SimpleRow = ({ services, state, variant, provided, }) => { // Task View Logic (Simple, Full) (Just Simple for now)
+const displayTimeLeft = waste => {
+	if (waste && !isNaN(waste) && waste !== 0) {
+		return waste > 0
+			? formatTimeLeft({ timeDifference: waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' })
+			: `-${formatTimeLeft({ timeDifference: -waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' })}`
+	} else { return '0 minutes' }
+}
+
+export const SimpleRow = ({ services, state, variant, provided, }) => { // Task View Logic (Simple, Full) (Just Simple for now)
 	const { setLocalTask, setLocalTtc, handleCheckBoxClicked } = services
 	const { taskObject, isChecked, localTask, localTtc } = state
 	const { task, waste, ttc, eta, status, index } = { ...taskObject }
@@ -23,28 +30,20 @@ const SimpleRow = ({ services, state, variant, provided, }) => { // Task View Lo
 				}
 			</IconContainer>
 			<TaskContainer aria-label={taskTooltip} title={taskTooltip}>
-				{status === TASK_STATUSES.COMPLETED ? <p>{task}</p>: <TaskInput maxLength="50" onChange={e => setLocalTask(e.target.value)} value={localTask} variant={variant} />}
+				{status === TASK_STATUSES.COMPLETED ? <p>{task}</p> : <TaskInput maxLength="50" onChange={e => setLocalTask(e.target.value)} value={localTask} variant={variant} />}
 			</TaskContainer>
 			<WasteContainer title={wasteTooltip} style={{ width: '200px' }}>
-				<p>
-					{(() => {
-						if (waste && !isNaN(waste) && waste > 0) { return formatTimeLeft({ timeDifference: waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours'})}
-						else if (waste && !isNaN(waste) && waste < 0) { return `-${formatTimeLeft({ timeDifference: -waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' })}` }
-						else { return '0 minutes' }
-					})()}
-				</p>
+				<p>{displayTimeLeft(waste)}</p>
 			</WasteContainer>
 			<TimeContainer title={ttcTooltip}>
 				{status === TASK_STATUSES.COMPLETED ?
 					<pre>{ttc && !isNaN(ttc) && ttc > 0 ? formatTimeLeft({ timeDifference: ttc, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'}</pre>
 					: <HoursInput
-						onValueChange={value => setLocalTtc(value)}
-						onBlur={() => setLocalTtc(localTtc)}
-						controlledValue={localTtc}
-						initialValue={localTtc && localTtc > .01 ? localTtc : 1}
-						variant={variant}
-						placeholder='hours'
-						text='hours'
+						state={{
+							variant, controlledValue: localTtc, initialValue: (localTtc && localTtc > .01 ? localTtc : 1),
+							placeholder: 'hours', text: 'hours',
+						}}
+						services={{ onValueChange: value => setLocalTtc(value), onBlur: () => setLocalTtc(localTtc) }}
 					/>
 				}
 			</TimeContainer>

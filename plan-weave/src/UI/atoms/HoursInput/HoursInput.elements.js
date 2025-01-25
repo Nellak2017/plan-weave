@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 import { getPresetCSS, taskInputPreSets } from '../../styles/theme.js' 
 
-// TODO: Add switch based on size in the theme.js
 export const HoursInputStyled = styled.input`
 	outline: 1px solid ${props => props.theme.colors.lightNeutralLight};
 	line-height: 25px;
@@ -18,7 +17,6 @@ export const HoursInputStyled = styled.input`
 		background: none;
 	};
 	${getPresetCSS(taskInputPreSets, 'variant')};
-	${getPresetCSS(taskInputPreSets, 'color')};
 `
 export const HoursContainer = styled.section`
 	display: inline-flex;
@@ -26,5 +24,4 @@ export const HoursContainer = styled.section`
 	align-items: center;
 	column-gap: ${props => props.theme.spaces.smaller};
 	${getPresetCSS(taskInputPreSets, 'variant')};
-	${getPresetCSS(taskInputPreSets, 'color')};
 `

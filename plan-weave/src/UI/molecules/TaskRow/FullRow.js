@@ -29,9 +29,9 @@ function FullRow({ simpleTaskProps, services, state, }) {
 					: <DateTimePickerWrapper
 						services={{ onTimeChange: (newDateTime) => setLocalDueDate(newDateTime.toISOString()) }}
 						state={{
+							variant,
 							defaultTime: format(parseISO(localDueDate), 'HH:mm'),
 							defaultDate: parseISO(localDueDate),
-							variant
 						}} />
 				}
 			</DueContainer>
@@ -39,12 +39,9 @@ function FullRow({ simpleTaskProps, services, state, }) {
 				{isChecked
 					? parseFloat(localWeight).toFixed(2) || 1
 					: <HoursInput
-						onValueChange={value => setLocalWeight(parseFloat(value))}
+						state={{ variant, placeholder: 1, min: 1, initialValue: (localWeight && localWeight > .01 ? localWeight : 1) }}
+						services={{ onValueChange: value => setLocalWeight(parseFloat(value)) }}
 						value={localWeight}
-						initialValue={localWeight && localWeight > .01 ? localWeight : 1}
-						variant={variant}
-						placeholder='1'
-						min={1}
 					// TODO: Establish maximum weight
 					/>}
 			</WeightContainer>

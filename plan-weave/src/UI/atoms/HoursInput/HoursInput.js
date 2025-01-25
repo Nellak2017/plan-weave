@@ -1,23 +1,11 @@
 import { HoursInputStyled, HoursContainer } from './HoursInput.elements'
 import { useState, useMemo } from 'react'
-import { THEMES, VARIANTS } from '../../../Core/utils/constants.js'
-const HoursInput = ({
-	placeholder = '0',
-	text,
-	variant = VARIANTS[0],
-	maxwidth = 45,
-	color,
-	initialValue,
-	controlledValue,
-	onValueChange,
-	step = .01,
-	min = 0,
-	max = 24,
-	maxLength = '5',
-	onBlur,
-	...props
-}) => {
-	const processedVariant = (variant && !THEMES.includes(variant)) ? VARIANTS[0] : variant
+import { VARIANTS } from '../../../Core/utils/constants.js'
+
+// TODO: Test this input and verify invalid input can not go into it
+const HoursInput = ({ state, services, ...props }) => {
+	const { variant = VARIANTS[0], placeholder = 0, text, initialValue, maxwidth = 45, controlledValue, step = .01, min = 0, max = 24, maxLength = '5' } = state || {}
+	const { onValueChange, onBlur } = services || {}
 	const [localValue, setLocalValue] = useState(initialValue)
 	const value = useMemo(() => controlledValue || localValue, [controlledValue, localValue]) // Use the controlledValue prop if it exists, otherwise, use localValue
 	const handleChange = e => {
@@ -33,23 +21,14 @@ const HoursInput = ({
 		if (onValueChange && controlledValue !== undefined) onValueChange(String(sanitizedValue)) // If it's being controlled, call the parent's onValueChange
 	}
 	return (
-		<HoursContainer variant={processedVariant} color={color}>
+		<HoursContainer variant={variant}>
 			<HoursInputStyled
-				variant={processedVariant}
-				placeholder={placeholder}
-				maxwidth={maxwidth}
-				color={color}
-				type='text'
-				min={min}
-				max={max}
-				step={step}
-				inputMode='numeric'
-				pattern='^$|^[0-9]*\.?[0-9]*$' // Empty, ".", decimal
-				onChange={handleChange}
-				onBlur={handleBlur}
-				value={value}
-				maxLength={maxLength}
-				{...props} // TODO:  maybe remove
+				variant={variant} maxwidth={maxwidth}
+				value={value} placeholder={placeholder}
+				type='text' min={min} max={max} step={step}
+				inputMode='numeric' maxLength={maxLength} pattern='^$|^[0-9]*\.?[0-9]*$' // Empty, ".", decimal
+				onChange={handleChange} onBlur={handleBlur}
+				{...props} // TODO: maybe remove
 			/>
 			<span>{text}</span>
 		</HoursContainer>

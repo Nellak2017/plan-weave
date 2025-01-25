@@ -57,7 +57,6 @@ export const taskInputPreSets = {
       focusPlaceholderColor: props => props.theme.colors.lightNeutralLightActive,
     }),
   },
-  color: colorPreset,
 }
 export const selectWrapperPresets = {
   variant: {
