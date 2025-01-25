@@ -41,7 +41,6 @@ function FullRow({ simpleTaskProps, services, state, }) {
 					: <HoursInput
 						state={{ variant, placeholder: 1, min: 1, initialValue: (localWeight && localWeight > .01 ? localWeight : 1) }}
 						services={{ onValueChange: value => setLocalWeight(parseFloat(value)) }}
-						value={localWeight}
 					// TODO: Establish maximum weight
 					/>}
 			</WeightContainer>

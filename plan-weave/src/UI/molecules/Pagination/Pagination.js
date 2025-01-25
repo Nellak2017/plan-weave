@@ -40,8 +40,8 @@ function Pagination({
 				<HoursInput
 					state={{
 						variant, maxwidth: 35,
-						placeholder: 1, initialValue: 1,
-						text: (hoursText || ` of ${maxPage}`), controlledValue: localPageNumber,
+						placeholder: 1,
+						text: (hoursText || ` of ${maxPage}`),
 						step: 1, min: parseInt(min), max: parseInt(maxPage),
 					}}
 					services={{ onValueChange: handlePageNumber, onBlur: () => updatePage(localPageNumber), }}
