@@ -1,7 +1,7 @@
 import homeImgOne from '../../../../public/Home-Page/svg-1-task-computer.svg'
 import Image from 'next/image'
 import Link from 'next/link'
-import Button from '../../atoms/Button/Button'
+import { Button } from "@mui/material"
 import { StyledInfoContainer, ColumnContainer, Column, TextContainer, } from './InfoSection.elements.js'
 const defaultData = {
 	topLine: 'Plan Weave',

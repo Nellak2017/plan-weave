@@ -10,7 +10,7 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { formatTimeLeft } from '../../../Core/utils/helpers.js'
 import { DEFAULT_TASK_CONTROL_TOOL_TIPS, SORTING_METHODS, OPTION_NOTIFICATIONS, VARIANTS, TASK_CONTROL_TITLES } from '../../../Core/utils/constants.js'
-import Button from '../../atoms/Button/Button.js'
+import { Button } from "@mui/material"
 import {
 	shiftEndTime,
 	checkTimeRange,

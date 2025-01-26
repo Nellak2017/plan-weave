@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { TaskInput } from '../../atoms/TaskInput/TaskInput.js'
 import Spinner from '../../atoms/Spinner/Spinner.js'
-import Button from '../../atoms/Button/Button.js'
-import GoogleButton from '../../atoms/GoogleButton/GoogleButton.js'
+import { Button } from "@mui/material"
+import GoogleButton from 'react-google-button'
 import { AuthContainer, StyledAuthForm, InputSection, SignInContainer, OrSeparator, Line, Or, CenteredContainer, SubtitleContainer } from './AuthForm.elements.js'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -66,7 +66,12 @@ function AuthForm({ variant = VARIANTS[0], state = { maxwidth: 409, signup: fals
 				</StyledAuthForm>
 				<OrSeparator><Line /><Or>or</Or><Line /></OrSeparator>
 				<SignInContainer id='google-auth-container'>
-					<GoogleButton name='google-auth' type='button' onClick={e => handleSignInWithGoogle(e, googleServices, googleState)} signup={signup} />
+					<GoogleButton
+						name='google-auth'
+						type={variant}
+						onClick={e => handleSignInWithGoogle(e, googleServices, googleState)}
+						signup={signup}
+					/>
 				</SignInContainer>
 			</AuthContainer>
 		</CenteredContainer>

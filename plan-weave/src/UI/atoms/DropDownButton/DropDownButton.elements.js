@@ -1,5 +1,4 @@
-import { Button } from '../Button/Button.js'
-import { styled } from '@mui/material'
+import { Button, styled } from "@mui/material"
 
 export const DropDownButtonStyled = styled(Button)(({ theme }) => ({
   position: 'relative', padding: theme.spacing(1),

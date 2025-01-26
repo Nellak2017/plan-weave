@@ -80,6 +80,11 @@ export const SignInContainer = styled.div`
 	& button {
 		font-size: 14px; // so it for sure conforms to Google Standard
 		width: 80%;
+		border-radius: 8px;
+	}
+	& div[role=button] { // For the newly installed Google Button
+		border-radius: 8px!important;
+		div { border-radius: 8px 0 0 8px!important; }
 	}
 `
 export const OrSeparator = styled.span`

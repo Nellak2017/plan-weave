@@ -1,4 +1,4 @@
-import Button from '../Button/Button.js'
+import { Button } from "@mui/material"
 
 const modalStyles = { container: { maxWidth: '254px', backgroundColor: '#fff', }, text: { color: 'black', }, buttonContainer: { display: 'flex', alignItems: 'center', justifyContent: 'space-evenly', }, }
 const DeleteModal = ({

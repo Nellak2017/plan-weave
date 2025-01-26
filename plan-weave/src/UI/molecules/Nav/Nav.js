@@ -6,7 +6,7 @@ import {
 	ContentContainer
 } from './Nav.elements'
 import { makeLink, defaultLogin } from './Nav.helpers'
-import Button from '../../atoms/Button/Button.js'
+import { Button } from "@mui/material"
 import Image from 'next/image'
 import logo from '../../../../public/Plan-Weave-Logo-Square.png'
 import { BsArrowRightShort } from 'react-icons/bs'
