@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import TaskInput from '../../atoms/TaskInput/TaskInput.js'
+import { TaskInput } from '../../atoms/TaskInput/TaskInput.js'
 import Spinner from '../../atoms/Spinner/Spinner.js'
 import Button from '../../atoms/Button/Button.js'
 import GoogleButton from '../../atoms/GoogleButton/GoogleButton.js'
@@ -41,11 +41,24 @@ function AuthForm({ variant = VARIANTS[0], state = { maxwidth: 409, signup: fals
 					</SubtitleContainer>
 					<InputSection>
 						<label htmlFor='email'>Email Address</label>
-						<TaskInput variant={variant} type='email' id='email' value={email} onChange={e => handleEmailChange(e, setEmail)} placeholder='email@example.com' autoComplete='username' />
+						<TaskInput
+							placeholder='email@example.com'
+							type='email'
+							id='email'
+							value={email}
+							autoComplete='username'
+							onChange={e => handleEmailChange(e, setEmail)}
+						/>
 					</InputSection>
 					<InputSection>
 						<label htmlFor='password'>Password</label>
-						<TaskInput variant={variant} type='password' id='password' value={password} placeholder='Enter your password' autoComplete='current-password' onChange={e => handlePasswordChange(e, setPassword)} />
+						<TaskInput
+							placeholder='Enter your password'
+							type='password'
+							id='password'
+							value={password}
+							autoComplete='current-password'
+							onChange={e => handlePasswordChange(e, setPassword)} />
 					</InputSection>
 					<SignInContainer>
 						<Button type='submit' name='email-auth' title={signUpInEmail}> {signUpInEmail}</Button>

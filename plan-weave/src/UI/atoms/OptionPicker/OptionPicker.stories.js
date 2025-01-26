@@ -24,7 +24,7 @@ export const Dark = Template.bind({})
 Dark.args = {
 	state: { 
 		variant: 'dark',
-		initialSelectedPredecessors: options,
+		defaultValue: options,
 		options,
 	},
 	services: {

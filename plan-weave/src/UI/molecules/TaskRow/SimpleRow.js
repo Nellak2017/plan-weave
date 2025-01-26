@@ -1,5 +1,5 @@
 import { TASK_STATUSES, TASK_ROW_TOOLTIPS } from "../../../Core/utils/constants.js"
-import TaskInput from '../../atoms/TaskInput/TaskInput.js'
+import { TaskInput } from '../../atoms/TaskInput/TaskInput.js'
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
 import { MdOutlineCheckBoxOutlineBlank, MdOutlineCheckBox } from 'react-icons/md'
 import { DragIndicator, TaskContainer, WasteContainer, TimeContainer, IconContainer, DragContainer, } from './TaskRow.elements.js'
@@ -24,13 +24,17 @@ export const SimpleRow = ({ services, state, variant, provided, }) => { // Task 
 		<>
 			<DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''}><DragIndicator size={iconSize} /></DragContainer>
 			<IconContainer title={isChecked ? completedTooltip : incompleteTooltip}>
-				{isChecked
-					? (<MdOutlineCheckBox size={iconSize} onClick={handleCheckBoxClicked} />)
-					: (<MdOutlineCheckBoxOutlineBlank size={iconSize} onClick={handleCheckBoxClicked} />)
-				}
+				{isChecked ? <MdOutlineCheckBox size={iconSize} onClick={handleCheckBoxClicked} /> : <MdOutlineCheckBoxOutlineBlank size={iconSize} onClick={handleCheckBoxClicked} />}
 			</IconContainer>
 			<TaskContainer aria-label={taskTooltip} title={taskTooltip}>
-				{status === TASK_STATUSES.COMPLETED ? <p>{task}</p> : <TaskInput maxLength="50" onChange={e => setLocalTask(e.target.value)} value={localTask} variant={variant} />}
+				{status === TASK_STATUSES.COMPLETED
+					? <p>{task}</p>
+					: <TaskInput
+						maxLength='50'
+						defaultValue={localTask}
+						onBlur={e => { setLocalTask(e.target.value) }}
+					// TODO: Add the proper Redux Thunk to update task on Blur
+					/>}
 			</TaskContainer>
 			<WasteContainer title={wasteTooltip} style={{ width: '200px' }}>
 				<p>{displayTimeLeft(waste)}</p>

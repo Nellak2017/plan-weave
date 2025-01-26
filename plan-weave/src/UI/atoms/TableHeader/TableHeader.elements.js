@@ -8,7 +8,7 @@ const tableHeaderPresets = ({ theme, variant }) => ({
 }?.[variant])
 export const TableHeaderContainer = styled('th')(({ theme, variant }) => ({ ...tableHeaderPresets({ theme, variant }) }))
 export const StyledRow = styled('tr')(({ theme, variant }) => ({
-	':nth-child(1), :nth-child(2)': {
+	':nth-of-type(1), :nth-of-type(2)': {
 		width: '5px',
 		padding: '4px', // props.theme.spaces.smaller  
 	},

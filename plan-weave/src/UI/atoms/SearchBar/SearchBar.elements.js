@@ -2,9 +2,7 @@ import { styled } from "@mui/material"
 
 // TODO: Make correctly with theme
 const variantStyles = ({ bg, color, border }) => ({
-  backgroundColor: bg,
-  color,
-  border: `1px solid ${border}60`,
+  backgroundColor: bg, color, border: `1px solid ${border}60`,
   'input': {
     padding: `0 0 0 4px`, // props.theme.spaces.smaller
     fontSize: '14px', // props.theme.fontSizes.medium

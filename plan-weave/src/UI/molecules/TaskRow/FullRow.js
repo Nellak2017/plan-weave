@@ -4,12 +4,13 @@ import HoursInput from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from 'date-fns'
 import DateTimePickerWrapper from '../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js'
 import { TASK_ROW_TOOLTIPS } from '../../../Core/utils/constants.js'
-import Select from '../../atoms/Select/Select.js'
-import { validateTaskField } from '../../../Core/utils/helpers.js'
-import { taskSchema } from '../../../Core/schemas/taskSchema.js'
 import OptionPicker from '../../atoms/OptionPicker/OptionPicker.js'
 
+/* NOTE: You do the 'addThread' service here because the taskRow events file already updates the task itself!
+   NOTE: I removed the isValidTask step since it should be valid by definition*/
+// TODO: Establish maximum weight
 const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
+const formatEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
 
 function FullRow({ simpleTaskProps, services, state, }) {
 	const { provided, taskObject, variant, isChecked, setLocalTask, localTask, localTtc, setLocalTtc, handleCheckBoxClicked } = simpleTaskProps
@@ -20,49 +21,24 @@ function FullRow({ simpleTaskProps, services, state, }) {
 	return (
 		<>
 			<SimpleRow provided={provided} variant={variant} state={{ taskObject, isChecked, localTask, localTtc }} services={{ setLocalTask, setLocalTtc, handleCheckBoxClicked }} />
-			<EfficiencyContainer title={efficencyToolTip}>
-				<p>{!fullTask?.efficiency || fullTask?.efficiency <= 0 ? '-' : `${(parseFloat(fullTask?.efficiency) * 100).toFixed(0)}%`}</p>
-			</EfficiencyContainer>
+			<EfficiencyContainer title={efficencyToolTip}><p>{formatEfficiency(fullTask?.efficiency)}</p></EfficiencyContainer>
 			<DueContainer title={dueToolTip}>
-				{isChecked
-					? formatDate(localDueDate)
-					: <DateTimePickerWrapper
-						services={{ onTimeChange: (newDateTime) => setLocalDueDate(newDateTime.toISOString()) }}
-						state={{
-							variant,
-							defaultTime: format(parseISO(localDueDate), 'HH:mm'),
-							defaultDate: parseISO(localDueDate),
-						}} />
-				}
+				{isChecked ? formatDate(localDueDate) : <DateTimePickerWrapper state={{ variant, defaultTime: format(parseISO(localDueDate), 'HH:mm'), defaultDate: parseISO(localDueDate), }} services={{ onTimeChange: (newDateTime) => setLocalDueDate(newDateTime.toISOString()) }} />}
 			</DueContainer>
 			<WeightContainer title={weightToolTip}>
-				{isChecked
-					? parseFloat(localWeight).toFixed(2) || 1
-					: <HoursInput
-						state={{ variant, placeholder: 1, min: 1, initialValue: (localWeight && localWeight > .01 ? localWeight : 1) }}
-						services={{ onValueChange: value => setLocalWeight(parseFloat(value)) }}
-					// TODO: Establish maximum weight
-					/>}
+				{isChecked ? parseFloat(localWeight).toFixed(2) || 1 : <HoursInput state={{ variant, placeholder: 1, min: 1, initialValue: (localWeight && localWeight > .01 ? localWeight : 1) }} services={{ onValueChange: value => setLocalWeight(parseFloat(value)) }} />}
 			</WeightContainer>
 			<ThreadContainer title={threadToolTip}>
-				{
-					// NOTE: You do the 'addThread' service here because the taskRow events file already updates the task itself!
-					<Select
-						variant={variant}
-						services={{
-							onChange: e => setLocalThread(e),
-							onBlur: e => {
-								const isValidTask = validateTaskField({ field: 'parentThread', payload: e, schema: taskSchema })?.valid
-								const isUniqueThread = !availableThreads.includes(e)
-								if (isValidTask && isUniqueThread) addThread(e)
-							},
-						}}
-						state={{ initialValue: localThread, options: availableThreads, minLength: 2, maxLength: 50, }}
-					/>
-				}
+				<OptionPicker
+					state={{ variant, defaultValue: localThread, options: availableThreads, label: 'Select Task', multiple: false }}
+					services={{ onChange: e => setLocalThread(e) }}
+					onBlur={e => { if (!availableThreads.includes(e)) addThread(e) }}
+				/>
 			</ThreadContainer>
 			<DependencyContainer title={dependencyToolTip}>
-				<OptionPicker state={{ variant, initialSelectedPredecessors: localDependencies, options }} services={{ onChange: setLocalDependencies }} />
+				<OptionPicker
+					state={{ variant, defaultValue: localDependencies, options, multiple: true }}
+					services={{ onChange: setLocalDependencies }} />
 			</DependencyContainer>
 		</>
 	)

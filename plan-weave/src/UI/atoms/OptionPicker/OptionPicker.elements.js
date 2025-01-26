@@ -1,5 +1,4 @@
-import { styled } from "@mui/material"
-import { TextField, Chip } from '@mui/material'
+import { styled, TextField, Chip } from "@mui/material"
 
 // TODO: Align styles with Theme and Light / Dark variants
 export const StyledTextField = styled(TextField)(({ theme, variant }) => ({
