@@ -65,7 +65,6 @@ export const DEFAULT_TASK_CONTROL_TOOL_TIPS = {
 	deleteToolTip: 'Delete selected', dropDownToolTip: 'Select Sorting Method',
 	fullTaskToggleTip: 'Toggle Full Task View'
 }
-export const CLOCK_DEBOUNCE = 20 // measured in ms
 export const TASK_ROW_TOOLTIPS = {
 	dnd: 'Drag-n-Drop tasks to change view',
 	completed: 'Mark Incomplete',

@@ -81,30 +81,22 @@ function TaskControl({
 				<p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>
 				<TimePickerContainer onBlur={checkTimeRange}>
 					<TimePickerWrapper
+						state={{
+							variant, defaultTime: handleFormat(startTime), displayText: clock1Text,
+							offset: { verticalOffset: y0, horizontalOffset: x0, },
+						}}
+						services={{ onTimeChange: newTime => startTimeChangeEvent(services, newTime) }}
 						tabIndex={0}
 						title={TASK_CONTROL_TITLES.startButton}
-						variant={variant}
-						defaultTime={handleFormat(startTime)}
-						displayText={clock1Text}
-						verticalOffset={y0}
-						horizontalOffset={x0}
-						controlled
-						time={startTime}
-						onTimeChange={newTime => startTimeChangeEvent(services, newTime)}
-						testid={'start-time-picker'} // used in testing
 					/>
 					<TimePickerWrapper
+						state={{
+							variant, defaultTime: format(endTime, 'HH:mm'), displayText: clock2Text,
+							offset: { verticalOffset: y1, horizontalOffset: x1, },
+						}}
+						services={{ onTimeChange: newTime => endTimeChangeEvent(services, newTime) }}
 						tabIndex={0}
 						title={TASK_CONTROL_TITLES.endButton}
-						variant={variant}
-						defaultTime={format(endTime, 'HH:mm')}
-						displayText={clock2Text}
-						verticalOffset={y1}
-						horizontalOffset={x1}
-						controlled
-						time={endTime}
-						onTimeChange={newTime => endTimeChangeEvent(services, newTime)}
-						testid={'end-time-picker'} // used in testing
 					/>
 					<GiOwl
 						tabIndex={0}
