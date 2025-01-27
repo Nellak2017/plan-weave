@@ -27,11 +27,9 @@ export const TimePickerWrapper = ({
         </ClockIconWrapper>
         <TimeClockWrapper $showclock={getFSMValue(fsmState, SHOW_CLOCK)} $verticalOffset={verticalOffset} $horizontalOffset={horizontalOffset}>
           <TimeClock
-            defaultValue={initialTime.current}
-            view={getFSMValue(fsmState, VIEW)}
+            defaultValue={initialTime.current} view={getFSMValue(fsmState, VIEW)}
             ampm={false} minutesStep={5} size={32} tabIndex={0} ref={input => input?.focus()}
-            onBlur={() => handleBlur(setFsmState, fsmState)} onFocusedViewChange={() => handleViewChange(setFsmState, fsmState)}
-            onChange={newTime => setTime(newTime)}
+            onBlur={() => handleBlur(setFsmState, fsmState)} onFocusedViewChange={() => handleViewChange(setFsmState, fsmState)} onChange={newTime => setTime(newTime)}
           />
         </TimeClockWrapper>
       </TimePickerWrapperStyled>
