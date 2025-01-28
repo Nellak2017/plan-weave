@@ -14,14 +14,18 @@ const Template = args => <InfoSection {...args} />
 
 export const Light = Template.bind({})
 Light.args = {
-	variant: 'light',
-	data: body[1]
+	state: {
+		variant: 'light',
+		data: body[1]
+	}
 }
 
 export const Dark = Template.bind({})
 Dark.args = {
-	variant: 'dark',
-	data: body[0]
+	state: {
+		variant: 'dark',
+		data: body[0]
+	}
 }
 
 export default InfoSectionStories

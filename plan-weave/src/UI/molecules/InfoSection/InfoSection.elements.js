@@ -1,74 +1,59 @@
-import styled, { css } from 'styled-components'
-import { getPresetCSS } from '../../styles/theme.js'
+import { styled } from "@mui/material"
 
-const infoSectionPresets = {
-	variant: {
-		light: css`
-			background-color: #fff; // To pass contrast WGAG requirement. See also: https://accessibleweb.com/color-contrast-checker/
-			.reverse { flex-direction: row-reverse;}
-			h2 { color: ${props => props.theme.colors.primary};}
-			h1 { color: ${props => props.theme.colors.darkNeutralDark};}
-			p { color: ${props => props.theme.colors.darkNeutral};}
-		`,
-		dark: css`
-			background-color: ${props => props.theme.colors.darkNeutralDark};
-			h2, p { color: ${props => props.theme.colors.backgroundTextColor};}
-		`
+// TODO: Use MUI theme properly
+const infoSectionPresets = ({ theme, variant }) => ({
+	light: {
+		backgroundColor: '#fff',
+		'.reverse': { flexDirection: 'row-reverse' },
+		'h2': { color: theme.palette.primary.main, },
+		'h1': { color: `#2b252c`, }, // ${props => props.theme.colors.darkNeutralDark}
+		'p': { color: `#39313a`, }, // ${props => props.theme.colors.darkNeutral}
 	},
-}
-export const StyledInfoContainer = styled.section` // Top level container for Info Section
-	display: flex;
-    align-items: center;
-	justify-content: center;
-	flex-wrap: wrap;
-	height: 720px;
-	width: 100vw;
-	margin: 0;
-	padding: 0;
-  	${getPresetCSS(infoSectionPresets, 'variant')};
-`
-export const ColumnContainer = styled.div` // Contains the columns so we can get accurate heights
-	display: flex;
-	align-items: center;
-	@media screen and (max-width:${props => props.theme.breakpoints.md}){
-        flex-direction: column!important; // overrides light-mode's row-reverse when hitting this breakpoint
-		row-gap: ${props => props.theme.spaces.medium};
-		max-width: 100%;
-        flex-basis: 100%;
-		align-items: center;
-    }
-`
-export const Column = styled.div` // Column where text or images will be
-	padding: 0 ${props => props.theme.spaces.medium};
-	width: 100%;
-`
-export const TextContainer = styled.div` // Container for Text in Column
-	display: flex;
-	flex-direction: column;
-	max-width: 540px;
-	width: 100%;
-	h2 {
-		font-size: ${props => props.theme.fontSizes.medium};
-		line-height: ${props => props.theme.fontSizes.medium};
-		letter-spacing: 1.4px;
-		margin-bottom: ${props => props.theme.fontSizes.medium};
-	}
-	h1 {
-		margin-bottom: 24px;
-		font-size: 48px;
-		line-height: 1.1;
-	}
-	p {
-		margin-bottom: ${props => props.theme.spaces.large};
-		font-size: ${props => props.theme.fontSizes.medium};
-		line-height: ${props => props.theme.fontSizes.large};
-	}
-	a {
-		width: 50%;
-		align-self: center;
-	}
-	button {
-		width: 100%;
-		font-size: ${props => props.theme.fontSizes.medium};
-	}
-`
+	dark: {
+		backgroundColor: `#2b252c`, // ${props => props.theme.colors.darkNeutralDark}
+		'h2, p': { color: `#fff`, }, // ${props => props.theme.colors.backgroundTextColor}
+	},
+}?.[variant])
+
+export const StyledInfoContainer = styled('section')(({ theme, variant }) => ({
+	display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap',
+	height: '720px', width: '100vw',
+	margin: '0', padding: '0',
+	...infoSectionPresets({ theme, variant }),
+})) // Top level container for Info Section
+
+export const ColumnContainer = styled('div')(({ theme }) => ({
+	display: 'flex', alignItems: 'center',
+	[theme.breakpoints.down('md')]: {
+		flexDirection: 'column!important', // overrides light-mode's row-reverse when hitting this breakpoint
+		rowGap: '16px', // theme.spaces.medium
+		maxWidth: '100%', flexBasis: '100%', alignItems: 'center',
+	},
+}))
+
+export const Column = styled('div')(({ theme }) => ({
+	padding: `0 16px`, // theme.spaces.medium
+	width: '100%',
+}))
+
+export const TextContainer = styled('div')(({ theme }) => ({
+	display: 'flex', flexDirection: 'column',
+	maxWidth: '540px', width: '100%',
+	'& h2': {
+		fontSize: '16px', // theme.fontSizes.medium
+		lineHeight: '16px', // theme.fontSizes.medium
+		marginBottom: '16px', // theme.fontSizes.medium
+		letterSpacing: '1.4px',
+	},
+	'& h1': { marginBottom: '24px', fontSize: '48px', lineHeight: '1.1', },
+	'& p': {
+		marginBottom: '32px', // theme.spaces.large
+		fontSize: '16px', // theme.fontSizes.medium
+		lineHeight: '24px', // theme.fontSizes.large
+	},
+	'& a': { width: '50%', alignSelf: 'center', },
+	'& button': {
+		width: '100%',
+		fontSize: '16px', // theme.fontSizes.medium
+	},
+}))

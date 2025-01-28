@@ -13,11 +13,11 @@ export default function Home() {
   const handleApp = () => router.push('/plan-weave')
   const handleLogIn = () => router.push('/login')
   const handleSignUp = () => router.push('/signup')
-  const defaultLogout = ({ text = 'Log Out', link = '/', title = 'Log Out', label = 'Log Out of Plan-Weave', handler, index = 0, ...props}) => (makeLink({ text, link, title, label, handler, index, ...props }))
+  const defaultLogout = ({ text = 'Log Out', link = '/', title = 'Log Out', label = 'Log Out of Plan-Weave', handler, index = 0, ...props }) => (makeLink({ text, link, title, label, handler, index, ...props }))
   return (
     <>
-      <Nav LoginComponent={user ? defaultLogout : defaultLogin} handleApp={handleApp} handleLogIn={user ? handleLogout : handleLogIn} handleSignUp={handleSignUp}/>
-      {body.map((section, index) => (<InfoSection key={section?.topLine || index} variant={index % 2 === 0 ? 'dark' : 'light'} data={section} priority={true}/>))}
+      <Nav LoginComponent={user ? defaultLogout : defaultLogin} handleApp={handleApp} handleLogIn={user ? handleLogout : handleLogIn} handleSignUp={handleSignUp} />
+      {body.map((section, index) => (<InfoSection key={section?.topLine || index} state={{ variant: index % 2 === 0 ? 'dark' : 'light', data: section }} />))}
     </>
   )
 }
