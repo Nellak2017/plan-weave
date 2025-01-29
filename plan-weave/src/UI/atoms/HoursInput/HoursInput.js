@@ -3,13 +3,12 @@ import { VARIANTS } from '../../../Core/utils/constants.js'
 
 // TODO: Test this input and verify invalid input can not go into it and that it is correct
 const HoursInput = ({
-	state: { variant = VARIANTS[0], placeholder = 0, text, maxwidth = 45, step = .01, min = 0, max = 24, maxLength = '5', initialValue = 1 } = {},
+	state: { variant = VARIANTS[0], placeholder = 0, text, maxwidth = 45, step = .01, min = 0, max = 24, maxLength = '5' } = {},
 	services: { onValueChange, onBlur } = {}, ...props
 }) => (
 	<HoursContainer variant={variant}>
 		<HoursInputStyled
 			variant={variant} maxwidth={maxwidth} placeholder={placeholder}
-			defaultValue={initialValue}
 			type='text' min={min} max={max} step={step}
 			inputMode='numeric' maxLength={maxLength} pattern='^$|^[0-9]*\.?[0-9]*$' // Empty, ".", decimal
 			onChange={e => {

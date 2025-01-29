@@ -3,23 +3,20 @@ import Pagination from './Pagination'
 const PaginationStories = {
 	title: 'Molecules/Pagination',
 	component: Pagination,
-	argTypes: {
-		variant: { control: 'text' },
-	},
+	argTypes: { variant: { control: 'text' }, },
 }
-
-const Template = args => {
-	return <Pagination {...args} />
-}
-
+const Template = args => <Pagination {...args} />
 export const Light = Template.bind({})
 Light.args = {
-	variant: 'light',
+	state: { variant: 'light' },
 }
-
 export const Dark = Template.bind({})
 Dark.args = {
-	variant: 'dark',
+	state: { 
+		variant: 'dark', 
+		taskListLength: 21,
+		pageNumber: 1, 
+		tasksPerPage: 20, 
+	},
 }
-
 export default PaginationStories

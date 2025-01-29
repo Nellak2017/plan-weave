@@ -44,6 +44,7 @@ export const SimpleRow = ({ services, state, variant, provided, }) => { // Task 
 					<pre>{ttc && !isNaN(ttc) && ttc > 0 ? formatTimeLeft({ timeDifference: ttc, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'}</pre>
 					: <HoursInput
 						state={{ variant, placeholder: 'hours', text: 'hours' }}
+						defaultValue={1}
 						services={{ onValueChange: value => setLocalTtc(value), onBlur: () => setLocalTtc(localTtc) }}
 					/>
 				}

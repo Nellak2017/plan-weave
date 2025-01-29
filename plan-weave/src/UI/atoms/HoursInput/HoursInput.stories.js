@@ -30,8 +30,8 @@ Dark.args = {
 		variant: 'dark',
 		text: 'Hours',
 		placeholder: 'Time',
-		initialValue: 2
-	}
+	},
+	defaultValue: 2
 }
 
 export default HoursInputStories

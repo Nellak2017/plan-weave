@@ -10,7 +10,7 @@ import store from '../../../Application/redux/store.js'
 import { createTaskEditorServices } from '../../../Application/services/pages/PlanWeavePage/TaskEditorServices.js'
 import { ThemeContext } from 'styled-components' // needed for theme object
 
-const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARIANTS[0], maxwidth = 818, title = "Today's Tasks"}) => {
+const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARIANTS[0], maxwidth = 818, title = "Today's Tasks" }) => {
 	// --- State Objects for Children
 	const globalTasks = useSelector(state => state?.globalTasks)
 	const taskList = useSelector(selectNonHiddenTasksCoerceToFull)
@@ -50,26 +50,33 @@ const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARI
 		},
 	}
 	// State for Pagination
-	const PaginationState = { globalTasks, taskList, pageNumber: useSelector(state => state?.taskEditor?.page), tasksPerPage: useSelector(state => state?.taskEditor?.tasksPerPage), timeRange: useSelector(state => state?.taskEditor?.timeRange),}
+	const PaginationState = {
+		variant, taskListLength: taskList?.length,
+		pageNumber: useSelector(state => state?.taskEditor?.page),
+		tasksPerPage: useSelector(state => state?.taskEditor?.tasksPerPage),
+	}
 	return (
 		<TaskEditorContainer variant={variant}>
 			<h1>{title}</h1>
 			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
 				<TaskControl
-					services={{ ...services?.global, ...services?.taskControl,}}
+					services={{ ...services?.global, ...services?.taskControl, }}
 					state={TaskControlState}
 					variant={variant}
 					clock1Text={''}
 					clock2Text={''}
 				/>
 				<TaskTable
-					services={{ ...services?.global, ...services?.taskTable,}}
+					services={{ ...services?.global, ...services?.taskTable, }}
 					state={TaskTableState}
 					variant={variant}
 					headerLabels={fullTask ? FULL_TASK_HEADERS : SIMPLE_TASK_HEADERS}
 					maxwidth={maxwidth}
 				/>
-				<Pagination services={{ ...services?.global, ...services?.pagination,}} state={PaginationState} variant={variant} />
+				<Pagination
+					state={PaginationState}
+					services={{ ...services?.global, ...services?.pagination, }}
+				/>
 			</StyledTaskEditor>
 		</TaskEditorContainer>
 	)

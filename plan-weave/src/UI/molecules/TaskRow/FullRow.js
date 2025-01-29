@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import SimpleRow from './SimpleRow.js'
 import { EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer } from './TaskRow.elements.js'
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
@@ -18,6 +19,7 @@ function FullRow({ simpleTaskProps, services, state, }) {
 	const { availableThreads, localThread, localDueDate, localDependencies, localWeight, options } = state || {}
 	const { efficiency: efficencyToolTip, due: dueToolTip, weight: weightToolTip, thread: threadToolTip, dependencies: dependencyToolTip } = TASK_ROW_TOOLTIPS
 	const fullTask = { ...taskObject, ...state }
+	const initialThread = useRef(localThread), initialDependencies = useRef(localDependencies)
 	return (
 		<>
 			<SimpleRow provided={provided} variant={variant} state={{ taskObject, isChecked, localTask, localTtc }} services={{ setLocalTask, setLocalTtc, handleCheckBoxClicked }} />
@@ -26,19 +28,22 @@ function FullRow({ simpleTaskProps, services, state, }) {
 				{isChecked ? formatDate(localDueDate) : <DateTimePickerWrapper state={{ variant, defaultTime: format(parseISO(localDueDate), 'HH:mm'), defaultDate: parseISO(localDueDate), }} services={{ onTimeChange: (newDateTime) => setLocalDueDate(newDateTime.toISOString()) }} />}
 			</DueContainer>
 			<WeightContainer title={weightToolTip}>
-				{isChecked ? parseFloat(localWeight).toFixed(2) || 1 : <HoursInput state={{ variant, placeholder: 1, min: 1, initialValue: (localWeight && localWeight > .01 ? localWeight : 1) }} services={{ onValueChange: value => setLocalWeight(parseFloat(value)) }} />}
+				{isChecked ? parseFloat(localWeight).toFixed(2) || 1 : <HoursInput state={{ variant, placeholder: 1, min: 1 }} defaultValue={(localWeight && localWeight > .01 ? localWeight : 1)} services={{ onValueChange: value => setLocalWeight(parseFloat(value)) }} />}
 			</WeightContainer>
 			<ThreadContainer title={threadToolTip}>
 				<OptionPicker
-					state={{ variant, defaultValue: localThread, options: availableThreads, label: 'Select Task', multiple: false }}
+					state={{ variant, options: availableThreads, label: 'Select Thread', multiple: false }}
 					services={{ onChange: e => setLocalThread(e) }}
-					onBlur={e => { if (!availableThreads.includes(e)) addThread(e) }}
+					defaultValue={initialThread.current}
+					onBlur={e => { if (!availableThreads.includes(e.target.value)) addThread(e.target.value) }}
 				/>
 			</ThreadContainer>
 			<DependencyContainer title={dependencyToolTip}>
 				<OptionPicker
-					state={{ variant, defaultValue: localDependencies, options, multiple: true }}
-					services={{ onChange: setLocalDependencies }} />
+					state={{ variant, options, multiple: true }}
+					services={{ onChange: setLocalDependencies }}
+					defaultValue={initialDependencies.current}
+				/>
 			</DependencyContainer>
 		</>
 	)
