@@ -2,9 +2,21 @@
 import homeImgOne from '../../../../public/Home-Page/svg-1-task-computer.svg'
 import homeImgTwo from '../../../../public/Home-Page/svg-2-todo.svg'
 
-// nav of the homepage
 // TODO: Make data for this
 // body of the homepage, such as for the sections
+export const NavData = {
+	middleContentData: ({ user }) => ({ href: `/${user ? 'plan-weave' : ''}` }),
+	rightContentData: ({ user, router, handleLogout }) => ({
+		linkData: [
+			{ label: 'App', href: `/${user ? 'plan-weave' : ''}`, title: 'Go to Plan Weave App' },
+			{
+				label: `${user ? 'Log out' : 'Log in'}`, href: `/${user ? '' : 'login'}`, title: `${user ? 'Log out of' : 'Log into'} PlanWeave App`,
+				onClick: user ? () => handleLogout(router) : null
+			},
+		],
+		lastButtonData: { label: 'Sign Up', href: '/signup', title: 'Sign up', }
+	})
+}
 export const body = [
 	{
 		topLine: 'Plan Weave',

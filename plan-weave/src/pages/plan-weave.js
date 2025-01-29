@@ -8,10 +8,13 @@ import store from '../Application/redux/store.js'
 import { initialTaskUpdate, initialUserIdUpdate } from '../Application/redux/thunks/planWeavePageThunks.js'
 import { loadingOrError } from '../UI/pageUtils/helper-components.js'
 import { useRedirectIfUnauthorized } from '../UI/hooks/useRedirectIfUnauthorized.js'
-import { options, title, defaultLogout } from '../Infra/Data/PlanWeave/Data.js'
+import { options, NavData } from '../Infra/Data/PlanWeave/Data.js'
 import { useTaskFetching } from '../UI/hooks/useTaskFetching.js'
+import { LeftContent, MiddleContent, RightContent } from '../UI/molecules/Nav/Nav.slots.js'
+import { handleLogout } from '../UI/pageUtils/page-handlers.js'
 
 function PlanWeave() {
+	const { middleContentData, rightContentData } = NavData
 	const dispatch = store.dispatch
 	const router = useRouter()
 	const [user, loading, error] = useAuthState(auth)
@@ -24,11 +27,11 @@ function PlanWeave() {
 		: (
 			<>
 				<Nav
-					LoginComponent={defaultLogout}
-					MiddleComponent={title}
-					AppComponent={() => undefined}
-					SignUpComponent={() => undefined}
-					handleLogo={() => router.push('/')}
+					slots={{
+						left: <LeftContent />,
+						middle: <MiddleContent state={middleContentData()} />,
+						right: <RightContent state={rightContentData({ router, handleLogout })} />
+					}}
 				/>
 				<TaskEditor variant='dark' sortingAlgorithm='timestamp' options={options} />
 			</>
