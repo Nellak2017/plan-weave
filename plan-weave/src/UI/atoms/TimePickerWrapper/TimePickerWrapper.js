@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { TimePickerWrapperStyled, ClockIconWrapper, TimeClockWrapper, Display } from './TimePickerWrapper.elements'
-import { DEFAULT, VIEW, SHOW_CLOCK, getFSMValue, handleClick, handleViewChange, handleBlur } from './TimePickerWrapper.fsm.js'
+import { getDefaultState, VIEW, SHOW_CLOCK, getFSMValue, handleClick, handleViewChange, handleBlur } from './TimePickerWrapper.fsm.js'
 import { format, parse } from 'date-fns'
 import { AiOutlineClockCircle } from 'react-icons/ai'
 import { VARIANTS } from '../../../Core/utils/constants.js'
@@ -17,7 +17,7 @@ export const TimePickerWrapper = ({
   const [time, setTime] = useState(initialTime.current)
   const debouncedTime = useMemo(() => time, [time / 10]) // divide by 10 to be able to debounce on first decimal place of change
   useEffect(() => { onTimeChange?.(debouncedTime) }, [debouncedTime]) // only call parent when clock hand changes
-  const [fsmState, setFsmState] = useState(DEFAULT) // the current state of the state machine
+  const [fsmState, setFsmState] = useState(getDefaultState()) // the current state of the state machine
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <TimePickerWrapperStyled variant={variant} >

@@ -1,4 +1,3 @@
-import { css } from 'styled-components'
 const elevations = {
   extraSmall: '0px 1px 3px 0px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12)', // 1dp : elements closest to application background, like cards
   small: '0px 1px 8px 0px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 3px 3px -2px rgba(0, 0, 0, 0.12)', // 3dp : tooltips, banners, elevated buttons, FAB
@@ -10,72 +9,6 @@ const insets = { normal: '1px 1px 5px rgba(1, 1, 0, 0.7) inset' }
 const fontSizes = { extraSmall: '10px', smaller: '12px', small: '14px', medium: '16px', large: '24px', larger: '40px', extraLarge: '64px' }
 const spaces = { smaller: '4px', small: '8px', medium: '16px', large: '32px', larger: '48px', extraLarge: '56px' }
 const breakpoints = { xs: '320px', sm: '425px', md: '768px', lg: '1024px', xl: '1440px' } // small phones, large phones, ipads, laptops, desktops
-const colorVariant = ({ color, bg, hover, active }) => css`
-  color: ${color};
-  background-color: ${bg};
-  &:hover { background-color: ${hover};}
-  &:active { background-color: ${active};}
-`
-export const colorPreset = {
-  primary: colorVariant({ color: props => props.theme.colors.primaryLight, bg: props => props.theme.colors.primary, hover: props => props.theme.colors.primaryHover, active: props => props.theme.colors.primaryActive}),
-  darkNeutral: colorVariant({ color: props => props.theme.colors.darkNeutralLight, bg: props => props.theme.colors.darkNeutral, hover: props => props.theme.colors.darkNeutralHover, active: props => props.theme.colors.darkNeutralActive}),
-  lightNeutral: colorVariant({ color: props => props.theme.colors.lightNeutralLight, bg: props => props.theme.colors.lightNeutral, hover: props => props.theme.colors.lightNeutralHover, active: props => props.theme.colors.lightNeutralActive}),
-  danger: colorVariant({ color: props => props.theme.colors.dangerLight, bg: props => props.theme.colors.danger, hover: props => props.theme.colors.dangerHover, active: props => props.theme.colors.dangerActive}),
-  success: colorVariant({ color: props => props.theme.colors.successLight, bg: props => props.theme.colors.success, hover: props => props.theme.colors.successHover, active: props => props.theme.colors.successActive}),
-  warning: colorVariant({ color: props => props.theme.colors.warningLight, bg: props => props.theme.colors.warning, hover: props => props.theme.colors.warningHover, active: props => props.theme.colors.warningActive}),
-  transparent: css`
-    color: #fff;
-    background-color: transparent;
-    &:hover { background-color: transparent;}
-    &:active { background-color: transparent;}
-  `
-}
-const taskInputOverlay = ({ color, placeholderColor }) => css`
-	color: ${color};
-	&::placeholder { color: ${placeholderColor}60;}
-`
-const taskInputVariantStyles = ({ color, hoverColor, focusColor, focusPlaceholderColor }) => css`
-	& > span {
-		color: ${color};
-		&::placeholder { color: ${color}60;}
-		&:hover { ${taskInputOverlay({ color: hoverColor, placeholderColor: hoverColor })}}
-		&:focus { ${taskInputOverlay({ color: focusColor, placeholderColor: focusPlaceholderColor })}}
-	}
-`
-export const taskInputPreSets = {
-  variant: {
-    light: taskInputVariantStyles({
-      color: props => props.theme.colors.lightNeutral,
-      hoverColor: props => props.theme.colors.lightNeutralHover,
-      focusColor: props => props.theme.colors.lightNeutralActive,
-      focusPlaceholderColor: props => props.theme.colors.lightNeutralActive,
-    }),
-    dark: taskInputVariantStyles({
-      color: props => props.theme.colors.lightNeutralLight,
-      hoverColor: props => props.theme.colors.lightNeutralLightHover,
-      focusColor: props => props.theme.colors.lightNeutralLight,
-      focusPlaceholderColor: props => props.theme.colors.lightNeutralLightActive,
-    }),
-  },
-}
-export const selectWrapperPresets = {
-  variant: {
-    light: css`
-      & .css-1jqq78o-placeholder, .css-13cymwt-control, .css-t3ipsp-control, div, svg, .css-12a83d4-MultiValueRemove > .css-tj5bde-Svg {
-        color: ${props => props.theme.colors.darkNeutralDark};
-      }
-    `,
-    dark: css`
-      color: ${props => props.theme.colors.lightNeutralLight};
-      & .css-1jqq78o-placeholder, .css-13cymwt-control, .css-t3ipsp-control, svg {
-        color: ${props => props.theme.colors.lightNeutralLight};
-      }
-      div, .css-12a83d4-MultiValueRemove > .css-tj5bde-Svg {
-        color: ${props => props.theme.colors.darkNeutralDark};
-      }
-    `,
-  },
-}
 export const getPresetCSS = (preSets, preSetProp) => props => preSets[preSetProp][props[preSetProp]]
 const colors = {
   primaryLight: '#f1ecfd', primaryLightHover: '#e2d9fc', primaryLightActive: '#b7a1f7',

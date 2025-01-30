@@ -3,7 +3,7 @@ import Image from 'next/image'
 import logo from '../../../../public/Plan-Weave-Logo-Square.png'
 import { BsArrowRightShort } from 'react-icons/bs'
 import Link from 'next/link'
-import { Logo, SiteTitle, LoginContainer, } from './Nav.elements'
+import { Logo, SiteTitle, LoginContainer, StyledNav, ContentContainer } from './Nav.elements'
 
 // The below Components are the default components for Nav that can be customized
 export const LeftContent = ({
@@ -38,4 +38,7 @@ export const RightContent = ({
                 </Button>
             </Link>}
     </LoginContainer>
+)
+export const DefaultContainer = ({ left, middle, right }) => (
+    <StyledNav><ContentContainer>{left}{middle}{right}</ContentContainer></StyledNav>
 )

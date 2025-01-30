@@ -23,6 +23,8 @@ import {
 } from './TaskControl.events.js'
 import { useInterval } from '../../hooks/useInterval.js'
 import { IoIosInformationCircleOutline } from "react-icons/io"
+import { MultipleDeleteButton } from '../MultipleDeleteButton/MultipleDeleteButton.js'
+
 const handleFormat = time => {
 	try {
 		return format(time, 'HH:mm')
@@ -31,6 +33,7 @@ const handleFormat = time => {
 		return
 	}
 }
+// TODO: Control MultipleDeleteButton from the parent who encapsulates this and the task row too
 // services are: search, timeRange, owl, addTask, deleteMany, highlighting, updateSelectedTasks, sort, updateFirstLoad
 // state is: timeRange, owl, isHighlighting, taskList, selectedTasks, dnd, theme, firstLoad
 function TaskControl({
@@ -46,14 +49,13 @@ function TaskControl({
 	...rest }) {
 	// Input Destructuring
 	const { y0, y1, x0, x1 } = { ...coords }
-	const { owlToolTip, addToolTip, deleteToolTip, dropDownToolTip, fullTaskToggleTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
+	const { owlToolTip, addToolTip, dropDownToolTip, fullTaskToggleTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
 	const { search, sort, fullToggle, updateFirstLoad } = services || {}
 	const { timeRange, owl, isHighlighting, taskList, selectedTasks, theme, fullTask, firstLoad, userId } = state || {}
 	const startTime = useMemo(() => timeRange?.start ? parseISO(timeRange?.start) : new Date(), [timeRange])
 	const endTime = useMemo(() => timeRange?.end ? parseISO(timeRange?.end) : new Date(), [timeRange])
 	// Local State
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
-	const [isDeleteClicked, setIsDeleteClicked] = useState(false) // used to track if delete has been presed once or not (HOF didn't work)
 	const options = useMemo(() => Object.keys(SORTING_METHODS).map(name => ({
 		name: name || 'default',
 		listener: () => {
@@ -120,24 +122,10 @@ function TaskControl({
 						size={owlSize}
 						data-testid={'full-task-toggle-button'}
 					/>
-					<BiTrash
-						tabIndex={0}
-						title={deleteToolTip}
-						style={isHighlighting && { color: theme.colors.primary }}
-						onClick={() => deleteEvent(services, toast, setIsDeleteClicked, isHighlighting, taskList)}
-						onKeyDown={e => { if (e.key === 'Enter') { deleteEvent(services, toast, setIsDeleteClicked, isHighlighting, taskList) } }}
-						size={owlSize}
-						data-testid={'multi-delete-button'}
+					<MultipleDeleteButton
+						//state={{ fsmControlledState: fsmState }}
+						//services={{ setControlledFSMState: setFSMState }}
 					/>
-					{isHighlighting &&
-						<Button
-							variant={'delete'} tabIndex={0} title={'Delete Selected Tasks'}
-							onClick={() => deleteMultipleEvent({ state: { userId, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, })}
-							onKeyDown={e => { if (e.key === 'Enter') { deleteMultipleEvent({ state: { userId, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } }}
-						>
-							Delete
-						</Button>
-					}
 					<Separator variant={variant} color={color} />
 				</BottomContentContainer>
 				<BottomContentContainer>

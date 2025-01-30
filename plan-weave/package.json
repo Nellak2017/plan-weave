@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint-count": "next lint 2>&1 | grep -Ei \"error|warning\" | wc -l | xargs -I {} echo \"{} problems\"",
+    "line-count-sorted": "find ./src/ -type f \\( -name '*.js' -o -name '*.mjs' \\) -exec wc -l {} + | sort",
     "line-count-sorted-no-fluff": "find ./src/ -type f \\( -name '*.js' -o -name '*.mjs' \\) ! \\( -name '*stories*' -o -name '*test*' \\) -exec wc -l {} + | sort",
     "test": "jest",
     "failing-test": "jest --onlyFailures",

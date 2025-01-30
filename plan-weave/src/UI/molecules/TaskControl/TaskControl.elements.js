@@ -1,8 +1,6 @@
 import styled, { css } from 'styled-components'
-import { getPresetCSS, colorPreset } from '../../styles/theme.js'
+import { getPresetCSS } from '../../styles/theme.js'
 
-// TODO: Fix sizing prop. It needs to switch based on xs,s,m, l,.. not custom px values
-// TODO: Add Size switch
 const variantStyle = ({ bg, color, italicBg }) => css`
 	background-color: ${bg};
 	color: ${color};
@@ -15,10 +13,9 @@ const variantStyle = ({ bg, color, italicBg }) => css`
 `
 const taskControlPresets = {
 	variant: {
-		light: variantStyle({ bg: props => props.theme.colors.lightNeutralLight, color: props => props.theme.colors.darkNeutral, italicBg: props => props.theme.colors.lightNeutralLightActive}),
-		dark: variantStyle({ bg: props => props.theme.colors.darkNeutralDark, color: props => props.theme.colors.lightNeutralLight, italicBg: props => props.theme.colors.darkNeutralLightActive}),
+		light: variantStyle({ bg: props => props.theme.colors.lightNeutralLight, color: props => props.theme.colors.darkNeutral, italicBg: props => props.theme.colors.lightNeutralLightActive }),
+		dark: variantStyle({ bg: props => props.theme.colors.darkNeutralDark, color: props => props.theme.colors.lightNeutralLight, italicBg: props => props.theme.colors.darkNeutralLightActive }),
 	},
-	color: colorPreset
 }
 export const TaskControlContainer = styled.div`
 	display: flex;
@@ -78,7 +75,6 @@ export const Separator = styled.i`
 	height: ${props => props.theme.fontSizes.large}; 
 	margin: 0 5px;
   	${getPresetCSS(taskControlPresets, 'variant')};
-	${getPresetCSS(taskControlPresets, 'color')}; 
 `
 export const TimePickerContainer = styled.div`
 	display: flex;
