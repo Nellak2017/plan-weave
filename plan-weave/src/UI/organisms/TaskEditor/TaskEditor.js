@@ -39,12 +39,6 @@ const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARI
 			userId,
 		},
 	}
-	// State for Pagination
-	const PaginationState = {
-		variant, taskListLength: taskList?.length,
-		pageNumber: useSelector(state => state?.taskEditor?.page),
-		tasksPerPage: useSelector(state => state?.taskEditor?.tasksPerPage),
-	}
 	return (
 		<TaskEditorContainer variant={variant}>
 			<h1>{title}</h1>
@@ -57,10 +51,7 @@ const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARI
 					headerLabels={fullTask ? FULL_TASK_HEADERS : SIMPLE_TASK_HEADERS}
 					maxwidth={maxwidth}
 				/>
-				<Pagination
-					state={PaginationState}
-					services={{ ...services?.global, ...services?.pagination, }}
-				/>
+				<Pagination />
 			</StyledTaskEditor>
 		</TaskEditorContainer>
 	)

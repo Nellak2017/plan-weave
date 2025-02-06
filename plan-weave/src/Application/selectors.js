@@ -7,3 +7,5 @@ export const isOwl = (selector = useSelector) => selector(state => state?.toggle
 export const isFullTask = (selector = useSelector) => selector(state => state?.toggle?.fullTaskTaskEditor?.toggleState)
 export const fsmControlledState = (selector = useSelector) => selector(state => state?.multiDelete?.multiDeleteTaskEditor?.fsmControlledState)
 export const timeRange = (selector = useSelector) => selector(state => state?.timeRange)
+export const pageNumber = (selector = useSelector) => selector(state => state?.pagination?.paginationTaskEditor?.pageNumber)
+export const tasksPerPage = (selector = useSelector) => selector(state => state?.pagination?.paginationTaskEditor?.tasksPerPage)

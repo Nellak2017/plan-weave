@@ -85,3 +85,5 @@ export const TASKEDITOR_SEARCH_PLACEHOLDER = 'Search for a Task'
 export const DEV = false // is it development or production?
 export const OWL_SIZE = '32px'
 export const TIME_PICKER_COORDS = { start: { verticalOffset: 0, horizontalOffset: 0, }, end: { verticalOffset: 0, horizontalOffset: -36, } }
+export const PAGINATION_OPTIONS = [10, 20]
+export const PAGINATION_PICKER_TEXT = 'Tasks per page'

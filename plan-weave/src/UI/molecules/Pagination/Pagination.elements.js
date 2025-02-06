@@ -15,10 +15,10 @@ const paginationPresets = ({ theme, variant }) => ({
 	}
 }?.[variant])
 
-export const PaginationContainer = styled('div')(({ theme, variant, maxWidth }) => ({
+export const PaginationContainer = styled('div')(({ theme, variant }) => ({
 	display: 'flex', alignItems: 'center', justifyContent: 'space-between',
 	padding: `4px 5%`, // theme.spaces.smaller
-	maxWidth: `${maxWidth || '100%'}`, borderRadius: '0 0 32px 32px',
+	maxWidth: '100%', borderRadius: '0 0 32px 32px',
 	'input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button': {
 		WebkitAppearance: 'none', appearance: 'none', margin: 0,
 	},
