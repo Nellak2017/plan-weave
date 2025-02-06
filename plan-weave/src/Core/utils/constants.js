@@ -34,7 +34,7 @@ export const OPTION_NOTIFICATIONS = {
 	'': () => toast.info('Default Sorting applied. Tasks now appear as they do in the database.'),
 }
 export const SIMPLE_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA']
-export const FULL_TASK_HEADERS = [...SIMPLE_TASK_HEADERS, 'Eff.%','Due', 'Weight', 'Thread', 'Predecessors']
+export const FULL_TASK_HEADERS = [...SIMPLE_TASK_HEADERS, 'Eff.%', 'Due', 'Weight', 'Thread', 'Predecessors']
 export const DEFAULT_SIMPLE_TASKS = [
 	{ status: 'completed', task: 'Example Task 1', waste: 2, ttc: 5, eta: '15:30', id: 1 },
 	{ status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: '18:30', id: 2 },
@@ -80,6 +80,8 @@ export const TASK_ROW_TOOLTIPS = {
 	thread: 'Task Thread/Group',
 	dependencies: 'Task Predecessors. What needs to be done Before this?'
 }
-export const TASK_CONTROL_TITLES = { startButton: 'Enter Start Time', endButton: 'Enter End Time',}
+export const TASK_CONTROL_TITLES = { startButton: 'Enter Start Time', endButton: 'Enter End Time', }
 export const TASKEDITOR_SEARCH_PLACEHOLDER = 'Search for a Task'
 export const DEV = false // is it development or production?
+export const OWL_SIZE = '32px'
+export const TIME_PICKER_COORDS = { start: { verticalOffset: 0, horizontalOffset: 0, }, end: { verticalOffset: 0, horizontalOffset: -36, } }

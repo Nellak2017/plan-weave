@@ -20,7 +20,7 @@ const TaskTable = ({ services, state, variant = VARIANTS[0], headerLabels, maxwi
 	const options = useMemo(() => predecessorOptions(globalTasks?.tasks), [globalTasks]) // options used in predecessor drop-down component
 	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
 	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page), [tasksPerPage, page])
-	const globalTasksLen = useMemo(() => globalTasks.tasks.length, [globalTasks]) // TODO: can I memo with globalTasks.tasks.length?
+	const globalTasksLen = useMemo(() => globalTasks?.tasks?.length, [globalTasks]) // TODO: can I memo with globalTasks.tasks.length?
 	const onDragEnd = result => { if (result.destination) updateDnD([result.source.index, result.destination.index]) }
 	useEffect(() => {
 		if (updateTasks) updateTasks(sortFilterPipe({ globalTasks, sortingAlgo, search }))

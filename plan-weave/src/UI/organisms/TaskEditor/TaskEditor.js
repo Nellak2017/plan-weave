@@ -1,34 +1,24 @@
-import { useContext } from 'react'
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
+import { useInterval } from '../../hooks/useInterval.js'
 import { selectNonHiddenTasksCoerceToFull } from '../../../Application/redux/selectors.js'
 import { SIMPLE_TASK_HEADERS, FULL_TASK_HEADERS, VARIANTS } from '../../../Core/utils/constants.js'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
 import TaskTable from '../../molecules/TaskTable/TaskTable'
 import Pagination from '../../molecules/Pagination/Pagination'
 import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
-import store from '../../../Application/redux/store.js'
+import store from '../../../Application/store.js'
 import { createTaskEditorServices } from '../../../Application/services/pages/PlanWeavePage/TaskEditorServices.js'
-import { ThemeContext } from 'styled-components' // needed for theme object
 
 const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARIANTS[0], maxwidth = 818, title = "Today's Tasks" }) => {
+	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
+	useInterval(() => setCurrentTime(new Date()), 33, [currentTime])
+
 	// --- State Objects for Children
 	const globalTasks = useSelector(state => state?.globalTasks)
 	const taskList = useSelector(selectNonHiddenTasksCoerceToFull)
 	const fullTask = useSelector(state => state?.taskEditor?.fullTask)
 	const userId = useSelector(state => state?.taskEditor?.userId)
-	// State for TaskControl
-	const TaskControlState = {
-		globalTasks,
-		timeRange: useSelector(state => state?.taskEditor?.timeRange),
-		owl: useSelector(state => state?.taskEditor?.owl),
-		isHighlighting: useSelector(state => state?.taskEditor?.highlighting),
-		taskList,
-		selectedTasks: useSelector(state => state?.taskEditor?.selectedTasks),
-		theme: useContext(ThemeContext),
-		fullTask,
-		firstLoad: useSelector(state => state?.taskEditor?.firstLoad),
-		userId,
-	}
 	// State for TaskTable 
 	const TaskTableState = {
 		globalTasks,
@@ -59,13 +49,7 @@ const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARI
 		<TaskEditorContainer variant={variant}>
 			<h1>{title}</h1>
 			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
-				<TaskControl
-					services={{ ...services?.global, ...services?.taskControl, }}
-					state={TaskControlState}
-					variant={variant}
-					clock1Text={''}
-					clock2Text={''}
-				/>
+				<TaskControl currentTime={currentTime} />
 				<TaskTable
 					services={{ ...services?.global, ...services?.taskTable, }}
 					state={TaskTableState}

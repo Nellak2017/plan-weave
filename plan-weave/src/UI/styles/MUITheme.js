@@ -8,7 +8,7 @@ export const theme = createTheme({
     // Custom component overrides
     components: {
         MuiButton: {
-            styleOverrides: { root: ({ textTransform: 'none', minWidth: '85px', color: '#fff'}) },
+            styleOverrides: { root: ({ theme }) => ({ textTransform: 'none', minWidth: '85px', color: '#fff', backgroundColor: theme.palette.primary.main }) },
             variants: [
                 {
                     props: { variant: 'newTask' },

@@ -8,10 +8,8 @@ import { getDefaultState, getFSMValue, handleTrashClick, handleDeleteClick, IS_H
 const { deleteToolTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
 export const MultipleDeleteButton = ({
     state: {
-        MUITheme = theme,
-        trashButtonState: { tabIndex = 0, title = deleteToolTip, size = '32px' } = {},
-        deleteButtonState: { label = 'Delete', deleteTabIndex = 0, deleteTitle = 'Delete Selected Tasks' } = {},
-        fsmControlledState = undefined,
+        MUITheme = theme, fsmControlledState = undefined,
+        trashButtonState: { tabIndex = 0, title = deleteToolTip, size = '32px' } = {}, deleteButtonState: { label = 'Delete', deleteTabIndex = 0, deleteTitle = 'Delete Selected Tasks' } = {},
     } = {},
     services: { deleteEvent, deleteMultipleEvent, setControlledFSMState } = {},
 }) => {

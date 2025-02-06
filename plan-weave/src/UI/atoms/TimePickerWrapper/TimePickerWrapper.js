@@ -9,7 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { TimeClock } from '@mui/x-date-pickers'
 
 export const TimePickerWrapper = ({
-  state: { variant = VARIANTS[0], defaultTime = '14:00', displayText = 'Start', offset: { verticalOffset = 0, horizontalOffset = 0 } = {} } = {},
+  state: { variant = VARIANTS[0], defaultTime = '14:00', offset: { verticalOffset = 0, horizontalOffset = 0 } = {} } = {},
   services: { onTimeChange } = {},
   ...rest
 }) => {
@@ -21,7 +21,7 @@ export const TimePickerWrapper = ({
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <TimePickerWrapperStyled variant={variant} >
-        <Display><p>{displayText}</p><p aria-label={`Time display`}>{format(debouncedTime, 'HH:mm')}</p></Display>
+        <Display><p aria-label={`Time display`}>{format(debouncedTime, 'HH:mm')}</p></Display>
         <ClockIconWrapper aria-label="Toggle clock" onMouseDown={() => handleClick(setFsmState, fsmState)} onKeyDown={e => { if (e.key === 'Enter') { handleClick(setFsmState, fsmState) } }}>
           <AiOutlineClockCircle size={32} {...rest} />
         </ClockIconWrapper>

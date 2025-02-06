@@ -7,7 +7,7 @@ export const SearchBar = ({
 	services: { search } = {}, ...rest
 }) => ( // Icon is placed AFTER input but displayed before because of ~ sibling selector limitations (SMH) services = {search}
 	<SearchBarStyled variant={variant} maxwidth={maxwidth}>
-		<input type="text" placeholder={placeholder} onChange={e => search(e.target.value.trimStart())} {...rest} />
+		<input type="text" placeholder={placeholder} onChange={e => search({ value: e.target.value.trimStart() })} {...rest} />
 		<MdSearch size={32} />
 	</SearchBarStyled>)
 export default SearchBar

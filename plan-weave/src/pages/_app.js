@@ -1,4 +1,5 @@
-import store from '../Application/redux/store.js'
+//import store from '../Application/redux/store.js'
+import store from '../Application/store.js'
 import { Provider } from 'react-redux'
 import Head from 'next/head'
 import GlobalStyle from '../UI/styles/globalStyles.js'
@@ -9,7 +10,6 @@ import 'react-toastify/dist/ReactToastify.css'
 import isPropValid from '@emotion/is-prop-valid' // automatic unknown prop filtering
 
 import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline' // normalizes css for MUI
 import { theme as MUITheme } from '../UI/styles/MUITheme.js'
 
 // eslint-disable-next-line camelcase
@@ -39,7 +39,6 @@ function MyApp({ Component, pageProps }) {
         `}</style>
       </Head>
       <MUIThemeProvider theme={MUITheme}>
-        {/* <CssBaseline /> */}
         <ThemeProvider theme={theme}>
           <GlobalStyle />
           <ToastContainer position="bottom-left" autoClose={3000} />
