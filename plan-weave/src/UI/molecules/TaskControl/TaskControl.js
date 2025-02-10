@@ -3,8 +3,8 @@ import { TaskControlContainer } from './TaskControl.elements'
 import { TopSlot, BottomSlot } from './TaskControl.slots.js'
 import useTaskControl from '../../../Application/hooks/TaskControl/useTaskControl.js'
 
-export const TaskControl = ({ currentTime }) => {
-	const { childState, childServices } = useTaskControl() || {}
+export const TaskControl = ({ currentTime, customHook }) => {
+	const { childState, childServices } = customHook?.() || useTaskControl() || {}
 	const { variant, startTime, endTime, isOwl, isFullTask, fsmControlledState } = childState || {}
 	const { search, sort, checkTimeRange, toggleOwl, fullTaskToggle, updateTimeRange, setMultiDeleteFSMState, addTask } = childServices || {}
 	return (

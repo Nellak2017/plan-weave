@@ -2,6 +2,7 @@ import { HoursInputStyled, HoursContainer } from './HoursInput.elements'
 import { VARIANTS } from '../../../Core/utils/constants.js'
 
 // TODO: Test this input and verify invalid input can not go into it and that it is correct
+// TODO: When Pagination uses this it incorrectly shows decimals, make sure it never does
 const HoursInput = ({
 	state: { variant = VARIANTS[0], placeholder = 0, text, maxwidth = 45, step = .01, min = 0, max = 24, maxLength = '5' } = {},
 	services: { onValueChange, onBlur } = {}, ...props

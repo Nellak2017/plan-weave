@@ -4,11 +4,11 @@ import HoursInput from '../../atoms/HoursInput/HoursInput'
 import NumberPicker from '../../atoms/NumberPicker/NumberPicker'
 import { BiRecycle } from 'react-icons/bi'
 import usePagination from '../../../Application/hooks/Pagination/usePagination.js'
-import { PAGINATION_OPTIONS, PAGINATION_PICKER_TEXT } from '../../../Core/utils/constants.js'
+import { PAGINATION_OPTIONS, PAGINATION_PICKER_TEXT, VARIANTS } from '../../../Core/utils/constants.js'
 
-export const Pagination = () => {
-	const { childState, childServices } = usePagination()
-	const { variant, tasksPerPage, maxPage, localPageNumber } = childState || {}
+export const Pagination = ({ customHook }) => {
+	const { childState, childServices } = customHook?.() || usePagination()
+	const { variant = VARIANTS[0], maxPage = 1, localPageNumber = 1, tasksPerPage = 10 } = childState || {}
 	const { updatePage, refresh, handlePrevPage, handleNextPage, handlePageNumber, handleTasksPerPage, setLocalPageNumber } = childServices || {}
 	return (
 		<PaginationContainer variant={variant}>
@@ -16,7 +16,7 @@ export const Pagination = () => {
 			<PageChooserContainer>
 				<NextButton variant={'left'} onClick={handlePrevPage} tabIndex={-1} />
 				<HoursInput
-					state={{ variant, maxwidth: 35, placeholder: 1, step: 1, min: 1, max: parseInt(maxPage), text: (` of ${maxPage}`),}}
+					state={{ variant, maxwidth: 35, placeholder: 1, step: 1, min: 1, max: parseInt(maxPage), text: (` of ${maxPage}`), }}
 					services={{ onValueChange: handlePageNumber, onBlur: e => { setLocalPageNumber(e); updatePage(e) }, }}
 					value={localPageNumber} // must be controlled since next and prev are non-local
 					tabIndex={-1}

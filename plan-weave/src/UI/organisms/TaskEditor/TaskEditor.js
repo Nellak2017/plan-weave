@@ -10,7 +10,8 @@ import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
 import store from '../../../Application/store.js'
 import { createTaskEditorServices } from '../../../Application/services/pages/PlanWeavePage/TaskEditorServices.js'
 
-const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARIANTS[0], maxwidth = 818, title = "Today's Tasks" }) => {
+const TASK_EDITOR_WIDTH = 818
+const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARIANTS[0], title = "Today's Tasks" }) => {
 	const [currentTime, setCurrentTime] = useState(new Date()) // Actual Time of day, Date object
 	useInterval(() => setCurrentTime(new Date()), 33, [currentTime])
 
@@ -42,14 +43,14 @@ const TaskEditor = ({ services = createTaskEditorServices(store), variant = VARI
 	return (
 		<TaskEditorContainer variant={variant}>
 			<h1>{title}</h1>
-			<StyledTaskEditor variant={variant} maxwidth={maxwidth}>
+			<StyledTaskEditor variant={variant} maxwidth={TASK_EDITOR_WIDTH}>
 				<TaskControl currentTime={currentTime} />
 				<TaskTable
 					services={{ ...services?.global, ...services?.taskTable, }}
 					state={TaskTableState}
 					variant={variant}
 					headerLabels={fullTask ? FULL_TASK_HEADERS : SIMPLE_TASK_HEADERS}
-					maxwidth={maxwidth}
+					maxwidth={TASK_EDITOR_WIDTH}
 				/>
 				<Pagination />
 			</StyledTaskEditor>

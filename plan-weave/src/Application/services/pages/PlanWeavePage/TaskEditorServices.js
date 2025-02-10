@@ -1,4 +1,4 @@
-import { updateSelectedTasks, updateDnD, updateTasks, updatePage, prevPage, nextPage, refresh, updateTasksPerPage, updateFirstLoad, } from "../../../redux/reducers/taskEditorSlice.js"
+import { updateSelectedTasks, updateDnD, updateTasks, updateFirstLoad, } from "../../../redux/reducers/taskEditorSlice.js"
 import { removeTaskThunk, updateTaskThunk, completedTaskThunk, addGlobalThreadThunk, } from "../../../redux/thunks/taskEditorThunks.js"
 
 export const createTaskEditorServices = store => {
@@ -18,13 +18,6 @@ export const createTaskEditorServices = store => {
 				delete: (id, userId) => { dispatch(removeTaskThunk(id, userId)) },
 				update: (id, newTask, userId) => { dispatch(updateTaskThunk(id, newTask, userId)) }
 			},
-		},
-		pagination: {
-			updatePage: (newPage) => { dispatch(updatePage(newPage)) }, // reducer to change page to custom page
-			prevPage: () => { dispatch(prevPage()) }, // reducer to change page to previous page 
-			nextPage: () => { dispatch(nextPage()) }, // reducer to change page to next page 
-			refresh: () => { dispatch(refresh()) }, // thunk to refresh the tasks 
-			tasksPerPageUpdate: newTasksPerPage => { dispatch(updateTasksPerPage(newTasksPerPage)) }, // reducer to update number of tasks per page
 		},
 	}
 	return services

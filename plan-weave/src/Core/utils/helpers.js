@@ -124,7 +124,7 @@ export const ordinalSet = dnd => {
 	return dnd.map(num => mapping[num])
 }
 export const deleteDnDEvent = (dnd, indexRange) => ordinalSet(dnd.filter((_, i) => i < indexRange.startIndex || i > indexRange.endIndex))
-export const isRelativelyOrdered = (list1, list2) => ((list1.length !== list2.length) || list1.length <= 1) 
+export const isRelativelyOrdered = (list1, list2) => ((list1.length !== list2.length) || list1.length <= 1)
 	? list1.length <= 1
 	: list1.slice(0, -1).reduce((acc, a, i) => {
 		if (!acc) return false
@@ -160,16 +160,23 @@ export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
 	else if (!isHighlighting && !isChecked && isOld) return 'old'
 	return ''
 }
-export const dateToToday = (start) => {
-	// ReScript port
-	const now = new Date(Date.now())
-	if (!(start instanceof Date) || isNaN(start.getTime())) {
-		return { TAG: "Error", _0: "Invalid input. Expected a Date for dateToToday function." }
-	}
+// export const dateToToday = (start) => {
+// 	// ReScript port
+// 	const now = new Date(Date.now())
+// 	if (!(start instanceof Date) || isNaN(start.getTime())) {
+// 		return { TAG: "Error", _0: "Invalid input. Expected a Date for dateToToday function." }
+// 	}
+// 	const initOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).valueOf()
+// 	const initOfStart = new Date(start.getFullYear(), start.getMonth(), start.getDate()).valueOf()
+// 	return { TAG: "Ok", _0: new Date(initOfToday + (start.valueOf() - initOfStart)) }
+//}
+export const dateToToday = start => {
+	const now = new Date(Date.now()), newStart = parseISO(start)
 	const initOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).valueOf()
-	const initOfStart = new Date(start.getFullYear(), start.getMonth(), start.getDate()).valueOf()
-	return { TAG: "Ok", _0: new Date(initOfToday + (start.valueOf() - initOfStart)) }
+	const initOfStart = new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate()).valueOf()
+	return new Date(initOfToday + (newStart.valueOf() - initOfStart)).toISOString()
 }
+export const endPlusOne = oldISO => new Date(dateToToday(parseISO(oldISO)).getTime() + hoursToMillis(24)).toISOString()
 // ReScript port
 const floatToStringNullable = (num, fallbackOpt) => (num === null || num === undefined) ? fallbackOpt !== undefined ? fallbackOpt : "undefined or null" : num.toString()
 export const calculateEfficiency = (startTime, endTime, ttcHours) => {
@@ -292,3 +299,5 @@ export const calculateEfficiencyList = (taskList, start) => {
 // Takes a task list with atleast objects with an id and task
 // Returns a list of options of form: [{value: id (number), label: task (string)}]
 export const predecessorOptions = (taskList) => taskList?.map(task => ({ value: task?.id, label: task?.task }))
+export const tryCatchSyncFlat = (fn, errFn) => { try { return fn() } catch (e) { return errFn(e) } }
+export const calcMaxPage = (listLen, perPage) => Math.ceil(listLen / perPage) || 1
