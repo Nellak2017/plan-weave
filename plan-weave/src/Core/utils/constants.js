@@ -33,8 +33,7 @@ export const OPTION_NOTIFICATIONS = {
 	'eta': () => toast.info('ETA Sorting applied. Tasks now appear in ETA order.'),
 	'': () => toast.info('Default Sorting applied. Tasks now appear as they do in the database.'),
 }
-export const SIMPLE_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA']
-export const FULL_TASK_HEADERS = [...SIMPLE_TASK_HEADERS, 'Eff.%', 'Due', 'Weight', 'Thread', 'Predecessors']
+export const FULL_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA', 'Eff.%', 'Due', 'Weight', 'Thread', 'Predecessors']
 export const DEFAULT_SIMPLE_TASKS = [
 	{ status: 'completed', task: 'Example Task 1', waste: 2, ttc: 5, eta: '15:30', id: 1 },
 	{ status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: '18:30', id: 2 },
@@ -66,19 +65,19 @@ export const DEFAULT_TASK_CONTROL_TOOL_TIPS = {
 	fullTaskToggleTip: 'Toggle Full Task View'
 }
 export const TASK_ROW_TOOLTIPS = {
-	dnd: 'Drag-n-Drop tasks to change view',
-	completed: 'Mark Incomplete',
-	incomplete: 'Mark Complete',
-	task: 'Task Name',
-	waste: 'Wasted Time on this Task',
-	ttc: 'Time To Complete Task',
-	eta: 'Estimated Time to Finish Task',
-	delete: 'Delete this task',
-	efficiency: 'Task Efficiency',
-	due: 'Task Due Date',
-	weight: 'Task Weight/Importance',
-	thread: 'Task Thread/Group',
-	dependencies: 'Task Predecessors. What needs to be done Before this?'
+	dndTooltip: 'Drag-n-Drop tasks to change view',
+	completedTooltip: 'Mark Incomplete',
+	incompleteTooltip: 'Mark Complete',
+	taskTooltip: 'Task Name',
+	wasteTooltip: 'Wasted Time on this Task',
+	ttcTooltip: 'Time To Complete Task',
+	etaTooltip: 'Estimated Time to Finish Task',
+	deleteTooltip: 'Delete this task',
+	efficiencyTooltip: 'Task Efficiency',
+	dueTooltip: 'Task Due Date',
+	weightTooltip: 'Task Weight/Importance',
+	threadTooltip: 'Task Thread/Group',
+	dependenciesTooltip: 'Task Predecessors. What needs to be done Before this?'
 }
 export const TASK_CONTROL_TITLES = { startButton: 'Enter Start Time', endButton: 'Enter End Time', }
 export const TASKEDITOR_SEARCH_PLACEHOLDER = 'Search for a Task'
@@ -87,3 +86,4 @@ export const OWL_SIZE = '32px'
 export const TIME_PICKER_COORDS = { start: { verticalOffset: 0, horizontalOffset: 0, }, end: { verticalOffset: 0, horizontalOffset: -36, } }
 export const PAGINATION_OPTIONS = [10, 20]
 export const PAGINATION_PICKER_TEXT = 'Tasks per page'
+export const TASK_EDITOR_WIDTH = 818

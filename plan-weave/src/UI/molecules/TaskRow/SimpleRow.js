@@ -6,7 +6,7 @@ import { DragIndicator, TaskContainer, WasteContainer, TimeContainer, IconContai
 import { formatTimeLeft } from '../../../Core/utils/helpers.js'
 import { format, parseISO } from 'date-fns'
 
-const displayTimeLeft = waste => {
+export const displayTimeLeft = waste => {
 	if (waste && !isNaN(waste) && waste !== 0) {
 		return waste > 0
 			? formatTimeLeft({ timeDifference: waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' })
@@ -18,7 +18,7 @@ export const SimpleRow = ({ services, state, variant, provided, }) => { // Task 
 	const { setLocalTask, setLocalTtc, handleCheckBoxClicked } = services
 	const { taskObject, isChecked, localTask, localTtc } = state
 	const { task, waste, ttc, eta, status, index } = { ...taskObject }
-	const { dnd: dndTooltip, completed: completedTooltip, incomplete: incompleteTooltip, task: taskTooltip, waste: wasteTooltip, ttc: ttcTooltip, eta: etaTooltip } = TASK_ROW_TOOLTIPS
+	const { dndTooltip, completedTooltip, incompleteTooltip, taskTooltip, wasteTooltip, ttcTooltip, etaTooltip } = TASK_ROW_TOOLTIPS
 	const iconSize = 36
 	return (
 		<>

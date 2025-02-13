@@ -3,7 +3,7 @@ import TableHeader from '../../atoms/TableHeader/TableHeader'
 import { TaskTableContainer } from './TaskTable.elements'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import 'react-toastify/dist/ReactToastify.css'
-import { VARIANTS } from '../../../Core/utils/constants.js'
+import { VARIANTS, TASK_EDITOR_WIDTH } from '../../../Core/utils/constants.js'
 import { calculateEfficiencyList, calculateWaste, calculateRange, transformAll, predecessorOptions, } from '../../../Core/utils/helpers.js'
 import { parseISO } from 'date-fns'
 import { todoList } from './TodoList.js'
@@ -12,7 +12,8 @@ import { sortFilterPipe } from './TaskTable.helpers.js'
 
 // services: updateTasks, updateDnD
 // state: globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState
-const TaskTable = ({ services, state, variant = VARIANTS[0], headerLabels, maxwidth = 818 }) => {
+const TaskTable = ({ services, state, headerLabels, currentTime }) => {
+	const variant = VARIANTS[0]
 	// --- Services and State (destructured)
 	const { globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState } = state || {}
 	const { updateTasks, updateDnD } = services || {}
@@ -31,7 +32,7 @@ const TaskTable = ({ services, state, variant = VARIANTS[0], headerLabels, maxwi
 	useInterval(() => update(), 33, [timeRange, owl, taskList]) // 33 is 30 fps
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
-			<TaskTableContainer variant={variant} maxwidth={maxwidth}>
+			<TaskTableContainer variant={variant} maxwidth={TASK_EDITOR_WIDTH}>
 				<table>
 					<TableHeader variant={variant} labels={headerLabels} />
 					<Droppable droppableId="taskTable" type="TASK">

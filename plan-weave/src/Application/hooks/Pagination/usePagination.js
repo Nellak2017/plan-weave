@@ -5,6 +5,7 @@ import { variant as variantSelector, tasks as tasksSelector, pageNumber as pageN
 import { previousPageThunk, nextPageThunk, setPageThunk, setTasksPerPageThunk, refreshPaginationThunk } from '../../thunks.js'
 import { VALID_PAGINATION_IDS } from '../../validIDs.js'
 
+// TODO: Convert pagination information to URL arguments and figure out how to test this in Storybook too
 export const usePagination = () => {
     const dispatch = store ? store.dispatch : () => { }
     const variant = variantSelector(), tasksPerPage = tasksPerPageSelector(), pageNumber = pageNumberSelector(), taskListLength = tasksSelector().length, isOwl = owlSelector()

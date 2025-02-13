@@ -17,7 +17,7 @@ function FullRow({ simpleTaskProps, services, state, }) {
 	const { provided, taskObject, variant, isChecked, setLocalTask, localTask, localTtc, setLocalTtc, handleCheckBoxClicked } = simpleTaskProps
 	const { setLocalDueDate, setLocalWeight, setLocalThread, setLocalDependencies, addThread } = services || {}
 	const { availableThreads, localThread, localDueDate, localDependencies, localWeight, options } = state || {}
-	const { efficiency: efficencyToolTip, due: dueToolTip, weight: weightToolTip, thread: threadToolTip, dependencies: dependencyToolTip } = TASK_ROW_TOOLTIPS
+	const { efficencyToolTip, dueToolTip, weightToolTip, threadToolTip, dependencyToolTip } = TASK_ROW_TOOLTIPS
 	const fullTask = { ...taskObject, ...state }
 	const initialThread = useRef(localThread), initialDependencies = useRef(localDependencies)
 	return (

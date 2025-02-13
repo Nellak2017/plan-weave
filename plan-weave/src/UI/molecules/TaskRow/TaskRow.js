@@ -10,6 +10,9 @@ import { parseISO } from 'date-fns'
 import { handleCheckBoxClicked, handleUpdateTask } from './TaskRow.events.js'
 import { BiTrash } from 'react-icons/bi'
 
+// TODO: Make maxwidth a constant
+// TODO: Continue refactor by having CompletedTask simplified and variant removed
+
 // services: {...others, updateSelectedTasks}
 // state: {isHighlighting, selectedTasks}
 export const TaskRow = ({
