@@ -10,9 +10,8 @@ export const addTaskThunkAPI = ({ userID }) => dispatch => {
     dispatch(addDnD()) // 3. Update the dnd config by adding the next ordinal to the list
     toast.info('You added a New Default Task') // 4. Inform user they added a new task
 } // Reducer + Business Logic + Side-effects
-export const completeTaskThunkAPI = ({ userID, taskID, oldStatus }) => dispatch => {
+export const completeTaskThunkAPI = ({ userID, taskID, status }) => dispatch => {
     // updateTaskAPI({updatedTask, userID}) // 1. POST to API
-    dispatch(updateTask({ taskID , field: 'status', value: toggleTaskStatus(oldStatus) })) // 2. Update task by toggling between complete and incomplete status
+    dispatch(updateTask({ taskID , field: 'status', value: toggleTaskStatus(status) })) // 2. Update task by toggling between complete and incomplete status
     // dispatch(completeTaskDnD(...)) // 3. Update the dnd config 
-    toast.info('You changed the status of a task') // TODO: Remove
 } // Reducer + Business Logic + Side-effects

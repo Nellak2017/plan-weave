@@ -27,8 +27,8 @@ const Drag = ({ provided }) => (
         <DragIndicator size={iconSize} />
     </DragContainer>
 )
-const CompleteIcon = ({ taskId, customHook = useCompleteIcon }) => {
-    const { isChecked, handleCheckBoxClicked } = customHook?.(taskId) || {}
+const CompleteIcon = ({ taskID, customHook = useCompleteIcon }) => {
+    const { isChecked, handleCheckBoxClicked } = customHook?.(taskID) || {}
     return (
         <IconContainer title={isChecked ? completedTooltip : incompleteTooltip}>
             {isChecked
@@ -38,8 +38,8 @@ const CompleteIcon = ({ taskId, customHook = useCompleteIcon }) => {
     )
 }
 // TODO: See if default value and taskName are needed or if taskName alone is ok
-const TaskInputContainer = ({ taskId, customHook = useTaskInputContainer }) => {
-    const { childState, childServices } = customHook?.(taskId) || {}
+const TaskInputContainer = ({ taskID, customHook = useTaskInputContainer }) => {
+    const { childState, childServices } = customHook?.(taskID) || {}
     const { status = TASK_STATUSES.INCOMPLETE, taskName } = childState || {}
     const { onBlurEvent } = childServices || {}
     return (
@@ -50,12 +50,12 @@ const TaskInputContainer = ({ taskId, customHook = useTaskInputContainer }) => {
         </TaskContainer>
     )
 }
-const Waste = ({ taskId, customHook = useWaste }) => {
-    const { waste, renderFunction = displayWaste } = customHook?.(taskId) || {}
+const Waste = ({ taskID, customHook = useWaste }) => {
+    const { waste, renderFunction = displayWaste } = customHook?.(taskID) || {}
     return (<WasteContainer title={wasteTooltip} style={{ width: '200px' }}><p>{renderFunction(waste)}</p></WasteContainer>)
 }
-const Ttc = ({ taskId, customHook = useTtc }) => {
-    const { childState, childServices } = customHook?.(taskId) || {}
+const Ttc = ({ taskID, customHook = useTtc }) => {
+    const { childState, childServices } = customHook?.(taskID) || {}
     const { variant = VARIANTS[0], status, ttc } = childState || {}
     const { onValueChangeEvent, onBlurEvent } = childServices || {}
     return ( // TODO: Simplify this Component by extracting to helper or something. TODO: possibly pass a render function in TODO: figure out how to remove dependency on variant
@@ -67,16 +67,16 @@ const Ttc = ({ taskId, customHook = useTtc }) => {
         </TimeContainer>
     )
 }
-const Eta = ({ taskId, customHook = useEta }) => {
-    const { eta, renderFunction = displayEta } = customHook?.(taskId) || {}
+const Eta = ({ taskID, customHook = useEta }) => {
+    const { eta, renderFunction = displayEta } = customHook?.(taskID) || {}
     return (<TimeContainer title={etaTooltip}><p aria-label={'eta for task'}> {renderFunction(eta)}</p></TimeContainer>)
 }
-const Efficiency = ({ taskId, customHook = useEfficiency }) => {
-    const { efficiency, renderFunction = displayEfficiency } = customHook?.(taskId) || {}
+const Efficiency = ({ taskID, customHook = useEfficiency }) => {
+    const { efficiency, renderFunction = displayEfficiency } = customHook?.(taskID) || {}
     return (<EfficiencyContainer title={efficencyToolTip}><p>{renderFunction(efficiency)}</p></EfficiencyContainer>)
 }
-const Due = ({ taskId, customHook = useDue }) => {
-    const { childState, childServices } = customHook?.(taskId) || {}
+const Due = ({ taskID, customHook = useDue }) => {
+    const { childState, childServices } = customHook?.(taskID) || {}
     const { variant = VARIANTS[0], isChecked, dueDate } = childState || {}
     const { onTimeChangeEvent } = childServices || {}
     return ( // TODO: simplify this or pass in a render function
@@ -90,8 +90,8 @@ const Due = ({ taskId, customHook = useDue }) => {
         </DueContainer>
     )
 }
-const Weight = ({ taskId, customHook = useWeight }) => {
-    const { childState, childServices } = customHook?.(taskId) || {}
+const Weight = ({ taskID, customHook = useWeight }) => {
+    const { childState, childServices } = customHook?.(taskID) || {}
     const { variant = VARIANTS[0], isChecked, weight } = childState || {}
     const { onValueChangeEvent } = childServices || {}
     return ( // TODO: Simplify this
@@ -106,8 +106,8 @@ const Weight = ({ taskId, customHook = useWeight }) => {
         </WeightContainer>
     )
 }
-const Thread = ({ taskId, customHook = useThread }) => {
-    const { childState, childServices } = customHook?.(taskId) || {}
+const Thread = ({ taskID, customHook = useThread }) => {
+    const { childState, childServices } = customHook?.(taskID) || {}
     const { variant = VARIANTS[0], options, defaultValue } = childState || {}
     const { onChangeEvent, onBlurEvent } = childServices || {}
     return (
@@ -121,8 +121,8 @@ const Thread = ({ taskId, customHook = useThread }) => {
         </ThreadContainer>
     )
 }
-const Dependency = ({ taskId, customHook = useDependency }) => {
-    const { childState, childServices } = customHook?.(taskId) || {}
+const Dependency = ({ taskID, customHook = useDependency }) => {
+    const { childState, childServices } = customHook?.(taskID) || {}
     const { variant, options, defaultValue } = childState || {}
     const { onChangeEvent } = childServices || {}
     return (
@@ -135,15 +135,15 @@ const Dependency = ({ taskId, customHook = useDependency }) => {
         </DependencyContainer>
     )
 }
-const Trash = ({ taskId, customHook = useTrash }) => {
-    const { onClickEvent } = customHook?.(taskId) || {}
+const Trash = ({ taskID, customHook = useTrash }) => {
+    const { onClickEvent } = customHook?.(taskID) || {}
     return (<TrashContainer><BiTrash title={deleteTooltip} onClick={onClickEvent} size={iconSize} /></TrashContainer>)
 }
 
 export const TaskRow = ({ renderNumber, children }) => <>{React.Children.toArray(children).slice(0, renderNumber || React.Children.toArray(children).length)}</> // Renders slice of children, and if no range provided it renders all children
 
-export const TaskRowDefault = ({ state: { renderNumber, provided, taskId } = {}, customHook = useTaskRow }) => {
-    const { variant, status, highlight } = customHook?.(taskId) || {}
+export const TaskRowDefault = ({ state: { renderNumber, provided, taskID } = {}, customHook = useTaskRow }) => {
+    const { variant, status, highlight } = customHook?.(taskID) || {}
     return (
         <TaskRowStyled
             variant={variant} status={status} highlight={highlight}
@@ -152,16 +152,16 @@ export const TaskRowDefault = ({ state: { renderNumber, provided, taskId } = {},
         >
             <TaskRow renderNumber={renderNumber}>
                 <Drag provided={provided} />
-                <CompleteIcon taskId={taskId} />
-                <TaskInputContainer taskId={taskId} />
-                <Waste taskId={taskId} />
-                <Ttc taskId={taskId} />
-                <Eta taskId={taskId} />
-                <Efficiency taskId={taskId} />
-                <Due taskId={taskId} />
-                <Weight taskId={taskId} />
-                <Thread taskId={taskId} />
-                <Dependency taskId={taskId} />
+                <CompleteIcon taskID={taskID} />
+                <TaskInputContainer taskID={taskID} />
+                <Waste taskID={taskID} />
+                <Ttc taskID={taskID} />
+                <Eta taskID={taskID} />
+                <Efficiency taskID={taskID} />
+                <Due taskID={taskID} />
+                <Weight taskID={taskID} />
+                <Thread taskID={taskID} />
+                <Dependency taskID={taskID} />
             </TaskRow>
             <Trash />
         </TaskRowStyled>

@@ -28,7 +28,9 @@ export const useCompleteIcon = taskID => {
 
     return {
         isChecked: isStatusChecked(status),
-        handleCheckBoxClicked: () => { console.warn('checkbox thunk not implemented') }
+        handleCheckBoxClicked: () => {
+            dispatch(completeTaskThunkAPI({ userID, taskID, status }))
+        }
     }
 }
 export const useTaskInputContainer = taskID => {

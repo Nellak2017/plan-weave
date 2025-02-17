@@ -50,7 +50,7 @@ export const TaskTableDefault = ({ currentTime, customHook = useTaskTableDefault
                     key={`task-${task?.id}-key`}
                     index={index} // TODO: Make sure index is accurate
                 >
-                    {provided => (<TaskRowDefault state={{ renderNumber: 6, provided }} />)}
+                    {provided => (<TaskRowDefault state={{ renderNumber: 6, provided, taskID: task?.id }} />)}
                 </Draggable>
             ))}
         </TaskTable>
