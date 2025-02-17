@@ -3,6 +3,9 @@ import { addDnD } from '../../sessionContexts/dnd.js'
 import { DEFAULT_FULL_TASK } from '../../../Core/utils/constants.js'
 import { toggleTaskStatus } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
+
+// TODO: Stop hard coding the fields
+// TODO: API + Other
 export const addTaskThunkAPI = ({ userID }) => dispatch => { 
     // addTaskAPI({task, userID}) // 1. POST to API
     console.log({ ...DEFAULT_FULL_TASK, id: new Date().getTime() })
@@ -15,3 +18,7 @@ export const completeTaskThunkAPI = ({ userID, taskID, status }) => dispatch => 
     dispatch(updateTask({ taskID , field: 'status', value: toggleTaskStatus(status) })) // 2. Update task by toggling between complete and incomplete status
     // dispatch(completeTaskDnD(...)) // 3. Update the dnd config 
 } // Reducer + Business Logic + Side-effects
+export const editTaskNameThunkAPI = ({ userID, taskID, taskName }) => dispatch => {
+    // updateTaskAPI({updatedTask, userID}) // 1. POST to API
+    dispatch(updateTask({ taskID, field: 'task', value: taskName })) // 2. Update task by editing the name
+}

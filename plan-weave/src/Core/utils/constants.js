@@ -41,7 +41,7 @@ export const DEFAULT_SIMPLE_TASKS = [
 	{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4 },
 ]
 export const DEFAULT_SIMPLE_TASK = {
-	task: ' ',
+	task: '',
 	waste: 1,
 	ttc: 1,
 	eta: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // ISO Date, 12:00 noon

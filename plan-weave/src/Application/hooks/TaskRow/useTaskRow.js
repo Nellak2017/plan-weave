@@ -2,7 +2,10 @@ import { useMemo } from 'react'
 import store from '../../store.js'
 import { variant, task as taskSelector, timeRange, userId as userIDSelector } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked } from '../../../Core/utils/helpers.js'
-import { completeTaskThunkAPI } from '../../thunks.js'
+import {
+    completeTaskThunkAPI,
+    editTaskNameThunkAPI,
+} from '../../thunks.js'
 
 // TODO: Make id vs Id vs ID consistent across entire code base
 // TODO: Make Thunks for every hook that needs one
@@ -25,21 +28,17 @@ export const useTaskRow = taskID => {
 export const useCompleteIcon = taskID => {
     const { status } = taskSelector?.(taskID) || {}
     const userID = userIDSelector() || ''
-
     return {
         isChecked: isStatusChecked(status),
-        handleCheckBoxClicked: () => {
-            dispatch(completeTaskThunkAPI({ userID, taskID, status }))
-        }
+        handleCheckBoxClicked: () => { dispatch(completeTaskThunkAPI({ userID, taskID, status })) }
     }
 }
 export const useTaskInputContainer = taskID => {
     const { status, task } = taskSelector?.(taskID) || {}
-    const childState = {
-        status, taskName: task
-    }
+    const userID = userIDSelector() || ''
+    const childState = { status, taskName: task }
     const childServices = {
-        onBlurEvent: () => { console.warn('task input blur thunk not implemented') }
+        onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ userID, taskID, taskName: e.target.value })) }
     }
     return { childState, childServices }
 }
