@@ -6,4 +6,5 @@ import timeRange from './boundedContexts/timeRange/timeRangeSlice.js'
 import toggle from './boundedContexts/toggle/toggleSlice.js'
 import tasks from './entities/tasks/tasks.js'
 import variant from './sessionContexts/variant.js'
-export { multiDelete, pagination, search, sort, timeRange, toggle, tasks, variant }
+import dnd from './sessionContexts/dnd.js'
+export { multiDelete, pagination, search, sort, timeRange, toggle, tasks, variant, dnd }

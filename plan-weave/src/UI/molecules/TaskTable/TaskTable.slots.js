@@ -1,22 +1,21 @@
 import React from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { TaskTableContainer } from './TaskTable.elements'
-import { VARIANTS, TASK_EDITOR_WIDTH, FULL_TASK_HEADERS } from '../../../Core/utils/constants.js'
+import { TASK_EDITOR_WIDTH } from '../../../Core/utils/constants.js'
+import { getHeaderLabels, isStatusChecked } from '../../../Core/utils/helpers.js'
 import TableHeader from '../../atoms/TableHeader/TableHeader'
 import { TaskRowDefault } from '../TaskRow/TaskRow.slots.js'
-
-const getHeaderLabels = isFullTask => FULL_TASK_HEADERS.slice(0, isFullTask ? FULL_TASK_HEADERS.length : 4)
+import { useTaskTable, useTaskTableDefault } from '../../../Application/hooks/TaskTable/useTaskTable.js'
 
 const NoTasksRow = ({ text = 'No Tasks are made yet. Make some by pressing the + button above.' }) => (<tr><td colSpan='4' style={{ width: '818px', textAlign: 'center' }}>{text}</td></tr>)
 
 export const TaskTable = ({
-    customHook,
+    customHook = useTaskTable,
     state: { labels = getHeaderLabels(false), DefaultComponent = NoTasksRow, } = {},
     services: { onDragEndEvent } = {},
     children
 }) => {
-    // const { variant ... } = customHook?.() || hook() // (use same default hook as default component)
-    const variant = VARIANTS[0] // TODO: Replace with hook
+    const { variant } = customHook?.() || {}
     const childrenArray = React.Children.toArray(children)
     return (
         <DragDropContext onDragEnd={onDragEndEvent}>
@@ -38,19 +37,22 @@ export const TaskTable = ({
     )
 }
 
-export const TaskTableDefault = ({ currentTime, customHook }) => {
-    // const { variant, taskList, ... } = customHook?.() || hook()
-    const taskList = [{ id: 'first' }] // TODO: Replace with hook
-    // TODO: Replace the index in draggableId and key with id below so it is accurate
-    // TODO: Make isDragDisabled disabled when the task is a completed task only
+export const TaskTableDefault = ({ currentTime, customHook = useTaskTableDefault }) => {
+    const { childState, childServices } = customHook?.(currentTime) || {}
+    const { taskList, labels } = childState || {}
+    const { onDragEndEvent } = childServices || {}
     return (
-        <TaskTable>
+        <TaskTable state={{ labels }} services={{ onDragEndEvent }}>
             {taskList?.map((task, index) => (
-                <Draggable isDragDisabled={false} draggableId={`task-${task?.id}`} key={`task-${task?.id}-key`} index={index}>
+                <Draggable
+                    isDragDisabled={isStatusChecked(task?.status)}
+                    draggableId={`task-${task?.id}`}
+                    key={`task-${task?.id}-key`}
+                    index={index} // TODO: Make sure index is accurate
+                >
                     {provided => (<TaskRowDefault state={{ renderNumber: 6, provided }} />)}
                 </Draggable>
             ))}
         </TaskTable>
     )
 }
-// {/* state={{labels}} services={{onDragEndEvent}}*/}

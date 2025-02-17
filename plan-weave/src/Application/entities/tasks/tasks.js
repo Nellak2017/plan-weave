@@ -18,9 +18,14 @@ const tasks = createSlice({
             const { id, updatedTask } = action?.payload || { 0: -1, 1: -1 }
             const taskIndex = state?.findIndex(task => task?.id === id)
             if (taskIndex !== -1) state[taskIndex] = updatedTask // Edit a task by ID
+        }, // TODO: Possibly remove in favor of this next one
+        updateTask: (state, action) => {
+            const { taskID, field, value } = action?.payload || {}
+            const taskIndex = state?.findIndex(task => task?.id === taskID)
+            if (taskIndex !== -1 && state?.[taskIndex]?.[field]) state[taskIndex][field] = value // Edit a task by ID and field
         },
         refreshTasks: (state) => state?.map(task => ({ ...task, timestamp: parseISO(dateToToday(new Date(task.timestamp).toISOString())).getTime() / 1000 })), // update every task in the task list to have timestamp for today but with it's hours
     }
 })
-export const { updateTasks, addTask, deleteTask, deleteTasks, editTask, refreshTasks } = tasks.actions
+export const { updateTasks, addTask, deleteTask, deleteTasks, editTask, refreshTasks, updateTask } = tasks.actions
 export default tasks.reducer

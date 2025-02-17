@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { fillDefaultsForSimpleTask, simpleTaskSchema } from '../schemas/simpleTaskSchema.js'
 import { getTime, formatISO, parseISO } from 'date-fns'
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE } from './constants.js'
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE, FULL_TASK_HEADERS } from './constants.js'
 import * as Yup from 'yup'
 import { isEqual as lodashIsEqual } from 'lodash'
 
@@ -30,7 +30,7 @@ export const etaList = (taskList, start = 0) => (taskList.length === 0)
 		[...acc.slice(index === 0 ? 1 : 0), parseFloat(acc[acc.length - 1]) + parseFloat(task?.ttc)],
 		[start]) // (TaskList : [task]) => [Eta : Float] # it is the times of each Eta
 // --- Helpers Exported
-export const formatTimeLeft = ({ minuteText = 'minutes left', hourText = 'hour', hourText2 = 'hours left', overNightMode = false, currentTime = new Date(), endTime, timeDifference = 0, }) => {
+export const formatTimeLeft = ({ minuteText = 'minutes left', hourText = 'hour', hourText2 = 'hours left', overNightMode = false, currentTime = new Date(), endTime, timeDifference = 0, isNegative = false }) => {
 	const calculateTimeDifference = ({ endTime, currentTime = new Date(), timeDifference = 0, overNightMode = false }) => (timeDifference > 0) // Returns Time in Milliseconds, given the constaints of the application
 		? timeDifference * MILLISECONDS_PER_HOUR
 		: Math.max(0, (overNightMode
@@ -46,7 +46,9 @@ export const formatTimeLeft = ({ minuteText = 'minutes left', hourText = 'hour',
 				: `${timeLeftInHours} ${hourText2}`)
 			: `${timeLeftInMinutes} ${minuteText}`
 	}
-	return formatTime(calculateTimeDifference({ endTime, currentTime, timeDifference, overNightMode }))
+	return isNegative
+		? `-${formatTime(calculateTimeDifference({ endTime, currentTime, timeDifference, overNightMode }))}`
+		: formatTime(calculateTimeDifference({ endTime, currentTime, timeDifference, overNightMode }))
 }
 export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400) => {
 	const startOfTodaySeconds = new Date(today).setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
@@ -104,26 +106,7 @@ export const calculateWaste = ({ start, taskList, time = new Date() }) => {
 	})
 }
 export const isInt = number => ((!!number || number === 0) && typeof number === 'number' && Math.floor(number) === number && isFinite(number))
-export const reorderList = (tasks, reordering) => tasks.map((_, i) => tasks[reordering[i]])
 export const transformAll = (tasks, transforms) => transforms.reduce((task, f) => f(task), tasks)
-export const rearrangeDnD = (dnd, source, destination) => {
-	const item = dnd.slice(source, source + 1)
-	const left = dnd.slice(0, source) // left of item
-	const right = dnd.slice(source + 1) // right of item
-	const both = left.concat(right) // all items except for the one we are moving
-	return [
-		...both.slice(0, destination),
-		...item,
-		...both.slice(destination)
-	]
-}
-export const ordinalSet = dnd => {
-	const mapping = {}
-	const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
-	uniqueSortedArr.forEach((num, index) => { mapping[num] = index })
-	return dnd.map(num => mapping[num])
-}
-export const deleteDnDEvent = (dnd, indexRange) => ordinalSet(dnd.filter((_, i) => i < indexRange.startIndex || i > indexRange.endIndex))
 export const isRelativelyOrdered = (list1, list2) => ((list1.length !== list2.length) || list1.length <= 1)
 	? list1.length <= 1
 	: list1.slice(0, -1).reduce((acc, a, i) => {
@@ -131,7 +114,6 @@ export const isRelativelyOrdered = (list1, list2) => ((list1.length !== list2.le
 		const [b, c, d] = [list1[i + 1], list2[i], list2[i + 1]]
 		return (a < b && c < d) || (a > b && c > d)
 	}, true)
-export const pipe = (...f) => x => f.reduce((acc, fn) => fn(acc), x)
 export const completedOnTopSorted = (sort = t => t.slice(), status = TASK_STATUSES) => reduxTasks => [
 	...sort([...reduxTasks || []].filter(task => task?.status === status.COMPLETED)),
 	...sort([...reduxTasks || []].filter(task => task?.status !== status.COMPLETED))
@@ -160,16 +142,6 @@ export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
 	else if (!isHighlighting && !isChecked && isOld) return 'old'
 	return ''
 }
-// export const dateToToday = (start) => {
-// 	// ReScript port
-// 	const now = new Date(Date.now())
-// 	if (!(start instanceof Date) || isNaN(start.getTime())) {
-// 		return { TAG: "Error", _0: "Invalid input. Expected a Date for dateToToday function." }
-// 	}
-// 	const initOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).valueOf()
-// 	const initOfStart = new Date(start.getFullYear(), start.getMonth(), start.getDate()).valueOf()
-// 	return { TAG: "Ok", _0: new Date(initOfToday + (start.valueOf() - initOfStart)) }
-//}
 export const dateToToday = start => {
 	const now = new Date(Date.now()), newStart = parseISO(start)
 	const initOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).valueOf()
@@ -299,5 +271,30 @@ export const calculateEfficiencyList = (taskList, start) => {
 // Takes a task list with atleast objects with an id and task
 // Returns a list of options of form: [{value: id (number), label: task (string)}]
 export const predecessorOptions = (taskList) => taskList?.map(task => ({ value: task?.id, label: task?.task }))
+
+
 export const tryCatchSyncFlat = (fn, errFn) => { try { return fn() } catch (e) { return errFn(e) } }
 export const calcMaxPage = (listLen, perPage) => Math.ceil(listLen / perPage) || 1
+export const getHeaderLabels = isFullTask => FULL_TASK_HEADERS.slice(0, isFullTask ? FULL_TASK_HEADERS.length : 4)
+export const isStatusChecked = status => status === TASK_STATUSES.COMPLETED
+export const toggleTaskStatus = status => isStatusChecked(status) ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED
+// -- DnD
+export const ordinalSet = dnd => {
+	const mapping = {}
+	const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
+	uniqueSortedArr.forEach((num, index) => { mapping[num] = index })
+	return dnd.map(num => mapping[num])
+}
+export const addDnDConfig = oldDnDConfig => [0].concat(oldDnDConfig.map(x => x + 1)) // TODO: Test this
+export const rearrangeDnD = (dnd, source, destination) => {
+	const both = (dnd.slice(0, source)).concat(dnd.slice(source + 1))
+	return [...both.slice(0, destination), ...dnd.slice(source, source + 1), ...both.slice(destination)]
+}
+export const deleteDnDEvent = (dnd, indexRange) => ordinalSet(dnd.filter((_, i) => i < indexRange.startIndex || i > indexRange.endIndex))
+export const reorderList = (tasks, reordering) => tasks.map((_, i) => tasks[reordering[i]])
+// -- TaskList processing
+export const pipe = (...f) => x => f.reduce((acc, fn) => fn(acc), x)
+export const taskListPipe = (oldTaskList, { dnd }) => { // TODO: pipe this properly
+	const dndApp = reorderList(oldTaskList, dnd) // 1. Apply DnD
+	return dndApp
+}
