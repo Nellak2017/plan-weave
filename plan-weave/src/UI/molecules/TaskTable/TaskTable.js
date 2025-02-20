@@ -1,53 +1,58 @@
-import { useMemo, useEffect } from 'react'
-import TableHeader from '../../atoms/TableHeader/TableHeader'
-import { TaskTableContainer } from './TaskTable.elements'
-import { DragDropContext, Droppable } from 'react-beautiful-dnd'
-import 'react-toastify/dist/ReactToastify.css'
-import { VARIANTS, TASK_EDITOR_WIDTH } from '../../../Core/utils/constants.js'
-import { calculateEfficiencyList, calculateWaste, calculateRange, transformAll, predecessorOptions, } from '../../../Core/utils/helpers.js'
-import { parseISO } from 'date-fns'
-import { todoList } from './TodoList.js'
-import { useInterval } from '../../hooks/useInterval.js'
-import { sortFilterPipe } from './TaskTable.helpers.js'
+import React from 'react'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+import { TaskTableContainer } from './TaskTable.elements.js'
+import { TASK_EDITOR_WIDTH } from '../../../Core/utils/constants.js'
+import { getHeaderLabels, isStatusChecked } from '../../../Core/utils/helpers.js'
+import TableHeader from '../../atoms/TableHeader/TableHeader.js'
+import { TaskRowDefault } from '../TaskRow/TaskRow.slots.js'
+import { useTaskTable, useTaskTableDefault } from '../../../Application/hooks/TaskTable/useTaskTable.js'
 
-// services: updateTasks, updateDnD
-// state: globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState
-const TaskTable = ({ services, state, headerLabels, currentTime }) => {
-	const variant = VARIANTS[0]
-	// --- Services and State (destructured)
-	const { globalTasks, search, timeRange, page, tasksPerPage, taskList, sortingAlgo, owl, taskRowState } = state || {}
-	const { updateTasks, updateDnD } = services || {}
-	const options = useMemo(() => predecessorOptions(globalTasks?.tasks), [globalTasks]) // options used in predecessor drop-down component
-	const start = useMemo(() => parseISO(timeRange?.start), [timeRange])
-	const [startRange, endRange] = useMemo(() => calculateRange(tasksPerPage, page), [tasksPerPage, page])
-	const globalTasksLen = useMemo(() => globalTasks?.tasks?.length, [globalTasks]) // TODO: can I memo with globalTasks.tasks.length?
-	const onDragEnd = result => { if (result.destination) updateDnD([result.source.index, result.destination.index]) }
-	useEffect(() => {
-		if (updateTasks) updateTasks(sortFilterPipe({ globalTasks, sortingAlgo, search }))
-	}, [sortingAlgo, search, globalTasksLen]) // page
-	const update = () => {
-		const transforms = [t => calculateWaste({ start, taskList: t, time: new Date() }), t => calculateEfficiencyList(t, start)]
-		if (taskList?.length > 0) updateTasks(transformAll(taskList, transforms) || taskList)
-	}
-	useInterval(() => update(), 33, [timeRange, owl, taskList]) // 33 is 30 fps
-	return (
-		<DragDropContext onDragEnd={onDragEnd}>
-			<TaskTableContainer variant={variant} maxwidth={TASK_EDITOR_WIDTH}>
-				<table>
-					<TableHeader variant={variant} labels={headerLabels} />
-					<Droppable droppableId="taskTable" type="TASK">
-						{provided => (
-							<tbody ref={provided.innerRef} {...provided.droppableProps}>
-								{taskList && taskList.length > 0
-									? todoList({ services, state: taskRowState, taskList, startRange, endRange, timeRange, options, variant })
-									: <tr><td colSpan='4' style={{ width: '818px', textAlign: 'center' }}>No Tasks are made yet. Make some by pressing the + button above.</td></tr>}
-								{provided.placeholder}
-							</tbody>
-						)}
-					</Droppable>
-				</table>
-			</TaskTableContainer>
-		</DragDropContext>
-	)
+const NoTasksRow = ({ text = 'No Tasks are made yet. Make some by pressing the + button above.' }) => (<tr><td colSpan='4' style={{ width: '818px', textAlign: 'center' }}>{text}</td></tr>)
+
+export const TaskTable = ({
+    customHook = useTaskTable,
+    state: { labels = getHeaderLabels(false), DefaultComponent = NoTasksRow, } = {},
+    services: { onDragEndEvent } = {},
+    children
+}) => {
+    const { variant } = customHook?.() || {}
+    const childrenArray = React.Children.toArray(children)
+    return (
+        <DragDropContext onDragEnd={onDragEndEvent}>
+            <TaskTableContainer variant={variant} maxwidth={TASK_EDITOR_WIDTH}>
+                <table>
+                    <TableHeader variant={variant} labels={labels} />
+                    <Droppable droppableId="taskTable" type="TASK">
+                        {provided => (
+                            <tbody ref={provided.innerRef} {...provided.droppableProps}>
+                                {childrenArray.length <= 0
+                                    ? <DefaultComponent />
+                                    : childrenArray.slice(0, childrenArray.length)}
+                                {provided.placeholder}
+                            </tbody>)}
+                    </Droppable>
+                </table>
+            </TaskTableContainer>
+        </DragDropContext>
+    )
 }
-export default TaskTable
+
+export const TaskTableDefault = ({ currentTime, customHook = useTaskTableDefault }) => {
+    const { childState, childServices } = customHook?.(currentTime) || {}
+    const { taskList, labels, renderNumber } = childState || {}
+    const { onDragEndEvent } = childServices || {}
+    return (
+        <TaskTable state={{ labels }} services={{ onDragEndEvent }}>
+            {taskList?.map((task, index) => (
+                <Draggable
+                    isDragDisabled={isStatusChecked(task?.status)}
+                    draggableId={`task-${task?.id}`}
+                    key={`task-${task?.id}-key`}
+                    index={index} // TODO: Make sure index is accurate
+                >
+                    {provided => (<TaskRowDefault state={{ renderNumber, provided, taskID: task?.id, currentTime }} />)}
+                </Draggable>
+            ))}
+        </TaskTable>
+    )
+}

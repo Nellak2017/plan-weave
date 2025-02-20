@@ -17,7 +17,7 @@ const standardTaskUpdate = ({ task, localTask, localTtc, prevCompletedTask, task
 const wasteFeature = ({ taskObject, isChecked, localTask, newETA, localTtc, prevCompletedTask, localDueDate, localWeight, localDependencies, localThread, taskRow, id, userId, index }) => {
 	const { currentTime, completedTimeStamp } = currentCompletedTimes() // epoch in seconds, NOT millis
 	const updatedTask = {
-		...standardTaskUpdate({ task: taskObject, localTask, localTtc, prevCompletedTask, taskObject, completedTimeStamp, localDueDate, localWeight, localDependencies, localThread }), //...validateTask({ task: taskObject }),
+		...standardTaskUpdate({ task: taskObject, localTask, localTtc, prevCompletedTask, taskObject, completedTimeStamp, localDueDate, localWeight, localDependencies, localThread }),
 		status: isChecked ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED,
 		waste: millisToHours(currentTime.getTime() - newETA.getTime()), // millisToHours(currentTime.getTime() - eta.getTime())
 		eta: isChecked && newETA instanceof Date ? newETA.toISOString() : currentTime.toISOString(),

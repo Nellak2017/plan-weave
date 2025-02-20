@@ -15,6 +15,7 @@ const tasks = createSlice({
             const taskIndex = state?.findIndex(task => task?.id === taskID)
             if (taskIndex !== -1) state[taskIndex][field] = value // Edit a task by ID and field
         },
+        // TODO: Create updateTask batch version
         refreshTasks: (state) => state?.map(task => ({ ...task, timestamp: parseISO(dateToToday(new Date(task.timestamp).toISOString())).getTime() / 1000 })), // update every task in the task list to have timestamp for today but with it's hours
     }
 })

@@ -2,7 +2,7 @@
 import React from 'react'
 import { MdOutlineCheckBox, MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
 import { TASK_ROW_TOOLTIPS, TASK_STATUSES, VARIANTS, TASK_EDITOR_WIDTH } from "../../../Core/utils/constants"
-import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContainer, TimeContainer, EfficiencyContainer, DueContainer, ThreadContainer, DependencyContainer, TrashContainer, TaskRowStyled, } from "./TaskRow.elements"
+import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContainer, TimeContainer, EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer, TrashContainer, TaskRowStyled, } from "./TaskRow.elements"
 import { TaskInput } from "../../atoms/TaskInput/TaskInput"
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from "date-fns"
@@ -27,8 +27,8 @@ const Drag = ({ provided }) => (
         <DragIndicator size={iconSize} />
     </DragContainer>
 )
-const CompleteIcon = ({ taskID, customHook = useCompleteIcon }) => {
-    const { isChecked, handleCheckBoxClicked } = customHook?.(taskID) || {}
+const CompleteIcon = ({ taskID, currentTime, customHook = useCompleteIcon }) => {
+    const { isChecked, handleCheckBoxClicked } = customHook?.(taskID, currentTime) || {}
     return (
         <IconContainer title={isChecked ? completedTooltip : incompleteTooltip}>
             {isChecked
@@ -37,7 +37,6 @@ const CompleteIcon = ({ taskID, customHook = useCompleteIcon }) => {
         </IconContainer>
     )
 }
-// TODO: See if default value and taskName are needed or if taskName alone is ok
 const TaskInputContainer = ({ taskID, customHook = useTaskInputContainer }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { status = TASK_STATUSES.INCOMPLETE, taskName } = childState || {}
@@ -50,8 +49,8 @@ const TaskInputContainer = ({ taskID, customHook = useTaskInputContainer }) => {
         </TaskContainer>
     )
 }
-const Waste = ({ taskID, customHook = useWaste }) => {
-    const { waste, renderFunction = displayWaste } = customHook?.(taskID) || {}
+const Waste = ({ taskID, currentTime, customHook = useWaste }) => {
+    const { waste, renderFunction = displayWaste } = customHook?.(taskID, currentTime) || {}
     return (<WasteContainer title={wasteTooltip} style={{ width: '200px' }}><p>{renderFunction(waste)}</p></WasteContainer>)
 }
 const Ttc = ({ taskID, customHook = useTtc }) => {
@@ -62,7 +61,7 @@ const Ttc = ({ taskID, customHook = useTtc }) => {
         <TimeContainer title={ttcTooltip}>
             {status === TASK_STATUSES.COMPLETED
                 ? <pre>{ttc && !isNaN(ttc) && ttc > 0 ? formatTimeLeft({ timeDifference: ttc, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'}</pre>
-                : <HoursInput defaultValue={1} state={{ variant, placeholder: 'hours', text: 'hours' }} services={{ onValueChange: onValueChangeEvent, onBlur: onBlurEvent }} />
+                : <HoursInput defaultValue={ttc || 1} state={{ variant, placeholder: 'hours', text: 'hours' }} services={{ onValueChange: onValueChangeEvent, onBlur: onBlurEvent }} />
             }
         </TimeContainer>
     )
@@ -142,7 +141,7 @@ const Trash = ({ taskID, customHook = useTrash }) => {
 
 export const TaskRow = ({ renderNumber, children }) => <>{React.Children.toArray(children).slice(0, renderNumber || React.Children.toArray(children).length)}</> // Renders slice of children, and if no range provided it renders all children
 
-export const TaskRowDefault = ({ state: { renderNumber, provided, taskID } = {}, customHook = useTaskRow }) => {
+export const TaskRowDefault = ({ state: { renderNumber, provided, taskID, currentTime } = {}, customHook = useTaskRow }) => {
     const { variant, status, highlight } = customHook?.(taskID) || {}
     return (
         <TaskRowStyled
@@ -152,9 +151,9 @@ export const TaskRowDefault = ({ state: { renderNumber, provided, taskID } = {},
         >
             <TaskRow renderNumber={renderNumber}>
                 <Drag provided={provided} />
-                <CompleteIcon taskID={taskID} />
+                <CompleteIcon taskID={taskID} currentTime={currentTime} />
                 <TaskInputContainer taskID={taskID} />
-                <Waste taskID={taskID} />
+                <Waste taskID={taskID} currentTime={currentTime} />
                 <Ttc taskID={taskID} />
                 <Eta taskID={taskID} />
                 <Efficiency taskID={taskID} />

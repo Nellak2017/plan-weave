@@ -6,12 +6,8 @@ import {
 	clamp,
 	add,
 	subtract,
-	etaList,
 	formatTimeLeft,
 	isTimestampFromToday,
-	//validateTask, // not covered by property based tests. WARNING: Legacy code
-	validateTaskField,
-	filterTaskList,
 	hoursToSeconds,
 	hoursToMillis,
 	millisToHours,
@@ -23,22 +19,14 @@ import {
 	deleteDnDEvent,
 	isRelativelyOrdered, // not covered by property based tests
 	pipe,
-	completedOnTopSorted,
-	calculateRange, // only covered by example based tests
-	filterPages, // not covered by any tests yet
 
 	relativeSortIndex,
 	highlightTaskRow,
-	diagonalize,
 	dateToToday,
-	calculateEfficiency,
-	validateTransformation,
 } from '../../../Core/utils/helpers.js'
 import { TASK_STATUSES, MAX_SAFE_DATE, MAX_SAFE_DATE_SMALL } from '../../../Core/utils/constants.js'
 import { format } from 'date-fns-tz'
-import { simpleTaskSchema } from '../../../Core/schemas/simpleTaskSchema.js'
 import { fc } from '@fast-check/jest'
-import * as Yup from 'yup'
 import { formatISO } from 'date-fns'
 
 describe('clamp values so they are always in specific range', () => {
@@ -95,40 +83,6 @@ describe('subtract two dates', () => {
 				const expected = (time.getTime() - eta.getTime()) / (1000 * 60 * 60)
 				const actual = subtract(time, eta)
 				expect(actual).toBeCloseTo(expected)
-			}
-		))
-	})
-})
-
-describe('etaList', () => {
-	// etaList figures out the running sum for each element in the list
-	// --- Property based tests
-	it('should preserve length for any input', () => {
-		fc.assert(fc.property(fc.array(fc.anything()), taskList => etaList(taskList).length === taskList.length))
-	})
-	it('should preserve cumulative sum property for valid input', () => {
-		fc.assert(fc.property(
-			fc.array(fc.nat()),
-			taskDurations => {
-				const taskList = taskDurations.map(duration => ({ ttc: duration }))
-				const etas = etaList(taskList)
-				return taskList.reduce(
-					(acc, task, index) => {
-						const cumulativeSum = acc.cumulativeSum + task.ttc
-						const isValid = etas[index] === cumulativeSum
-						return { cumulativeSum, isValid: acc.isValid && isValid }
-					},
-					{ cumulativeSum: 0, isValid: true }
-				).isValid
-			}))
-	})
-	it('should have etaList(x)[0] === x[0].ttc', () => {
-		fc.assert(fc.property(
-			fc.array(fc.nat(), { minLength: 1 }),
-			taskDurations => {
-				const taskList = taskDurations.map(duration => ({ ttc: duration }))
-				const etas = etaList(taskList)
-				expect(etas[0] === taskList[0].ttc).toBe(true)
 			}
 		))
 	})
@@ -246,156 +200,6 @@ describe('isTimestampFromToday', () => {
 		))
 	})
 })
-
-describe('validateTaskField', () => {
-	// --- Property based tests
-	const simpleTaskSchema = Yup.object({
-		parentThread: Yup.string().min(2).required(),
-	}) // minimal example
-
-	it('should validate successfully for valid payloads', () => {
-		fc.assert(fc.property(
-			fc.record({
-				field: fc.constantFrom('parentThread'),
-				payload: fc.string({ minLength: 2 })
-			}),
-			({ field, payload }) => {
-				const result = validateTaskField({ field, payload, schema: simpleTaskSchema })
-				return result.valid === true && result.error === null
-			}
-		))
-	})
-
-
-	test('Validation should fail for invalid payloads', () => {
-		fc.assert(fc.property(
-			fc.record({
-				field: fc.constantFrom('parentThread'),
-				payload: fc.string({ maxLength: 1 })
-			}),
-			({ field, payload }) => {
-				const result = validateTaskField({ field, payload, schema: simpleTaskSchema, logger: e => { } })
-				return result.valid === false && result.error !== null
-			}
-		))
-	})
-})
-
-describe('filterTaskList', () => {
-	// --- Example based tests
-	const testCases = [
-		{
-			name: 'filters list correctly with valid filter and attribute',
-			input: {
-				filter: 'apple',
-				list: [
-					{ name: 'apple pie' },
-					{ name: 'banana' },
-					{ name: 'apple cider' },
-					{ name: 'orange' },
-				],
-				attribute: 'name',
-			},
-			expected: [
-				{ name: 'apple pie' },
-				{ name: 'apple cider' },
-			],
-		},
-		{
-			name: 'returns the original list with missing attribute',
-			input: {
-				filter: 'apple',
-				list: [
-					{ name: 'apple pie' },
-					{ name: 'banana' },
-					{ name: 'apple cider' },
-					{ name: 'orange' },
-				],
-				attribute: undefined,
-			},
-			expected: [
-				{ name: 'apple pie' },
-				{ name: 'banana' },
-				{ name: 'apple cider' },
-				{ name: 'orange' },
-			],
-		},
-		{
-			name: 'returns the original list with missing filter',
-			input: {
-				filter: undefined,
-				list: [
-					{ name: 'apple pie' },
-					{ name: 'banana' },
-					{ name: 'apple cider' },
-					{ name: 'orange' },
-				],
-				attribute: 'name',
-			},
-			expected: [
-				{ name: 'apple pie' },
-				{ name: 'banana' },
-				{ name: 'apple cider' },
-				{ name: 'orange' },
-			],
-		},
-	]
-
-	testCases.forEach(testCase => {
-		it(testCase.name, () => {
-			const { filter, list, attribute } = testCase.input
-			const result = filterTaskList(filter, attribute)(list)
-			expect(result).toEqual(testCase.expected)
-		})
-	})
-	// --- Property based tests
-	it('should return original list if no filter or no attribute', () => {
-		fc.assert(
-			fc.property(
-				fc.array(fc.record({ attribute: fc.string() })),
-				fc.string(),
-				fc.string(),
-				(list, attribute, filter) => {
-					const res1 = filterTaskList('', attribute)(list)
-					expect(res1).toEqual(list)
-					const res2 = filterTaskList(filter, '')(list)
-					expect(res2).toEqual(list)
-				}
-			)
-		)
-	})
-
-	it('should have len(filtered list) <= len(list)', () => {
-		fc.assert(
-			fc.property(
-				fc.array(fc.record({ attribute: fc.string() })),
-				fc.string(),
-				(list, filter) => {
-					const res = filterTaskList(filter, 'attribute')(list)
-					expect(res.length <= list.length).toBe(true)
-				}
-			)
-		)
-	})
-
-	it('should have filtered list contain only items with attribute containing filter', () => {
-		fc.assert(
-			fc.property(
-				fc.array(fc.record({ attribute: fc.string() })),
-				fc.string(),
-				(list, filter) => {
-					const result = filterTaskList(filter, 'attribute')(list)
-					const lowerFilter = filter.toLowerCase()
-					result.forEach(item => {
-						expect(item['attribute']?.toLowerCase()?.includes(lowerFilter)).toBe(true)
-					})
-				}
-			)
-		)
-	})
-
-})
-
 describe('hoursToSeconds', () => {
 	// --- Example based tests
 	test.each([
@@ -569,7 +373,7 @@ describe('calculateWaste', () => {
 				const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
 				const lastCompletedTimestamp = taskList[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completed to millis
 				const startTime = firstIncompleteIndex === 0 ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
-				const etas0 = firstIncomplete.ttc // etaList(x)[0] === x[0].ttc
+				const etas0 = firstIncomplete.ttc
 				const eta = add(startTime, etas0)
 				const currentTime = new Date(time || new Date())
 				const waste = subtract(currentTime, eta)
@@ -602,7 +406,7 @@ describe('calculateWaste', () => {
 				const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
 				const lastCompletedTimestamp = taskList[firstIncompleteIndex - 1]?.completedTimeStamp * 1000
 				const startTime = firstIncompleteIndex === 0 ? start : new Date(lastCompletedTimestamp)
-				const etas = etaList(incompleteTasks)
+				// const etas = etaList(incompleteTasks)
 				res.every((task, i) => {
 					if (task.status !== TASK_STATUSES.COMPLETED) {
 						// round to nearest second. date-fns formatISO doesn't have ms precision
@@ -1120,162 +924,6 @@ describe('pipe', () => {
 
 })
 
-describe('completedOnTopSorted', () => {
-	// --- Example based tests
-	const exampleTasks = [
-		{ id: 1, status: TASK_STATUSES.COMPLETED, name: 'Task 1' },
-		{ id: 2, status: TASK_STATUSES.INCOMPLETE, name: 'Task 2' },
-		{ id: 3, status: TASK_STATUSES.COMPLETED, name: 'Task 3' },
-		{ id: 4, status: TASK_STATUSES.WAITING, name: 'Task 4' },
-	]
-	const sortFunction = tasks => tasks.sort((a, b) => a.id - b.id)
-	const testCases = [
-		{
-			description: 'sorts tasks with completed tasks on top',
-			inputTasks: exampleTasks,
-			expectedOutput: [exampleTasks[0], exampleTasks[2], exampleTasks[1], exampleTasks[3]],
-		},
-		{
-			description: 'handles an empty list of tasks',
-			inputTasks: [],
-			expectedOutput: [],
-		},
-		{
-			description: 'sorts tasks with all tasks completed',
-			inputTasks: [
-				{ id: 1, status: TASK_STATUSES.COMPLETED, name: 'Task 1' },
-				{ id: 2, status: TASK_STATUSES.COMPLETED, name: 'Task 2' },
-			],
-			expectedOutput: [
-				{ id: 1, status: TASK_STATUSES.COMPLETED, name: 'Task 1' },
-				{ id: 2, status: TASK_STATUSES.COMPLETED, name: 'Task 2' },
-			],
-		},
-		{
-			description: 'sorts tasks with no tasks completed',
-			inputTasks: [
-				{ id: 1, status: TASK_STATUSES.INCOMPLETE, name: 'Task 1' },
-				{ id: 2, status: TASK_STATUSES.WAITING, name: 'Task 2' },
-			],
-			expectedOutput: [
-				{ id: 1, status: TASK_STATUSES.INCOMPLETE, name: 'Task 1' },
-				{ id: 2, status: TASK_STATUSES.WAITING, name: 'Task 2' },
-			],
-		},
-		{
-			description: 'sorts tasks with all tasks completed and reverse order',
-			inputTasks: [
-				{ id: 2, status: TASK_STATUSES.COMPLETED, name: 'Task 2' },
-				{ id: 1, status: TASK_STATUSES.COMPLETED, name: 'Task 1' },
-			],
-			expectedOutput: [
-				{ id: 1, status: TASK_STATUSES.COMPLETED, name: 'Task 1' },
-				{ id: 2, status: TASK_STATUSES.COMPLETED, name: 'Task 2' },
-			],
-		},
-	]
-
-	testCases.forEach(({ description, inputTasks, expectedOutput }) => {
-		test(description, () => {
-			const sortedTasks = completedOnTopSorted(sortFunction)(inputTasks)
-			expect(sortedTasks).toEqual(expectedOutput)
-		})
-	})
-
-	// --- Property based tests
-	/* 
-	1. output is an array of 0 or more objects which has atleast a status attribute that is a string of one of the accepted statuses // and input for arbitrary
-		[{status: in TASK_STATUSES}*, ...inf]
-	2. tasks with completed status are before all others if there is any
-		[{status: TASK_STATUSES.COMPLETED}*, {status: !TASK_STATUSES.COMPLETED}*, ...inf]
-	3. len(input) = len(output)
-		[{status: TASK_STATUSES.COMPLETED}*, {status: !TASK_STATUSES.COMPLETED}*, ...len(input)]
-	4. completed tasks and non completed tasks are sorted based on the given sort function
-		[sort({status: TASK_STATUSES.COMPLETED}*), sort({status: !TASK_STATUSES.COMPLETED}*), ...len(input)]
-	*/
-	const completedOnTopArbitary = fc.array(fc.record({
-		id: fc.nat({ min: 1 }),
-		status: fc.constantFrom(...Object.values(TASK_STATUSES)),
-		task: fc.string({ maxLength: 50 }),
-	}))
-
-	test('output is an array of objects with at least a status attribute that is a string of one of the accepted statuses', () => {
-		fc.assert(fc.property(
-			completedOnTopArbitary,
-			tasks => {
-				const sortedTasks = completedOnTopSorted(sortFunction)(tasks)
-				expect(sortedTasks.every(task => Object.values(TASK_STATUSES).includes(task.status))).toBe(true)
-			}
-		))
-	})
-
-	test('tasks with completed status are before all others if there is any', () => {
-		fc.assert(fc.property(
-			completedOnTopArbitary,
-			tasks => {
-				const sortedTasks = completedOnTopSorted(sortFunction)(tasks)
-				const firstNonCompletedIndex = sortedTasks.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
-				if (firstNonCompletedIndex === -1) return true
-				expect(sortedTasks.slice(firstNonCompletedIndex).every(task => task.status !== TASK_STATUSES.COMPLETED)).toBe(true)
-			}
-		))
-	})
-
-	test('len(input) = len(output)', () => {
-		fc.assert(fc.property(
-			completedOnTopArbitary,
-			tasks => {
-				const sortedTasks = completedOnTopSorted(sortFunction)(tasks)
-				expect(sortedTasks.length).toBe(tasks.length)
-			}
-		))
-	})
-
-	test('completed tasks and non completed tasks are sorted based on the given sort function', () => {
-		fc.assert(fc.property(
-			completedOnTopArbitary,
-			tasks => {
-				const sortedTasks = completedOnTopSorted(sortFunction)(tasks)
-				const completedTasks = sortedTasks.filter(task => task.status === TASK_STATUSES.COMPLETED)
-				const nonCompletedTasks = sortedTasks.filter(task => task.status !== TASK_STATUSES.COMPLETED)
-				const sortedCompletedTasks = sortFunction(completedTasks)
-				const sortedNonCompletedTasks = sortFunction(nonCompletedTasks)
-				expect(completedTasks).toEqual(sortedCompletedTasks)
-				expect(nonCompletedTasks).toEqual(sortedNonCompletedTasks)
-			}
-		))
-	})
-
-})
-
-describe('calculateRange', () => {
-	const testCases = [
-		{
-			description: 'Calculates the range for a valid page and tasks per page',
-			input: [10, 3],
-			expected: [21, 30],
-		},
-		{
-			description: 'Handles invalid input with default range',
-			input: ['abc', 2],
-			expected: [0, undefined],
-		},
-		{
-			description: 'Handles invalid input with default range',
-			input: [10, 'xyz'],
-			expected: [0, undefined],
-		},
-	]
-
-	testCases.forEach(({ description, input, expected }) => {
-		it(description, () => {
-			expect(calculateRange(...input)).toEqual(expected)
-		})
-	})
-})
-
-// TODO: filterPages tests
-
 // --- Later
 
 describe('dateToToday', () => {
@@ -1305,172 +953,6 @@ describe('dateToToday', () => {
 		})
 	})
 })
-
-describe('calculateEfficiency', () => {
-	const testCases = [
-		// Example 1
-		{ startTime: 0, endTime: 7200, etaHours: 2.5, expected: { "TAG": "Ok", "_0": 1.25 } },
-
-		// Example 2
-		{ startTime: 0, endTime: 11250, etaHours: 2.5, expected: { "TAG": "Ok", "_0": 0.8 } },
-
-		// Example 3
-		{ startTime: 0, endTime: 1, etaHours: 24, expected: { "TAG": "Ok", "_0": 86400 } },
-
-		{ startTime: -0, endTime: 3600, etaHours: 1, expected: { "TAG": "Ok", "_0": 1 } }, // 100% efficiency
-		{ startTime: 7200, endTime: 3600, etaHours: 1, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Start time greater than end time Not allowed anymore
-
-		// Additional cases
-		{ startTime: 'invalid', endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time type
-		{ startTime: 0, endTime: 'invalid', etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid end time type
-		{ startTime: 0, endTime: 7200, etaHours: 'invalid', expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid etaHours time type
-		{ startTime: -1, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Negative start time
-		{ startTime: 0, endTime: -100, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Negative end time, start > end
-		{ startTime: 0, endTime: 100, etaHours: -2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Negative etaHours
-		{ startTime: 0, endTime: 7200, etaHours: 0, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid eta
-		{ startTime: 8.64e15 + 1, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // start time too big
-		{ startTime: 0, endTime: 8.64e15 + 1, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // end time too big
-		{ startTime: 0, endTime: 7200, etaHours: 24 + 1, expected: { "TAG": "Error", "_0": expect.any(String) } }, // etaHours too big
-		{ startTime: 0, endTime: 86400 + 1, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // end - start too big
-		{ startTime: 0, endTime: 0, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // start == end
-
-		{ startTime: NaN, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time type NaN
-		{ startTime: NaN, endTime: NaN, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start,end time type NaN
-		{ startTime: -5e-324, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time < 0
-		{ startTime: 0, endTime: undefined, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid end time type undefined
-		{ startTime: null, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time type null
-		{ startTime: Infinity, endTime: 7200, etaHours: 2, expected: { "TAG": "Error", "_0": expect.any(String) } }, // Invalid start time type infinity
-	]
-
-	testCases.forEach(({ startTime, endTime, etaHours, expected }) => {
-		test(`calculateEfficiency(${startTime}, ${endTime}, ${etaHours}) should return ${expected['_0']}`, () => {
-			expect(calculateEfficiency(startTime, endTime, etaHours)).toEqual(expected) // Use toBeCloseTo for floating-point numbers
-		})
-	})
-})
-
-describe('validateTransformation', () => {
-	const twelve = new Date(new Date().setHours(12, 0, 0, 0)).toISOString()
-	const validTask = {
-		task: ' ',
-		waste: 1,
-		ttc: 1,
-		eta: twelve, //'12:00',
-		id: 1,
-		status: TASK_STATUSES.INCOMPLETE,
-		timestamp: 1692543600 - 1,
-		completedTimeStamp: 1692543600,
-		hidden: false,
-	}
-	const invalidTask = {
-		task: '1'.repeat(51), // too long
-		waste: -1, // negative
-		ttc: 1,
-		eta: twelve, //'12:00',
-		id: 1,
-		status: TASK_STATUSES.INCOMPLETE,
-		timestamp: 1692543600 - 1,
-		completedTimeStamp: 1692543600,
-		hidden: false,
-	}
-	const simpleSchema = simpleTaskSchema
-	const customErrorMessage = 'Validation failed.'
-
-	const testCases = [
-		{
-			name: 'valid transformation with strict schema',
-			task: validTask,
-			schema: simpleSchema,
-			errorMessage: customErrorMessage,
-			expected: { "TAG": "Ok", "_0": undefined },
-		},
-		{
-			name: 'invalid transformation with strict schema',
-			task: invalidTask,
-			schema: simpleSchema,
-			errorMessage: customErrorMessage,
-			expected: { "TAG": "Error", "_0": expect.any(String) },
-		},
-		{
-			name: 'valid transformation without defined error message',
-			task: validTask,
-			schema: simpleSchema,
-			errorMessage: undefined,
-			expected: { "TAG": "Ok", "_0": undefined },
-		},
-	]
-
-	testCases.forEach(({ name, task, schema, errorMessage, expected }) => {
-		test(name, () => {
-			const result = validateTransformation(task, schema, errorMessage)
-			expect(result).toEqual(expected)
-		})
-	})
-})
-
-// NOTE: validateTask is no longer needed since it has been replaced
-/*
-describe('validateTask', () => {
-	const twelve = new Date(new Date().setHours(12, 0, 0, 0)).toISOString()
-	const defaultTask = {
-		task: ' ',
-		waste: 1,
-		ttc: 1,
-		eta: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), //'12:00',
-		id: 1,
-		status: TASK_STATUSES.INCOMPLETE,
-		timestamp: 1692543600 - 1,
-		completedTimeStamp: 1692543600,
-		hidden: false,
-	}
-
-	const validTestCases = [
-		{
-			description: 'Valid task with required fields should return same object',
-			task: defaultTask,
-			expected: { ...defaultTask },
-		},
-		{
-			description: 'Valid task with additional fields should return object without the extra fields',
-			task: { ...defaultTask, extra: 'Extra Field' },
-			expected: { ...defaultTask },
-		},
-		{
-			description: 'Invalid task with required fields but undefined values',
-			task: { ...defaultTask, eta: undefined, ttc: undefined },
-			expected: { ...defaultTask },
-		},
-		{
-			description: 'Invalid task with required fields but values of wrong type, not undefined',
-			task: { ...defaultTask, eta: twelve, ttc: '12:00' }, // eta is a Date, ttc is positive number
-			expected: { ...defaultTask },
-		},
-	]
-
-	const invalidTestCases = [
-		{
-			description: 'Invalid task with missing required fields should throw an error',
-			task: { ...defaultTask, id: undefined }, // any falsey value for id, which is required, will work
-			errorMessage: "Failed to validate Task in validateTask function. This is likely a programming bug.",
-		},
-	]
-
-	// Valid test cases
-	test.each(validTestCases)('%s', ({ task, expected }) => {
-		const result = validateTask({ task })
-		//console.log('------------') console.log(result) console.log(expected)
-		expect(result).toEqual(expected)
-	})
-
-	// Invalid test cases
-	test.each(invalidTestCases)('%s', ({ task, errorMessage }) => {
-		expect(() => {
-			validateTask({ task })
-		}).toThrowError()
-	})
-})
-*/
-
 describe('relativeSortIndex', () => {
 	const sortFunction = array => array.sort((a, b) => a.id - b.id) // Sort by task ID
 	const incomplete = TASK_STATUSES.INCOMPLETE
@@ -1639,35 +1121,3 @@ describe('highlightTaskRow', () => {
 		expect(() => highlightTaskRow(true, true, 'string')).toThrow(TypeError)
 	})
 })
-
-describe('diagonalize', () => {
-	const testCases = [
-		{
-			description: 'Generates a new string not present in the original list',
-			input: ['apple', 'banana', 'cherry', 'glass'],
-			expected: 'bbft',
-		},
-		{
-			description: 'Handles empty string list',
-			input: [],
-			expected: '',
-		},
-		{
-			description: 'Throws error for invalid input',
-			input: 123,
-			expectedError: 'Invalid input. Expected an array of strings.',
-		},
-	]
-
-	testCases.forEach(({ description, input, expected, expectedError }) => {
-		it(description, () => {
-			if (expectedError) {
-				expect(diagonalize(input)).toEqual('')
-			} else {
-				expect(diagonalize(input)).toEqual(expected)
-			}
-		})
-	})
-})
-
-

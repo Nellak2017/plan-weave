@@ -13,3 +13,10 @@ export const timeRange = (selector = useSelector) => tryCatchSyncFlat(() => sele
 export const pageNumber = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.pagination?.paginationTaskEditor?.pageNumber), () => 1)
 export const tasksPerPage = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.pagination?.paginationTaskEditor?.tasksPerPage), () => 10)
 export const dnd = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.dnd), () => [])
+// TODO: Add a selector for the Task Transformation pipeline options!
+export const taskOrderPipeOptions = () => {
+    return {
+        oldTaskList: tasks(),
+        dnd: dnd(),
+    }
+}

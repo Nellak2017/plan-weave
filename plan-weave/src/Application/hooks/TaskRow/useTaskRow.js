@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import store from '../../store.js'
-import { variant, task as taskSelector, timeRange, userId as userIDSelector } from '../../selectors.js'
-import { highlightTaskRow, isTaskOld, isStatusChecked } from '../../../Core/utils/helpers.js'
+import { variant, task as taskSelector, timeRange, userId as userIDSelector, taskOrderPipeOptions } from '../../selectors.js'
+import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste } from '../../../Core/utils/helpers.js'
 import {
     completeTaskThunkAPI,
     editTaskNameThunkAPI,
+    editTtcThunkAPI,
 } from '../../thunks.js'
 
 // TODO: Make id vs Id vs ID consistent across entire code base
@@ -25,12 +26,17 @@ export const useTaskRow = taskID => {
     const highlight = useMemo(() => highlightTaskRow(isHighlighting, isStatusChecked(status), isTaskOld(timeRangeStartEnd, usedTask)), [isHighlighting, status, timeRangeStartEnd, usedTask])
     return { variant: variant(), status, highlight }
 }
-export const useCompleteIcon = taskID => {
-    const { status } = taskSelector?.(taskID) || {}
+export const useCompleteIcon = (taskID, currentTime) => {
     const userID = userIDSelector() || ''
+    const currentTaskRow = taskSelector?.(taskID) || {}
+    const pipelineOptions = taskOrderPipeOptions()
     return {
-        isChecked: isStatusChecked(status),
-        handleCheckBoxClicked: () => { dispatch(completeTaskThunkAPI({ userID, taskID, status })) }
+        isChecked: isStatusChecked(currentTaskRow?.status),
+        handleCheckBoxClicked: () => {
+            dispatch(completeTaskThunkAPI({
+                userID, currentTaskRow, taskOrderPipeOptions: pipelineOptions, currentTime
+            }))
+        }
     }
 }
 export const useTaskInputContainer = taskID => {
@@ -42,24 +48,28 @@ export const useTaskInputContainer = taskID => {
     }
     return { childState, childServices }
 }
-export const useWaste = taskID => { // Redux controlled. TaskTable calculates and sets
-    const { waste } = taskSelector?.(taskID) || {}
+export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
+    const currentTaskRow = taskSelector?.(taskID) || {}
+    const pipelineOptions = taskOrderPipeOptions()
+    const waste = useMemo(() => calculateWaste(currentTaskRow, pipelineOptions, currentTime), [currentTaskRow, pipelineOptions, currentTime])
+
     return { waste }
 }
 export const useTtc = taskID => {
     const { status, ttc } = taskSelector?.(taskID) || {}
+    const userID = userIDSelector() || ''
     const childState = { variant: variant(), status, ttc }
     const childServices = {
         onValueChangeEvent: () => console.warn('onValueChange thunk not implemented for useTtc'),
-        onBlurEvent: () => console.warn('onBlur thunk not implemented for useTtc'),
+        onBlurEvent: ttc => dispatch(editTtcThunkAPI({ userID, taskID, ttc: parseFloat(ttc) })),
     }
     return { childState, childServices }
 }
-export const useEta = taskID => { // Redux controlled. TaskTable calculates and sets
+export const useEta = taskID => { // We calculate this from Redux state and memoize on time
     const { eta } = taskSelector?.(taskID) || {}
     return { eta }
 }
-export const useEfficiency = taskID => { // Redux controlled. TaskTable calculates and sets
+export const useEfficiency = taskID => { // We calculate this from Redux state and memoize on time
     const { efficiency } = taskSelector?.(taskID) || {}
     return { efficiency }
 }
@@ -72,7 +82,7 @@ export const useDue = taskID => {
     return { childState, childServices }
 }
 export const useWeight = taskID => {
-    const { status, weight } = taskSelector?.(taskID) || {}
+    const { status, weight, dueDate } = taskSelector?.(taskID) || {}
     const childState = { variant: variant(), isChecked: isStatusChecked(status), dueDate }
     const childServices = {
         onValueChangeEvent: () => console.warn('onValueChange thunk not implemented for useWeight')
@@ -95,7 +105,7 @@ export const useThread = taskID => {
 }
 export const useDependency = taskID => {
     const { dependencies } = taskSelector?.(taskID) || {}
-    const defaultValue = dependencies?.[0] || '' // TODO: Figure out correct default
+    const defaultValue = dependencies?.[0] || [] // TODO: Figure out correct default
     const childState = {
         variant: variant(),
         options: dependencies, // I think this is correct?

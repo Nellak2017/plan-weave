@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useInterval } from '../../hooks/useInterval.js'
 import { VARIANTS, TASK_EDITOR_WIDTH } from '../../../Core/utils/constants.js'
 import TaskControl from '../../molecules/TaskControl/TaskControl'
-import { TaskTableDefault } from '../../molecules/TaskTable/TaskTable.slots.js'
+import { TaskTableDefault } from '../../molecules/TaskTable/TaskTable.js'
 import Pagination from '../../molecules/Pagination/Pagination'
 import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
 

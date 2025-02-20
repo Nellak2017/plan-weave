@@ -48,8 +48,9 @@ export const DEFAULT_SIMPLE_TASK = {
 	id: new Date().getTime(), // guarantees unique ids down to the millisecond! IF and ONLY IF you do this logic in the caller as well!
 	status: 'incomplete',
 	timestamp: Math.floor((new Date().getTime()) / 1000),
-	completedTimeStamp: Math.floor((new Date().getTime()) / 1000),
+	completedTimeStamp: 0,//Math.floor((new Date().getTime()) / 1000),
 	hidden: false,
+	liveTime: 0, // used for time accumulation of tasks
 } // Used when adding a new simple task
 export const DEFAULT_FULL_TASK = {
 	...DEFAULT_SIMPLE_TASK,
@@ -87,3 +88,4 @@ export const TIME_PICKER_COORDS = { start: { verticalOffset: 0, horizontalOffset
 export const PAGINATION_OPTIONS = [10, 20]
 export const PAGINATION_PICKER_TEXT = 'Tasks per page'
 export const TASK_EDITOR_WIDTH = 818
+export const RENDER_NUMBERS = { SIMPLE_TASK: 6, FULL_TASK: 11 }
