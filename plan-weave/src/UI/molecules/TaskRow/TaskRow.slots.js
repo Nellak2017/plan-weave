@@ -1,7 +1,7 @@
 // Temporarily write the envisioned code here, then remove the old code
 import React from 'react'
 import { MdOutlineCheckBox, MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
-import { TASK_ROW_TOOLTIPS, TASK_STATUSES, VARIANTS, TASK_EDITOR_WIDTH } from "../../../Core/utils/constants"
+import { TASK_ROW_TOOLTIPS, TASK_STATUSES, VARIANTS } from "../../../Core/utils/constants"
 import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContainer, TimeContainer, EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer, TrashContainer, TaskRowStyled, } from "./TaskRow.elements"
 import { TaskInput } from "../../atoms/TaskInput/TaskInput"
 import HoursInput from '../../atoms/HoursInput/HoursInput.js'
@@ -10,24 +10,23 @@ import { formatTimeLeft } from "../../../Core/utils/helpers"
 import DateTimePickerWrapper from "../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js"
 import OptionPicker from "../../atoms/OptionPicker/OptionPicker.js"
 import { BiTrash } from "react-icons/bi"
-import { useTaskRow, useCompleteIcon, useTaskInputContainer, useWaste, useTtc, useEta, useEfficiency, useDue, useWeight, useThread, useDependency, useTrash } from '../../../Application/hooks/TaskRow/useTaskRow.js'
+import { useCompleteIcon, useTaskInputContainer, useWaste, useTtc, useEta, useEfficiency, useDue, useWeight, useThread, useDependency, useTrash } from '../../../Application/hooks/TaskRow/useTaskRow.js'
 const { dndTooltip, completedTooltip, incompleteTooltip, taskTooltip, wasteTooltip, ttcTooltip, etaTooltip, efficencyToolTip, dueToolTip, weightToolTip, threadToolTip, dependencyToolTip, deleteTooltip } = TASK_ROW_TOOLTIPS
 const iconSize = 36
 
 // TODO: Extract to helpers file 
-// TODO: Extract to separate slots file (this is main file) 
 const displayWaste = waste => waste ? formatTimeLeft({ isNegative: waste < 0, timeDifference: waste < 0 ? -waste : waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'
 const displayEta = eta => eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime()) ? format(parseISO(eta), "HH:mm") : '00:00'
 const displayEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
 const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
-const getTaskRowDnDStyle = provided => ({ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' })
+export const getTaskRowDnDStyle = provided => ({ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' })
 
-const Drag = ({ provided }) => (
+export const Drag = ({ provided }) => (
     <DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''} >
         <DragIndicator size={iconSize} />
     </DragContainer>
 )
-const CompleteIcon = ({ taskID, currentTime, customHook = useCompleteIcon }) => {
+export const CompleteIcon = ({ taskID, currentTime, customHook = useCompleteIcon }) => {
     const { isChecked, handleCheckBoxClicked } = customHook?.(taskID, currentTime) || {}
     return (
         <IconContainer title={isChecked ? completedTooltip : incompleteTooltip}>
@@ -37,7 +36,7 @@ const CompleteIcon = ({ taskID, currentTime, customHook = useCompleteIcon }) => 
         </IconContainer>
     )
 }
-const TaskInputContainer = ({ taskID, customHook = useTaskInputContainer }) => {
+export const TaskInputContainer = ({ taskID, customHook = useTaskInputContainer }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { status = TASK_STATUSES.INCOMPLETE, taskName } = childState || {}
     const { onBlurEvent } = childServices || {}
@@ -49,11 +48,11 @@ const TaskInputContainer = ({ taskID, customHook = useTaskInputContainer }) => {
         </TaskContainer>
     )
 }
-const Waste = ({ taskID, currentTime, customHook = useWaste }) => {
+export const Waste = ({ taskID, currentTime, customHook = useWaste }) => {
     const { waste, renderFunction = displayWaste } = customHook?.(taskID, currentTime) || {}
     return (<WasteContainer title={wasteTooltip} style={{ width: '200px' }}><p>{renderFunction(waste)}</p></WasteContainer>)
 }
-const Ttc = ({ taskID, customHook = useTtc }) => {
+export const Ttc = ({ taskID, customHook = useTtc }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { variant = VARIANTS[0], status, ttc } = childState || {}
     const { onValueChangeEvent, onBlurEvent } = childServices || {}
@@ -66,15 +65,15 @@ const Ttc = ({ taskID, customHook = useTtc }) => {
         </TimeContainer>
     )
 }
-const Eta = ({ taskID, customHook = useEta }) => {
-    const { eta, renderFunction = displayEta } = customHook?.(taskID) || {}
+export const Eta = ({ taskID, currentTime, customHook = useEta }) => {
+    const { eta, renderFunction = displayEta } = customHook?.(taskID, currentTime,) || {}
     return (<TimeContainer title={etaTooltip}><p aria-label={'eta for task'}> {renderFunction(eta)}</p></TimeContainer>)
 }
-const Efficiency = ({ taskID, customHook = useEfficiency }) => {
-    const { efficiency, renderFunction = displayEfficiency } = customHook?.(taskID) || {}
+export const Efficiency = ({ taskID, currentTime, customHook = useEfficiency }) => {
+    const { efficiency, renderFunction = displayEfficiency } = customHook?.(taskID, currentTime) || {}
     return (<EfficiencyContainer title={efficencyToolTip}><p>{renderFunction(efficiency)}</p></EfficiencyContainer>)
 }
-const Due = ({ taskID, customHook = useDue }) => {
+export const Due = ({ taskID, customHook = useDue }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { variant = VARIANTS[0], isChecked, dueDate } = childState || {}
     const { onTimeChangeEvent } = childServices || {}
@@ -89,7 +88,7 @@ const Due = ({ taskID, customHook = useDue }) => {
         </DueContainer>
     )
 }
-const Weight = ({ taskID, customHook = useWeight }) => {
+export const Weight = ({ taskID, customHook = useWeight }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { variant = VARIANTS[0], isChecked, weight } = childState || {}
     const { onValueChangeEvent } = childServices || {}
@@ -105,7 +104,7 @@ const Weight = ({ taskID, customHook = useWeight }) => {
         </WeightContainer>
     )
 }
-const Thread = ({ taskID, customHook = useThread }) => {
+export const Thread = ({ taskID, customHook = useThread }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { variant = VARIANTS[0], options, defaultValue } = childState || {}
     const { onChangeEvent, onBlurEvent } = childServices || {}
@@ -120,7 +119,7 @@ const Thread = ({ taskID, customHook = useThread }) => {
         </ThreadContainer>
     )
 }
-const Dependency = ({ taskID, customHook = useDependency }) => {
+export const Dependency = ({ taskID, customHook = useDependency }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { variant, options, defaultValue } = childState || {}
     const { onChangeEvent } = childServices || {}
@@ -134,35 +133,7 @@ const Dependency = ({ taskID, customHook = useDependency }) => {
         </DependencyContainer>
     )
 }
-const Trash = ({ taskID, customHook = useTrash }) => {
+export const Trash = ({ taskID, customHook = useTrash }) => {
     const { onClickEvent } = customHook?.(taskID) || {}
     return (<TrashContainer><BiTrash title={deleteTooltip} onClick={onClickEvent} size={iconSize} /></TrashContainer>)
-}
-
-export const TaskRow = ({ renderNumber, children }) => <>{React.Children.toArray(children).slice(0, renderNumber || React.Children.toArray(children).length)}</> // Renders slice of children, and if no range provided it renders all children
-
-export const TaskRowDefault = ({ state: { renderNumber, provided, taskID, currentTime } = {}, customHook = useTaskRow }) => {
-    const { variant, status, highlight } = customHook?.(taskID) || {}
-    return (
-        <TaskRowStyled
-            variant={variant} status={status} highlight={highlight}
-            style={getTaskRowDnDStyle(provided)} maxwidth={TASK_EDITOR_WIDTH}
-            ref={provided?.innerRef} {...provided?.draggableProps}
-        >
-            <TaskRow renderNumber={renderNumber}>
-                <Drag provided={provided} />
-                <CompleteIcon taskID={taskID} currentTime={currentTime} />
-                <TaskInputContainer taskID={taskID} />
-                <Waste taskID={taskID} currentTime={currentTime} />
-                <Ttc taskID={taskID} />
-                <Eta taskID={taskID} />
-                <Efficiency taskID={taskID} />
-                <Due taskID={taskID} />
-                <Weight taskID={taskID} />
-                <Thread taskID={taskID} />
-                <Dependency taskID={taskID} />
-            </TaskRow>
-            <Trash />
-        </TaskRowStyled>
-    )
 }

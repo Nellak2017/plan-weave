@@ -4,7 +4,7 @@ import { TaskTableContainer } from './TaskTable.elements.js'
 import { TASK_EDITOR_WIDTH } from '../../../Core/utils/constants.js'
 import { getHeaderLabels, isStatusChecked } from '../../../Core/utils/helpers.js'
 import TableHeader from '../../atoms/TableHeader/TableHeader.js'
-import { TaskRowDefault } from '../TaskRow/TaskRow.slots.js'
+import { TaskRowDefault } from '../TaskRow/TaskRow.js'
 import { useTaskTable, useTaskTableDefault } from '../../../Application/hooks/TaskTable/useTaskTable.js'
 
 const NoTasksRow = ({ text = 'No Tasks are made yet. Make some by pressing the + button above.' }) => (<tr><td colSpan='4' style={{ width: '818px', textAlign: 'center' }}>{text}</td></tr>)

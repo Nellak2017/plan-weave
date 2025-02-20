@@ -1,2 +1,0 @@
-import { createSelector } from 'reselect' // This would be used to memoize easily if needed
-export const selectNonHiddenTasksCoerceToFull = createSelector([state => state?.taskEditor?.tasks], allTasks => allTasks ?.slice(0, 1000)  ?.filter(task => task?.hidden !== true) ?.map(task => ({...task,})) || [],)

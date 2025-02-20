@@ -139,3 +139,8 @@ export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) 
 		? formatISO(add(currentTime, adjustedTtc - oldLiveTime)) // current time + (max(ttc, live time) - live time)
 		: formatISO(add(prev, adjustedTtc)) // prev + max(ttc, live time) 
 }
+
+// TODO: Write the correct efficiency function
+export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
+	return currentTaskRow?.ttc / (calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) + calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime))
+}

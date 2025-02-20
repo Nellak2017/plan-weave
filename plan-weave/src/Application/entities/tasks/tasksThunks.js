@@ -36,3 +36,11 @@ export const editTtcThunkAPI = ({ userID, taskID, ttc }) => dispatch => {
     // 1. POST to API
     dispatch(updateTask({ taskID, field: 'ttc', value: ttc }))
 }
+export const editDueThunkAPI = ({ userID, taskID, dueDate }) => dispatch => {
+    // 1. POST to API
+    dispatch(updateTask({ taskID, field: 'dueDate', value: dueDate }))
+}
+export const editWeightThunkAPI = ({ userID, taskID, weight }) => dispatch => {
+    // 1. POST to API
+    dispatch(updateTask({taskID, field: 'weight', value: weight}))
+}

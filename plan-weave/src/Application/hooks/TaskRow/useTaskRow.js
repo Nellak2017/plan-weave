@@ -1,13 +1,15 @@
 import { useMemo } from 'react'
 import store from '../../store.js'
 import { variant, task as taskSelector, timeRange, userId as userIDSelector, taskOrderPipeOptions } from '../../selectors.js'
-import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste } from '../../../Core/utils/helpers.js'
+import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency } from '../../../Core/utils/helpers.js'
 import {
     completeTaskThunkAPI,
     editTaskNameThunkAPI,
     editTtcThunkAPI,
+    editDueThunkAPI,
+    editWeightThunkAPI,
 } from '../../thunks.js'
-
+import { formatISO } from 'date-fns'
 // TODO: Make id vs Id vs ID consistent across entire code base
 // TODO: Make Thunks for every hook that needs one
 const dispatch = store.dispatch
@@ -26,6 +28,7 @@ export const useTaskRow = taskID => {
     const highlight = useMemo(() => highlightTaskRow(isHighlighting, isStatusChecked(status), isTaskOld(timeRangeStartEnd, usedTask)), [isHighlighting, status, timeRangeStartEnd, usedTask])
     return { variant: variant(), status, highlight }
 }
+// Almost done, needs: testing, batching, and completeness, as well as api stuff
 export const useCompleteIcon = (taskID, currentTime) => {
     const userID = userIDSelector() || ''
     const currentTaskRow = taskSelector?.(taskID) || {}
@@ -39,6 +42,7 @@ export const useCompleteIcon = (taskID, currentTime) => {
         }
     }
 }
+// Almost done, needs: testing
 export const useTaskInputContainer = taskID => {
     const { status, task } = taskSelector?.(taskID) || {}
     const userID = userIDSelector() || ''
@@ -48,6 +52,7 @@ export const useTaskInputContainer = taskID => {
     }
     return { childState, childServices }
 }
+// Almost done, needs: testing
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
     const currentTaskRow = taskSelector?.(taskID) || {}
     const pipelineOptions = taskOrderPipeOptions()
@@ -55,40 +60,52 @@ export const useWaste = (taskID, currentTime) => { // We calculate this from Red
 
     return { waste }
 }
+// Almost done, needs: testing
 export const useTtc = taskID => {
     const { status, ttc } = taskSelector?.(taskID) || {}
     const userID = userIDSelector() || ''
     const childState = { variant: variant(), status, ttc }
     const childServices = {
-        onValueChangeEvent: () => console.warn('onValueChange thunk not implemented for useTtc'),
+        //onValueChangeEvent: () => console.warn('onValueChange thunk not implemented for useTtc'),
         onBlurEvent: ttc => dispatch(editTtcThunkAPI({ userID, taskID, ttc: parseFloat(ttc) })),
     }
     return { childState, childServices }
 }
-export const useEta = taskID => { // We calculate this from Redux state and memoize on time
-    const { eta } = taskSelector?.(taskID) || {}
+// Almost done, needs: testing
+export const useEta = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
+    const currentTaskRow = taskSelector?.(taskID) || {}
+    const pipelineOptions = taskOrderPipeOptions()
+    const eta = useMemo(() => calculateEta(currentTaskRow, pipelineOptions, currentTime), [currentTaskRow, pipelineOptions, currentTime])
     return { eta }
 }
-export const useEfficiency = taskID => { // We calculate this from Redux state and memoize on time
-    const { efficiency } = taskSelector?.(taskID) || {}
+// Almost done, needs: testing, correction of efficiency function
+export const useEfficiency = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
+    const currentTaskRow = taskSelector?.(taskID) || {}
+    const pipelineOptions = taskOrderPipeOptions()
+    const efficiency = useMemo(() => Math.abs(calculateEfficiency(currentTaskRow, pipelineOptions, currentTime)), [currentTaskRow, pipelineOptions, currentTime])
     return { efficiency }
 }
+// Almost done, needs: testing
 export const useDue = taskID => {
     const { status, dueDate } = taskSelector?.(taskID) || {}
+    const userID = userIDSelector() || ''
     const childState = { variant: variant(), isChecked: isStatusChecked(status), dueDate }
     const childServices = {
-        onTimeChangeEvent: () => console.warn('onTimeChange thunk not implemented for useDue')
+        onTimeChangeEvent: dueDate => dispatch(editDueThunkAPI({ userID, taskID, dueDate: formatISO(dueDate) }))
     }
     return { childState, childServices }
 }
+// Almost done, needs: testing
 export const useWeight = taskID => {
     const { status, weight, dueDate } = taskSelector?.(taskID) || {}
-    const childState = { variant: variant(), isChecked: isStatusChecked(status), dueDate }
+    const userID = userIDSelector() || ''
+    const childState = { variant: variant(), isChecked: isStatusChecked(status), dueDate, weight }
     const childServices = {
-        onValueChangeEvent: () => console.warn('onValueChange thunk not implemented for useWeight')
+        onValueChangeEvent: weight => dispatch(editWeightThunkAPI({ userID, taskID, weight: parseFloat(weight) }))
     }
     return { childState, childServices }
 }
+// needs: thread repository, implementation, testing
 export const useThread = taskID => {
     const { parentThread } = taskSelector?.(taskID) || {}
     const options = [] // TODO: Figure out how to do this one, I am not familiar with the registery of all threads
@@ -103,6 +120,7 @@ export const useThread = taskID => {
     }
     return { childState, childServices }
 }
+// needs: dependency selector, implementation, testing
 export const useDependency = taskID => {
     const { dependencies } = taskSelector?.(taskID) || {}
     const defaultValue = dependencies?.[0] || [] // TODO: Figure out correct default

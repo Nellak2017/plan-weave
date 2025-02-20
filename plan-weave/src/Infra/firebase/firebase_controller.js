@@ -1,5 +1,4 @@
 import { getFirestore, collection, setDoc, query, doc, getDocs, deleteDoc } from 'firebase/firestore'
-import { fillDefaults } from '../../Core/schemas/taskSchema.js'
 import app from '../firebase/config.js'
 import { toast } from 'react-toastify'
 import { DEV } from '../../Core/utils/constants.js'
@@ -36,7 +35,7 @@ export async function addTask(task, userId) {
 	try {
 		const TaskCollection = getTaskCollection(userId)
 		const taskDocRef = doc(db, TaskCollection, task.id.toString()) // Assuming task.id is a number
-		await setDoc(taskDocRef, fillDefaults(task))
+		await setDoc(taskDocRef, task)
 	} catch (e) {
 		console.error(e)
 		toast.error('Failed to add tasks')
