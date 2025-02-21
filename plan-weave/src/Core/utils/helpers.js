@@ -126,6 +126,8 @@ export const calculateWaste = (currentTaskRow, taskOrderPipeOptions, currentTime
 export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	const { id: taskID, ttc, liveTime: oldLiveTime } = currentTaskRow || {}
 
+	const processedOldLiveTime = oldLiveTime || 0 // Must be done since some people won't have this update
+
 	const properlyOrderedTaskList = taskListPipe(taskOrderPipeOptions)
 	const firstIncompleteIndex = properlyOrderedTaskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
 	const currentTaskIndex = properlyOrderedTaskList?.findIndex(task => task?.id === taskID)
@@ -133,10 +135,10 @@ export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) 
 	const prev = properlyOrderedTaskList
 		.slice(0, currentTaskIndex)
 		.reduce((acc, task) => add(acc, Math.max(task?.ttc, task?.liveTime)), currentTime)
-	const adjustedTtc = Math.max(ttc, oldLiveTime)
+	const adjustedTtc = Math.max(ttc, processedOldLiveTime)
 
 	return currentTaskIndex === firstIncompleteIndex
-		? formatISO(add(currentTime, adjustedTtc - oldLiveTime)) // current time + (max(ttc, live time) - live time)
+		? formatISO(add(currentTime, adjustedTtc - processedOldLiveTime)) // current time + (max(ttc, live time) - live time)
 		: formatISO(add(prev, adjustedTtc)) // prev + max(ttc, live time) 
 }
 
