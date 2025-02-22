@@ -1,22 +1,14 @@
-import styled, { css } from 'styled-components'
-import { getPresetCSS } from '../../styles/theme'
-
-const taskEditorPresets = {variant: { light: css` h1 { color: ${props => props.theme.colors.lightNeutral};} `, dark: css` h1 { color: ${props => props.theme.colors.lightNeutralLight};}`},}
-export const StyledTaskEditor = styled.div` // TODO: Finish Styling this
-  	${getPresetCSS(taskEditorPresets, 'variant')};
-	background-color: black; // Stand-in color
-	width: 100%;
-	max-width: ${props => props.maxwidth}px;
-	border-radius: 36px;
-`
-export const TaskEditorContainer = styled.section`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	h1 {
-		font-size: ${props => props.theme.fontSizes.larger};
-		font-weight: 300;
-	}
-  	${getPresetCSS(taskEditorPresets, 'variant')};
-`
+import { styled } from '@mui/system'
+const getVariant = ({ theme, variant }) => ({
+	light: { h1: { color: '#504651' }, }, // ${props => props.theme.colors.lightNeutral}
+	dark: { h1: { color: '#eeedee' }, }, // ${props => props.theme.colors.lightNeutralLight}
+}?.[variant])
+export const StyledTaskEditor = styled('div')(({ theme, variant, maxwidth }) => ({
+	width: '100%', maxWidth: `${maxwidth}px`, borderRadius: '36px', backgroundColor: 'black', // Stand-in color
+	...getVariant({ theme, variant })
+}))
+export const TaskEditorContainer = styled('section')(({ theme, variant }) => ({
+	display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+	h1: { fontWeight: 300, fontSize: '40px', }, // ${props => props.theme.fontSizes.larger}
+	...getVariant({ theme, variant })
+}))
