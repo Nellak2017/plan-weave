@@ -25,13 +25,11 @@ export async function fetchTasksFromFirebase(userId, serialize = x => x) {
 
 export async function addTask(task, userId) {
 	// TODO: Add Task schema verification here too
-	if ((!task || !userId)) {
-		if (DEV) {
-			console.error('Invalid task or userId when trying to add tasks. Failed to add tasks to Firebase.')
-			toast.error('Failed to add tasks to database, your tasks will not persist after refresh')
-		}
-		return
+	if ((!task || !userId) && DEV) {
+		console.error('Invalid task or userId when trying to add tasks. Failed to add tasks to Firebase.')
+		toast.error('Failed to add tasks to database, your tasks will not persist after refresh')
 	}
+	if ((!task || !userId)) return
 	try {
 		const TaskCollection = getTaskCollection(userId)
 		const taskDocRef = doc(db, TaskCollection, task.id.toString()) // Assuming task.id is a number
@@ -46,7 +44,6 @@ export async function updateTask(updatedTask, userId) {
 	if (!updatedTask || !userId) {
 		console.error('Invalid updated task or userId when trying to update task. Failed to update task')
 		toast.error('Failed to update task')
-		throw new Error('Invalid updated task or userId when trying to update task. Failed to update task')
 	}
 	try {
 		const TaskCollection = getTaskCollection(userId)
@@ -62,7 +59,6 @@ export async function deleteTasks(taskIds, userId) {
 	if (!taskIds || !userId) {
 		console.error('Invalid taskIds or userId when trying to delete tasks. Failed to delete tasks')
 		toast.error('Failed to delete tasks')
-		throw new Error('Invalid taskIds or userId when trying to delete tasks. Failed to delete tasks')
 	}
 	try {
 		const TaskCollection = getTaskCollection(userId)

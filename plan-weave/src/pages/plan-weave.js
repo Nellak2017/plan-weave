@@ -22,20 +22,19 @@ function PlanWeave() {
 	useRedirectIfUnauthorized(user, loading)
 	//useTaskFetching({ user, serialize, dispatch, taskFetcher: fetchTasksFromFirebase, taskUpdateReducer: initialTaskUpdate, userIdReducer: initialUserIdUpdate })
 	// --- Loading or Error Component
-	return loadingOrError({ loading, error, user })
-		? loadingOrError({ loading, error, user })
-		: (
-			<>
-				<Nav
-					slots={{
-						left: <LeftContent />,
-						middle: <MiddleContent state={middleContentData()} />,
-						right: <RightContent state={rightContentData({ router, handleLogout })} />
-					}}
-				/>
-				<TaskEditor variant='dark' sortingAlgorithm='timestamp' options={options} />
-			</>
-		)
+	if (loadingOrError({ loading, error, user })) return loadingOrError({ loading, error, user })
+	return (
+		<>
+			<Nav
+				slots={{
+					left: <LeftContent />,
+					middle: <MiddleContent state={middleContentData()} />,
+					right: <RightContent state={rightContentData({ router, handleLogout })} />
+				}}
+			/>
+			<TaskEditor variant='dark' sortingAlgorithm='timestamp' options={options} />
+		</>
+	)
 }
 
 export default PlanWeave

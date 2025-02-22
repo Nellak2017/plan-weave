@@ -76,6 +76,7 @@ export const isTaskOld = (timeRange, task) => {
 	return !isTimestampFromToday(start, epochETA, epochTotal)
 }
 export const tryCatchSyncFlat = (fn, errFn) => { try { return fn() } catch (e) { return errFn(e) } }
+export const tryCatchAsyncFlat = async (fn, errFn) => { try { const ret = await fn(); return ret } catch (e) { return errFn(e) } }
 export const calcMaxPage = (listLen, perPage) => Math.ceil(listLen / perPage) || 1
 export const getHeaderLabels = isFullTask => FULL_TASK_HEADERS.slice(0, isFullTask ? FULL_TASK_HEADERS.length : 4)
 export const isStatusChecked = status => status === TASK_STATUSES.COMPLETED

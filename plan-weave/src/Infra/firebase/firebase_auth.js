@@ -12,7 +12,6 @@ export const signUpWithEmail = async (email, password) => {
 		return userCredential.user
 	} catch (e) {
 		console.error('Error signing up:', e.message)
-		throw new Error(e)
 	}
 }
 // Function for signing in with email and password
@@ -22,7 +21,6 @@ export const signInWithEmail = async (email, password) => {
 		return userCredential.user
 	} catch (e) {
 		console.error('Error signing in with email and password:', e)
-		throw new Error(e)
 	}
 }
 // TODO: Add Promise to this so that user never gets stuck in loading state if exit out of pop-up
@@ -34,7 +32,6 @@ export const signInWithGoogle = async () => {
 		return user
 	} catch (e) {
 		console.error(e)
-		throw new Error('Error signing in with Google', JSON.stringify(e))
 	}
 }
 // Function to sign out
@@ -43,7 +40,6 @@ export const signOutOfApp = async () => {
 		await signOut(auth)
 	} catch (e) {
 		console.error('Sign out error', e)
-		throw new Error('Error signing out', JSON.stringify(e))
 	}
 }
 export default auth
