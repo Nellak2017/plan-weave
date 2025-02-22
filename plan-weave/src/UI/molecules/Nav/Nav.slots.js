@@ -14,7 +14,7 @@ export const LeftContent = ({
 }) => (
     <Logo className='logo' tabIndex={tabIndex}>
         <Link href={href} tabIndex={tabIndex}>
-            <Image src={logoPath.src} alt={alt} width={width} height={height} title={title} aria-label={title} priority={true} />
+            <Image src={logoPath.src} alt={alt} width={width} height={height} title={title} aria-label={title} /> 
         </Link>
     </Logo>
 )
