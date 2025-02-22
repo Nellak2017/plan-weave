@@ -8,8 +8,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import { Provider } from 'react-redux'
 import store from '../Application/store.js'
 
-// TODO: When you add support for light/dark mode, see the NutriSync project to add support for initial variant regardless of page
-const MyApp = ({ Component, pageProps }) => {
+const MyApp = ({ Component, pageProps }) => { // TODO: When you add support for light/dark mode, see the NutriSync project to add support for initial variant regardless of page
   return (
     <>
       <Head><title>Plan Weave</title><meta name="viewport" content="width=device-width, initial-scale=1.0" /></Head>
