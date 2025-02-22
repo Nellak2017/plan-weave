@@ -1,5 +1,4 @@
 // File containing many constants
-import colors from '../../UI/styles/theme.js' // TODO: Do not depend on UI layer at all: ;
 import { toast } from 'react-toastify'
 import { parseISO } from 'date-fns'
 const twelve = new Date(new Date().setHours(12, 0, 0, 0))
@@ -15,11 +14,11 @@ export const TASK_STATUSES = {
 	WAITING: 'waiting',
 	INCONSISTENT: 'inconsistent',
 }
-export const STATUS_COLORS = {
-	[TASK_STATUSES.COMPLETED]: colors.success,
+export const STATUS_COLORS = { // TODO: Move this to MUI theme for coherence
+	[TASK_STATUSES.COMPLETED]: '#80de71',
 	[TASK_STATUSES.INCOMPLETE]: 'transparent',
-	[TASK_STATUSES.WAITING]: colors.warning,
-	[TASK_STATUSES.INCONSISTENT]: colors.danger,
+	[TASK_STATUSES.WAITING]: '#e8bb79',
+	[TASK_STATUSES.INCONSISTENT]: '#d64444',
 }
 export const SORTING_METHODS = {
 	'timestamp': tasks => tasks?.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)),

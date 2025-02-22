@@ -28,8 +28,8 @@ export const MultipleDeleteButton = ({
             isHighlighting &&
             <Button
                 variant={'delete'} tabIndex={deleteTabIndex} title={deleteTitle}
-                onClick={() => { handleDeleteClick(handleStateUpdate, currentFSMState); if (deleteMultipleEvent) { deleteMultipleEvent({ state: { userId, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } }}
-                onKeyDown={e => { handleDeleteClick(handleStateUpdate, currentFSMState); if (deleteMultipleEvent && e.key === 'Enter') { deleteMultipleEvent({ state: { userId, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } }}
+                onClick={() => { handleDeleteClick(handleStateUpdate, currentFSMState); if (deleteMultipleEvent) { deleteMultipleEvent({ state: { userID, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } }}
+                onKeyDown={e => { handleDeleteClick(handleStateUpdate, currentFSMState); if (deleteMultipleEvent && e.key === 'Enter') { deleteMultipleEvent({ state: { userID, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } }}
             >
                 {label}
             </Button>

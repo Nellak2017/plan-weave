@@ -3,8 +3,8 @@ import { tryCatchSyncFlat } from '../Core/utils/helpers.js' // for returning def
 // TODO: Add more business constraints here for these selectors
 // TODO: Use constants and getters for the defaults instead of hard coded values
 export const tasks = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks), () => [])
-export const task = (taskId, selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks).filter(task => task?.id === taskId)?.[0], () => {})
-export const userId = () => '' // TODO: make session context for this
+export const task = (taskID, selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks).filter(task => task?.id === taskID)?.[0], () => {})
+export const userID = () => '' // TODO: make session context for this
 export const variant = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.variant), () => 'dark')
 export const isOwl = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.toggle?.owlTaskEditor?.toggleState), () => false)
 export const isFullTask = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.toggle?.fullTaskTaskEditor?.toggleState), () => false)

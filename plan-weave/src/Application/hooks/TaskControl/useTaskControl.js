@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { parseISO } from 'date-fns'
 import { toast as reactToast } from 'react-toastify'
-import { userId, variant, isOwl, isFullTask, fsmControlledState, timeRange } from '../../selectors.js'
+import { userID as userIDSelector, variant, isOwl, isFullTask, fsmControlledState, timeRange } from '../../selectors.js'
 import { searchThunk, sortThunk, checkTimeRangeThunk, toggleThunk, updateTimeRangeThunk, addTaskThunkAPI, updateMultiDeleteFSMThunk } from '../../thunks.js'
 import { VALID_SEARCH_IDS, VALID_SORT_IDS, VALID_TIMERANGE_IDS, VALID_TOGGLE_IDS, VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import store from '../../store.js'
@@ -12,7 +12,7 @@ import store from '../../store.js'
 export const useTaskControl = () => {
     const dispatch = store.dispatch
     const { startTaskEditor, endTaskEditor } = timeRange(), timeRangeState = { startTaskEditor, endTaskEditor }
-    const userID = userId()
+    const userID = userIDSelector()
 
     const childState = {
         variant: variant(), isOwl: isOwl(), isFullTask: isFullTask(), fsmControlledState: fsmControlledState(),

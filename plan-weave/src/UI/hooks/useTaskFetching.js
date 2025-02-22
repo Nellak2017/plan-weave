@@ -1,15 +1,15 @@
 import { useEffect, useCallback } from "react"
 
-export const useTaskFetching = ({ user, serialize, dispatch, taskFetcher, taskUpdateReducer, userIdReducer }) => {
+export const useTaskFetching = ({ user, serialize, dispatch, taskFetcher, taskUpdateReducer, userIDReducer }) => {
 	const fetchTasks = useCallback(async (userId, serialize) => {
 		const tasks = await taskFetcher(userId, serialize)
 		dispatch(taskUpdateReducer(tasks))
 	}, [dispatch, taskFetcher, taskUpdateReducer])
 	useEffect(() => {
 		if (user) {
-			const userId = user?.uid
-			fetchTasks(userId, serialize)
-			dispatch(userIdReducer(userId))
+			const userID = user?.uid
+			fetchTasks(userID, serialize)
+			dispatch(userIDReducer(userID))
 		}
-	}, [dispatch, fetchTasks, serialize, taskUpdateReducer, user, userIdReducer])
+	}, [dispatch, fetchTasks, serialize, taskUpdateReducer, user, userIDReducer])
 }

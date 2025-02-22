@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import store from '../../store.js'
-import { variant, task as taskSelector, timeRange, userId as userIDSelector, taskOrderPipeOptions } from '../../selectors.js'
+import { variant, task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency } from '../../../Core/utils/helpers.js'
 import {
     completeTaskThunkAPI,
@@ -10,7 +10,6 @@ import {
     editWeightThunkAPI,
 } from '../../thunks.js'
 import { formatISO } from 'date-fns'
-// TODO: Make id vs Id vs ID consistent across entire code base
 // TODO: Make Thunks for every hook that needs one
 const dispatch = store.dispatch
 
