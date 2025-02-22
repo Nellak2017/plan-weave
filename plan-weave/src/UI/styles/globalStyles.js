@@ -1,68 +1,43 @@
-import { createGlobalStyle } from 'styled-components'
+// eslint-disable-next-line camelcase
+import { Poppins, Courier_Prime, Roboto } from 'next/font/google'
+const poppins = Poppins({ weight: ['300', '400', '700'], style: ['normal', 'italic'], subsets: ['latin'], display: 'swap', })
+const courierPrime = Courier_Prime({ weight: ['400', '700'], style: ['normal', 'italic'], subsets: ['latin'], display: 'swap', })
+const roboto = Roboto({ weight: ['500'], style: ['normal'], subsets: ['latin'], display: 'swap', })
 
-const GlobalStyle = createGlobalStyle` // This provides default global CSS that is as minimal and as reasonable as possible
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    ::-moz-selection { /* Code for Firefox */
-        color: ${props => props.theme.colors.lightNeutralLight};
-        background: ${props => props.theme.colors.primary};
-    }
-    ::selection {
-        color: ${props => props.theme.colors.lightNeutralLight};
-        background: ${props => props.theme.colors.primary};
-    }
-}
-a { text-decoration: none;}
-body {
-    padding: 0!important;
-    margin: 0!important;
-    background-color: ${props => props.theme.colors.body};
-    color: ${props => props.theme.colors.defaultFontColor};
-    overflow-x: hidden; // To ensure no weird horizontal scrollbar on homescreen (TODO: Test on other screens)
-}
-*::-webkit-scrollbar { width: 1em; }
-*::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);}
-*::-webkit-scrollbar-thumb {
-  background-color: darkgrey;
-  outline: 1px solid slategrey;
-}
-p, input, button, li, a, span { color: ${props => props.theme.colors.defaultFontColor};}
-input, li, a :hover{ // span, p removed because it looks cringe
-    color: ${props => props.theme.colors.defaultFontColor};
-    box-shadow: ${props => props.theme.elevations.small};
-}
-button { // appears like a medium sized, primary, standard button by default
-    background-color: ${props => props.theme.colors.primary}; // color
-    padding: ${props => props.theme.spaces.small} ${props => props.theme.spaces.medium}; // size
-    border-radius: ${props => props.theme.spaces.small}; // standard button 
-    outline: none;
-    border: 0px solid transparent;
-}
-button:hover { // works for a primary, pill button by default
-    background-color: ${props => props.theme.colors.primaryHover};
-    box-shadow: ${props => props.theme.elevations.extraSmall};
-    cursor: pointer;
-}
-input { // appears like square bar container by default (Message Input)
-    background-color: ${props => props.theme.colors.lightNeutral};
-    border-radius: ${props => props.theme.spaces.medium};
-    padding: ${props => props.theme.spaces.medium};
-    color: ${props => props.theme.colors.defaultFontColor};
-    outline: none;
-    border: 0px solid transparent;
-}
-input:hover { background-color: ${props => props.theme.colors.lightNeutralHover}; }
-.icon { // basic icon uses default font colors
-    padding: 0;
-    margin: 0;
-    color: ${props => props.theme.colors.defaultFontColor};
-}
-.icon:hover {
-    transition: 350ms;
-    color: ${props => props.theme.colors.primaryLightHover} !important;
-    cursor: pointer;
-}
-`
-export default GlobalStyle
+export const muiGlobalStyles = ({ theme }) => ({
+    ':root': { '--font-poppins': `${poppins.style.fontFamily}`, '--font-courier-prime': `${courierPrime.style.fontFamily}`, '--font-roboto': `${roboto.style.fontFamily}`, },
+    html: { height: '100vh', width: '100vw', fontFamily: `${poppins.style.fontFamily}, ${courierPrime.style.fontFamily}, ${roboto.style.fontFamily}, 'Source Sans Pro', 'sans-serif'` },
+    // The above styles are for the font optimization whatever
+    '*': {
+        boxSizing: 'border-box', margin: 0, padding: 0,
+        '::-moz-selection': { background: theme.palette.primary.main, color: '#eeedee', }, // lightNeutralLight,
+        '::selection': { background: theme.palette.primary.main, color: '#eeedee', }, // lightNeutralLight,
+    },
+    'a': { textDecoration: 'none', },
+    'body': {
+        margin: 0, padding: 0,
+        backgroundColor: '#39313a',// body,
+        color: '#f4f0ff', //defaultFontColor,
+        overflowX: 'hidden', // Prevent horizontal scrollbar
+    },
+    '*::-webkit-scrollbar': { width: '1em', },
+    '*::-webkit-scrollbar-track': { WebkitBoxShadow: 'inset 0 0 6px rgba(0,0,0,0.3)', },
+    '*::-webkit-scrollbar-thumb': { backgroundColor: 'darkgrey', outline: '1px solid slategrey', },
+    'p, input, button, li, a, span': { color: '#f4f0ff', }, // defaultFontColor,
+    'input, li, a:hover': {
+        color: '#f4f0ff', // defaultFontColor,
+        boxShadow: theme.shadows[1], // small elevation for hover effect
+    },
+    'button': { backgroundColor: theme.palette.primary.main, padding: `${theme.spacing(1)} ${theme.spacing(2)}`, borderRadius: theme.spacing(1), outline: 'none', border: '0px solid transparent', },
+    'button:hover': {
+        backgroundColor: '#6031ed', // primaryHover
+        boxShadow: theme.shadows[2], cursor: 'pointer',
+    },
+    'input': {
+        backgroundColor: '#504651', // lightNeutral,
+        borderRadius: theme.spacing(2), padding: theme.spacing(2), outline: 'none', border: '0px solid transparent', color: '#f4f0ff', // defaultFontColor,
+    },
+    'input:hover': { backgroundColor: '#483f49', }, // lightNeutralHover,
+    '.icon': { margin: 0, padding: 0, color: '#f4f0ff', }, // defaultFontColor,
+    '.icon:hover': { transition: '350ms', cursor: 'pointer', color: '#e2d9fc', },// primaryLightHover
+})
