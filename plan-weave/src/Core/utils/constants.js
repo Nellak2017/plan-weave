@@ -1,4 +1,3 @@
-// File containing many constants
 import { toast } from 'react-toastify'
 import { parseISO } from 'date-fns'
 const twelve = new Date(new Date().setHours(12, 0, 0, 0))
@@ -8,12 +7,7 @@ export const MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * 24
 export const MAX_SAFE_DATE = 8.64e15 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
 export const MAX_SAFE_DATE_SMALL = 253381737599000 // parsing this format leads to invalid dates after 9999 -> "9999-05-07T18:59:59-05:00"
 export const THEMES = VARIANTS // alias
-export const TASK_STATUSES = {
-	COMPLETED: 'completed',
-	INCOMPLETE: 'incomplete',
-	WAITING: 'waiting',
-	INCONSISTENT: 'inconsistent',
-}
+export const TASK_STATUSES = { COMPLETED: 'completed', INCOMPLETE: 'incomplete', WAITING: 'waiting', INCONSISTENT: 'inconsistent', }
 export const STATUS_COLORS = { // TODO: Move this to MUI theme for coherence
 	[TASK_STATUSES.COMPLETED]: '#80de71',
 	[TASK_STATUSES.INCOMPLETE]: 'transparent',
@@ -27,10 +21,10 @@ export const SORTING_METHODS = {
 	'': tasks => tasks?.slice(),
 }
 export const OPTION_NOTIFICATIONS = {
-	'timestamp': () => toast.info('Time Sorting applied. Tasks now appear in chronological order.'),
-	'name': () => toast.info('Name Sorting applied. Tasks now appear alphabetically.'),
-	'eta': () => toast.info('ETA Sorting applied. Tasks now appear in ETA order.'),
-	'': () => toast.info('Default Sorting applied. Tasks now appear as they do in the database.'),
+	'timestamp': () => toast?.info('Time Sorting applied. Tasks now appear in chronological order.'),
+	'name': () => toast?.info('Name Sorting applied. Tasks now appear alphabetically.'),
+	'eta': () => toast?.info('ETA Sorting applied. Tasks now appear in ETA order.'),
+	'': () => toast?.info('Default Sorting applied. Tasks now appear as they do in the database.'),
 }
 export const FULL_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA', 'Eff.%', 'Due', 'Weight', 'Thread', 'Predecessors']
 export const DEFAULT_SIMPLE_TASKS = [
@@ -40,15 +34,11 @@ export const DEFAULT_SIMPLE_TASKS = [
 	{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4 },
 ]
 export const DEFAULT_SIMPLE_TASK = {
-	task: '',
-	waste: 1,
-	ttc: 1,
-	eta: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // ISO Date, 12:00 noon
 	id: new Date().getTime(), // guarantees unique ids down to the millisecond! IF and ONLY IF you do this logic in the caller as well!
-	status: 'incomplete',
+	status: 'incomplete', task: '', waste: 1, ttc: 1, eta: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // ISO Date, 12:00 noon
 	timestamp: Math.floor((new Date().getTime()) / 1000),
-	completedTimeStamp: 0,//Math.floor((new Date().getTime()) / 1000),
-	hidden: false,
+	completedTimeStamp: 0,
+	hidden: false, // TODO: Remove this feature, it bloats tasks. On Front End it means removing it and analytics on Delete feature. On Back End it means migration.
 	liveTime: 0, // used for time accumulation of tasks
 } // Used when adding a new simple task
 export const DEFAULT_FULL_TASK = {

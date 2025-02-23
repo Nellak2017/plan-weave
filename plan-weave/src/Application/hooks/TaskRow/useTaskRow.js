@@ -86,7 +86,7 @@ export const useEfficiency = (taskID, currentTime) => { // We calculate this fro
 }
 // Almost done, needs: testing
 export const useDue = taskID => {
-    const { status, dueDate } = taskSelector?.(taskID) || {}
+    const { status, dueDate } = taskSelector?.(taskID) || { dueDate: new Date().toISOString()}
     const userID = userIDSelector() || ''
     const childState = { variant: variant(), isChecked: isStatusChecked(status), dueDate }
     const childServices = {

@@ -106,6 +106,7 @@ export const taskListPipe = ({ oldTaskList, dnd }) => { // TODO: pipe this prope
 // -- Read-only TaskRow fields
 // TODO: See if you can simplify by making the timestamps just ISO strings?
 // TODO: Be sure to test these functions, something is fishy with calculate Waste and calculate Live Time
+const isValidDate = date => (date !== "Invalid Date") && !isNaN(new Date(date))
 const epochToMillis = epoch => epoch * 1000
 export const calculateLiveTime = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	const { id: taskID, liveTime: oldLiveTime, timestamp, status } = currentTaskRow || {}
@@ -114,7 +115,7 @@ export const calculateLiveTime = (currentTaskRow, taskOrderPipeOptions, currentT
 	const currentTaskIndex = properlyOrderedTaskList?.findIndex(task => task?.id === taskID)
 	const lastCompletedTimeStamp = properlyOrderedTaskList?.[firstIncompleteIndex - 1]?.completedTimeStamp
 
-	const base = currentTime // add(currentTime, oldLiveTime)
+	const base = isValidDate(currentTime) ? currentTime : new Date()// add(currentTime, oldLiveTime)
 	const prev = new Date(firstIncompleteIndex === 0 ? epochToMillis(timestamp) : epochToMillis(lastCompletedTimeStamp))
 	if (status === TASK_STATUSES.COMPLETED || currentTaskIndex !== firstIncompleteIndex) return oldLiveTime
 	else return subtract(base, prev)
@@ -133,14 +134,19 @@ export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) 
 	const firstIncompleteIndex = properlyOrderedTaskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
 	const currentTaskIndex = properlyOrderedTaskList?.findIndex(task => task?.id === taskID)
 
+	const base = isValidDate(currentTime) ? currentTime : new Date()
 	const prev = properlyOrderedTaskList
 		.slice(0, currentTaskIndex)
-		.reduce((acc, task) => add(acc, Math.max(task?.ttc, task?.liveTime)), currentTime)
+		.reduce((acc, task) => add(acc, Math.max(task?.ttc, task?.liveTime)), base)
 	const adjustedTtc = Math.max(ttc, processedOldLiveTime)
 
+	const firstIncompleteSum = add(base, adjustedTtc - processedOldLiveTime), otherIncompleteSum = add(prev, adjustedTtc)
+	const processedFirstIncompleteSum = isValidDate(firstIncompleteSum) ? firstIncompleteSum : new Date()
+	const processedOtherIncompleteSum = isValidDate(otherIncompleteSum) ? otherIncompleteSum : new Date()
+
 	return currentTaskIndex === firstIncompleteIndex
-		? formatISO(add(currentTime, adjustedTtc - processedOldLiveTime)) // current time + (max(ttc, live time) - live time)
-		: formatISO(add(prev, adjustedTtc)) // prev + max(ttc, live time) 
+		? formatISO(processedFirstIncompleteSum) // current time + (max(ttc, live time) - live time)
+		: formatISO(processedOtherIncompleteSum) // prev + max(ttc, live time) 
 }
 
 // TODO: Write the correct efficiency function

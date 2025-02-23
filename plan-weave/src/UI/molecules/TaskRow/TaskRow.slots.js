@@ -121,7 +121,7 @@ export const Thread = ({ taskID, customHook = useThread }) => {
 }
 export const Dependency = ({ taskID, customHook = useDependency }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
-    const { variant, options, defaultValue } = childState || {}
+    const { variant, options = [], defaultValue } = childState || {}
     const { onChangeEvent } = childServices || {}
     return (
         <DependencyContainer title={dependencyToolTip}>

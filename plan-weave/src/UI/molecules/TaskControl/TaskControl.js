@@ -3,8 +3,9 @@ import { TaskControlContainer } from './TaskControl.elements'
 import { TopSlot, BottomSlot } from './TaskControl.slots.js'
 import useTaskControl from '../../../Application/hooks/TaskControl/useTaskControl.js'
 
-export const TaskControl = ({ currentTime, customHook }) => {
-	const { childState, childServices } = customHook?.() || useTaskControl() || {}
+// TODO: Code smell. TopSlot and BottomSlot should worry about variant and many other things themselves
+export const TaskControl = ({ currentTime, customHook = useTaskControl}) => {
+	const { childState, childServices } = customHook?.() || {}
 	const { variant, startTime, endTime, isOwl, isFullTask, fsmControlledState } = childState || {}
 	const { search, sort, checkTimeRange, toggleOwl, fullTaskToggle, updateTimeRange, setMultiDeleteFSMState, addTask } = childServices || {}
 	return (

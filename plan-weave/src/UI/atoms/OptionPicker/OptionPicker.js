@@ -3,7 +3,7 @@ import { StyledTextField, StyledChip, StyledOption } from './OptionPicker.elemen
 import { Autocomplete } from '@mui/material'
 
 export const OptionPicker = ({
-	state: { variant = VARIANTS[0], options, label = 'Select Predecessors', multiple = true } = {},
+	state: { variant = VARIANTS[0], options = [], label = 'Select Predecessors', multiple = true } = {},
 	services: { onChange } = {}, ...props
 }) => (
 	<Autocomplete
