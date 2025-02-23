@@ -8,9 +8,7 @@ import DeleteModal from '../../atoms/DeleteModal/DeleteModal.js'
 const MultipleDeleteButtonStories = {
   title: 'Molecules/MultipleDeleteButton',
   component: MultipleDeleteButton,
-  argTypes: {
-    variant: { control: 'text' },
-  },
+  argTypes: { variant: { control: 'text' },},
 }
 
 const Template = args => <MultipleDeleteButton {...args} />

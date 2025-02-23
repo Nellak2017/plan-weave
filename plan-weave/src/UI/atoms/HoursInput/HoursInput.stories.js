@@ -12,26 +12,12 @@ const HoursInputStories = {
 		initialValue: { control: 'number' }
 	},
 }
-
 const Template = args => <HoursInput {...args} />
-
-
 export const Light = Template.bind({})
-Light.args = {
-	state: {
-		variant: 'light',
-		text: 'Hours',
-	}
-}
-
+Light.args = { state: { variant: 'light', text: 'Hours', } }
 export const Dark = Template.bind({})
 Dark.args = {
-	state: {
-		variant: 'dark',
-		text: 'Hours',
-		placeholder: 'Time',
-	},
+	state: { variant: 'dark', text: 'Hours', placeholder: 'Time', },
 	defaultValue: 2
 }
-
 export default HoursInputStories

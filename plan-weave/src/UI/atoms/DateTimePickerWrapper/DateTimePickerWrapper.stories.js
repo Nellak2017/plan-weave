@@ -1,26 +1,13 @@
 import DateTimePickerWrapper from './DateTimePickerWrapper'
 
-const DateTimePickerWrapperStories =  {
+const DateTimePickerWrapperStories = {
 	title: 'Atoms/Pickers/DateTimePicker',
 	component: DateTimePickerWrapper,
-	argTypes: {
-	},
+	argTypes: {},
 }
-
-const Template = args => {
-	return (
-		<DateTimePickerWrapper {...args} />
-	)
-}
-
+const Template = args => <DateTimePickerWrapper {...args} />
 export const Light = Template.bind({})
-Light.args = {
-	state: { variant: 'light'},
-}
-
+Light.args = { state: { variant: 'light' }, }
 export const Dark = Template.bind({})
-Dark.args = {
-	state: { variant: 'dark'},
-}
-
+Dark.args = { state: { variant: 'dark' }, }
 export default DateTimePickerWrapperStories

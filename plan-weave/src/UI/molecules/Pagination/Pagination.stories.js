@@ -8,11 +8,7 @@ const PaginationStories = {
 }
 const Template = args => <Pagination {...args} />
 export const Light = Template.bind({})
-Light.args = {
-	customHook: () => ({
-		childState: { variant: 'light' }
-	}),
-}
+Light.args = { customHook: () => ({ childState: { variant: 'light' }}),}
 export const Dark = Template.bind({})
 Dark.args = {
 	customHook: () => ({
