@@ -8,12 +8,6 @@ export const MAX_SAFE_DATE = 8.64e15 // https://developer.mozilla.org/en-US/docs
 export const MAX_SAFE_DATE_SMALL = 253381737599000 // parsing this format leads to invalid dates after 9999 -> "9999-05-07T18:59:59-05:00"
 export const THEMES = VARIANTS // alias
 export const TASK_STATUSES = { COMPLETED: 'completed', INCOMPLETE: 'incomplete', WAITING: 'waiting', INCONSISTENT: 'inconsistent', }
-export const STATUS_COLORS = { // TODO: Move this to MUI theme for coherence
-	[TASK_STATUSES.COMPLETED]: '#80de71',
-	[TASK_STATUSES.INCOMPLETE]: 'transparent',
-	[TASK_STATUSES.WAITING]: '#e8bb79',
-	[TASK_STATUSES.INCONSISTENT]: '#d64444',
-}
 export const SORTING_METHODS = {
 	'timestamp': tasks => tasks?.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)),
 	'name': tasks => tasks?.slice().sort((a, b) => (a.task || '').localeCompare(b.task || '')),

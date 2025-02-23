@@ -3,7 +3,8 @@ import { BiTrash } from 'react-icons/bi'
 import { Button } from '@mui/material'
 import { DEFAULT_TASK_CONTROL_TOOL_TIPS } from '../../../Core/utils/constants.js'
 import { theme } from '../../styles/MUITheme.js'
-import { getDefaultState, getFSMValue, handleTrashClick, handleDeleteClick, IS_HIGHLIGHTING } from './MultipleDeleteButton.fsm.js'
+import { getDefaultState, getFSMValue, handleTrashClick, handleDeleteClick, IS_HIGHLIGHTING, ACTION } from './MultipleDeleteButton.fsm.js'
+import { toast } from 'react-toastify'
 
 const { deleteToolTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
 export const MultipleDeleteButton = ({
@@ -16,20 +17,44 @@ export const MultipleDeleteButton = ({
     const [fsmState, setFSMState] = useState(getDefaultState()) // Uncontrolled State
     const currentFSMState = fsmControlledState ?? fsmState // Controlled State fallback to uncontrolled
     const isHighlighting = useMemo(() => getFSMValue(currentFSMState, IS_HIGHLIGHTING), [currentFSMState])
-    const handleStateUpdate = newState => { if (!fsmControlledState) { setFSMState(newState) } else { setControlledFSMState(newState) } } // Handler to update state locally if uncontrolled or non-locally if controlled
+    const actionFx = useMemo(() => getFSMValue(currentFSMState, ACTION), [currentFSMState]) // used to do a side-effecting action on a state-change
+
+    // Handler to update state locally if uncontrolled or non-locally if controlled. It will also call the additional action we define too
+    const handleStateUpdate = newState => {
+        // actionFx?.()
+        toast.info('You may now select multiple tasks to delete at once! Click again to toggle.')
+        if (!fsmControlledState) { 
+        setFSMState(newState)
+        } else { 
+        setControlledFSMState(newState) 
+        } 
+    } 
     return (<>
         <BiTrash
             tabIndex={tabIndex} title={title} size={size}
             style={isHighlighting && { color: MUITheme.palette.primary.main }}
-            onClick={() => { handleTrashClick(handleStateUpdate, currentFSMState); if (deleteEvent) { deleteEvent(services, toast, setIsDeleteClicked, isHighlighting, taskList) } }}
-            onKeyDown={e => { handleTrashClick(handleStateUpdate, currentFSMState); if (deleteEvent && e.key === 'Enter') { deleteEvent(services, toast, setIsDeleteClicked, isHighlighting, taskList) } }}
+            onClick={() => { 
+                console.log(fsmState)
+                handleTrashClick(handleStateUpdate, currentFSMState); 
+                // deleteEvent?.(services, toast, setIsDeleteClicked, isHighlighting, taskList) 
+            }}
+            onKeyDown={e => { 
+                // handleTrashClick(handleStateUpdate, currentFSMState); 
+                // if (e.key === 'Enter') { deleteEvent?.(services, toast, setIsDeleteClicked, isHighlighting, taskList) } 
+            }}
         />
         {
             isHighlighting &&
             <Button
                 variant={'delete'} tabIndex={deleteTabIndex} title={deleteTitle}
-                onClick={() => { handleDeleteClick(handleStateUpdate, currentFSMState); if (deleteMultipleEvent) { deleteMultipleEvent({ state: { userID, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } }}
-                onKeyDown={e => { handleDeleteClick(handleStateUpdate, currentFSMState); if (deleteMultipleEvent && e.key === 'Enter') { deleteMultipleEvent({ state: { userID, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } }}
+                onClick={() => { 
+                    // handleDeleteClick(handleStateUpdate, currentFSMState); 
+                    // deleteMultipleEvent?.({ state: { userID, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) 
+                    }}
+                onKeyDown={e => { 
+                    // handleDeleteClick(handleStateUpdate, currentFSMState); 
+                    // if (e.key === 'Enter') { deleteMultipleEvent?.({ state: { userID, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } 
+                }}
             >
                 {label}
             </Button>

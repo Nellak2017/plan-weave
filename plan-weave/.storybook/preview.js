@@ -6,7 +6,7 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport'
 
-export default {
+const config = {
   parameters: {
     controls: { matchers: { color: /(background|color)$/i, date: /Date$/, }, },
     viewport: { viewports: INITIAL_VIEWPORTS, },
@@ -21,3 +21,4 @@ export default {
     )
   ]
 }
+export default config

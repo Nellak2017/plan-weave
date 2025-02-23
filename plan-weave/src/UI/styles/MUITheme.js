@@ -3,6 +3,12 @@ import { createTheme } from '@mui/material/styles'
 export const theme = createTheme({
     palette: {
         primary: { main: '#815af1', },
+        statusColors: {  // Custom status colors
+            completed: '#80de71',
+            incomplete: 'transparent',
+            waiting: '#e8bb79',
+            inconsistent: '#d64444',
+        },
     },
     shape: { borderRadius: 8, },
     // Custom component overrides

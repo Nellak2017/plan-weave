@@ -1,4 +1,3 @@
-// Temporarily write the envisioned code here, then remove the old code
 import React from 'react'
 import { MdOutlineCheckBox, MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
 import { TASK_ROW_TOOLTIPS, TASK_STATUSES, VARIANTS } from "../../../Core/utils/constants"
