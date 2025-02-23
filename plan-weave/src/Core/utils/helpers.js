@@ -153,3 +153,4 @@ export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) 
 export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	return currentTaskRow?.ttc / (calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) + calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime))
 }
+export const getAnyFsmDefaultState = () => 'default' // This is the default default state for fsms across the board

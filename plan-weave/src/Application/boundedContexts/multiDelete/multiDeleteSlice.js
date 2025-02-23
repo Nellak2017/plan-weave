@@ -1,11 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
-import { getDefaultState } from '../../../UI/molecules/MultipleDeleteButton/MultipleDeleteButton.fsm.js'
-// TODO: Move FSM logic to app so linear dependencies are preserved
+import { getAnyFsmDefaultState } from '../../../Core/utils/helpers.js'
 
 const multiDeleteContext = createSlice({ // component internal fsm handles business logic so all we need is valid initial state
     name: 'multiDeleteContext',
-    initialState: { [VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID]: { fsmControlledState: getDefaultState() }, },
+    initialState: { [VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID]: { fsmControlledState: getAnyFsmDefaultState() }, },
     reducers: {
         updateFsmControlledState: (state, action) => {
             const { id, value } = action.payload

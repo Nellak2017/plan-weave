@@ -1,21 +1,17 @@
 import { toast } from 'react-toastify' // for the action
-import DeleteModal from '../../atoms/DeleteModal/DeleteModal' // for the action
+import DeleteModal from '../../atoms/DeleteModal/DeleteModal.js' // for the action
+import { MULTIPLE_DELETE_MODAL_TOAST_CONFIG } from '../../../Core/utils/constants.js'
 // --- Actions
 // TODO: Possibly parameterize based on optionHandlers with default optionHandlers OR import option handlers from elsewhere
-const chosenAction = () => toast.warning(({ closeToast }) => (
-    <DeleteModal
-        services={{
-            optionHandlers: [() => console.warn('Event for yes not implemented'), () => console.warn('Event for no not implemented')],
-            closeToast
-        }}
-    />),
-    { position: toast.POSITION.TOP_CENTER, autoClose: false, closeOnClick: false, closeButton: false, draggable: false, })
+const defaultDeleteModalChooseStateOptions = [() => console.warn('Event for yes not implemented'), () => console.warn('Event for no not implemented')]
+const chosenAction = (optionHandlers = defaultDeleteModalChooseStateOptions) => toast.warning(({ closeToast }) => (
+    <DeleteModal services={{ optionHandlers, closeToast }} />), MULTIPLE_DELETE_MODAL_TOAST_CONFIG)
 const choseAction = () => { toast.info('You may now select multiple tasks to delete at once! Click again to toggle.') }
 // --- State Machine
 export const { DEFAULT, CHOOSE, CHOSEN, MODAL } = { DEFAULT: 'default', CHOOSE: 'choose', CHOSEN: 'chosen', MODAL: 'modal' } // Multi-delete allowed States
 export const { CLICK_TRASH_EVENT, MIN_1_EVENT, MAX_0_EVENT, CLICK_DELETE_EVENT, YES_EVENT, NO_EVENT } = { CLICK_TRASH_EVENT: 'clickTrash', MIN_1_EVENT: 'min1', MAX_0_EVENT: 'max0', CLICK_DELETE_EVENT: 'clickDelete', YES_EVENT: 'yes', NO_EVENT: 'no' } // Multi-delete allowed Events
 export const { IS_HIGHLIGHTING, IS_CHOOSE_ALLOWED, ACTION } = { IS_HIGHLIGHTING: 'isHighlighting', IS_CHOOSE_ALLOWED: 'isChooseAllowed', ACTION: 'action' } // Multi-delete allowed values
-export const MultiDeleteFSM = {
+export const MultiDeleteFSM = { // TODO: Figure out how to do Actions when transitioning _Out_ of a state instead of just _Into_ a state. We will need it for the Delete task action
     initial: DEFAULT,
     states: {
         [DEFAULT]: {

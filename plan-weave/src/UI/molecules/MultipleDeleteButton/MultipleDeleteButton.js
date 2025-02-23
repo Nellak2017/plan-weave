@@ -17,43 +17,37 @@ export const MultipleDeleteButton = ({
     const [fsmState, setFSMState] = useState(getDefaultState()) // Uncontrolled State
     const currentFSMState = fsmControlledState ?? fsmState // Controlled State fallback to uncontrolled
     const isHighlighting = useMemo(() => getFSMValue(currentFSMState, IS_HIGHLIGHTING), [currentFSMState])
-    const actionFx = useMemo(() => getFSMValue(currentFSMState, ACTION), [currentFSMState]) // used to do a side-effecting action on a state-change
 
     // Handler to update state locally if uncontrolled or non-locally if controlled. It will also call the additional action we define too
     const handleStateUpdate = newState => {
-        // actionFx?.()
-        toast.info('You may now select multiple tasks to delete at once! Click again to toggle.')
-        if (!fsmControlledState) { 
-        setFSMState(newState)
-        } else { 
-        setControlledFSMState(newState) 
-        } 
-    } 
+        console.log({ prev: currentFSMState, curr: newState })
+        getFSMValue(newState, ACTION)?.() // used to do a side-effecting action on a state-change
+        if (!fsmControlledState) { setFSMState(newState) } else { setControlledFSMState(newState) }
+    }
     return (<>
         <BiTrash
             tabIndex={tabIndex} title={title} size={size}
             style={isHighlighting && { color: MUITheme.palette.primary.main }}
-            onClick={() => { 
-                console.log(fsmState)
-                handleTrashClick(handleStateUpdate, currentFSMState); 
-                // deleteEvent?.(services, toast, setIsDeleteClicked, isHighlighting, taskList) 
+            onClick={() => {
+                handleTrashClick(handleStateUpdate, currentFSMState);
+                deleteEvent?.(services, toast, setIsDeleteClicked, isHighlighting, taskList)
             }}
-            onKeyDown={e => { 
-                // handleTrashClick(handleStateUpdate, currentFSMState); 
-                // if (e.key === 'Enter') { deleteEvent?.(services, toast, setIsDeleteClicked, isHighlighting, taskList) } 
+            onKeyDown={e => {
+                handleTrashClick(handleStateUpdate, currentFSMState);
+                if (e.key === 'Enter') { deleteEvent?.(services, toast, setIsDeleteClicked, isHighlighting, taskList) }
             }}
         />
         {
             isHighlighting &&
             <Button
                 variant={'delete'} tabIndex={deleteTabIndex} title={deleteTitle}
-                onClick={() => { 
-                    // handleDeleteClick(handleStateUpdate, currentFSMState); 
-                    // deleteMultipleEvent?.({ state: { userID, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) 
-                    }}
-                onKeyDown={e => { 
-                    // handleDeleteClick(handleStateUpdate, currentFSMState); 
-                    // if (e.key === 'Enter') { deleteMultipleEvent?.({ state: { userID, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) } 
+                onClick={() => {
+                    handleDeleteClick(handleStateUpdate, currentFSMState);
+                    deleteMultipleEvent?.({ state: { userID, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, })
+                }}
+                onKeyDown={e => {
+                    handleDeleteClick(handleStateUpdate, currentFSMState);
+                    if (e.key === 'Enter') { deleteMultipleEvent?.({ state: { userID, selectedTasks, taskList, isDeleteClicked, toast }, services: { deleteMany: services?.deleteMany, highlighting: services?.highlighting, setIsDeleteClicked }, }) }
                 }}
             >
                 {label}

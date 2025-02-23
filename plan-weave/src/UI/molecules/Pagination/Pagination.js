@@ -6,8 +6,8 @@ import { BiRecycle } from 'react-icons/bi'
 import usePagination from '../../../Application/hooks/Pagination/usePagination.js'
 import { PAGINATION_OPTIONS, PAGINATION_PICKER_TEXT, VARIANTS } from '../../../Core/utils/constants.js'
 
-export const Pagination = ({ customHook }) => {
-	const { childState, childServices } = customHook?.() || usePagination()
+export const Pagination = ({ customHook = usePagination }) => {
+	const { childState, childServices } = customHook?.() || {}
 	const { variant = VARIANTS[0], maxPage = 1, localPageNumber = 1, tasksPerPage = 10 } = childState || {}
 	const { updatePage, refresh, handlePrevPage, handleNextPage, handlePageNumber, handleTasksPerPage, setLocalPageNumber } = childServices || {}
 	return (

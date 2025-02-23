@@ -25,7 +25,7 @@ export const useTaskControl = () => {
         checkTimeRange: ({ endTime, startTime, isOwl, id = VALID_TIMERANGE_IDS.END_TIME_PICKER_ID, toast = reactToast, }) => { dispatch(checkTimeRangeThunk({ id, toast, endTime, startTime, isOwl })) },
         toggleOwl: () => { 
             dispatch(toggleThunk({ id: VALID_TOGGLE_IDS.OWL_ID })) 
-            // TODO: Move this to a custom toggle owl thunk
+            // TODO: Move this to the UI Layer in the associated FSM
             // if (prev) {
             //     toast.info('Overnight Mode is off: Tasks must be scheduled between 12 pm and 12 am. End time must be after the start time.', {
             //       autoClose: 5000,
@@ -44,7 +44,7 @@ export const useTaskControl = () => {
         },
         fullTaskToggle: () => { dispatch(toggleThunk({ id: VALID_TOGGLE_IDS.FULL_TASK_ID })) },
         updateTimeRange: ({ id, value }) => { dispatch(updateTimeRangeThunk({ id, value })) },
-        setMultiDeleteFSMState: (value) => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) },
+        setMultiDeleteFSMState: value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) },
         addTask: () => { dispatch(addTaskThunkAPI({ userID })) },
     }
     return { childState, childServices }
