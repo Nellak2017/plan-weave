@@ -153,4 +153,8 @@ export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) 
 export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	return currentTaskRow?.ttc / (calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) + calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime))
 }
-export const getAnyFsmDefaultState = () => 'default' // This is the default default state for fsms across the board
+export const getAnyFsmDefaultState = () => 'default' // TODO: Make this the standard default in the UI fsms. This is the default default state for fsms across the board
+// -- HoursInput Component helpers
+export const isInRangeInclusive = (value, min, max) => value >= min && value <= max
+export const parseBlur = (value, min, max, precision) => !isNaN(parseFloat(value)) ? (clamp(parseFloat(value), min, max)).toFixed(precision) : min
+export const parseChange = (value, pattern, min, max) => (pattern.test(value.trim())) && (isInRangeInclusive(parseFloat(value), min, max) || /^[^.]*\.[^.]*$/.test(value)) ? value.trim() : ''

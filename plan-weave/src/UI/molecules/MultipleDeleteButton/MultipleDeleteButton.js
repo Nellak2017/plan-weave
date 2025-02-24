@@ -20,7 +20,6 @@ export const MultipleDeleteButton = ({
 
     // Handler to update state locally if uncontrolled or non-locally if controlled. It will also call the additional action we define too
     const handleStateUpdate = newState => {
-        console.log({ prev: currentFSMState, curr: newState })
         getFSMValue(newState, ACTION)?.() // used to do a side-effecting action on a state-change
         if (!fsmControlledState) { setFSMState(newState) } else { setControlledFSMState(newState) }
     }

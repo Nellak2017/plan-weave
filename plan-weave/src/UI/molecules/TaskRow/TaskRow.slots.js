@@ -3,7 +3,7 @@ import { MdOutlineCheckBox, MdOutlineCheckBoxOutlineBlank } from "react-icons/md
 import { TASK_ROW_TOOLTIPS, TASK_STATUSES, VARIANTS } from "../../../Core/utils/constants"
 import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContainer, TimeContainer, EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer, TrashContainer, TaskRowStyled, } from "./TaskRow.elements"
 import { TaskInput } from "../../atoms/TaskInput/TaskInput"
-import HoursInput from '../../atoms/HoursInput/HoursInput.js'
+import HoursInput, { HoursInputPositiveFloat} from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from "date-fns"
 import { formatTimeLeft } from "../../../Core/utils/helpers"
 import DateTimePickerWrapper from "../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js"
@@ -59,7 +59,11 @@ export const Ttc = ({ taskID, customHook = useTtc }) => {
         <TimeContainer title={ttcTooltip}>
             {status === TASK_STATUSES.COMPLETED
                 ? <pre>{ttc && !isNaN(ttc) && ttc > 0 ? formatTimeLeft({ timeDifference: ttc, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'}</pre>
-                : <HoursInput defaultValue={ttc || 1} state={{ variant, placeholder: 'hours', text: 'hours' }} services={{ onValueChange: onValueChangeEvent, onBlur: onBlurEvent }} />
+                : <HoursInputPositiveFloat
+                    defaultValue={ttc}
+                    state={{ variant, step: .01, min: .01, placeholder: 'hours', text: 'hours' }}
+                    services={{ onValueChange: onValueChangeEvent, onBlur: onBlurEvent }}
+                />
             }
         </TimeContainer>
     )

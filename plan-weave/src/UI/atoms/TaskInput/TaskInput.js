@@ -1,2 +1,3 @@
 import { HoursInputStyled } from "../HoursInput/HoursInput.elements"
-export const TaskInput = ({ ...rest }) => (<HoursInputStyled style={{ textAlign: 'left' }} {...rest} />)
+import { TASK_NAME_MAX_LENGTH } from '../../../Core/utils/constants.js'
+export const TaskInput = ({ maxLength = TASK_NAME_MAX_LENGTH, ...rest }) => (<HoursInputStyled maxLength={maxLength} style={{ textAlign: 'left' }} {...rest} />)
