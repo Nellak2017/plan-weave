@@ -5,8 +5,8 @@ import { toggleThunk } from './boundedContexts/toggle/toggleThunks.js'
 import { addTaskThunkAPI, completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI } from './entities/tasks/tasksThunks.js'
 import { updateMultiDeleteFSMThunk } from './boundedContexts/multiDelete/multiDeleteThunks.js'
 import { previousPageThunk, nextPageThunk, setPageThunk, setTasksPerPageThunk, refreshPaginationThunk } from './boundedContexts/pagination/paginationThunks.js'
-export { searchThunk, sortThunk, checkTimeRangeThunk, toggleThunk, updateTimeRangeThunk, updateMultiDeleteFSMThunk,
+export {
+    searchThunk, sortThunk, checkTimeRangeThunk, toggleThunk, updateTimeRangeThunk, updateMultiDeleteFSMThunk,
     previousPageThunk, nextPageThunk, setPageThunk, setTasksPerPageThunk, refreshPaginationThunk,
-    addTaskThunkAPI, completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI,editDueThunkAPI,editWeightThunkAPI,
- }
-// TODO: Add Selected tasks as some state to track potentially?
+    addTaskThunkAPI, completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI,
+}

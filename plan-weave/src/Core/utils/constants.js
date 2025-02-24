@@ -34,6 +34,7 @@ export const DEFAULT_SIMPLE_TASK = {
 	completedTimeStamp: 0,
 	hidden: false, // TODO: Remove this feature, it bloats tasks. On Front End it means removing it and analytics on Delete feature. On Back End it means migration.
 	liveTime: 0, // used for time accumulation of tasks
+	selected: false, // used for the multi-delete feature
 } // Used when adding a new simple task
 export const DEFAULT_FULL_TASK = {
 	...DEFAULT_SIMPLE_TASK,
