@@ -1,21 +1,28 @@
 import { toast } from 'react-toastify' // for the action
-import DeleteModal from '../../atoms/DeleteModal/DeleteModal.js' // for the action
-import { MULTIPLE_DELETE_MODAL_TOAST_CONFIG } from '../../../Core/utils/constants.js'
+import DeleteModal from '../../UI/atoms/DeleteModal/DeleteModal.js' // for the action
+import { MULTIPLE_DELETE_MODAL_TOAST_CONFIG } from '../../Core/utils/constants.js'
+import { clearSelectedTasks } from '../entities/tasks/tasks.js'
+import store from '../store.js'
 // --- Actions
-// TODO: Possibly parameterize based on optionHandlers with default optionHandlers OR import option handlers from elsewhere
-const defaultDeleteModalChooseStateOptions = [() => console.warn('Event for yes not implemented'), () => console.warn('Event for no not implemented')]
-const chosenAction = (optionHandlers = defaultDeleteModalChooseStateOptions) => toast.warning(({ closeToast }) => (
-    <DeleteModal services={{ optionHandlers, closeToast }} />), MULTIPLE_DELETE_MODAL_TOAST_CONFIG)
+
+const dispatch = store ? store?.dispatch : () => { }
+export const yesAction = (setter, newState) => () => { handleYes(setter, newState); defaultAction() } // TODO: pass in the thunk used to do a side-effecting action on a state-change
+export const noAction = (setter, newState) => () => { handleNo(setter, newState) }
+const defaultAction = () => { dispatch(clearSelectedTasks()) }
+const modalAction = (optionHandlers = [() => console.warn('Event for yes not implemented'), () => console.warn('Event for no not implemented')]) => {
+    toast.dismiss()
+    toast.warning(({ closeToast }) => (<DeleteModal services={{ optionHandlers, closeToast }} />), MULTIPLE_DELETE_MODAL_TOAST_CONFIG)
+}
 const choseAction = () => { toast.info('You may now select multiple tasks to delete at once! Click again to toggle.') }
 // --- State Machine
 export const { DEFAULT, CHOOSE, CHOSEN, MODAL } = { DEFAULT: 'default', CHOOSE: 'choose', CHOSEN: 'chosen', MODAL: 'modal' } // Multi-delete allowed States
 export const { CLICK_TRASH_EVENT, MIN_1_EVENT, MAX_0_EVENT, CLICK_DELETE_EVENT, YES_EVENT, NO_EVENT } = { CLICK_TRASH_EVENT: 'clickTrash', MIN_1_EVENT: 'min1', MAX_0_EVENT: 'max0', CLICK_DELETE_EVENT: 'clickDelete', YES_EVENT: 'yes', NO_EVENT: 'no' } // Multi-delete allowed Events
 export const { IS_HIGHLIGHTING, IS_CHOOSE_ALLOWED, ACTION } = { IS_HIGHLIGHTING: 'isHighlighting', IS_CHOOSE_ALLOWED: 'isChooseAllowed', ACTION: 'action' } // Multi-delete allowed values
-export const MultiDeleteFSM = { // TODO: Figure out how to do Actions when transitioning _Out_ of a state instead of just _Into_ a state. We will need it for the Delete task action
+export const MultiDeleteFSM = {
     initial: DEFAULT,
     states: {
         [DEFAULT]: {
-            [IS_HIGHLIGHTING]: false, [IS_CHOOSE_ALLOWED]: false, [ACTION]: () => { },
+            [IS_HIGHLIGHTING]: false, [IS_CHOOSE_ALLOWED]: false, [ACTION]: defaultAction,
             transitions: { [CLICK_TRASH_EVENT]: CHOOSE } // else DEFAULT
         },
         [CHOOSE]: {
@@ -23,11 +30,11 @@ export const MultiDeleteFSM = { // TODO: Figure out how to do Actions when trans
             transitions: { [MIN_1_EVENT]: CHOSEN, [CLICK_TRASH_EVENT]: DEFAULT } // else CHOOSE
         },
         [CHOSEN]: {
-            [IS_HIGHLIGHTING]: true, [IS_CHOOSE_ALLOWED]: true, [ACTION]: chosenAction,
+            [IS_HIGHLIGHTING]: true, [IS_CHOOSE_ALLOWED]: true, [ACTION]: () => { },
             transitions: { [CLICK_DELETE_EVENT]: MODAL, [MAX_0_EVENT]: CHOOSE, [CLICK_TRASH_EVENT]: DEFAULT } // else CHOSEN
         },
         [MODAL]: {
-            [IS_HIGHLIGHTING]: true, [IS_CHOOSE_ALLOWED]: false, [ACTION]: () => { },
+            [IS_HIGHLIGHTING]: true, [IS_CHOOSE_ALLOWED]: false, [ACTION]: modalAction,
             transitions: { [YES_EVENT]: DEFAULT, [NO_EVENT]: CHOSEN } // else MODAL
         },
     }

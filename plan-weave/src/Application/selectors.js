@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux'
-import { tryCatchSyncFlat } from '../Core/utils/helpers.js' // for returning defaults if no redux used
+import { tryCatchSyncFlat, isStatusChecked } from '../Core/utils/helpers.js' // for returning defaults if no redux used
+import { CHOOSE, CHOSEN } from './finiteStateMachines/MultipleDeleteButton.fsm.js'
 // TODO: Add more business constraints here for these selectors
 // TODO: Use constants and getters for the defaults instead of hard coded values
 export const tasks = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks), () => [])
@@ -20,3 +21,10 @@ export const taskOrderPipeOptions = () => {
         dnd: dnd(),
     }
 }
+export const isHighlighting = () => {
+    const fsmState = fsmControlledState()
+    return fsmState === CHOOSE || fsmState === CHOSEN
+}
+export const isChecked = taskID => isHighlighting() ? task(taskID)?.selected : isStatusChecked(task(taskID)?.status)
+export const isAtleastOneTaskSelected = () => tasks().filter(task => task?.selected)?.length > 0
+export const isZeroTasksSelected = () => tasks().filter(task => task?.selected)?.length === 0

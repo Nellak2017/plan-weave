@@ -12,16 +12,18 @@ import 'react-toastify/dist/ReactToastify.css'
 import { handleHomePage, handleEmailChange, handlePasswordChange, handleSignInWithEmail, handleSignInWithGoogle } from './AuthForm.handlers.js'
 import { VARIANTS } from '../../../Core/utils/constants.js'
 
-function AuthForm({ variant = VARIANTS[0], state = { maxwidth: 409, signup: false } }) {
+// TODO: convert the handleHomePage in the Image to just a link instead for simplicity
+// TODO: possibly get rid of the email/password state for simplicity and added security
+// TODO: Split this into 2 parts to simplify cognitive complexity
+const AuthForm = ({ variant = VARIANTS[0], state = { maxwidth: 409, signup: false } }) => {
 	const { maxwidth, signup } = state
-	const processedMaxWidth = maxwidth || 409
 	const router = useRouter()
-	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
-	const [loading, setLoading] = useState(false)
-	const emailServices = { setLoading, setEmail, setPassword }
+	const [email, setEmail] = useState('') //
+	const [password, setPassword] = useState('') //
+	const [loading, setLoading] = useState(false) // ?
+	const emailServices = { setLoading, setEmail, setPassword } // 
 	const emailState = { signup, router, email, password }
-	const googleServices = { setLoading, setEmail, setPassword }
+	const googleServices = { setLoading, setEmail, setPassword } //
 	const googleState = { router }
 	const upIn = `${signup ? 'up' : 'in'}`
 	const inUp = `${signup ? 'in' : 'up'}`
@@ -31,8 +33,8 @@ function AuthForm({ variant = VARIANTS[0], state = { maxwidth: 409, signup: fals
 	if (loading) return (<Spinner />)
 	return (
 		<CenteredContainer>
-			<AuthContainer variant={variant} maxwidth={processedMaxWidth}>
-				<StyledAuthForm id='email-form' variant={variant} maxwidth={processedMaxWidth} onSubmit={e => handleSignInWithEmail(e, emailServices, emailState)} method='POST'>
+			<AuthContainer variant={variant} maxwidth={maxwidth}>
+				<StyledAuthForm id='email-form' variant={variant} maxwidth={maxwidth} onSubmit={e => handleSignInWithEmail(e, emailServices, emailState)} method='POST'>
 					<Image src={logo.src} alt='Plan Weave Logo' width={128} height={96} className={'logo'} title={'Go Home'} priority={true} onClick={() => handleHomePage(router)} />
 					<h2>{`Sign ${upIn}`}</h2>
 					<SubtitleContainer>

@@ -1,10 +1,7 @@
 import MultipleDeleteButton from './MultipleDeleteButton'
 import { useState } from 'react'
 import { Radio, FormControlLabel } from '@mui/material'
-import { getDefaultState, getFSMValue, IS_CHOOSE_ALLOWED, CHOSEN, handleMinOne, CHOOSE, handleMaxZero, MODAL, handleYes, handleNo } from './MultipleDeleteButton.fsm.js'
-import { toast } from 'react-toastify'
-import DeleteModal from '../../atoms/DeleteModal/DeleteModal.js'
-import { MULTIPLE_DELETE_MODAL_TOAST_CONFIG } from '../../../Core/utils/constants.js'
+import { getDefaultState, getFSMValue, IS_CHOOSE_ALLOWED, CHOSEN, handleMinOne, CHOOSE, handleMaxZero } from '../../../Application/finiteStateMachines/MultipleDeleteButton.fsm.js'
 
 const MultipleDeleteButtonStories = {
   title: 'Molecules/MultipleDeleteButton',
@@ -20,11 +17,6 @@ const TemplateWithControl = args => {
     <>
       <MultipleDeleteButton {...args} state={{ ...args.state, fsmControlledState: fsmState }} services={{ ...args.services, setControlledFSMState: setFSMState }} />
       {getFSMValue(fsmState, IS_CHOOSE_ALLOWED) && (<FormControlLabel control={<Radio checked={fsmState === CHOSEN} onClick={handleRadioChange} value="task-selection" />} label="Select Tasks" />)}
-      {fsmState === MODAL && (
-        (() => {
-          toast.warning(({ closeToast }) => (<DeleteModal services={{ optionHandlers: [() => handleYes(setFSMState, fsmState), () => handleNo(setFSMState, fsmState)], closeToast }} />),
-          MULTIPLE_DELETE_MODAL_TOAST_CONFIG)
-        })())}
     </>
   )
 }

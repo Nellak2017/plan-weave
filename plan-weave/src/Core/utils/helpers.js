@@ -51,9 +51,6 @@ export const relativeSortIndex = (tasks, sort, id, complete = TASK_STATUSES.COMP
 		: completed.length + sort(incompleted).indexOf(task) // Complete   --> Incomplete Case
 }
 export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
-	if (typeof isHighlighting !== 'boolean' || typeof isChecked !== 'boolean' || typeof isOld !== 'boolean') {
-		throw new TypeError(`All parameters must be of type boolean.\nisHighlighting = ${isHighlighting}\nisChecked = ${isChecked}\nisOld = ${isOld}`)
-	}
 	if (isHighlighting && isChecked) return 'selected'
 	else if (!isHighlighting && !isChecked && isOld) return 'old'
 	return ''
@@ -153,7 +150,6 @@ export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) 
 export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	return currentTaskRow?.ttc / (calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) + calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime))
 }
-export const getAnyFsmDefaultState = () => 'default' // TODO: Make this the standard default in the UI fsms. This is the default default state for fsms across the board
 // -- HoursInput Component helpers
 export const isInRangeInclusive = (value, min, max) => value >= min && value <= max
 export const parseBlur = (value, min, max, precision) => !isNaN(parseFloat(value)) ? (clamp(parseFloat(value), min, max)).toFixed(precision) : min

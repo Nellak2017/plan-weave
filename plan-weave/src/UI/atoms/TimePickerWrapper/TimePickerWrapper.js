@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { TimePickerWrapperStyled, ClockIconWrapper, TimeClockWrapper, Display } from './TimePickerWrapper.elements'
-import { getDefaultState, VIEW, SHOW_CLOCK, getFSMValue, handleClick, handleViewChange, handleBlur } from './TimePickerWrapper.fsm.js'
+import { getDefaultState, VIEW, SHOW_CLOCK, getFSMValue, handleClick, handleViewChange, handleBlur } from '../../../Application/finiteStateMachines/TimePickerWrapper.fsm.js'
 import { format, parse } from 'date-fns'
 import { AiOutlineClockCircle } from 'react-icons/ai'
 import { VARIANTS } from '../../../Core/utils/constants.js'

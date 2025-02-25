@@ -7,8 +7,6 @@ import { VALID_SEARCH_IDS, VALID_SORT_IDS, VALID_TIMERANGE_IDS, VALID_TOGGLE_IDS
 import store from '../../store.js'
 
 // TODO: Implement time range checking feature that makes TimePicker Redux controlled (uses checkTimeRange function)
-// TODO: think about making some kind of exported folder that puts all the exporting files together
-// TODO: possibly think about making a service function that returns the dispatched function as seen in childServices so it mirrors childState
 export const useTaskControl = () => {
     const dispatch = store.dispatch
     const { startTaskEditor, endTaskEditor } = timeRange(), timeRangeState = { startTaskEditor, endTaskEditor }
@@ -25,7 +23,7 @@ export const useTaskControl = () => {
         checkTimeRange: ({ endTime, startTime, isOwl, id = VALID_TIMERANGE_IDS.END_TIME_PICKER_ID, toast = reactToast, }) => { dispatch(checkTimeRangeThunk({ id, toast, endTime, startTime, isOwl })) },
         toggleOwl: () => { 
             dispatch(toggleThunk({ id: VALID_TOGGLE_IDS.OWL_ID })) 
-            // TODO: Move this to the UI Layer in the associated FSM
+            // TODO: properly implement this
             // if (prev) {
             //     toast.info('Overnight Mode is off: Tasks must be scheduled between 12 pm and 12 am. End time must be after the start time.', {
             //       autoClose: 5000,

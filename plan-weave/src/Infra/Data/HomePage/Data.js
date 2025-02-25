@@ -2,7 +2,6 @@
 import homeImgOne from '../../../../public/Home-Page/svg-1-task-computer.svg'
 import homeImgTwo from '../../../../public/Home-Page/svg-2-todo.svg'
 
-// TODO: Make data for this
 // body of the homepage, such as for the sections
 export const NavData = {
 	middleContentData: ({ user }) => ({ href: `/${user ? 'plan-weave' : ''}` }),

@@ -32,7 +32,7 @@ export const DEFAULT_SIMPLE_TASK = {
 	status: 'incomplete', task: '', waste: 1, ttc: 1, eta: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // ISO Date, 12:00 noon
 	timestamp: Math.floor((new Date().getTime()) / 1000),
 	completedTimeStamp: 0,
-	hidden: false, // TODO: Remove this feature, it bloats tasks. On Front End it means removing it and analytics on Delete feature. On Back End it means migration.
+	// TODO: Remove the hidden feature, it means migration on the Back End.
 	liveTime: 0, // used for time accumulation of tasks
 	selected: false, // used for the multi-delete feature
 } // Used when adding a new simple task

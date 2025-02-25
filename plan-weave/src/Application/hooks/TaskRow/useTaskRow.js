@@ -1,43 +1,44 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import store from '../../store.js'
-import { variant, task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions } from '../../selectors.js'
+import { variant, task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, isZeroTasksSelected, fsmControlledState } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency } from '../../../Core/utils/helpers.js'
-import {
-    completeTaskThunkAPI,
-    editTaskNameThunkAPI,
-    editTtcThunkAPI,
-    editDueThunkAPI,
-    editWeightThunkAPI,
-} from '../../thunks.js'
+import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, } from '../../thunks.js'
+import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
+import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
+import { handleMaxZero, handleMinOne } from '../../finiteStateMachines/MultipleDeleteButton.fsm.js'
+
 // TODO: Make Thunks for every hook that needs one
 const dispatch = store.dispatch
-
-// Almost done, needs: 
-// taskSelector <- Test in isolation
-// isHighlighting <- Delete FSM state + Selected Task State (TODO: Selected Tasks need to be created)
-// e2e verification <- isHighlighting, taskSelector
+const setMultiDeleteFSMState = value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) }
+// Almost done, needs: testing
 export const useTaskRow = taskID => {
-    const usedTask = taskSelector?.(taskID) || {}
-    const { status } = usedTask || {}
+    const usedTask = taskSelector(taskID)
+    const { status } = usedTask
     const { startTaskEditor: start, endTaskEditor: end } = timeRange()
     const timeRangeStartEnd = { start, end } // TODO: verify this is correct
 
-    const isHighlighting = false // TODO: Do the correct calculation for this involving the FSM for delete
-    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isStatusChecked(status), isTaskOld(timeRangeStartEnd, usedTask)), [isHighlighting, status, timeRangeStartEnd, usedTask])
+    const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
+    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld(timeRangeStartEnd, usedTask)), [status, timeRangeStartEnd, usedTask])
     return { variant: variant(), status, highlight }
 }
 // Almost done, needs: testing, batching, and completeness, as well as api stuff
 export const useCompleteIcon = (taskID, currentTime) => {
-    const userID = userIDSelector() || ''
-    const currentTaskRow = taskSelector?.(taskID) || {}
-    const pipelineOptions = taskOrderPipeOptions()
+    const userID = userIDSelector(), currentTaskRow = taskSelector(taskID)
+    const pipelineOptions = taskOrderPipeOptions(), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector()
+    const isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected()
+    const fsmState = fsmControlledState()
+    useEffect(() => {
+        isAtleastOneTaskSelectedForDeletion
+            ? handleMinOne(setMultiDeleteFSMState, fsmState)
+            : handleMaxZero(setMultiDeleteFSMState, fsmState)
+    }, [isAtleastOneTaskSelectedForDeletion, setMultiDeleteFSMState, fsmState]) // NOTE: This useEffect is used to get us in or out of the choose or chosen state. It wasn't possible in the click function to my knowledge
     return {
-        isChecked: isStatusChecked(currentTaskRow?.status),
+        isChecked,
         handleCheckBoxClicked: () => {
-            dispatch(completeTaskThunkAPI({
-                userID, currentTaskRow, taskOrderPipeOptions: pipelineOptions, currentTime
-            }))
+            isHighlighting
+                ? dispatch(toggleSelectTask({ taskID }))
+                : dispatch(completeTaskThunkAPI({ userID, currentTaskRow, taskOrderPipeOptions: pipelineOptions, currentTime }))
         }
     }
 }
@@ -86,7 +87,7 @@ export const useEfficiency = (taskID, currentTime) => { // We calculate this fro
 }
 // Almost done, needs: testing
 export const useDue = taskID => {
-    const { status, dueDate } = taskSelector?.(taskID) || { dueDate: new Date().toISOString()}
+    const { status, dueDate } = taskSelector?.(taskID) || { dueDate: new Date().toISOString() }
     const userID = userIDSelector() || ''
     const childState = { variant: variant(), isChecked: isStatusChecked(status), dueDate }
     const childServices = {

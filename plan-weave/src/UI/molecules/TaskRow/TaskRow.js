@@ -12,7 +12,7 @@ export const TaskRowDefault = ({ state: { renderNumber, provided, taskID, curren
         <TaskRowStyled
             variant={variant} status={status} highlight={highlight}
             style={getTaskRowDnDStyle(provided)} maxwidth={TASK_EDITOR_WIDTH}
-            ref={provided?.innerRef} {...provided?.draggableProps}
+            ref={provided?.innerRef} {...provided?.draggableProps} 
         >
             <TaskRow renderNumber={renderNumber}>
                 <Drag provided={provided} />

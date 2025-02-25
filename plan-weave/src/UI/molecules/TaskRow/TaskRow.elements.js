@@ -1,9 +1,9 @@
 import { MdDragIndicator } from 'react-icons/md'
 import { styled } from '@mui/system'
 
-const commonOverlayStyles = { content: '', position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', zIndex: '1', pointerEvents: 'none', }
+const commonOverlayStyles = { content: "''", position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', zIndex: '1', pointerEvents: 'none', }
 const tdStyle = color => ({
-	'td': {
+	'& > td': {
 		position: 'relative',
 		'&::before': { backgroundColor: `${color}70`, ...commonOverlayStyles, }
 	}
@@ -16,7 +16,7 @@ const getVariantStyles = variant => ({
 const getStatusStyles = status => ({
 	completed: tdStyle('#80de71'),// tdStyle(props => props.theme.colors.success),
 	incomplete: tdStyle(),
-	waiting: tdStyle('#e8bb79'),//tdStyle(props => props.theme.colors.warning),
+	waiting: tdStyle('#e8bb79'),//tdStyle('#e8bb79'),//tdStyle(props => props.theme.colors.warning),
 	inconsistent: tdStyle('#d64444'),//tdStyle(props => props.theme.colors.danger),
 }?.[status])
 const getHighlightStyles = highlight => ({
