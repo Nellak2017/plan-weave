@@ -7,9 +7,9 @@ import { fetchTasksFromFirebase, serialize } from '../Infra/firebase/firebase_co
 import store from '../Application/store.js'
 //import { initialTaskUpdate, initialUserIDUpdate } from '../Application/redux/thunks/planWeavePageThunks.js'
 import { loadingOrError } from '../UI/pageUtils/helper-components.js'
-import { useRedirectIfUnauthorized } from '../UI/hooks/useRedirectIfUnauthorized.js'
+import { useRedirectIfUnauthorized } from '../Application/hooks/Helpers/useRedirectIfUnauthorized.js'
 import { options, NavData } from '../Infra/Data/PlanWeave/Data.js'
-import { useTaskFetching } from '../UI/hooks/useTaskFetching.js'
+import { useTaskFetching } from '../Application/hooks/Helpers/useTaskFetching.js'
 import { LeftContent, MiddleContent, RightContent } from '../UI/molecules/Nav/Nav.slots.js'
 import { handleLogout } from '../UI/pageUtils/page-handlers.js'
 
