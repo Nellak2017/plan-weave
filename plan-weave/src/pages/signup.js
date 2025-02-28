@@ -1,4 +1,6 @@
-import AuthForm from '../UI/organisms/AuthForm/AuthForm.js'
-import { VARIANTS } from '../Core/utils/constants.js'
-const SignUp = ({ variant = VARIANTS[0], state = { maxwidth: 409, signup: true } }) => (<AuthForm variant={variant} state={state} />)
+import dynamic from 'next/dynamic'
+import Spinner from '../UI/atoms/Spinner/Spinner.js'
+
+const AuthForm = dynamic(() => import('../UI/organisms/AuthForm/AuthForm.js'), { ssr: true, loading: () => <Spinner /> })
+const SignUp = () => <AuthForm signup={true} />
 export default SignUp

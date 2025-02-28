@@ -86,7 +86,7 @@ export const ordinalSet = dnd => {
 	uniqueSortedArr.forEach((num, index) => { mapping[num] = index })
 	return dnd.map(num => mapping[num])
 }
-export const addDnDConfig = oldDnDConfig => [0].concat(oldDnDConfig.map(x => x + 1)) // TODO: Test this
+export const addDnDConfig = oldDnDConfig => [0].concat(oldDnDConfig.map(x => x + 1))
 export const rearrangeDnD = (dnd, source, destination) => {
 	const both = (dnd.slice(0, source)).concat(dnd.slice(source + 1))
 	return [...both.slice(0, destination), ...dnd.slice(source, source + 1), ...both.slice(destination)]
