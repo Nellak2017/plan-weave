@@ -8,14 +8,9 @@ export const DropDownButtonStyled = styled(Button)(({ theme }) => ({
   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
 }))
 export const DropdownContainer = styled('div')({ position: 'relative', display: 'inline-block' })
-export const DropdownMenu = styled('ul')(({ open }) => ({
-  position: 'absolute', width: '100%', top: '100%', left: '0',
-  display: `${open ? 'block' : 'none'}`, zIndex: '999',
-}))
-// TODO: Fix not using theme issues
-export const DropdownMenuItem = styled('li')(({ theme, open }) => ({
-  display: `${open ? 'block' : 'none'}`,
-  cursor: 'pointer', height: '2rem', backgroundColor: 'white', color: 'black',
+export const DropdownMenu = styled('ul')(({ open }) => ({ position: 'absolute', width: '100%', top: '100%', left: '0', display: `${open ? 'block' : 'none'}`, zIndex: '999',}))
+export const DropdownMenuItem = styled('li')(({ theme }) => ({ // NOTE: lightNeutral may have @performance issue if re-computing every render
+  cursor: 'pointer', height: '2rem', backgroundColor: theme.palette.lightNeutral({ theme, value: 100 }), color: 'black',
   display: 'flex', justifyContent: 'center', alignItems: 'center',
-  '&:hover': { backgroundColor: 'gray' }, '&:active': { backgroundColor: 'gray' }
+  '&:hover': { backgroundColor: theme.palette.lightNeutral({ theme, value: 200 }) }, '&:active': { backgroundColor: theme.palette.lightNeutral({ theme, value: 300 }) }
 }))

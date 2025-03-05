@@ -10,7 +10,5 @@ export const StyledTextField = styled(TextField)(({ theme, variant }) => ({
 	'button:hover': { color: theme.palette.primary.main },
 	'input, input:hover': { color: 'white', boxShadow: 'none' },
 }))
-export const StyledChip = styled(Chip)(({ theme, variant }) => ({
-	backgroundColor: 'rgba(0,0,0,0.16)', 'svg:hover > path': { color: theme.palette.error.main, },
-}))
-export const StyledOption = styled('li')(({ theme, variant, selected }) => ({ color: 'black', boxShadow: 'none' }))
+export const StyledChip = styled(Chip)(({ theme }) => ({ backgroundColor: 'rgba(0,0,0,0.16)', 'svg:hover > path': { color: theme.palette.error.main, },}))
+export const StyledOption = styled('li')(() => ({ color: 'black', boxShadow: 'none' }))
