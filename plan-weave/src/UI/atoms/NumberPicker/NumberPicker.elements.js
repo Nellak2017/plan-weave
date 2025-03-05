@@ -1,6 +1,5 @@
 import { styled } from "@mui/system"
 
-// TODO: Fix theme style issues
 const variantStyle = color => ({ 'p': { color } })
 const numberPickerPresets = ({ theme, variant }) => ({light: variantStyle('black'), dark: variantStyle('white'),}?.[variant])
 export const PickerContainer = styled('section')(({ theme, variant }) => ({

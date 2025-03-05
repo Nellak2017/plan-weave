@@ -1,7 +1,6 @@
 import { styled } from '@mui/system'
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 
-// TODO: Fix theme colors
 const variantStyle = ({ color, hoverColor, hoverBg }) => ({
 	'& svg, input, label': { color, },
 	'& input:hover, div:hover': { color: hoverColor, background: hoverBg, },

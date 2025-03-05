@@ -1,6 +1,5 @@
 import { styled } from "@mui/material"
 
-// TODO: Refactor to use theme properly
 const variantStyles = ({ bg, color }) => ({ backgroundColor: bg, color })
 const tableHeaderPresets = ({ theme, variant }) => ({
 	light: variantStyles({ bg: '#eeedee', color: '#2b252c' }),

@@ -1,6 +1,5 @@
 import { styled } from "@mui/material"
 
-// TODO: Make correctly with theme
 const variantStyles = ({ bg, color, border }) => ({
   backgroundColor: bg, color, border: `1px solid ${border}60`,
   'input': {

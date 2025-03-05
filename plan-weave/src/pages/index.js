@@ -13,11 +13,7 @@ export default function Home() {
   const [user] = useAuthState(auth) // [user, loading, error]
   return (
     <>
-      <Nav slots={{
-        left: <LeftContent />,
-        middle: <MiddleContent state={middleContentData({ user })} />,
-        right: <RightContent state={rightContentData({ user, router, handleLogout })} />,
-      }} />
+      <Nav slots={{ left: <LeftContent />, middle: <MiddleContent state={middleContentData({ user })} />, right: <RightContent state={rightContentData({ user, router, handleLogout })} />,}} />
       {body.map((section, index) => (<InfoSection key={section?.topLine || index} state={{ variant: index % 2 === 0 ? 'dark' : 'light', data: section }} />))}
     </>
   )

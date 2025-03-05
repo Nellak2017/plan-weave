@@ -1,6 +1,4 @@
 import { styled } from "@mui/material"
-// TODO: Change $ to regular names
-// TODO: Use theme for all 
 const timePickerPresets = ({ theme, variant }) => ({
 	light: { 'p, svg': { color: 'black' } }, // `${theme.colors.darkNeutralDark}`
 	dark: { 'p, svg': { color: 'white' } }, // `${theme.colors.lightNeutralLight}`

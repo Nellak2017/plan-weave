@@ -44,12 +44,7 @@ export const TaskTableDefault = ({ currentTime, customHook = useTaskTableDefault
     return (
         <TaskTable state={{ labels }} services={{ onDragEndEvent }}>
             {taskList?.map((task, index) => (
-                <Draggable
-                    isDragDisabled={isStatusChecked(task?.status)}
-                    draggableId={`task-${task?.id}`}
-                    key={`task-${task?.id}-key`}
-                    index={index} // TODO: Make sure index is accurate
-                >
+                <Draggable isDragDisabled={isStatusChecked(task?.status)} draggableId={`task-${task?.id}`} key={`task-${task?.id}-key`} index={index}>
                     {provided => (<TaskRowDefault state={{ renderNumber, provided, taskID: task?.id, currentTime }} />)}
                 </Draggable>
             ))}

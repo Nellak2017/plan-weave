@@ -11,7 +11,7 @@ import logo from '../../../../public/Plan-Weave-Logo.png'
 import { useForm } from 'react-hook-form'
 import { useAuthForm } from '../../../Application/hooks/AuthForm/useAuthForm.js'
 
-const AuthInput = React.forwardRef((props, ref) => (<TaskInput ref={ref} {...props} />))
+const AuthInput = React.forwardRef((props, ref) => (<TaskInput ref={ref} {...props} />)); AuthInput.displayName = 'AuthInput'
 
 const GeneralAuthForm = ({
     state: { signup = false, title = 'Sign in', emailButtonText = 'Sign in with Email', callToAction = { text: "Don't have an account?", link: '/signup', linkText: 'Sign up.' }, } = {},

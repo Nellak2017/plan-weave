@@ -56,7 +56,7 @@ export const useTaskInputContainer = taskID => {
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
     const currentTaskRow = taskSelector?.(taskID) || {}
     const pipelineOptions = taskOrderPipeOptions()
-    const waste = useMemo(() => calculateWaste(currentTaskRow, pipelineOptions, currentTime), [currentTaskRow, pipelineOptions, currentTime])
+    const waste = useMemo(() => calculateWaste(currentTaskRow, pipelineOptions, currentTime), [pipelineOptions, currentTime])
 
     return { waste }
 }

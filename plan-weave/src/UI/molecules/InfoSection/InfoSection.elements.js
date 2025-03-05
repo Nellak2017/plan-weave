@@ -1,6 +1,5 @@
 import { styled } from "@mui/material"
 
-// TODO: Use MUI theme properly
 const infoSectionPresets = ({ theme, variant }) => ({
 	light: {
 		backgroundColor: '#fff',
