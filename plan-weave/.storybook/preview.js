@@ -14,7 +14,7 @@ const config = {
   decorators: [
     Story => (
       <MUIThemeProvider theme={MUITheme}>
-        <GlobalStyles styles={muiGlobalStyles({ theme: MUITheme })}/>
+        <GlobalStyles styles={muiGlobalStyles({ theme: MUITheme })} />
         <ToastContainer position="bottom-left" autoClose={3000} />
         <Story />
       </MUIThemeProvider>

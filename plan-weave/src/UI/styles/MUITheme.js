@@ -1,18 +1,7 @@
 import { createTheme } from '@mui/material/styles'
 
 // TODO: Add fontFamily: Poppins to typography possibly
-// TODO: Consider dark and light themes so that we may simplify lots of repeated logic by using the same theme names but for different themes
-export const theme = createTheme({
-    palette: {
-        // light and dark are auto generated for the main color palette attributes. Hover and Active are manually entered to accomodate custom html elements that are not MUI imported.
-        primary: { main: '#815af1', primaryHover: '#6031ed', primaryActive: '#2f0d96', primaryLightHover: '#e2d9fc', primaryLightActive: '#b7a1f7', primaryDarkHover: '#1e085e', primaryDarkActive: '#120538', darker: '#060213', },
-        grey: { 50: '#ebeaeb', 100: '#e1e0e1', 200: '#c2bfc2', 300: '#39313a', 400: '#332c34', 500: '#2e272e', 600: '#2b252c', 700: '#221d23', 800: '#1a161a', 900: '#141114', }, // dark neutral colors
-        error: { main: '#d64444', errorHover: '#c13d3d', errorActive: '#ab3636', errorLightHover: '#f9becec', errorLightActive: '#f2c5c5', errorDarkHover: '#802929', errorDarkActive: '#601f1f', darker: '#4b1818', },
-        success: { main: '#80de71', successHover: '#73c866', successActive: '#66b25a', successLightHover: '#f2fcf1', successLightActive: '#d8f5d3', successDarkHover: '#4d8544', successDarkActive: '#3a6433', darker: '#2d4e28', },
-        warning: { main: '#e8bb79', warningHover: '#d1a86d', warningActive: '#ba9661', warningLightHover: '#fcf5eb', warningLightActive: '#d8ead5', warningDarkHover: '#8b7049', warningDarkActive: '#685436', darker: '#51412a', },
-        // Custom palette attributes
-        lightNeutral: { 50: '#eeedee', 100: '#e5e3e5', 200: '#c9c6c9', 300: '#504651', 400: '#483f49', 500: '#403841', 600: '#3c353d', 700: '#302A31', 800: '#241F24', 900: '#1c191c',},
-    },
+const baseTheme = {
     spacing: num => ['4px', '8px', '16px', '32px', '48px', '56px',]?.[num - 1] || '4px',
     shape: { borderRadius: 8, },
     typography: { caption: { fontSize: '10px' }, h6: { fontSize: '12px' }, h5: { fontSize: '14px' }, h4: { fontSize: '16px' }, h3: { fontSize: '24px' }, h2: { fontSize: '40px' }, h1: { fontSize: '64px' }, body1: { fontSize: '16px' }, body2: { fontSize: '14px' }, },
@@ -28,4 +17,29 @@ export const theme = createTheme({
             defaultProps: { variant: 'contained', },
         },
     },
+}
+const sharedPalette = {
+    primary: { main: '#815af1', },
+    error: { main: '#d64444', },
+    success: { main: '#80de71', },
+    warning: { main: '#e8bb79', },
+    grey: { 50: '#ebeaeb', 100: '#e1e0e1', 200: '#c2bfc2', 300: '#39313a', 400: '#332c34', 500: '#2e272e', 600: '#2b252c', 700: '#221d23', 800: '#1a161a', 900: '#141114', },
+    // TODO: Remove the custom palette here, likely not needed
+    lightNeutral: { 50: '#eeedee', 100: '#e5e3e5', 200: '#c9c6c9', 300: '#504651', 400: '#483f49', 500: '#403841', 600: '#3c353d', 700: '#302A31', 800: '#241F24', 900: '#1c191c', },
+}
+export const lightTheme = createTheme({
+    palette: {
+        mode: 'light',
+        background: { default: '#fff' }, // TODO: Correct these background colors
+        ...sharedPalette,
+    },
+    ...baseTheme,
+})
+export const theme = createTheme({ // AKA: Dark Theme
+    palette: {
+        mode: 'dark',
+        background: { default: '#39313a', paper: '#504651' },
+        ...sharedPalette,
+    },
+    ...baseTheme,
 })

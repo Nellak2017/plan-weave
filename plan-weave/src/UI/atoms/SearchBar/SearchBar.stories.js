@@ -1,4 +1,6 @@
 import SearchBar from './SearchBar'
+import { theme, lightTheme } from '../../../UI/styles/MUITheme.js'
+import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles'
 
 const SearchBarStories = {
   title: 'Atoms/Input/SearchBar',
@@ -7,7 +9,7 @@ const SearchBarStories = {
     variant: { control: 'text' },
   },
 }
-const Template = args => <SearchBar {...args} />
+const Template = args => <MUIThemeProvider theme={args?.state?.variant === 'dark' ? theme : lightTheme}><SearchBar {...args} /></MUIThemeProvider>
 export const LightSearchBar = Template.bind({})
 LightSearchBar.args = { state: { variant: 'light' },}
 export const DarkSearchBar = Template.bind({})
