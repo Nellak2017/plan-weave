@@ -14,7 +14,7 @@ const setMultiDeleteFSMState = value => { dispatch(updateMultiDeleteFSMThunk({ i
 // Almost done, needs: testing
 export const useTaskRow = taskID => {
     const usedTask = taskSelector(taskID)
-    const { status } = usedTask
+    const { status } = usedTask || {}
     const { startTaskEditor: start, endTaskEditor: end } = timeRange()
     const timeRangeStartEnd = { start, end } // TODO: verify this is correct
 
