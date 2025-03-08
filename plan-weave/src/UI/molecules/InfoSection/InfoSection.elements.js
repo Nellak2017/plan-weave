@@ -1,13 +1,13 @@
 import { styled } from "@mui/material"
 
 const infoSectionPresets = ({ theme, variant }) => ({
-	light: { backgroundColor: theme.palette.lightNeutral[50], '.reverse': { flexDirection: 'row-reverse' }, 'h2': { color: theme.palette.primary.main, }, 'h1': { color: theme.palette.grey[600], }, 'p': { color: theme.palette.grey[300], }, },
-	dark: { backgroundColor: theme.palette.grey[600], 'h2, p': { color: theme.palette.lightNeutral[50], }, },
+	light: { backgroundColor: theme.palette.grey[50], '.reverse': { flexDirection: 'row-reverse' }, 'h2': { color: theme.palette.primary.main, }, 'h1': { color: theme.palette.grey[600], }, 'p': { color: theme.palette.grey[300], }, },
+	dark: { backgroundColor: theme.palette.grey[600], 'h2, p': { color: theme.palette.grey[50], }, },
 }?.[variant])
-
 export const StyledInfoContainer = styled('section')(({ theme, variant }) => ({
 	display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap',
-	height: '720px', width: '100vw', margin: '0', padding: '0', ...infoSectionPresets({ theme, variant }),
+	height: '720px', width: '100vw', margin: '0', padding: '0', 
+	...infoSectionPresets({ theme, variant }), // Actually necessary since I want to use multiple versions of this later in the same page
 })) // Top level container for Info Section
 export const ColumnContainer = styled('div')(({ theme }) => ({
 	display: 'flex', alignItems: 'center',

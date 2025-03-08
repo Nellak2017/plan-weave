@@ -1,16 +1,19 @@
 import TaskControl from './TaskControl'
 import store from '../../../Application/store.js'
 import { Provider } from 'react-redux'
+import { theme, lightTheme } from '../../../UI/styles/MUITheme.js'
+import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles'
 
 const TaskControlStories = {
   title: 'Molecules/TaskControl',
   component: TaskControl,
   argTypes: { variant: { control: 'text' }, maxwidth: { control: 'number' }, maxwidthsearch: { control: 'number' }, color: { control: 'text' } },
 }
-const TemplateWithProvider = args => <Provider store={store}><Template {...args} /></Provider>
+const LightTemplateWithProvider = args => <MUIThemeProvider theme={lightTheme}><Provider store={store}><Template {...args} /></Provider></MUIThemeProvider>
+const DarkTemplateWithProvider = args => <MUIThemeProvider theme={theme}><Provider store={store}><Template {...args} /></Provider></MUIThemeProvider>
 const Template = args => <TaskControl {...args} />
-export const Light = TemplateWithProvider.bind({})
+export const Light = LightTemplateWithProvider.bind({})
 Light.args = { customHook: () => ({ childState: { variant: 'light' } })}
-export const Dark = TemplateWithProvider.bind({})
+export const Dark = DarkTemplateWithProvider.bind({})
 Dark.args = { }
 export default TaskControlStories

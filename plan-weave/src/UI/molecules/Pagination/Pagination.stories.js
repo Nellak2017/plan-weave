@@ -1,15 +1,18 @@
 import Pagination from './Pagination'
 import { calcMaxPage } from '../../../Core/utils/helpers'
+import { theme, lightTheme } from '../../../UI/styles/MUITheme.js'
+import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles'
 
 const PaginationStories = {
 	title: 'Molecules/Pagination',
 	component: Pagination,
 	argTypes: { variant: { control: 'text' }, },
 }
-const Template = args => <Pagination {...args} />
-export const Light = Template.bind({})
+const LightTemplate = args => <MUIThemeProvider theme={lightTheme}><Pagination {...args} /></MUIThemeProvider>
+const DarkTemplate = args => <MUIThemeProvider theme={theme}><Pagination {...args} /></MUIThemeProvider>
+export const Light = LightTemplate.bind({})
 Light.args = { customHook: () => ({ childState: { variant: 'light' }}),}
-export const Dark = Template.bind({})
+export const Dark = DarkTemplate.bind({})
 Dark.args = {
 	customHook: () => ({
 		childState: {

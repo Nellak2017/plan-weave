@@ -1,17 +1,20 @@
 import { TaskRowDefault } from './TaskRow'
 import store from '../../../Application/store.js'
 import { Provider } from 'react-redux'
+import { theme, lightTheme } from '../../../UI/styles/MUITheme.js'
+import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles'
 
 const TaskRowStories = {
 	title: 'Molecules/TaskRow',
 	component: TaskRowDefault,
-	argTypes: { // TODO: Figure out how to make these controls actually work!
+	argTypes: {
 		highlight: { control: 'select', options: ['', 'old', 'selected'], },
 		status: { control: 'select', options: ['completed', 'incomplete', 'waiting', 'inconsistent'], },
 		variant: { control: 'select', options: ['dark', 'light'] }
 	},
 }
-const TemplateWithProvider = args => (<Provider store={store}><Template {...args} /></Provider>)
+const DarkTemplateWithProvider = args => (<MUIThemeProvider theme={theme}><Provider store={store}><Template {...args} /></Provider></MUIThemeProvider>)
+const LightTemplateWithProvider = args => (<MUIThemeProvider theme={lightTheme}><Provider store={store}><Template {...args} /></Provider></MUIThemeProvider>)
 const Template = ({ customHook, ...args }) => (
 	<table style={{ borderCollapse: 'collapse' }}>
 		<thead></thead>
@@ -23,8 +26,8 @@ const Template = ({ customHook, ...args }) => (
 		</tbody>
 	</table>
 )
-export const Light = TemplateWithProvider.bind({})
+export const Light = LightTemplateWithProvider.bind({})
 Light.args = { customHook: { status: 'completed', highlight: 'selected' }}
-export const Dark = TemplateWithProvider.bind({})
+export const Dark = DarkTemplateWithProvider.bind({})
 Dark.args = {}
 export default TaskRowStories

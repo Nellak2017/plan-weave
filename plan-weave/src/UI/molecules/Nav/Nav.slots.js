@@ -14,7 +14,7 @@ export const LeftContent = ({
 }) => (
     <Logo className='logo' tabIndex={tabIndex}>
         <Link href={href} tabIndex={tabIndex}>
-            <Image src={logoPath.src} alt={alt} width={width} height={height} title={title} aria-label={title} /> 
+            <Image src={logoPath.src} alt={alt} width={width} height={height} title={title} aria-label={title} />
         </Link>
     </Logo>
 )
@@ -39,6 +39,4 @@ export const RightContent = ({
             </Link>}
     </LoginContainer>
 )
-export const DefaultContainer = ({ left, middle, right }) => (
-    <StyledNav><ContentContainer>{left}{middle}{right}</ContentContainer></StyledNav>
-)
+export const DefaultContainer = ({ left, middle, right }) => (<StyledNav><ContentContainer>{left}{middle}{right}</ContentContainer></StyledNav>)
