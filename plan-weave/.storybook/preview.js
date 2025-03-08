@@ -19,6 +19,6 @@ const config = {
         <Story />
       </MUIThemeProvider>
     )
-  ]
+  ], parameters: { nextjs: { appDirectory: true, } } // Related to app directory not defined when using next router. see also: https://github.com/storybookjs/storybook/issues/24722
 }
 export default config
