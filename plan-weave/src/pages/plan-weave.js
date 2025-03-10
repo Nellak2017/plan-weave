@@ -6,12 +6,12 @@ import Nav from '../UI/molecules/Nav/Nav.js'
 import { fetchTasksFromFirebase, serialize } from '../Infra/firebase/firebase_controller.js'
 import store from '../Application/store.js'
 //import { initialTaskUpdate, initialUserIDUpdate } from '../Application/redux/thunks/planWeavePageThunks.js'
-import { loadingOrError } from '../UI/pageUtils/helper-components.js'
+import { LoadingOrError } from '../UI/atoms/LoadingOrError/LoadingOrError.js'
 import { useRedirectIfUnauthorized } from '../Application/hooks/Helpers/useRedirectIfUnauthorized.js'
 import { NavData } from '../Infra/Data/PlanWeave/Data.js'
 import { useTaskFetching } from '../Application/hooks/Helpers/useTaskFetching.js'
 import { LeftContent, MiddleContent, RightContent } from '../UI/molecules/Nav/Nav.slots.js'
-import { handleLogout } from '../UI/pageUtils/page-handlers.js'
+import { handleLogout } from '../Infra/workflows/logout.handlers.js'
 
 // TODO: Remove "Data" layer from Infra and replace with Hooks for consistency and simplicity
 const PlanWeave = () => {
@@ -21,7 +21,7 @@ const PlanWeave = () => {
 	const [user, loading, error] = useAuthState(auth)
 	useRedirectIfUnauthorized(user, loading)
 	//useTaskFetching({ user, serialize, dispatch, taskFetcher: fetchTasksFromFirebase, taskUpdateReducer: initialTaskUpdate, userIDReducer: initialUserIDUpdate })
-	if (loadingOrError({ loading, error, user })) return loadingOrError({ loading, error, user })
+	if (loading || error || !user) return <LoadingOrError loading={loading} error={error} user={user} />
 	return (
 		<>
 			<Nav slots={{ left: <LeftContent />, middle: <MiddleContent state={middleContentData()} />, right: <RightContent state={rightContentData({ router, handleLogout })} /> }} />

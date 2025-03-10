@@ -4,6 +4,7 @@ import { createTheme } from '@mui/material/styles'
 // TODO: After making all styles theme agnostic, start to remove variant prop except for special cases. The components should style based only on the theme in the context provided not a variant!
 // TODO: Fix the ugly ass select button, possibly using MUI built-ins
 // TODO: Media Queries for all the things!
+// TODO: Correct the background colors for light mode
 // Custom Properties: insets, logoFilter, paperBackground
 const baseTheme = {
     spacing: num => ['4px', '8px', '16px', '32px', '48px', '56px',]?.[num - 1] || '4px',
@@ -26,9 +27,8 @@ const sharedPalette = {
     grey: { 50: '#ebeaeb', 100: '#e1e0e1', 200: '#c2bfc2', 300: '#39313a', 400: '#332c34', 500: '#2e272e', 600: '#2b252c', 700: '#221d23', 800: '#1a161a', 900: '#141114', },
 }
 export const lightTheme = createTheme({
-    palette: { /*// TODO: Correct these background colors // paperBackground is custom */
-        mode: 'light', background: { default: '#fff', paper: '#fff', paperBackground: '#ebeaeb' }, ...sharedPalette,
-    }, ...baseTheme, logoFilter: 'invert(100%) brightness(0%)', /* Used for logo filter in Nav styles */
+    palette: { mode: 'light', background: { default: '#fff', paper: '#fff', paperBackground: '#ebeaeb' }, ...sharedPalette, },
+    ...baseTheme, logoFilter: 'invert(100%) brightness(0%)', /* Used for logo filter in Nav styles */
 })
 export const theme = createTheme({ // AKA: Dark Theme
     palette: { mode: 'dark', background: { default: '#39313a', paper: '#504651', paperBackground: '#302A31' }, ...sharedPalette, },

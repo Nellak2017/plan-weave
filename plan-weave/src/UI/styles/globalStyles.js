@@ -8,7 +8,7 @@ export const muiGlobalStyles = ({ theme }) => ({
     ':root': { '--font-poppins': `${poppins.style.fontFamily}`, '--font-courier-prime': `${courierPrime.style.fontFamily}`, '--font-roboto': `${roboto.style.fontFamily}`, },
     html: { height: '100vh', width: '100vw', fontFamily: `${poppins.style.fontFamily}, ${courierPrime.style.fontFamily}, ${roboto.style.fontFamily}, 'Source Sans Pro', 'sans-serif'` },
     // The above styles are for the font optimization whatever
-    '*': { boxSizing: 'border-box', margin: 0, padding: 0, '::selection, ::-moz-selection': { background: theme.palette.primary.main, color: theme.palette.text.primary, }, },
+    '*': { boxSizing: 'border-box', margin: 0, padding: 0, '::selection': { background: theme.palette.primary.main, color: theme.palette.text.primary, }, },
     'a': { textDecoration: 'none', },
     'body': { margin: 0, padding: 0, backgroundColor: theme.palette.background.default, color: theme.palette.text.primary, overflowX: 'hidden', },
     '*::-webkit-scrollbar': { width: '1em', },

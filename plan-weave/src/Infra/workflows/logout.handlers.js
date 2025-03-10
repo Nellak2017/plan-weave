@@ -1,4 +1,4 @@
-import { signOutOfApp } from '../../Infra/firebase/firebase_auth.js'
+import { signOutOfApp } from '../firebase/firebase_auth.js'
 import { tryCatchAsyncFlat } from '../../Core/utils/helpers.js'
 
 export const handleLogout = async (router) => {

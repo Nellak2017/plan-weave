@@ -4,7 +4,7 @@ import { auth } from '../Infra/firebase/firebase_auth.js'
 import { useRouter } from 'next/router'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { body, NavData } from '../Infra/Data/HomePage/Data.js'
-import { handleLogout } from '../UI/pageUtils/page-handlers.js'
+import { handleLogout } from '../Infra/workflows/logout.handlers.js'
 import { LeftContent, MiddleContent, RightContent } from '../UI/molecules/Nav/Nav.slots.js'
 
 export default function Home() {
