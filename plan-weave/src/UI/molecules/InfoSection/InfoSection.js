@@ -21,7 +21,7 @@ export const InfoSection = ({ state: { variant = VARIANTS[0], data, priority = t
 				<Image
 					src={data?.img?.src} alt={data?.alt || 'Image for Section'}
 					width={width || 555} height={height || 307}
-					style={{ width: '100%', height: 'auto', }} title={data?.topLine || 'Image not found'}
+					title={data?.topLine || 'Image not found'}
 					priority={priority} placeholder="blur" blurDataURL="URL"
 				/>
 			</Column>
