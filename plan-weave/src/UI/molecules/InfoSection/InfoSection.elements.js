@@ -2,7 +2,7 @@ import { styled } from "@mui/material"
 
 const infoSectionPresets = ({ theme, variant }) => ({
 	light: { backgroundColor: theme.palette.grey[50], '.reverse': { flexDirection: 'row-reverse' }, 'h2': { color: theme.palette.primary.main, }, 'h1': { color: theme.palette.grey[600], }, 'p': { color: theme.palette.grey[300], }, },
-	dark: { backgroundColor: theme.palette.grey[600], 'h2, p': { color: theme.palette.grey[50], }, },
+	dark: { backgroundColor: theme.palette.grey[600], 'h1, h2, p': { color: theme.palette.grey[50], }, },
 }?.[variant])
 export const StyledInfoContainer = styled('section')(({ theme, variant }) => ({
 	display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap',

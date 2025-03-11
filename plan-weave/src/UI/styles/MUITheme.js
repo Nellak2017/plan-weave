@@ -3,7 +3,6 @@ import { createTheme } from '@mui/material/styles'
 // TODO: Add fontFamily: Poppins to typography possibly
 // TODO: After making all styles theme agnostic, start to remove variant prop except for special cases. The components should style based only on the theme in the context provided not a variant!
 // TODO: Fix the ugly ass select button, possibly using MUI built-ins
-// TODO: Correct the background colors for light mode
 // Custom Properties: insets, logoFilter, paperBackground
 const baseTheme = {
     spacing: num => ['4px', '8px', '16px', '32px', '48px', '56px',]?.[num - 1] || '4px',
