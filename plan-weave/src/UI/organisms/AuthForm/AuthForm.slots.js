@@ -10,6 +10,7 @@ import { handleSignInWithEmail, handleSignUpWithEmail, handleSignInWithGoogle } 
 import logo from '../../../../public/Plan-Weave-Logo.png'
 import { useForm } from 'react-hook-form'
 import { useAuthForm } from '../../../Application/hooks/AuthForm/useAuthForm.js'
+import { useTheme } from '@mui/material/styles'
 
 const AuthInput = React.forwardRef((props, ref) => (<TaskInput ref={ref} {...props} />)); AuthInput.displayName = 'AuthInput'
 
@@ -19,11 +20,12 @@ const GeneralAuthForm = ({
 }) => {
     const router = useRouter()
     const { register, handleSubmit, formState: { errors } } = useForm()
-    const { variant, maxwidth } = customHook?.() || {}
+    const { maxwidth } = customHook?.() || {}
+    const theme = useTheme(), variant = theme.palette.mode
     return (
         <CenteredContainer>
-            <AuthContainer variant={variant} maxwidth={maxwidth}>
-                <StyledAuthForm onSubmit={handleSubmit((data => emailSubmit({ router, ...data })))} method='POST' id='email-form' variant={variant} maxwidth={maxwidth}>
+            <AuthContainer maxwidth={maxwidth}>
+                <StyledAuthForm onSubmit={handleSubmit((data => emailSubmit({ router, ...data })))} method='POST' id='email-form' maxwidth={maxwidth}>
                     <Link href='/'><Image src={logo.src} alt='Plan Weave Logo' width={128} height={96} className={'logo'} title={'Go Home'} priority={true} /></Link>
                     <h2>{title}</h2>
                     <SubtitleContainer>

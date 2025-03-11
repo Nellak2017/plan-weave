@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { HoursInputStyled, HoursContainer } from './HoursInput.elements'
-import { VARIANTS } from '../../../Core/utils/constants.js'
 import { parseBlur, parseChange } from '../../../Core/utils/helpers.js'
 
 const HoursInput = ({
-	state: { step = 0.1, precision = 2, pattern = /^(\d*\.?\d*)$/, variant = VARIANTS[0], placeholder = 1, text, maxwidth = 45, min = 0, max = 24, maxLength = '5',} = {},
+	state: { step = 0.1, precision = 2, pattern = /^(\d*\.?\d*)$/, placeholder = 1, text, maxwidth = 45, min = 0, max = 24, maxLength = '5',} = {},
 	services: { onValueChange, onBlur } = {},
 	value, defaultValue, // possible controlled or uncontrolled value
 	...props
@@ -12,9 +11,9 @@ const HoursInput = ({
 	const [val, setVal] = useState(defaultValue || 1) // used locally to always have correct local value, then synced with caller when ready
 	const updateState = newValue => { if (value === undefined) { setVal(newValue) } } // update local state only if it is uncontrolled
 	return (
-		<HoursContainer variant={variant}>
+		<HoursContainer>
 			<HoursInputStyled
-				variant={variant} maxwidth={maxwidth} placeholder={placeholder} type='text' inputMode='numeric' min={min} max={max} step={step} maxLength={maxLength} pattern={pattern}
+				maxwidth={maxwidth} placeholder={placeholder} type='text' inputMode='numeric' min={min} max={max} step={step} maxLength={maxLength} pattern={pattern}
 				onChange={e => {
 					const newValue = parseChange(e.target.value, pattern, min, max)
 					updateState(newValue); onValueChange?.(newValue)

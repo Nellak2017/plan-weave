@@ -19,22 +19,22 @@ const { startButton, endButton } = TASK_CONTROL_TITLES
 
 export const TopSlot = ({ currentTime = new Date(), customHook = useTopSlot }) => {
     const { childState, childServices } = customHook?.() || {}
-    const { variant, startTime, endTime, isOwl } = childState || {}
+    const { startTime, endTime, isOwl } = childState || {}
     const { search, updateTimeRange, toggleOwl } = childServices || {}
     const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'))
     return (
         <TopContainer>
-            <SearchBar state={{ variant }} services={{ search }} title={'Search for Tasks'} tabIndex={0} />
+            <SearchBar services={{ search }} title={'Search for Tasks'} tabIndex={0} />
             {!isSmallScreen && <p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>}
             {!isSmallScreen &&
                 <TimePickerContainer>{/* onBlur={() => checkTimeRange({ startTime, endTime, isOwl })} */}
                     <TimePickerWrapper
-                        state={{ variant, defaultTime: format(startTime, 'HH:mm'), offset: start, }}
+                        state={{ defaultTime: format(startTime, 'HH:mm'), offset: start, }}
                         services={{ onTimeChange: value => updateTimeRange?.({ id: START_TIME_PICKER_ID, value }) }}
                         title={startButton} tabIndex={0}
                     />
                     <TimePickerWrapper
-                        state={{ variant, defaultTime: format(endTime, 'HH:mm'), offset: end, }}
+                        state={{ defaultTime: format(endTime, 'HH:mm'), offset: end, }}
                         services={{ onTimeChange: value => updateTimeRange?.({ id: END_TIME_PICKER_ID, value }) }}
                         title={endButton} tabIndex={0}
                     />
@@ -46,7 +46,7 @@ export const TopSlot = ({ currentTime = new Date(), customHook = useTopSlot }) =
 
 export const BottomSlot = ({ currentTime = new Date(), customHook = useBottomSlot }) => {
     const { childState, childServices } = customHook?.() || {}
-    const { variant, isFullTask, fsmControlledState, endTime, isOwl } = childState || {}
+    const { isFullTask, fsmControlledState, endTime, isOwl } = childState || {}
     const { addTask, fullTaskToggle, setMultiDeleteFSMState, sort } = childServices || {}
     const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm')), isExtraSmallScreen = useMediaQuery('(max-width: 250px)')
     return (
@@ -55,11 +55,11 @@ export const BottomSlot = ({ currentTime = new Date(), customHook = useBottomSlo
                 <BiPlusCircle onClick={() => addTask()} onKeyDown={onKeyDownFactory(addTask)} tabIndex={0} title={addToolTip} size={OWL_SIZE} />
                 <IoIosInformationCircleOutline onClick={() => fullTaskToggle()} onKeyDown={onKeyDownFactory(fullTaskToggle)} style={styleIfToggled(isFullTask)} tabIndex={0} title={fullTaskToggleTip} size={OWL_SIZE} />
                 <MultipleDeleteButton state={{ fsmControlledState }} services={{ setControlledFSMState: setMultiDeleteFSMState }} />
-                {!isSmallScreen && <Separator variant={variant} />}
+                {!isSmallScreen && <Separator />}
             </BottomContentContainer>
             {!isSmallScreen && <BottomContentContainer><p title={'Time left until End of Task Period'}>{formatTimeLeft({ currentTime, endTime, overNightMode: isOwl })}</p></BottomContentContainer>}
             <BottomContentContainer>
-                {!isSmallScreen && <Separator variant={variant} />}
+                {!isSmallScreen && <Separator />}
                 {!isExtraSmallScreen && <DropDownButton options={generateDropDownOptions(sort)} tabIndex={0} title={dropDownToolTip} />}
             </BottomContentContainer>
         </BottomContainer>

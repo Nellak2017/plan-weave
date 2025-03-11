@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { parseISO } from 'date-fns'
 import { toast as reactToast } from 'react-toastify'
-import { userID as userIDSelector, variant, isOwl, isFullTask, fsmControlledState, timeRange } from '../../selectors.js'
+import { userID as userIDSelector, isOwl, isFullTask, fsmControlledState, timeRange } from '../../selectors.js'
 import { searchThunk, sortThunk, checkTimeRangeThunk, toggleThunk, updateTimeRangeThunk, addTaskThunkAPI, updateMultiDeleteFSMThunk } from '../../thunks.js'
 import { VALID_SEARCH_IDS, VALID_SORT_IDS, VALID_TIMERANGE_IDS, VALID_TOGGLE_IDS, VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import store from '../../store.js'
@@ -11,7 +11,7 @@ const dispatch = store.dispatch
 export const useTopSlot = () => {
     const { startTaskEditor, endTaskEditor } = timeRange(), timeRangeState = { startTaskEditor, endTaskEditor }
     const childState = {
-        variant: variant(), isOwl: isOwl(),
+        isOwl: isOwl(),
         startTime: useMemo(() => startTaskEditor?.defaultTime ? parseISO(startTaskEditor?.defaultTime) : new Date(), [timeRangeState]),
         endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [timeRangeState]),
     }
@@ -34,7 +34,7 @@ export const useBottomSlot = () => {
     const { startTaskEditor, endTaskEditor } = timeRange(), timeRangeState = { startTaskEditor, endTaskEditor }
     const userID = userIDSelector()
     const childState = {
-        variant: variant(), isFullTask: isFullTask(), fsmControlledState: fsmControlledState(), isOwl: isOwl(),
+        isFullTask: isFullTask(), fsmControlledState: fsmControlledState(), isOwl: isOwl(),
         endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [timeRangeState]),
     }
     const childServices = {

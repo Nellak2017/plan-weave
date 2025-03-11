@@ -3,7 +3,7 @@ import { MdOutlineCheckBox, MdOutlineCheckBoxOutlineBlank } from "react-icons/md
 import { TASK_ROW_TOOLTIPS, TASK_STATUSES, VARIANTS } from "../../../Core/utils/constants"
 import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContainer, TimeContainer, EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer, TrashContainer, TaskRowStyled, } from "./TaskRow.elements"
 import { TaskInput } from "../../atoms/TaskInput/TaskInput"
-import HoursInput, { HoursInputPositiveFloat} from '../../atoms/HoursInput/HoursInput.js'
+import HoursInput, { HoursInputPositiveFloat } from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from "date-fns"
 import { formatTimeLeft } from "../../../Core/utils/helpers"
 import DateTimePickerWrapper from "../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js"
@@ -53,15 +53,15 @@ export const Waste = ({ taskID, currentTime, customHook = useWaste }) => {
 }
 export const Ttc = ({ taskID, customHook = useTtc }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
-    const { variant = VARIANTS[0], status, ttc } = childState || {}
+    const { status, ttc } = childState || {}
     const { onValueChangeEvent, onBlurEvent } = childServices || {}
-    return ( // TODO: Simplify this Component by extracting to helper or something. TODO: possibly pass a render function in TODO: figure out how to remove dependency on variant
+    return ( // TODO: Simplify this Component by extracting to helper or something. TODO: possibly pass a render function in
         <TimeContainer title={ttcTooltip}>
             {status === TASK_STATUSES.COMPLETED
                 ? <pre>{ttc && !isNaN(ttc) && ttc > 0 ? formatTimeLeft({ timeDifference: ttc, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'}</pre>
                 : <HoursInputPositiveFloat
                     defaultValue={ttc}
-                    state={{ variant, step: .01, min: .01, placeholder: 'hours', text: 'hours' }}
+                    state={{ step: .01, min: .01, placeholder: 'hours', text: 'hours' }}
                     services={{ onValueChange: onValueChangeEvent, onBlur: onBlurEvent }}
                 />
             }
@@ -78,14 +78,14 @@ export const Efficiency = ({ taskID, currentTime, customHook = useEfficiency }) 
 }
 export const Due = ({ taskID, customHook = useDue }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
-    const { variant = VARIANTS[0], isChecked, dueDate } = childState || {}
+    const { isChecked, dueDate } = childState || {}
     const { onTimeChangeEvent } = childServices || {}
     return ( // TODO: simplify this or pass in a render function
         <DueContainer title={dueToolTip}>
             {isChecked
                 ? formatDate(dueDate)
                 : <DateTimePickerWrapper
-                    state={{ variant, defaultTime: format(parseISO(dueDate), 'HH:mm'), defaultDate: parseISO(dueDate), }}
+                    state={{ defaultTime: format(parseISO(dueDate), 'HH:mm'), defaultDate: parseISO(dueDate), }}
                     services={{ onTimeChange: onTimeChangeEvent }} />
             }
         </DueContainer>
@@ -93,14 +93,14 @@ export const Due = ({ taskID, customHook = useDue }) => {
 }
 export const Weight = ({ taskID, customHook = useWeight }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
-    const { variant = VARIANTS[0], isChecked, weight } = childState || {}
+    const { isChecked, weight } = childState || {}
     const { onValueChangeEvent } = childServices || {}
     return ( // TODO: Simplify this
         <WeightContainer title={weightToolTip}>
             {isChecked
                 ? parseFloat(weight).toFixed(2) || 1
                 : <HoursInput
-                    state={{ variant, placeholder: 1, min: 1 }}
+                    state={{ placeholder: 1, min: 1 }}
                     defaultValue={(weight > .01 ? weight : 1)}
                     services={{ onValueChange: onValueChangeEvent }} />
             }
@@ -109,12 +109,12 @@ export const Weight = ({ taskID, customHook = useWeight }) => {
 }
 export const Thread = ({ taskID, customHook = useThread }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
-    const { variant = VARIANTS[0], options, defaultValue } = childState || {}
+    const { options, defaultValue } = childState || {}
     const { onChangeEvent, onBlurEvent } = childServices || {}
     return (
         <ThreadContainer title={threadToolTip}>
             <OptionPicker
-                state={{ variant, options, label: 'Select Thread', multiple: false }}
+                state={{ options, label: 'Select Thread', multiple: false }}
                 services={{ onChange: onChangeEvent }}
                 defaultValue={defaultValue}
                 onBlur={onBlurEvent}
@@ -124,12 +124,12 @@ export const Thread = ({ taskID, customHook = useThread }) => {
 }
 export const Dependency = ({ taskID, customHook = useDependency }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
-    const { variant, options = [], defaultValue } = childState || {}
+    const { options = [], defaultValue } = childState || {}
     const { onChangeEvent } = childServices || {}
     return (
         <DependencyContainer title={dependencyToolTip}>
             <OptionPicker
-                state={{ variant, options, multiple: true }}
+                state={{ options, multiple: true }}
                 services={{ onChange: onChangeEvent }}
                 defaultValue={defaultValue}
             />

@@ -5,11 +5,12 @@ import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles'
 const TimePickerWrapperStories = {
   title: 'Atoms/Pickers/TimePicker',
   component: TimePickerWrapper,
-  argTypes: { variant: { control: 'text' }, defaultTime: { control: 'text' } }
+  argTypes: { defaultTime: { control: 'text' } }
 }
-const Template = args => <MUIThemeProvider theme={args?.variant === 'dark' ? theme : lightTheme}><TimePickerWrapper {...args} /></MUIThemeProvider>
-export const Light = Template.bind({})
-Light.args = { variant: 'light' }
-export const Dark = Template.bind({})
-Dark.args = { variant: 'dark' }
+const LightTemplate = args => <MUIThemeProvider theme={lightTheme}><TimePickerWrapper {...args} /></MUIThemeProvider>
+const DarkTemplate = args => <MUIThemeProvider theme={theme}><TimePickerWrapper {...args} /></MUIThemeProvider>
+export const Light = LightTemplate.bind({})
+Light.args = {}
+export const Dark = DarkTemplate.bind({})
+Dark.args = {}
 export default TimePickerWrapperStories

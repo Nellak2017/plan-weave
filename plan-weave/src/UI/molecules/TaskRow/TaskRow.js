@@ -7,10 +7,10 @@ import { getTaskRowDnDStyle, Drag, CompleteIcon, TaskInputContainer, Waste, Ttc,
 export const TaskRow = ({ renderNumber, children }) => <>{React.Children.toArray(children).slice(0, renderNumber || React.Children.toArray(children).length)}</> // Renders slice of children, and if no range provided it renders all children
 
 export const TaskRowDefault = ({ state: { renderNumber, provided, taskID, currentTime } = {}, customHook = useTaskRow }) => {
-    const { variant, status, highlight } = customHook?.(taskID) || {}
+    const { status, highlight } = customHook?.(taskID) || {}
     return (
         <TaskRowStyled
-            variant={variant} status={status} highlight={highlight}
+            status={status} highlight={highlight}
             style={getTaskRowDnDStyle(provided)} maxwidth={TASK_EDITOR_WIDTH}
             ref={provided?.innerRef} {...provided?.draggableProps} 
         >

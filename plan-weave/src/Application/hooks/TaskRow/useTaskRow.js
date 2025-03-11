@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from 'react'
 import store from '../../store.js'
-import { variant, task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, isZeroTasksSelected, fsmControlledState } from '../../selectors.js'
+import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, isZeroTasksSelected, fsmControlledState } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency } from '../../../Core/utils/helpers.js'
 import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
@@ -20,7 +20,7 @@ export const useTaskRow = taskID => {
 
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
     const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld(timeRangeStartEnd, usedTask)), [status, timeRangeStartEnd, usedTask])
-    return { variant: variant(), status, highlight }
+    return { status, highlight }
 }
 // Almost done, needs: testing, batching, and completeness, as well as api stuff
 export const useCompleteIcon = (taskID, currentTime) => {
@@ -64,7 +64,7 @@ export const useWaste = (taskID, currentTime) => { // We calculate this from Red
 export const useTtc = taskID => {
     const { status, ttc } = taskSelector?.(taskID) || {}
     const userID = userIDSelector() || ''
-    const childState = { variant: variant(), status, ttc }
+    const childState = { status, ttc }
     const childServices = {
         //onValueChangeEvent: () => console.warn('onValueChange thunk not implemented for useTtc'),
         onBlurEvent: ttc => dispatch(editTtcThunkAPI({ userID, taskID, ttc: parseFloat(ttc) })),
@@ -89,7 +89,7 @@ export const useEfficiency = (taskID, currentTime) => { // We calculate this fro
 export const useDue = taskID => {
     const { status, dueDate } = taskSelector?.(taskID) || { dueDate: new Date().toISOString() }
     const userID = userIDSelector() || ''
-    const childState = { variant: variant(), isChecked: isStatusChecked(status), dueDate }
+    const childState = { isChecked: isStatusChecked(status), dueDate }
     const childServices = {
         onTimeChangeEvent: dueDate => dispatch(editDueThunkAPI({ userID, taskID, dueDate: formatISO(dueDate) }))
     }
@@ -99,7 +99,7 @@ export const useDue = taskID => {
 export const useWeight = taskID => {
     const { status, weight, dueDate } = taskSelector?.(taskID) || {}
     const userID = userIDSelector() || ''
-    const childState = { variant: variant(), isChecked: isStatusChecked(status), dueDate, weight }
+    const childState = { isChecked: isStatusChecked(status), dueDate, weight }
     const childServices = {
         onValueChangeEvent: weight => dispatch(editWeightThunkAPI({ userID, taskID, weight: parseFloat(weight) }))
     }
@@ -109,11 +109,7 @@ export const useWeight = taskID => {
 export const useThread = taskID => {
     const { parentThread } = taskSelector?.(taskID) || {}
     const options = [] // TODO: Figure out how to do this one, I am not familiar with the registery of all threads
-    const childState = {
-        variant: variant(),
-        options,
-        defaultValue: parentThread, // TODO: Figure out if this is the intended default, I don't recall
-    }
+    const childState = { options, defaultValue: parentThread, /* TODO: Figure out if this is the intended default, I don't recall */}
     const childServices = {
         onChangeEvent: () => console.warn('onChange thunk not implemented for useThread'),
         onBlurEvent: () => console.warn('onBlur thunk not implemented for useThread'),
@@ -124,11 +120,7 @@ export const useThread = taskID => {
 export const useDependency = taskID => {
     const { dependencies } = taskSelector?.(taskID) || {}
     const defaultValue = dependencies?.[0] || [] // TODO: Figure out correct default
-    const childState = {
-        variant: variant(),
-        options: dependencies, // I think this is correct?
-        defaultValue
-    }
+    const childState = { defaultValue, options: dependencies, /* I think this is correct?*/ }
     const childServices = {
         onChangeEvent: () => console.warn('onChange thunk not implemented for useDependency'),
     }

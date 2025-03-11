@@ -7,13 +7,13 @@ import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles'
 const TaskControlStories = {
   title: 'Molecules/TaskControl',
   component: TaskControl,
-  argTypes: { variant: { control: 'text' }, maxwidth: { control: 'number' }, maxwidthsearch: { control: 'number' }, color: { control: 'text' } },
+  argTypes: { maxwidth: { control: 'number' }, maxwidthsearch: { control: 'number' }, color: { control: 'text' } },
 }
 const LightTemplateWithProvider = args => <MUIThemeProvider theme={lightTheme}><Provider store={store}><Template {...args} /></Provider></MUIThemeProvider>
 const DarkTemplateWithProvider = args => <MUIThemeProvider theme={theme}><Provider store={store}><Template {...args} /></Provider></MUIThemeProvider>
 const Template = args => <TaskControl {...args} />
 export const Light = LightTemplateWithProvider.bind({})
-Light.args = { customHook: () => ({ childState: { variant: 'light' } })}
+Light.args = {}
 export const Dark = DarkTemplateWithProvider.bind({})
-Dark.args = { }
+Dark.args = {}
 export default TaskControlStories

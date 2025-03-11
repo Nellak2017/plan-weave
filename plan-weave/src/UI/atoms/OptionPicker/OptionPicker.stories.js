@@ -7,16 +7,17 @@ const ReactSelectWrapperStories = {
 	component: OptionPicker,
 	argTypes: { variant: { control: 'text' }, },
 }
-const Template = args => <MUIThemeProvider theme={args?.state?.variant === 'dark' ? theme : lightTheme}><OptionPicker {...args} /></MUIThemeProvider>
+const LightTemplate = args => <MUIThemeProvider theme={lightTheme}><OptionPicker {...args} /></MUIThemeProvider>
+const DarkTemplate = args => <MUIThemeProvider theme={theme}><OptionPicker {...args} /></MUIThemeProvider>
 const options = [
 	{ value: 'predecessor1', label: 'Predecessor 1' },
 	{ value: 'predecessor2', label: 'Predecessor 2' },
 ]
-export const Light = Template.bind({})
-Light.args = { state: { variant: 'light', options }, }
-export const Dark = Template.bind({})
+export const Light = LightTemplate.bind({})
+Light.args = { state: { options }, }
+export const Dark = DarkTemplate.bind({})
 Dark.args = {
-	state: { variant: 'dark', options, },
+	state: { options, },
 	services: { onChange: selectedOptions => console.log(selectedOptions) },
 	defaultValue: options,
 }

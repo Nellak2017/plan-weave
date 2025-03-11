@@ -10,7 +10,6 @@ const TaskRowStories = {
 	argTypes: {
 		highlight: { control: 'select', options: ['', 'old', 'selected'], },
 		status: { control: 'select', options: ['completed', 'incomplete', 'waiting', 'inconsistent'], },
-		variant: { control: 'select', options: ['dark', 'light'] }
 	},
 }
 const DarkTemplateWithProvider = args => (<MUIThemeProvider theme={theme}><Provider store={store}><Template {...args} /></Provider></MUIThemeProvider>)

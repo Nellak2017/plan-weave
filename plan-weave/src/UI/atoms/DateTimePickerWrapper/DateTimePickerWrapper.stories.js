@@ -7,10 +7,11 @@ const DateTimePickerWrapperStories = {
 	component: DateTimePickerWrapper,
 	argTypes: {},
 }
-const Template = args => (<MUIThemeProvider theme={args?.state?.variant === 'dark' ? theme : lightTheme}><DateTimePickerWrapper {...args} /></MUIThemeProvider>)
+const LightTemplate = args => (<MUIThemeProvider theme={lightTheme}><DateTimePickerWrapper {...args} /></MUIThemeProvider>)
+const DarkTemplate = args => (<MUIThemeProvider theme={theme}><DateTimePickerWrapper {...args} /></MUIThemeProvider>)
 
-export const Light = Template.bind({})
-Light.args = { state: { variant: 'light' }, }
-export const Dark = Template.bind({})
-Dark.args = { state: { variant: 'dark' }, }
+export const Light = LightTemplate.bind({})
+Light.args = {}
+export const Dark = DarkTemplate.bind({})
+Dark.args = {}
 export default DateTimePickerWrapperStories

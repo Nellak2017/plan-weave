@@ -6,7 +6,6 @@ import { CHOOSE, CHOSEN } from './finiteStateMachines/MultipleDeleteButton.fsm.j
 export const tasks = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks), () => [])
 export const task = (taskID, selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks).filter(task => task?.id === taskID)?.[0], () => { })
 export const userID = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.auth?.userID), () => '')
-export const variant = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.variant), () => 'dark')
 export const isOwl = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.toggle?.owlTaskEditor?.toggleState), () => false)
 export const isFullTask = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.toggle?.fullTaskTaskEditor?.toggleState), () => false)
 export const fsmControlledState = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.multiDelete?.multiDeleteTaskEditor?.fsmControlledState), () => 'default')

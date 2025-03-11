@@ -6,11 +6,11 @@ import { StyledTaskEditor, TaskEditorContainer } from './TaskEditor.elements'
 import { useTaskEditor } from '../../../Application/hooks/TaskEditor/useTaskEditor.js'
 
 const TaskEditor = ({ customHook = useTaskEditor }) => {
-	const { currentTime, variant, title } = customHook?.() || {}
+	const { currentTime, title } = customHook?.() || {}
 	return (
-		<TaskEditorContainer variant={variant}>
+		<TaskEditorContainer>
 			<h1>{title}</h1>
-			<StyledTaskEditor variant={variant} maxwidth={TASK_EDITOR_WIDTH}>
+			<StyledTaskEditor maxwidth={TASK_EDITOR_WIDTH}>
 				<TaskControl currentTime={currentTime} />
 				<TaskTableDefault currentTime={currentTime} />
 				<Pagination />

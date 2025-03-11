@@ -8,9 +8,10 @@ const InfoSectionStories = {
 	component: InfoSection,
 	argTypes: { variant: { control: 'text' }, },
 }
-const Template = args => <MUIThemeProvider theme={args?.state?.variant === 'dark' ? theme : lightTheme}><InfoSection {...args} /></MUIThemeProvider>
-export const Light = Template.bind({})
+const LightTemplate = args => <MUIThemeProvider theme={lightTheme}><InfoSection {...args} /></MUIThemeProvider>
+const DarkTemplate = args => <MUIThemeProvider theme={theme}><InfoSection {...args} /></MUIThemeProvider>
+export const Light = LightTemplate.bind({})
 Light.args = { state: { variant: 'light', data: body[1] } }
-export const Dark = Template.bind({})
+export const Dark = DarkTemplate.bind({})
 Dark.args = { state: { variant: 'dark', data: body[0] } }
 export default InfoSectionStories

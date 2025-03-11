@@ -5,11 +5,7 @@ import { Provider } from 'react-redux'
 import { theme, lightTheme } from '../../../UI/styles/MUITheme.js'
 import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles'
 
-const TaskTableStories = {
-  title: 'Molecules/TaskTable',
-  component: TaskTableDefault,
-  argTypes: { variant: { control: 'text' }, },
-}
+const TaskTableStories = { title: 'Molecules/TaskTable', component: TaskTableDefault, argTypes: {}, }
 const DarkTemplateWithProvider = args => <MUIThemeProvider theme={theme}><Provider store={store}><Template {...args} /></Provider></MUIThemeProvider>
 const LightTemplateWithProvider = args => <MUIThemeProvider theme={lightTheme}><Provider store={store}><Template {...args} /></Provider></MUIThemeProvider>
 const Template = args => <TaskTableDefault {...args} />
@@ -21,7 +17,7 @@ const darkModeTasks = [
   { status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 5 },
 ]
 export const Light = LightTemplateWithProvider.bind({})
-Light.args = { currentTime: new Date(), customHook: () => ({ childState: { renderNumber: 6, labels: FULL_TASK_HEADERS.slice(0, 4), taskList: DEFAULT_SIMPLE_TASKS } }) } // variant: 'light', headerLabels: FULL_TASK_HEADERS.slice(0, 4),
+Light.args = { currentTime: new Date(), customHook: () => ({ childState: { renderNumber: 6, labels: FULL_TASK_HEADERS.slice(0, 4), taskList: DEFAULT_SIMPLE_TASKS } }) }
 export const Dark = DarkTemplateWithProvider.bind({})
-Dark.args = { currentTime: new Date(), customHook: () => ({ childState: { renderNumber: 12, labels: FULL_TASK_HEADERS, taskList: darkModeTasks } })}
+Dark.args = { currentTime: new Date(), customHook: () => ({ childState: { renderNumber: 12, labels: FULL_TASK_HEADERS, taskList: darkModeTasks } }) }
 export default TaskTableStories

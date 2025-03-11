@@ -3,13 +3,12 @@ import { TimePickerWrapperStyled, ClockIconWrapper, TimeClockWrapper, Display } 
 import { getDefaultState, VIEW, SHOW_CLOCK, getFSMValue, handleClick, handleViewChange, handleBlur } from '../../../Application/finiteStateMachines/TimePickerWrapper.fsm.js'
 import { format, parse } from 'date-fns'
 import { AiOutlineClockCircle } from 'react-icons/ai'
-import { VARIANTS } from '../../../Core/utils/constants.js'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { TimeClock } from '@mui/x-date-pickers'
 
 export const TimePickerWrapper = ({
-  state: { variant = VARIANTS[0], defaultTime = '14:00', offset: { verticalOffset = 0, horizontalOffset = 0 } = {} } = {},
+  state: { defaultTime = '14:00', offset: { verticalOffset = 0, horizontalOffset = 0 } = {} } = {},
   services: { onTimeChange } = {},
   ...rest
 }) => {
@@ -20,7 +19,7 @@ export const TimePickerWrapper = ({
   const [fsmState, setFsmState] = useState(getDefaultState()) // the current state of the state machine
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <TimePickerWrapperStyled variant={variant} >
+      <TimePickerWrapperStyled>
         <Display><p aria-label={`Time display`}>{format(debouncedTime, 'HH:mm')}</p></Display>
         <ClockIconWrapper aria-label="Toggle clock" onMouseDown={() => handleClick(setFsmState, fsmState)} onKeyDown={e => { if (e.key === 'Enter') { handleClick(setFsmState, fsmState) } }}>
           <AiOutlineClockCircle size={32} {...rest} />

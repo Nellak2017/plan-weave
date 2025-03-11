@@ -4,10 +4,9 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers'
 import { parse } from 'date-fns'
-import { VARIANTS } from '../../../Core/utils/constants.js'
 
 export const DateTimePickerWrapper = ({
-	state: { variant = VARIANTS[0], label = 'Choose Due Date', defaultTime = '14:00', defaultDate = new Date() } = {},
+	state: { label = 'Choose Due Date', defaultTime = '14:00', defaultDate = new Date() } = {},
 	services: { onTimeChange = newDateTime => console.log(newDateTime) } = {}
 }) => {
 	const [dateTime, setDateTime] = useState(parse(defaultTime, 'HH:mm', defaultDate))
@@ -18,7 +17,7 @@ export const DateTimePickerWrapper = ({
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns}>
 			<StyledDateTimePicker
-				variant={variant} label={label} value={dateTime}
+				label={label} value={dateTime}
 				onChange={handleDateTimeChange} slotProps={{ textField: { readOnly: true } }}
 				viewRenderers={{ hours: renderTimeViewClock, minutes: renderTimeViewClock, seconds: renderTimeViewClock, }}
 			/>
