@@ -25,7 +25,7 @@ export const WasteContainer = styled('td')(({ theme }) => ({
 export const TimeContainer = styled('td')(({ theme }) => ({
 	padding: theme.spacing(2), maxWidth: '200px', minWidth: '100px', textAlign: 'left',
 	input: { width: '40px', paddingLeft: '0', paddingRight: '0', outline: `1px solid ${theme.palette.text.disabled}`,},
-	'p, pre': { fontSize: theme.spacing(3) },
+	'p, pre': { fontFamily: 'poppins', fontSize: theme.spacing(3) },
 }))
 export const IconContainer = styled('td')(() => ({}))
 export const TrashContainer = styled('td')(({ theme }) => ({ paddingRight: theme.spacing(2), }))
