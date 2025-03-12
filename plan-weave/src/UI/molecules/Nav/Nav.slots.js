@@ -9,7 +9,7 @@ import { Logo, SiteTitle, LoginContainer, StyledNav, ContentContainer } from './
 export const LeftContent = ({
     state: {
         href = '/', logoPath = logo, alt = 'Plan Weave Logo', tabIndex = 0, title = 'Organize your tasks with Plan Weave',
-        dimensions: { width = 64, height = 64 } = {},
+        dimensions: { width = 64, height = 61 } = {},
     } = {}
 }) => (
     <Logo className='logo' tabIndex={tabIndex}>
