@@ -1,4 +1,5 @@
-import { PickerContainer, DropdownWrapper, StyledNumberPicker } from './NumberPicker.elements'
+import { PickerContainer, DropdownWrapper } from './NumberPicker.elements'
+import NativeSelect from '@mui/material/NativeSelect'
 
 const NumberPicker = ({
 	state: { options = [10], pickerText = 'Tasks per page' } = {},
@@ -7,9 +8,9 @@ const NumberPicker = ({
 	<PickerContainer>
 		{pickerText && <p>{pickerText}</p>}
 		<DropdownWrapper>
-			<StyledNumberPicker onChange={e => { if (onValueChange) onValueChange(e.target.value) }} {...rest}>
+			<NativeSelect defaultValue={options?.[0] || 10} inputProps={{ name: 'tasks per page', id: 'uncontrolled-native', }} onChange={e => onValueChange?.(e.target.value)} {...rest}>
 				{options?.map((opt, index) => (<option key={opt.toString().concat(index)} value={opt}>{opt}</option>))}
-			</StyledNumberPicker>
+			</NativeSelect>
 		</DropdownWrapper>
 	</PickerContainer>
 )

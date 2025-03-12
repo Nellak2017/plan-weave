@@ -1,7 +1,5 @@
 import { createTheme } from '@mui/material/styles'
 
-// TODO: Add fontFamily: Poppins to typography possibly
-// TODO: Fix the ugly ass select button, possibly using MUI built-ins
 // TODO: Manually verify all hooks are still working, such as multi-delete and stuff
 // Custom Properties: insets, logoFilter, paperBackground
 const baseTheme = {
