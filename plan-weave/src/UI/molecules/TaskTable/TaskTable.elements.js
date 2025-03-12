@@ -7,3 +7,4 @@ export const TaskTableContainer = styled('div')(({ theme, maxwidth }) => ({
 	td: { display: 'table-cell', }, th: { padding: theme.spacing(2), fontWeight: 'normal', textAlign: 'left', fontSize: theme.typography.h3.fontSize, },
 	backgroundColor: theme.palette.background.paper,
 }))
+export const NoTasksTd = styled('td')(({ theme }) => ({ width: '818px', textAlign: 'center', color: theme.palette.text.primary, }))

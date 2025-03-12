@@ -1,14 +1,13 @@
 import React from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
-import { TaskTableContainer } from './TaskTable.elements.js'
+import { TaskTableContainer, NoTasksTd } from './TaskTable.elements.js'
 import { TASK_EDITOR_WIDTH } from '../../../Core/utils/constants.js'
 import { getHeaderLabels, isStatusChecked } from '../../../Core/utils/helpers.js'
 import TableHeader from '../../atoms/TableHeader/TableHeader.js'
 import { TaskRowDefault } from '../TaskRow/TaskRow.js'
 import { useTaskTableDefault } from '../../../Application/hooks/TaskTable/useTaskTable.js'
 
-// TODO: Fix the NoTasksRow text color issue in Light Mode by making a styled component for it and setting the text color that way
-const NoTasksRow = ({ text = 'No Tasks are made yet. Make some by pressing the + button above.' }) => (<tr><td colSpan='4' style={{ width: '818px', textAlign: 'center' }}>{text}</td></tr>)
+const NoTasksRow = ({ text = 'No Tasks are made yet. Make some by pressing the + button above.' }) => (<tr><NoTasksTd colSpan='4'>{text}</NoTasksTd></tr>)
 
 export const TaskTable = ({
     state: { labels = getHeaderLabels(false), DefaultComponent = NoTasksRow, } = {},
