@@ -27,3 +27,4 @@ export const isHighlighting = () => {
 export const isChecked = taskID => isHighlighting() ? task(taskID)?.selected : isStatusChecked(task(taskID)?.status)
 export const isAtleastOneTaskSelected = () => tasks().filter(task => task?.selected)?.length > 0
 export const isZeroTasksSelected = () => tasks().filter(task => task?.selected)?.length === 0
+export const taskIDsToDelete = () => tasks().map((task, index) => ({ ...task, index })).filter(task => task?.selected).map(task => ({ index: task?.index, id: task?.id }))

@@ -1,4 +1,4 @@
-import { getTime, parseISO, formatISO } from 'date-fns'
+import { getTime, parseISO, formatISO, format } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE, FULL_TASK_HEADERS, RENDER_NUMBERS } from './constants.js'
 
 // calculate waste helpers
@@ -92,6 +92,7 @@ export const rearrangeDnD = (dnd, source, destination) => {
 	return [...both.slice(0, destination), ...dnd.slice(source, source + 1), ...both.slice(destination)]
 }
 export const deleteDnDEvent = (dnd, indexRange) => ordinalSet(dnd.filter((_, i) => i < indexRange.startIndex || i > indexRange.endIndex))
+export const deleteMultipleDnDEvent = (dnd, indices) => ordinalSet(dnd.filter((_, i) => !indices.includes(i)))
 export const reorderList = (tasks, reordering) => tasks.map((_, i) => tasks[reordering[i]])
 // -- TaskList processing
 export const pipe = (...f) => x => f.reduce((acc, fn) => fn(acc), x)
@@ -154,3 +155,9 @@ export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, curren
 export const isInRangeInclusive = (value, min, max) => value >= min && value <= max
 export const parseBlur = (value, min, max, precision) => !isNaN(parseFloat(value)) ? (clamp(parseFloat(value), min, max)).toFixed(precision) : min
 export const parseChange = (value, pattern, min, max) => (pattern.test(value.trim())) && (isInRangeInclusive(parseFloat(value), min, max) || /^[^.]*\.[^.]*$/.test(value)) ? value.trim() : ''
+// -- TaskRow Slots helpers
+export const displayWaste = waste => waste ? formatTimeLeft({ isNegative: waste < 0, timeDifference: waste < 0 ? -waste : waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'
+export const displayEta = eta => eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime()) ? format(parseISO(eta), "HH:mm") : '00:00'
+export const displayEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
+export const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
+export const getTaskRowDnDStyle = provided => ({ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' })

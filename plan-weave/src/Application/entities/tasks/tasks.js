@@ -8,8 +8,8 @@ const tasks = createSlice({
     reducers: {
         updateTasks: (_, action) => action.payload, // lets you change all global tasks at once
         addTask: (state, action) => [action.payload, ...state],// Add a new task to the state
-        deleteTask: (state, action) => state?.map(task => task?.id && task?.id === action.payload ? { ...task, hidden: true } : task),
-        deleteTasks: (state, action) => state?.map(task => task?.id && action.payload.includes(task?.id) ? { ...task, hidden: true } : task),
+        deleteTask: (state, action) => { console.warn("reducer not implemented for deleteTask") }, //state?.map(task => task?.id && task?.id === action.payload ? { ...task, hidden: true } : task),
+        deleteTasks: state => state?.filter(task => !task?.selected),
         updateTask: (state, action) => {
             const { taskID, field, value } = action?.payload || {}
             const taskIndex = state?.findIndex(task => task?.id === taskID)

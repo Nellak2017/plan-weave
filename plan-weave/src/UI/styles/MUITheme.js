@@ -1,6 +1,5 @@
 import { createTheme } from '@mui/material/styles'
 
-// TODO: Manually verify all hooks are still working, such as multi-delete and stuff
 // Custom Properties: insets, logoFilter, paperBackground
 const baseTheme = {
     spacing: num => ['4px', '8px', '16px', '32px', '48px', '56px',]?.[num - 1] || '4px',

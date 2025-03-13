@@ -2,13 +2,14 @@ import { toast } from 'react-toastify' // for the action
 import DeleteModal from '../../UI/atoms/DeleteModal/DeleteModal.js' // for the action
 import { MULTIPLE_DELETE_MODAL_TOAST_CONFIG } from '../../Core/utils/constants.js'
 import { clearSelectedTasks } from '../entities/tasks/tasks.js'
+import { deleteTasksThunkAPI } from '../entities/tasks/tasksThunks.js'
 import store from '../store.js'
 // --- Actions
-
 const dispatch = store ? store?.dispatch : () => { }
-export const yesAction = (setter, newState) => () => { handleYes(setter, newState); defaultAction() } // TODO: pass in the thunk used to do a side-effecting action on a state-change
+const defaultAction = () => dispatch(clearSelectedTasks())
+const deleteMultipleAction = (userID, taskIDsToDelete) => dispatch(deleteTasksThunkAPI({ userID, taskIDs: taskIDsToDelete }))
+export const yesAction = (setter, newState, userID, taskIDsToDelete) => () => { handleYes(setter, newState); deleteMultipleAction(userID, taskIDsToDelete); defaultAction(); }
 export const noAction = (setter, newState) => () => { handleNo(setter, newState) }
-const defaultAction = () => { dispatch(clearSelectedTasks()) }
 const modalAction = (optionHandlers = [() => console.warn('Event for yes not implemented'), () => console.warn('Event for no not implemented')]) => {
     toast.dismiss()
     toast.warning(({ closeToast }) => (<DeleteModal services={{ optionHandlers, closeToast }} />), MULTIPLE_DELETE_MODAL_TOAST_CONFIG)

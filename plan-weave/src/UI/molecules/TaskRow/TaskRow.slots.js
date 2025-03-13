@@ -1,28 +1,20 @@
 import React from 'react'
 import { MdOutlineCheckBox, MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
-import { TASK_ROW_TOOLTIPS, TASK_STATUSES, VARIANTS } from "../../../Core/utils/constants"
-import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContainer, TimeContainer, EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer, TrashContainer, TaskRowStyled, } from "./TaskRow.elements"
+import { TASK_ROW_TOOLTIPS, TASK_STATUSES, ICON_SIZE } from "../../../Core/utils/constants"
+import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContainer, TimeContainer, EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer, TrashContainer, } from "./TaskRow.elements"
 import { TaskInput } from "../../atoms/TaskInput/TaskInput"
 import HoursInput, { HoursInputPositiveFloat } from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from "date-fns"
-import { formatTimeLeft } from "../../../Core/utils/helpers"
+import { formatTimeLeft, displayWaste, displayEta, displayEfficiency, formatDate } from "../../../Core/utils/helpers"
 import DateTimePickerWrapper from "../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js"
 import OptionPicker from "../../atoms/OptionPicker/OptionPicker.js"
 import { BiTrash } from "react-icons/bi"
 import { useCompleteIcon, useTaskInputContainer, useWaste, useTtc, useEta, useEfficiency, useDue, useWeight, useThread, useDependency, useTrash } from '../../../Application/hooks/TaskRow/useTaskRow.js'
 const { dndTooltip, completedTooltip, incompleteTooltip, taskTooltip, wasteTooltip, ttcTooltip, etaTooltip, efficencyToolTip, dueToolTip, weightToolTip, threadToolTip, dependencyToolTip, deleteTooltip } = TASK_ROW_TOOLTIPS
-const iconSize = 36
-
-// TODO: Extract to helpers file 
-const displayWaste = waste => waste ? formatTimeLeft({ isNegative: waste < 0, timeDifference: waste < 0 ? -waste : waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'
-const displayEta = eta => eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime()) ? format(parseISO(eta), "HH:mm") : '00:00'
-const displayEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
-const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
-export const getTaskRowDnDStyle = provided => ({ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' })
 
 export const Drag = ({ provided }) => (
     <DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''} >
-        <DragIndicator size={iconSize} />
+        <DragIndicator size={ICON_SIZE} />
     </DragContainer>
 )
 export const CompleteIcon = ({ taskID, currentTime, customHook = useCompleteIcon }) => {
@@ -30,8 +22,8 @@ export const CompleteIcon = ({ taskID, currentTime, customHook = useCompleteIcon
     return (
         <IconContainer title={isChecked ? completedTooltip : incompleteTooltip}>
             {isChecked
-                ? <MdOutlineCheckBox size={iconSize} onClick={handleCheckBoxClicked} />
-                : <MdOutlineCheckBoxOutlineBlank size={iconSize} onClick={handleCheckBoxClicked} />}
+                ? <MdOutlineCheckBox size={ICON_SIZE} onClick={handleCheckBoxClicked} />
+                : <MdOutlineCheckBoxOutlineBlank size={ICON_SIZE} onClick={handleCheckBoxClicked} />}
         </IconContainer>
     )
 }
@@ -138,5 +130,5 @@ export const Dependency = ({ taskID, customHook = useDependency }) => {
 }
 export const Trash = ({ taskID, customHook = useTrash }) => {
     const { onClickEvent } = customHook?.(taskID) || {}
-    return (<TrashContainer><BiTrash title={deleteTooltip} onClick={onClickEvent} size={iconSize} /></TrashContainer>)
+    return (<TrashContainer><BiTrash title={deleteTooltip} onClick={onClickEvent} size={ICON_SIZE} /></TrashContainer>)
 }

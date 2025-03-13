@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from 'react'
 import store from '../../store.js'
-import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, isZeroTasksSelected, fsmControlledState } from '../../selectors.js'
+import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, isZeroTasksSelected, fsmControlledState, highlightInfo } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency } from '../../../Core/utils/helpers.js'
 import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
@@ -16,18 +16,17 @@ export const useTaskRow = taskID => {
     const usedTask = taskSelector(taskID)
     const { status } = usedTask || {}
     const { startTaskEditor: start, endTaskEditor: end } = timeRange()
-    const timeRangeStartEnd = { start, end } // TODO: verify this is correct
+    const timeRangeStartEnd = { start, end } 
 
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
-    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld(timeRangeStartEnd, usedTask)), [status, timeRangeStartEnd, usedTask])
+    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld(timeRangeStartEnd, usedTask)), [status, timeRangeStartEnd])
     return { status, highlight }
 }
 // Almost done, needs: testing, batching, and completeness, as well as api stuff
 export const useCompleteIcon = (taskID, currentTime) => {
     const userID = userIDSelector(), currentTaskRow = taskSelector(taskID)
     const pipelineOptions = taskOrderPipeOptions(), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector()
-    const isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected()
-    const fsmState = fsmControlledState()
+    const isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected(), fsmState = fsmControlledState()
     useEffect(() => {
         isAtleastOneTaskSelectedForDeletion
             ? handleMinOne(setMultiDeleteFSMState, fsmState)

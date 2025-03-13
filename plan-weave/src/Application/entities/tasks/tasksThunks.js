@@ -1,5 +1,5 @@
-import { addTask, updateTask } from './tasks.js'
-import { addDnD } from '../../sessionContexts/dnd.js'
+import { addTask, updateTask, deleteTasks } from './tasks.js'
+import { addDnD, deleteMultipleDnD } from '../../sessionContexts/dnd.js'
 import { DEFAULT_FULL_TASK } from '../../../Core/utils/constants.js'
 import { toggleTaskStatus, calculateWaste, calculateLiveTime, calculateEta } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
@@ -14,7 +14,6 @@ export const addTaskThunkAPI = ({ userID }) => dispatch => {
 } // Reducer + Business Logic + Side-effects
 export const completeTaskThunkAPI = ({ userID, currentTaskRow, taskOrderPipeOptions, currentTime }) => dispatch => {
     const { id, status } = currentTaskRow || {}
-
     // -- calculations on incoming task for batched update below
 
     // updateTaskAPI({updatedTask, userID}) // 1. POST to API
@@ -42,5 +41,12 @@ export const editDueThunkAPI = ({ userID, taskID, dueDate }) => dispatch => {
 }
 export const editWeightThunkAPI = ({ userID, taskID, weight }) => dispatch => {
     // 1. POST to API
-    dispatch(updateTask({taskID, field: 'weight', value: weight}))
+    dispatch(updateTask({ taskID, field: 'weight', value: weight }))
+}
+export const deleteTasksThunkAPI = ({ userID, taskIDs }) => dispatch => {
+    // 1. DELETE to API using list of taskIDs with form [{ index, id }]
+    const IDs = taskIDs.map(info => info?.id), indices = taskIDs.map(info => info?.index)
+    dispatch(deleteTasks())
+    dispatch(deleteMultipleDnD({ indices }))
+    // NOTE: Pagination likely does not need to be touched since max page is a selector and will naturally push the user back to a previous page if all tasks are deleted on the second or higher page
 }
