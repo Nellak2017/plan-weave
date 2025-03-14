@@ -16,10 +16,10 @@ export const useTaskRow = taskID => {
     const usedTask = taskSelector(taskID)
     const { status } = usedTask || {}
     const { startTaskEditor: start, endTaskEditor: end } = timeRange()
-    const timeRangeStartEnd = { start, end } 
+    const timeRangeStartEnd = useMemo(() => ({ start, end }), [start, end])
 
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
-    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld(timeRangeStartEnd, usedTask)), [status, timeRangeStartEnd])
+    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld(timeRangeStartEnd, usedTask)), [timeRangeStartEnd, isChecked, isHighlighting, usedTask])
     return { status, highlight }
 }
 // Almost done, needs: testing, batching, and completeness, as well as api stuff
@@ -31,7 +31,7 @@ export const useCompleteIcon = (taskID, currentTime) => {
         isAtleastOneTaskSelectedForDeletion
             ? handleMinOne(setMultiDeleteFSMState, fsmState)
             : handleMaxZero(setMultiDeleteFSMState, fsmState)
-    }, [isAtleastOneTaskSelectedForDeletion, setMultiDeleteFSMState, fsmState]) // NOTE: This useEffect is used to get us in or out of the choose or chosen state. It wasn't possible in the click function to my knowledge
+    }, [isAtleastOneTaskSelectedForDeletion, fsmState]) // NOTE: This useEffect is used to get us in or out of the choose or chosen state. It wasn't possible in the click function to my knowledge
     return {
         isChecked,
         handleCheckBoxClicked: () => {
@@ -53,10 +53,9 @@ export const useTaskInputContainer = taskID => {
 }
 // Almost done, needs: testing
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    const currentTaskRow = taskSelector?.(taskID) || {}
+    const currentTaskRow = useMemo(() => taskSelector?.(taskID) || {}, [taskID])
     const pipelineOptions = taskOrderPipeOptions()
-    const waste = useMemo(() => calculateWaste(currentTaskRow, pipelineOptions, currentTime), [pipelineOptions, currentTime])
-
+    const waste = useMemo(() => calculateWaste(currentTaskRow, pipelineOptions, currentTime), [pipelineOptions, currentTime, currentTaskRow])
     return { waste }
 }
 // Almost done, needs: testing
@@ -72,14 +71,14 @@ export const useTtc = taskID => {
 }
 // Almost done, needs: testing
 export const useEta = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    const currentTaskRow = taskSelector?.(taskID) || {}
+    const currentTaskRow = useMemo(() => taskSelector?.(taskID) || {}, [taskID])
     const pipelineOptions = taskOrderPipeOptions()
     const eta = useMemo(() => calculateEta(currentTaskRow, pipelineOptions, currentTime), [currentTaskRow, pipelineOptions, currentTime])
     return { eta }
 }
 // Almost done, needs: testing, correction of efficiency function
 export const useEfficiency = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    const currentTaskRow = taskSelector?.(taskID) || {}
+    const currentTaskRow = useMemo(() => taskSelector?.(taskID) || {}, [taskID]) 
     const pipelineOptions = taskOrderPipeOptions()
     const efficiency = useMemo(() => Math.abs(calculateEfficiency(currentTaskRow, pipelineOptions, currentTime)), [currentTaskRow, pipelineOptions, currentTime])
     return { efficiency }
@@ -108,7 +107,7 @@ export const useWeight = taskID => {
 export const useThread = taskID => {
     const { parentThread } = taskSelector?.(taskID) || {}
     const options = [] // TODO: Figure out how to do this one, I am not familiar with the registery of all threads
-    const childState = { options, defaultValue: parentThread, /* TODO: Figure out if this is the intended default, I don't recall */}
+    const childState = { options, defaultValue: parentThread, /* TODO: Figure out if this is the intended default, I don't recall */ }
     const childServices = {
         onChangeEvent: () => console.warn('onChange thunk not implemented for useThread'),
         onBlurEvent: () => console.warn('onBlur thunk not implemented for useThread'),

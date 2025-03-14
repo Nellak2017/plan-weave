@@ -2,7 +2,6 @@ import { useSelector } from 'react-redux'
 import { tryCatchSyncFlat, isStatusChecked } from '../Core/utils/helpers.js' // for returning defaults if no redux used
 import { CHOOSE, CHOSEN } from './finiteStateMachines/MultipleDeleteButton.fsm.js'
 // TODO: Add more business constraints here for these selectors
-// TODO: Use constants and getters for the defaults instead of hard coded values
 export const tasks = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks), () => [])
 export const task = (taskID, selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks).filter(task => task?.id === taskID)?.[0], () => { })
 export const userID = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.auth?.userID), () => '')

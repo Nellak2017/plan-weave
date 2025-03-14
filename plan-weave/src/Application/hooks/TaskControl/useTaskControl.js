@@ -9,11 +9,11 @@ import store from '../../store.js'
 // TODO: Implement time range checking feature that makes TimePicker Redux controlled (uses checkTimeRange function)
 const dispatch = store.dispatch
 export const useTopSlot = () => {
-    const { startTaskEditor, endTaskEditor } = timeRange(), timeRangeState = { startTaskEditor, endTaskEditor }
+    const { startTaskEditor, endTaskEditor } = timeRange()
     const childState = {
         isOwl: isOwl(),
-        startTime: useMemo(() => startTaskEditor?.defaultTime ? parseISO(startTaskEditor?.defaultTime) : new Date(), [timeRangeState]),
-        endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [timeRangeState]),
+        startTime: useMemo(() => startTaskEditor?.defaultTime ? parseISO(startTaskEditor?.defaultTime) : new Date(), [startTaskEditor?.defaultTime]),
+        endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [endTaskEditor?.defaultTime]),
     }
     const childServices = {
         search: ({ value, id = VALID_SEARCH_IDS?.SEARCH_TASK_EDITOR_ID }) => { dispatch(searchThunk({ id, value })) },
@@ -31,11 +31,11 @@ export const useTopSlot = () => {
 }
 
 export const useBottomSlot = () => {
-    const { startTaskEditor, endTaskEditor } = timeRange(), timeRangeState = { startTaskEditor, endTaskEditor }
+    const { startTaskEditor, endTaskEditor } = timeRange()
     const userID = userIDSelector()
     const childState = {
         isFullTask: isFullTask(), fsmControlledState: fsmControlledState(), isOwl: isOwl(),
-        endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [timeRangeState]),
+        endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [endTaskEditor?.defaultTime]),
     }
     const childServices = {
         addTask: () => { dispatch(addTaskThunkAPI({ userID })) },

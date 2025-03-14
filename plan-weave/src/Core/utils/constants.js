@@ -44,6 +44,7 @@ export const DEFAULT_FULL_TASK = {
 	dependencies: [],
 	weight: 1,
 }
+export const FULL_TASK_FIELDS = Object.fromEntries(Object.keys(DEFAULT_FULL_TASK).map(item => [item, item])) // { id, status, ...etc}
 export const DEFAULT_TASK_CONTROL_TOOL_TIPS = {
 	owlToolTip: 'Toggle Overnight Mode', addToolTip: 'Add a New Task',
 	deleteToolTip: 'Delete selected', dropDownToolTip: 'Select Sorting Method',

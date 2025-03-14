@@ -22,7 +22,7 @@ export const MultipleDeleteButton = ({
     const userID = userIDSelector(), taskIDsToDelete = taskIDsToDeleteSelector()
     // Handler to update state locally if uncontrolled or non-locally if controlled. It will also call the additional action we define too
     const handleStateUpdate = newState => {
-        getFSMValue(newState, ACTION)?.([yesAction(setControlledFSMState, newState, userID, taskIDsToDelete), noAction(setControlledFSMState, newState)])
+        getFSMValue(newState, ACTION)?.([yesAction(setControlledFSMState, newState, { userID, taskIDsToDelete }), noAction(setControlledFSMState, newState)])
         if (!fsmControlledState) { setFSMState(newState) } else { setControlledFSMState(newState) }
     }
     return (<>

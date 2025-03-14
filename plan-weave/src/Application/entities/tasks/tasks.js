@@ -15,7 +15,13 @@ const tasks = createSlice({
             const taskIndex = state?.findIndex(task => task?.id === taskID)
             if (taskIndex !== -1) state[taskIndex][field] = value // Edit a task by ID and field
         },
-        // TODO: Create updateTask batch version
+        updateTasksBatch: (state, action) => {
+            const updates = action?.payload || {}
+            updates.forEach(({ taskID, field, value }) => {
+                const taskIndex = state.findIndex(task => task?.id === taskID)
+                if (taskIndex !== -1) state[taskIndex][field] = value
+            })
+        }, // Update tasks in batch
         refreshTasks: state => state?.map(task => ({ ...task, timestamp: parseISO(dateToToday(new Date(task.timestamp).toISOString())).getTime() / 1000 })), // update every task in the task list to have timestamp for today but with it's hours
         toggleSelectTask: (state, action) => {
             const { taskID } = action?.payload || {}
@@ -25,5 +31,5 @@ const tasks = createSlice({
         clearSelectedTasks: state => state?.map(task => ({ ...task, selected: false })),
     }
 })
-export const { updateTasks, addTask, deleteTask, deleteTasks, refreshTasks, updateTask, toggleSelectTask, clearSelectedTasks, } = tasks.actions
+export const { updateTasks, addTask, deleteTask, deleteTasks, refreshTasks, updateTask, toggleSelectTask, clearSelectedTasks, updateTasksBatch } = tasks.actions
 export default tasks.reducer
