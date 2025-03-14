@@ -41,7 +41,7 @@ export const isRelativelyOrdered = (list1, list2) => ((list1.length !== list2.le
 		const [b, c, d] = [list1[i + 1], list2[i], list2[i + 1]]
 		return (a < b && c < d) || (a > b && c > d)
 	}, true)
-export const relativeSortIndex = (tasks, sort, id, complete = TASK_STATUSES.COMPLETED, incomplete = TASK_STATUSES.INCOMPLETE) => {
+export const relativeSortIndex = ({ tasks, sort, id, complete = TASK_STATUSES.COMPLETED, incomplete = TASK_STATUSES.INCOMPLETE }) => {
 	const newTasks = tasks.map(el => ({ ...el })) // ensures no proxies used
 	const completed = newTasks.filter(t => t.status === complete)
 	const incompleted = newTasks.filter(t => t.status === incomplete)
@@ -153,8 +153,8 @@ export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, curren
 }
 // -- HoursInput Component helpers
 export const isInRangeInclusive = (value, min, max) => value >= min && value <= max
-export const parseBlur = (value, min, max, precision) => !isNaN(parseFloat(value)) ? (clamp(parseFloat(value), min, max)).toFixed(precision) : min
-export const parseChange = (value, pattern, min, max) => (pattern.test(value.trim())) && (isInRangeInclusive(parseFloat(value), min, max) || /^[^.]*\.[^.]*$/.test(value)) ? value.trim() : ''
+export const parseBlur = ({ value, min, max, precision }) => !isNaN(parseFloat(value)) ? (clamp(parseFloat(value), min, max)).toFixed(precision) : min
+export const parseChange = ({ value, pattern, min, max }) => (pattern.test(value.trim())) && (isInRangeInclusive(parseFloat(value), min, max) || /^[^.]*\.[^.]*$/.test(value)) ? value.trim() : ''
 // -- TaskRow Slots helpers
 export const displayWaste = waste => waste ? formatTimeLeft({ isNegative: waste < 0, timeDifference: waste < 0 ? -waste : waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'
 export const displayEta = eta => eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime()) ? format(parseISO(eta), "HH:mm") : '00:00'

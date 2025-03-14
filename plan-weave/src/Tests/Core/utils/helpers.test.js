@@ -1092,7 +1092,7 @@ describe('relativeSortIndex', () => {
 	]
 	testCases.forEach(({ description, tasks, id, expected }) => {
 		it(`Correctly calculates index for ${description} case`, () => {
-			expect(relativeSortIndex(tasks, sortFunction, id)).toBe(expected)
+			expect(relativeSortIndex({ tasks, sort: sortFunction, id })).toBe(expected)
 		})
 	})
 })
