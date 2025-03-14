@@ -14,8 +14,10 @@ export const TimePickerWrapper = ({
 }) => {
   const initialTime = useRef(parse(defaultTime, 'HH:mm', new Date()))
   const [time, setTime] = useState(initialTime.current)
+  /* eslint-disable react-hooks/exhaustive-deps */
   const debouncedTime = useMemo(() => time, [time / 10]) // divide by 10 to be able to debounce on first decimal place of change
   useEffect(() => { onTimeChange?.(debouncedTime) }, [debouncedTime]) // only call parent when clock hand changes
+  /* eslint-disable react-hooks/exhaustive-deps */
   const [fsmState, setFsmState] = useState(getDefaultState()) // the current state of the state machine
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>

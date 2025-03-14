@@ -53,7 +53,8 @@ export const useTaskInputContainer = taskID => {
 }
 // Almost done, needs: testing
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    const currentTaskRow = useMemo(() => taskSelector?.(taskID) || {}, [taskID])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const currentTaskRow = taskSelector?.(taskID) || {}
     const pipelineOptions = taskOrderPipeOptions()
     const waste = useMemo(() => calculateWaste(currentTaskRow, pipelineOptions, currentTime), [pipelineOptions, currentTime, currentTaskRow])
     return { waste }
@@ -71,14 +72,16 @@ export const useTtc = taskID => {
 }
 // Almost done, needs: testing
 export const useEta = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    const currentTaskRow = useMemo(() => taskSelector?.(taskID) || {}, [taskID])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const currentTaskRow = taskSelector?.(taskID) || {}
     const pipelineOptions = taskOrderPipeOptions()
     const eta = useMemo(() => calculateEta(currentTaskRow, pipelineOptions, currentTime), [currentTaskRow, pipelineOptions, currentTime])
     return { eta }
 }
 // Almost done, needs: testing, correction of efficiency function
 export const useEfficiency = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    const currentTaskRow = useMemo(() => taskSelector?.(taskID) || {}, [taskID]) 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const currentTaskRow = taskSelector?.(taskID) || {} 
     const pipelineOptions = taskOrderPipeOptions()
     const efficiency = useMemo(() => Math.abs(calculateEfficiency(currentTaskRow, pipelineOptions, currentTime)), [currentTaskRow, pipelineOptions, currentTime])
     return { efficiency }
