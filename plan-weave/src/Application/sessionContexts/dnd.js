@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit"
-import { rearrangeDnD, addDnDConfig, deleteMultipleDnDEvent } from "../../Core/utils/helpers"
+import { rearrangeDnD, addDnDConfig, deleteMultipleDnDEvent, deleteDnDEvent } from "../../Core/utils/helpers"
 
 const dnd = createSlice({
     name: 'dnd',
@@ -13,8 +13,12 @@ const dnd = createSlice({
         deleteMultipleDnD: (state, action) => {
             const { indices } = action.payload
             return deleteMultipleDnDEvent(Array.from(state), indices)
-        }
+        },
+        deleteDnD: (state, action) => {
+            const { index } = action.payload
+            return deleteDnDEvent(Array.from(state), index)
+        },
     }
 })
-export const { addDnD, updateDnD, deleteMultipleDnD } = dnd.actions
+export const { addDnD, updateDnD, deleteMultipleDnD, deleteDnD } = dnd.actions
 export default dnd.reducer

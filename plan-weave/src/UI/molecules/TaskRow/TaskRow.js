@@ -28,7 +28,7 @@ export const TaskRowDefault = ({ state: { renderNumber, provided, taskID, curren
                 <Thread taskID={taskID} />
                 <Dependency taskID={taskID} />
             </TaskRow>
-            <Trash />
+            <Trash taskID={taskID} />
         </TaskRowStyled>
     )
 }

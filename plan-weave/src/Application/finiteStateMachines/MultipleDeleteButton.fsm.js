@@ -7,7 +7,7 @@ import store from '../store.js'
 // --- Actions
 const dispatch = store ? store?.dispatch : () => { }
 const defaultAction = () => dispatch(clearSelectedTasks())
-const deleteMultipleAction = (userID, taskIDsToDelete) => dispatch(deleteTasksThunkAPI({ userID, taskIDs: taskIDsToDelete }))
+const deleteMultipleAction = (userID, taskIDsToDelete) => dispatch(deleteTasksThunkAPI({ userID, taskInfos: taskIDsToDelete }))
 export const yesAction = (setter, newState, { userID, taskIDsToDelete }) => () => { handleYes(setter, newState); deleteMultipleAction(userID, taskIDsToDelete); defaultAction(); }
 export const noAction = (setter, newState) => () => { handleNo(setter, newState) }
 const modalAction = (optionHandlers = [() => console.warn('Event for yes not implemented'), () => console.warn('Event for no not implemented')]) => {

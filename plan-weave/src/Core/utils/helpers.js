@@ -91,9 +91,10 @@ export const rearrangeDnD = (dnd, source, destination) => {
 	const both = (dnd.slice(0, source)).concat(dnd.slice(source + 1))
 	return [...both.slice(0, destination), ...dnd.slice(source, source + 1), ...both.slice(destination)]
 }
-export const deleteDnDEvent = (dnd, indexRange) => ordinalSet(dnd.filter((_, i) => i < indexRange.startIndex || i > indexRange.endIndex))
+export const deleteDnDEvent = (dnd, index) => ordinalSet(dnd.filter((_, i) => i !== index))
 export const deleteMultipleDnDEvent = (dnd, indices) => ordinalSet(dnd.filter((_, i) => !indices.includes(i)))
 export const reorderList = (tasks, reordering) => tasks.map((_, i) => tasks[reordering[i]])
+export const indexOfTaskToBeDeleted = (dnd, tasks, taskID) => dnd.indexOf(tasks.findIndex(task => task.id === taskID))
 // -- TaskList processing
 export const pipe = (...f) => x => f.reduce((acc, fn) => fn(acc), x)
 export const taskListPipe = ({ oldTaskList, dnd }) => { // TODO: pipe this properly

@@ -1,17 +1,16 @@
 import { useMemo, useEffect } from 'react'
 import store from '../../store.js'
-import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, isZeroTasksSelected, fsmControlledState, highlightInfo } from '../../selectors.js'
-import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency } from '../../../Core/utils/helpers.js'
-import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, } from '../../thunks.js'
+import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, tasks as tasksSelector } from '../../selectors.js'
+import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency, indexOfTaskToBeDeleted } from '../../../Core/utils/helpers.js'
+import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import { handleMaxZero, handleMinOne } from '../../finiteStateMachines/MultipleDeleteButton.fsm.js'
 
-// TODO: Make Thunks for every hook that needs one
+// TODO: Test all more deeply, they appear done with few minor exceptions like last 3, api, correction of read only
 const dispatch = store.dispatch
 const setMultiDeleteFSMState = value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) }
-// Almost done, needs: testing
 export const useTaskRow = taskID => {
     const usedTask = taskSelector(taskID)
     const { status } = usedTask || {}
@@ -19,10 +18,10 @@ export const useTaskRow = taskID => {
     const timeRangeStartEnd = useMemo(() => ({ start, end }), [start, end])
 
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
+    // TODO: Figure out why end time is incorrect by being behind by 1 day. It should be always in a correct state. (when someone puts it as a end time less than start, set owl to be true and show toast warning. If it is like it initially also do the same thing too)
     const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld(timeRangeStartEnd, usedTask)), [timeRangeStartEnd, isChecked, isHighlighting, usedTask])
     return { status, highlight }
 }
-// Almost done, needs: testing, batching, and completeness, as well as api stuff
 export const useCompleteIcon = (taskID, currentTime) => {
     const userID = userIDSelector(), currentTaskRow = taskSelector(taskID)
     const pipelineOptions = taskOrderPipeOptions(), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector()
@@ -41,7 +40,6 @@ export const useCompleteIcon = (taskID, currentTime) => {
         }
     }
 }
-// Almost done, needs: testing
 export const useTaskInputContainer = taskID => {
     const { status, task } = taskSelector?.(taskID) || {}
     const userID = userIDSelector() || ''
@@ -51,7 +49,6 @@ export const useTaskInputContainer = taskID => {
     }
     return { childState, childServices }
 }
-// Almost done, needs: testing
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const currentTaskRow = taskSelector?.(taskID) || {}
@@ -59,7 +56,6 @@ export const useWaste = (taskID, currentTime) => { // We calculate this from Red
     const waste = useMemo(() => calculateWaste(currentTaskRow, pipelineOptions, currentTime), [pipelineOptions, currentTime, currentTaskRow])
     return { waste }
 }
-// Almost done, needs: testing
 export const useTtc = taskID => {
     const { status, ttc } = taskSelector?.(taskID) || {}
     const userID = userIDSelector() || ''
@@ -70,7 +66,6 @@ export const useTtc = taskID => {
     }
     return { childState, childServices }
 }
-// Almost done, needs: testing
 export const useEta = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const currentTaskRow = taskSelector?.(taskID) || {}
@@ -78,15 +73,13 @@ export const useEta = (taskID, currentTime) => { // We calculate this from Redux
     const eta = useMemo(() => calculateEta(currentTaskRow, pipelineOptions, currentTime), [currentTaskRow, pipelineOptions, currentTime])
     return { eta }
 }
-// Almost done, needs: testing, correction of efficiency function
 export const useEfficiency = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const currentTaskRow = taskSelector?.(taskID) || {} 
+    const currentTaskRow = taskSelector?.(taskID) || {}
     const pipelineOptions = taskOrderPipeOptions()
     const efficiency = useMemo(() => Math.abs(calculateEfficiency(currentTaskRow, pipelineOptions, currentTime)), [currentTaskRow, pipelineOptions, currentTime])
     return { efficiency }
 }
-// Almost done, needs: testing
 export const useDue = taskID => {
     const { status, dueDate } = taskSelector?.(taskID) || { dueDate: new Date().toISOString() }
     const userID = userIDSelector() || ''
@@ -96,7 +89,6 @@ export const useDue = taskID => {
     }
     return { childState, childServices }
 }
-// Almost done, needs: testing
 export const useWeight = taskID => {
     const { status, weight, dueDate } = taskSelector?.(taskID) || {}
     const userID = userIDSelector() || ''
@@ -127,6 +119,12 @@ export const useDependency = taskID => {
     }
     return { childState, childServices }
 }
+// needs: implementation
 export const useTrash = taskID => {
-    return { onClickEvent: () => console.warn('onClick thunk not implemented for useTrash') }
+    const userID = userIDSelector() || '', dnd = dndSelector() || [], tasks = tasksSelector?.() || []
+    return {
+        onClickEvent: () => {
+            dispatch(deleteTaskThunkAPI({ userID, taskInfo: { index: indexOfTaskToBeDeleted(dnd, tasks, taskID), id: taskID } }))
+        }
+    }
 }
