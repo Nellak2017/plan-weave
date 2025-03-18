@@ -141,11 +141,11 @@ const timeFormat = ({ timeLeftInMinutes, timeLeftInHours }, { minuteText = 'minu
 	return `${timeLeftInHours} hour${timeLeftInHours > 1 ? 's' : ''} ${timeLeftInMinutes} ${minuteText}`
 }
 // -- TaskRow Slots helpers
-export const displayWaste = waste => waste ? formatTimeLeft({ isNegative: waste < 0, timeDifference: waste < 0 ? -waste : waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'
-export const displayEta = eta => eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime()) ? format(parseISO(eta), "HH:mm") : '00:00'
-export const displayEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
-export const formatTTC = ttc => (!ttc || isNaN(ttc)) ? '0 minutes' : timeFormat(findTimeLeft(ttc))
+export const formatTTC = ttc => (!ttc || isNaN(ttc)) ? '0 minutes' : timeFormat(findTimeLeft(ttc), { minuteText: 'minutes', hourText: 'hours' })
 export const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
+export const formatWaste = waste => waste < 0 ? `-${formatTTC(waste)}` : formatTTC(waste)
+export const formatEta = eta => eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime()) ? format(parseISO(eta), "HH:mm") : '00:00'
+export const formatEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
 export const getTaskRowDnDStyle = provided => ({ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' })
 export const processThreadOptions = (oldOptions, newThread) => Array.from(new Set([...oldOptions, newThread])).filter(option => option.trim() !== '')
 export const getAvailableThreads = tasks => [...Array.from(new Set(tasks.map(task => task?.parentThread))).filter(option => option.trim() !== '')]

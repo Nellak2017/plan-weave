@@ -5,7 +5,7 @@ import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContai
 import { TaskInput } from "../../atoms/TaskInput/TaskInput"
 import HoursInput, { HoursInputPositiveFloat } from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from "date-fns"
-import { displayWaste, displayEta, displayEfficiency, formatDate, formatTTC } from "../../../Core/utils/helpers"
+import { formatWaste, formatEta, formatEfficiency, formatDate, formatTTC } from "../../../Core/utils/helpers"
 import DateTimePickerWrapper from "../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js"
 import OptionPicker from "../../atoms/OptionPicker/OptionPicker.js"
 import { BiTrash } from "react-icons/bi"
@@ -40,7 +40,7 @@ export const TaskInputContainer = ({ taskID, customHook = useTaskInputContainer 
     )
 }
 export const Waste = ({ taskID, currentTime, customHook = useWaste }) => {
-    const { waste, renderFunction = displayWaste } = customHook?.(taskID, currentTime) || {}
+    const { waste, renderFunction = formatWaste } = customHook?.(taskID, currentTime) || {}
     return (<WasteContainer title={wasteTooltip} style={{ width: '200px' }}><p>{renderFunction(waste)}</p></WasteContainer>)
 }
 export const Ttc = ({ taskID, customHook = useTtc }) => {
@@ -61,11 +61,11 @@ export const Ttc = ({ taskID, customHook = useTtc }) => {
     )
 }
 export const Eta = ({ taskID, currentTime, customHook = useEta }) => {
-    const { eta, renderFunction = displayEta } = customHook?.(taskID, currentTime,) || {}
+    const { eta, renderFunction = formatEta } = customHook?.(taskID, currentTime,) || {}
     return (<TimeContainer title={etaTooltip}><p aria-label={'eta for task'}> {renderFunction(eta)}</p></TimeContainer>)
 }
 export const Efficiency = ({ taskID, currentTime, customHook = useEfficiency }) => {
-    const { efficiency, renderFunction = displayEfficiency } = customHook?.(taskID, currentTime) || {}
+    const { efficiency, renderFunction = formatEfficiency } = customHook?.(taskID, currentTime) || {}
     return (<EfficiencyContainer title={efficencyToolTip}><p>{renderFunction(efficiency)}</p></EfficiencyContainer>)
 }
 export const Due = ({ taskID, customHook = useDue }) => {
