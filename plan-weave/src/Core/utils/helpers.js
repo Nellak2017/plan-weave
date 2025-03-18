@@ -79,7 +79,7 @@ export const getHeaderLabels = isFullTask => FULL_TASK_HEADERS.slice(0, isFullTa
 export const isStatusChecked = status => status === TASK_STATUSES.COMPLETED
 export const toggleTaskStatus = status => isStatusChecked(status) ? TASK_STATUSES.INCOMPLETE : TASK_STATUSES.COMPLETED
 export const getTaskRenderNumber = isFullTask => isFullTask ? RENDER_NUMBERS.FULL_TASK : RENDER_NUMBERS.SIMPLE_TASK
-// -- DnD
+// -- Most of DnD
 export const ordinalSet = dnd => {
 	const mapping = {}
 	const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
@@ -87,21 +87,29 @@ export const ordinalSet = dnd => {
 	return dnd.map(num => mapping[num])
 }
 export const addDnDConfig = oldDnDConfig => [0].concat(oldDnDConfig.map(x => x + 1))
-export const rearrangeDnD = (dnd, source, destination) => {
+export const rearrangeDnD = (dnd, source, destination) => { // You _may_ have to modify this to account for completed tasks or maybe make a helper that separates responsibilities(?)
 	const both = (dnd.slice(0, source)).concat(dnd.slice(source + 1))
 	return [...both.slice(0, destination), ...dnd.slice(source, source + 1), ...both.slice(destination)]
 }
 export const deleteDnDEvent = (dnd, index) => ordinalSet(dnd.filter((_, i) => i !== index))
 export const deleteMultipleDnDEvent = (dnd, indices) => ordinalSet(dnd.filter((_, i) => !indices.includes(i)))
-export const reorderList = (tasks, reordering) => tasks.map((_, i) => tasks[reordering[i]])
 export const indexOfTaskToBeDeleted = (dnd, tasks, taskID) => dnd.indexOf(tasks.findIndex(task => task.id === taskID))
 // -- TaskList processing
+const filterTasksBySearchTerm = searchTerm => (oldTaskList) => oldTaskList.filter(task => task?.task?.trim().includes(searchTerm?.toLowerCase()?.trim()))
+const sortTasksBySortAlgo = sortAlgo => (oldTaskList) => sortAlgo(oldTaskList)
+const completedOnTop = (oldTaskList) => [...oldTaskList.filter(task => task?.status === TASK_STATUSES.COMPLETED), ...oldTaskList.filter(task => task?.status === TASK_STATUSES.INCOMPLETE)]
+const reorderList = reordering => (oldTaskList) => oldTaskList.map((_, i) => oldTaskList[reordering[i]])
+const pagination = ({ start, end }) => (oldTaskList) => oldTaskList.slice(start - 1, end)
 export const pipe = (...f) => x => f.reduce((acc, fn) => fn(acc), x)
-export const taskListPipe = ({ oldTaskList, dnd }) => { // TODO: pipe this properly
-	// Note: I think this should be the ordering part of the pipe. The values should be calculated separately (?) 
-	const dndApp = reorderList(oldTaskList, dnd) // 1. Apply DnD
-	return dndApp
-}
+export const taskListPipe = ({ oldTaskList, dnd, filter, sortAlgo, paginationRange }) => pipe(
+	filterTasksBySearchTerm(filter),
+	sortTasksBySortAlgo(sortAlgo),
+	reorderList(dnd),
+	completedOnTop,
+	pagination(paginationRange),
+)(oldTaskList) 
+// TODO: Glitch: Task dnd order does not reset upon switching sort algorithms. Potential Solutions => [make a pure function that takes in curr and prev sort algos and other stuff then compute it, do it in a thunk (less testable), something else]
+// TODO: Oversight: dnd order updates when you move an incomplete task to a complete index, it should not update when it is blatantly incorrect to allow it
 // -- Read-only TaskRow fields
 // TODO: See if you can simplify by making the timestamps just ISO strings?
 // TODO: Be sure to test these functions, something is fishy with calculate Waste and calculate Live Time

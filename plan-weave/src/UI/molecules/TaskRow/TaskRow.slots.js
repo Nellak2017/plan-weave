@@ -46,7 +46,7 @@ export const Waste = ({ taskID, currentTime, customHook = useWaste }) => {
 export const Ttc = ({ taskID, customHook = useTtc }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { status, ttc } = childState || {}
-    const { onValueChangeEvent, onBlurEvent } = childServices || {}
+    const { onBlurEvent } = childServices || {}
     return ( // TODO: Simplify this Component by extracting to helper or something. TODO: possibly pass a render function in
         <TimeContainer title={ttcTooltip}>
             {status === TASK_STATUSES.COMPLETED
@@ -54,7 +54,7 @@ export const Ttc = ({ taskID, customHook = useTtc }) => {
                 : <HoursInputPositiveFloat
                     defaultValue={ttc}
                     state={{ step: .01, min: .01, placeholder: 'hours', text: 'hours' }}
-                    services={{ onValueChange: onValueChangeEvent, onBlur: onBlurEvent }}
+                    services={{ onBlur: onBlurEvent }}
                 />
             }
         </TimeContainer>

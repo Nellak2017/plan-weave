@@ -41,42 +41,32 @@ export const useCompleteIcon = (taskID, currentTime) => {
     }
 }
 export const useTaskInputContainer = taskID => {
-    const { status, task } = taskSelector?.(taskID) || {}
-    const userID = userIDSelector() || ''
+    const { status, task } = taskSelector?.(taskID) || {}, userID = userIDSelector() || ''
     const childState = { status, taskName: task }
-    const childServices = {
-        onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ userID, taskID, taskName: e.target.value })) }
-    }
+    const childServices = { onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ userID, taskID, taskName: e.target.value })) } }
     return { childState, childServices }
 }
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const currentTaskRow = taskSelector?.(taskID) || {}
-    const pipelineOptions = taskOrderPipeOptions()
+    const currentTaskRow = taskSelector?.(taskID) || {}, pipelineOptions = taskOrderPipeOptions()
     const waste = useMemo(() => calculateWaste(currentTaskRow, pipelineOptions, currentTime), [pipelineOptions, currentTime, currentTaskRow])
     return { waste }
 }
 export const useTtc = taskID => {
-    const { status, ttc } = taskSelector?.(taskID) || {}
-    const userID = userIDSelector() || ''
+    const { status, ttc } = taskSelector?.(taskID) || {}, userID = userIDSelector() || ''
     const childState = { status, ttc }
-    const childServices = {
-        //onValueChangeEvent: () => console.warn('onValueChange thunk not implemented for useTtc'),
-        onBlurEvent: ttc => dispatch(editTtcThunkAPI({ userID, taskID, ttc: parseFloat(ttc) })),
-    }
+    const childServices = { onBlurEvent: ttc => dispatch(editTtcThunkAPI({ userID, taskID, ttc: parseFloat(ttc) })), } // NOTE: onValueChangeEvent not used
     return { childState, childServices }
 }
 export const useEta = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const currentTaskRow = taskSelector?.(taskID) || {}
-    const pipelineOptions = taskOrderPipeOptions()
+    const currentTaskRow = taskSelector?.(taskID) || {}, pipelineOptions = taskOrderPipeOptions()
     const eta = useMemo(() => calculateEta(currentTaskRow, pipelineOptions, currentTime), [currentTaskRow, pipelineOptions, currentTime])
     return { eta }
 }
 export const useEfficiency = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const currentTaskRow = taskSelector?.(taskID) || {}
-    const pipelineOptions = taskOrderPipeOptions()
+    const currentTaskRow = taskSelector?.(taskID) || {}, pipelineOptions = taskOrderPipeOptions()
     const efficiency = useMemo(() => Math.abs(calculateEfficiency(currentTaskRow, pipelineOptions, currentTime)), [currentTaskRow, pipelineOptions, currentTime])
     return { efficiency }
 }
@@ -84,43 +74,31 @@ export const useDue = taskID => {
     const { status, dueDate } = taskSelector?.(taskID) || { dueDate: new Date().toISOString() }
     const userID = userIDSelector() || ''
     const childState = { isChecked: isStatusChecked(status), dueDate }
-    const childServices = {
-        onTimeChangeEvent: dueDate => dispatch(editDueThunkAPI({ userID, taskID, dueDate: formatISO(dueDate) }))
-    }
+    const childServices = { onTimeChangeEvent: dueDate => dispatch(editDueThunkAPI({ userID, taskID, dueDate: formatISO(dueDate) })) }
     return { childState, childServices }
 }
 export const useWeight = taskID => {
     const { status, weight, dueDate } = taskSelector?.(taskID) || {}
     const userID = userIDSelector() || ''
     const childState = { isChecked: isStatusChecked(status), dueDate, weight }
-    const childServices = {
-        onValueChangeEvent: weight => dispatch(editWeightThunkAPI({ userID, taskID, weight: parseFloat(weight) }))
-    }
+    const childServices = { onValueChangeEvent: weight => dispatch(editWeightThunkAPI({ userID, taskID, weight: parseFloat(weight) })) }
     return { childState, childServices }
 }
-// needs: thread repository, implementation, testing
 export const useThread = taskID => {
     const { parentThread } = taskSelector?.(taskID) || {}, userID = userIDSelector() || '', threadsAvailable = getAllThreadOptionsAvailable?.() || []
     const childState = { options: threadsAvailable, defaultValue: parentThread, }
     const childServices = { onBlurEvent: newThread => dispatch(editThreadThunkAPI({ userID, taskID, newThread })), } // NOTE: onChangeEvent appears unnecessary
     return { childState, childServices }
 }
-// needs: dependency selector, implementation, testing
+// TODO: Implement useDependency correctly. needs: dependency selector, implementation, testing
 export const useDependency = taskID => {
     const { dependencies } = taskSelector?.(taskID) || {}
     const defaultValue = dependencies?.[0] || [] // TODO: Figure out correct default
     const childState = { defaultValue, options: dependencies, /* I think this is correct?*/ }
-    const childServices = {
-        onChangeEvent: () => console.warn('onChange thunk not implemented for useDependency'),
-    }
+    const childServices = { onChangeEvent: () => console.warn('onChange thunk not implemented for useDependency'), }
     return { childState, childServices }
 }
-// needs: implementation
 export const useTrash = taskID => {
     const userID = userIDSelector() || '', dnd = dndSelector() || [], tasks = tasksSelector?.() || []
-    return {
-        onClickEvent: () => {
-            dispatch(deleteTaskThunkAPI({ userID, taskInfo: { index: indexOfTaskToBeDeleted(dnd, tasks, taskID), id: taskID } }))
-        }
-    }
+    return { onClickEvent: () => dispatch(deleteTaskThunkAPI({ userID, taskInfo: { index: indexOfTaskToBeDeleted(dnd, tasks, taskID), id: taskID } })) }
 }
