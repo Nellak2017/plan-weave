@@ -5,7 +5,7 @@ import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContai
 import { TaskInput } from "../../atoms/TaskInput/TaskInput"
 import HoursInput, { HoursInputPositiveFloat } from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from "date-fns"
-import { formatTimeLeft, displayWaste, displayEta, displayEfficiency, formatDate } from "../../../Core/utils/helpers"
+import { formatTimeLeft, displayWaste, displayEta, displayEfficiency, formatDate, processThreadOptions } from "../../../Core/utils/helpers"
 import DateTimePickerWrapper from "../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js"
 import OptionPicker from "../../atoms/OptionPicker/OptionPicker.js"
 import { BiTrash } from "react-icons/bi"
@@ -102,14 +102,13 @@ export const Weight = ({ taskID, customHook = useWeight }) => {
 export const Thread = ({ taskID, customHook = useThread }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { options, defaultValue } = childState || {}
-    const { onChangeEvent, onBlurEvent } = childServices || {}
+    const { onBlurEvent } = childServices || {}
     return (
         <ThreadContainer title={threadToolTip}>
             <OptionPicker
                 state={{ options, label: 'Select Thread', multiple: false }}
-                services={{ onChange: onChangeEvent }}
-                defaultValue={defaultValue}
-                onBlur={onBlurEvent}
+                value={defaultValue} // Controlled -> immediate feedback when updating options. Always matches Redux
+                onBlur={e => onBlurEvent(e.target.value)}
             />
         </ThreadContainer>
     )

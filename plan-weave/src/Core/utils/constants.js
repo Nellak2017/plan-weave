@@ -77,3 +77,4 @@ export const RENDER_NUMBERS = { SIMPLE_TASK: 6, FULL_TASK: 11 }
 export const MULTIPLE_DELETE_MODAL_TOAST_CONFIG = { position: 'top-center', autoClose: false, closeOnClick: false, closeButton: false, draggable: false, }
 export const TASK_NAME_MAX_LENGTH = 100
 export const ICON_SIZE = 36
+export const DEFAULT_THREAD = 'default'

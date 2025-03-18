@@ -4,7 +4,7 @@ import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS } from '../../../Core/utils/constan
 import { toggleTaskStatus, calculateWaste, calculateLiveTime, calculateEta } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
 
-const { completedTimeStamp, waste, liveTime, eta, task, ttc, dueDate, weight } = FULL_TASK_FIELDS
+const { completedTimeStamp, waste, liveTime, eta, task, ttc, dueDate, weight, parentThread } = FULL_TASK_FIELDS
 // TODO: API + Other
 export const addTaskThunkAPI = ({ userID }) => dispatch => {
     // addTaskAPI({task, userID}) // 1. POST to API
@@ -44,16 +44,21 @@ export const editWeightThunkAPI = ({ userID, taskID, weight }) => dispatch => {
     dispatch(updateTask({ taskID, field: FULL_TASK_FIELDS.weight, value: weight }))
 }
 export const deleteTasksThunkAPI = ({ userID, taskInfos }) => dispatch => { // taskInfos => [{ index, id }] 
-    // 1. DELETE to API using list of taskIDs with form [{ index, id }]
+    // Possibly some analytics collection stuff before deletion too..
     const IDs = taskInfos.map(info => info?.id), indices = taskInfos.map(info => info?.index)
+    // 1. DELETE to API using list of taskIDs with form [{ index, id }]
     dispatch(deleteTasks())
     dispatch(deleteMultipleDnD({ indices }))
     // NOTE: Pagination likely does not need to be touched since max page is a selector and will naturally push the user back to a previous page if all tasks are deleted on the second or higher page
 }
 export const deleteTaskThunkAPI = ({ userID, taskInfo }) => dispatch => { // taskInfo => { index, id }
-    const ID = taskInfo?.id, index = taskInfo?.index
     // Possibly some analytics collection stuff before deletion too..
+    const ID = taskInfo?.id, index = taskInfo?.index
     // 1. DELETE to API using taskID and userID
     dispatch(deleteTask({ taskID: ID }))
     dispatch(deleteDnD({ index }))
+}
+export const editThreadThunkAPI = ({ userID, taskID, newThread }) => dispatch => { // newThread => string max len 30 chars
+    // 1. PATCH for the parentThread
+    dispatch(updateTask({ taskID, field: parentThread, value: newThread.slice(0, 30) }))
 }

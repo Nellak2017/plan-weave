@@ -1,7 +1,9 @@
 import { useSelector } from 'react-redux'
-import { tryCatchSyncFlat, isStatusChecked } from '../Core/utils/helpers.js' // for returning defaults if no redux used
+import { createSelector } from 'reselect'
+import { tryCatchSyncFlat, isStatusChecked, getAvailableThreads } from '../Core/utils/helpers.js'
 import { CHOOSE, CHOSEN } from './finiteStateMachines/MultipleDeleteButton.fsm.js'
 // TODO: Add more business constraints here for these selectors
+export const entireStore = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state), () => [])
 export const tasks = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks), () => [])
 export const task = (taskID, selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks).filter(task => task?.id === taskID)?.[0], () => { })
 export const userID = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.auth?.userID), () => '')
@@ -27,3 +29,4 @@ export const isChecked = taskID => isHighlighting() ? task(taskID)?.selected : i
 export const isAtleastOneTaskSelected = () => tasks().filter(task => task?.selected)?.length > 0
 export const isZeroTasksSelected = () => tasks().filter(task => task?.selected)?.length === 0
 export const taskIDsToDelete = () => tasks().map((task, index) => ({ ...task, index })).filter(task => task?.selected).map(task => ({ index: task?.index, id: task?.id }))
+export const getAllThreadOptionsAvailable = (selector = useSelector) => tryCatchSyncFlat(() => selector(createSelector([state => state?.tasks], tasks => getAvailableThreads(tasks))), () => [])

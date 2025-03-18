@@ -162,3 +162,5 @@ export const displayEta = eta => eta && typeof eta === 'string' && !isNaN(parseI
 export const displayEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
 export const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
 export const getTaskRowDnDStyle = provided => ({ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' })
+export const processThreadOptions = (oldOptions, newThread) => Array.from(new Set([...oldOptions, newThread])).filter(option => option.trim() !== '')
+export const getAvailableThreads = tasks => [...Array.from(new Set(tasks.map(task => task?.parentThread))).filter(option => option.trim() !== '')]

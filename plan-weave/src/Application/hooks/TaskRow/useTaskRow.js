@@ -1,8 +1,8 @@
 import { useMemo, useEffect } from 'react'
 import store from '../../store.js'
-import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, tasks as tasksSelector } from '../../selectors.js'
+import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, tasks as tasksSelector, getAllThreadOptionsAvailable } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency, indexOfTaskToBeDeleted } from '../../../Core/utils/helpers.js'
-import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI } from '../../thunks.js'
+import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
@@ -100,13 +100,9 @@ export const useWeight = taskID => {
 }
 // needs: thread repository, implementation, testing
 export const useThread = taskID => {
-    const { parentThread } = taskSelector?.(taskID) || {}
-    const options = [] // TODO: Figure out how to do this one, I am not familiar with the registery of all threads
-    const childState = { options, defaultValue: parentThread, /* TODO: Figure out if this is the intended default, I don't recall */ }
-    const childServices = {
-        onChangeEvent: () => console.warn('onChange thunk not implemented for useThread'),
-        onBlurEvent: () => console.warn('onBlur thunk not implemented for useThread'),
-    }
+    const { parentThread } = taskSelector?.(taskID) || {}, userID = userIDSelector() || '', threadsAvailable = getAllThreadOptionsAvailable?.() || []
+    const childState = { options: threadsAvailable, defaultValue: parentThread, }
+    const childServices = { onBlurEvent: newThread => dispatch(editThreadThunkAPI({ userID, taskID, newThread })), } // NOTE: onChangeEvent appears unnecessary
     return { childState, childServices }
 }
 // needs: dependency selector, implementation, testing
