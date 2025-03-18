@@ -5,7 +5,7 @@ import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContai
 import { TaskInput } from "../../atoms/TaskInput/TaskInput"
 import HoursInput, { HoursInputPositiveFloat } from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from "date-fns"
-import { formatTimeLeft, displayWaste, displayEta, displayEfficiency, formatDate, processThreadOptions } from "../../../Core/utils/helpers"
+import { displayWaste, displayEta, displayEfficiency, formatDate, formatTTC } from "../../../Core/utils/helpers"
 import DateTimePickerWrapper from "../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js"
 import OptionPicker from "../../atoms/OptionPicker/OptionPicker.js"
 import { BiTrash } from "react-icons/bi"
@@ -47,10 +47,10 @@ export const Ttc = ({ taskID, customHook = useTtc }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { status, ttc } = childState || {}
     const { onBlurEvent } = childServices || {}
-    return ( // TODO: Simplify this Component by extracting to helper or something. TODO: possibly pass a render function in
+    return (
         <TimeContainer title={ttcTooltip}>
             {status === TASK_STATUSES.COMPLETED
-                ? <pre>{ttc && !isNaN(ttc) && ttc > 0 ? formatTimeLeft({ timeDifference: ttc, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'}</pre>
+                ? <pre>{formatTTC(ttc)}</pre>
                 : <HoursInputPositiveFloat
                     defaultValue={ttc}
                     state={{ step: .01, min: .01, placeholder: 'hours', text: 'hours' }}
@@ -72,7 +72,7 @@ export const Due = ({ taskID, customHook = useDue }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { isChecked, dueDate } = childState || {}
     const { onTimeChangeEvent } = childServices || {}
-    return ( // TODO: simplify this or pass in a render function
+    return (
         <DueContainer title={dueToolTip}>
             {isChecked
                 ? formatDate(dueDate)
@@ -87,7 +87,7 @@ export const Weight = ({ taskID, customHook = useWeight }) => {
     const { childState, childServices } = customHook?.(taskID) || {}
     const { isChecked, weight } = childState || {}
     const { onValueChangeEvent } = childServices || {}
-    return ( // TODO: Simplify this
+    return (
         <WeightContainer title={weightToolTip}>
             {isChecked
                 ? parseFloat(weight).toFixed(2) || 1

@@ -6,13 +6,10 @@ import {
 	clamp,
 	add,
 	subtract,
-	formatTimeLeft,
 	isTimestampFromToday,
-	hoursToSeconds,
 	hoursToMillis,
 	millisToHours,
 	calculateWaste,
-	isInt,
 	reorderList, // not covered by property based tests (Annoying, also unused content)
 	rearrangeDnD,
 	ordinalSet,
@@ -20,7 +17,6 @@ import {
 	isRelativelyOrdered, // not covered by property based tests
 	pipe,
 
-	relativeSortIndex,
 	highlightTaskRow,
 	dateToToday,
 } from '../../../Core/utils/helpers.js'
@@ -86,44 +82,6 @@ describe('subtract two dates', () => {
 			}
 		))
 	})
-})
-
-describe('formatTimeLeft', () => {
-	// --- Example based tests
-	test.each([
-		['endTime - startTime = 1', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T13:00:00'), '1 hours left'],
-		['0 < endTime - startTime < 1', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T12:30:00'), '30 minutes left'],
-		['endTime - startTime > 1 and not an integer', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T14:45:00'), '2 hours 45 minutes left'],
-		['endTime < startTime and overNightMode is false', new Date('2023-08-09T12:00:00'), new Date('2023-08-09T11:30:00'), '0 minutes left'],
-		// eslint-disable-next-line max-params
-	])('should return the correct string when %s', (_, currentTime, endTime, expected) => {
-		const result = formatTimeLeft({ currentTime, endTime })
-		expect(result).toBe(expected)
-	})
-
-	test.each([
-		['1 hours left', 1],
-		['30 minutes left', 0.5],
-		['2 hours 45 minutes left', 2.75],
-		['2 hours left', 2],
-	])('should display "%s" when timeDifference is %s', (expected, timeDifference) => {
-		const result = formatTimeLeft({ timeDifference })
-		expect(result).toBe(expected)
-	})
-	// --- Property based tests
-	it('should produce consistent output for the same input', () => {
-		fc.assert(fc.property(
-			fc.integer(), fc.boolean(), fc.date(),
-			(timeDifference, overNightMode, endTime) => {
-				const currentTime = new Date()
-				const result1 = formatTimeLeft({ timeDifference, overNightMode, endTime, currentTime })
-				const result2 = formatTimeLeft({ timeDifference, overNightMode, endTime, currentTime })
-				return result1 === result2
-			}
-		))
-	})
-
-	// it is quite hard to make properties for this function since it is a composite
 })
 
 describe('isTimestampFromToday', () => {
@@ -200,29 +158,6 @@ describe('isTimestampFromToday', () => {
 		))
 	})
 })
-describe('hoursToSeconds', () => {
-	// --- Example based tests
-	test.each([
-		[1, 3600],
-		[0.5, 1800],
-		[2.5, 9000],
-		[0, 0],
-	])('converts %f hours to %d seconds', (hours, expectedSeconds) => {
-		expect(hoursToSeconds(hours)).toBe(expectedSeconds)
-	})
-	// --- Property based tests
-	it('should correctly convert hours to seconds', () => {
-		fc.assert(fc.property(
-			fc.float({ min: 0, max: 1e6 }),
-			hours => {
-				const processedHours = isNaN(hours) ? 0 : hours
-				const result = hoursToSeconds(processedHours)
-				expect(result).toBeCloseTo(processedHours * 3600)
-			})
-		)
-	})
-})
-
 describe('hoursToMillis', () => {
 	// --- Example based tests
 	test.each([
@@ -441,43 +376,6 @@ describe('calculateWaste', () => {
 	})
 
 })
-
-describe('isInt', () => {
-	// --- Example based tests
-	it('should return false for Infinity and NaN', () => {
-		expect(isInt(Infinity)).toBe(false)
-		expect(isInt(NaN)).toBe(false)
-	})
-
-	// --- Property based tests
-	it('should return true for any integer', () => {
-		fc.assert(fc.property(
-			fc.integer(),
-			number => {
-				expect(isInt(number)).toBe(true)
-			}
-		))
-	})
-
-	it('should return false for any non-integer number', () => {
-		fc.assert(fc.property(
-			fc.float({ noInteger: true }),
-			number => {
-				expect(isInt(number)).toBe(false)
-			}
-		))
-	})
-
-	it('should return false for non-number inputs', () => {
-		fc.assert(fc.property(
-			fc.anything().filter(x => typeof x !== 'number'),
-			nonNumber => {
-				expect(isInt(nonNumber)).toBe(false)
-			}
-		))
-	})
-})
-
 describe('reorderList', () => {
 
 	// --- Property based tests
@@ -953,150 +851,6 @@ describe('dateToToday', () => {
 		})
 	})
 })
-describe('relativeSortIndex', () => {
-	const sortFunction = array => array.sort((a, b) => a.id - b.id) // Sort by task ID
-	const incomplete = TASK_STATUSES.INCOMPLETE
-	const complete = TASK_STATUSES.COMPLETED
-
-	const testCases = [
-		{
-			description: 'Incomplete -> Complete',
-			tasks: [{ id: 1, status: incomplete }, { id: 2, status: complete }],
-			id: 2,
-			expected: 0,
-		},
-		{
-			description: 'Complete -> Incomplete',
-			tasks: [{ id: 1, status: incomplete }, { id: 2, status: incomplete }],
-			id: 1,
-			expected: 0,
-		},
-		{
-			description: 'Middle Complete -> Incomplete',
-			tasks: [
-				{ id: 1, status: complete },
-				{ id: 3, status: incomplete },
-				{ id: 2, status: complete },
-			],
-			id: 3,
-			expected: 2,
-		},
-		{
-			description: 'Middle Incomplete -> Complete',
-			tasks: [
-				{ id: 1, status: incomplete },
-				{ id: 3, status: complete },
-				{ id: 2, status: incomplete },
-			],
-			id: 3,
-			expected: 0,
-		},
-		{
-			description: 'Last to Middle, Incomplete -> Complete',
-			tasks: [
-				{ id: 1, status: complete },
-				{ id: 3, status: incomplete },
-				{ id: 2, status: complete },
-			],
-			id: 2,
-			expected: 1,
-		},
-		{
-			description: 'Real Case, 1st to 0th, Incomplete -> Complete',
-			tasks: [
-				{
-					"task": "Eat 1",
-					"waste": -2.3942413888888887,
-					"ttc": 0.5,
-					"eta": 1703315180.731,
-					"id": 1,
-					"status": "completed",
-					"timestamp": 1703315063,
-					"completedTimeStamp": 1703315180.731,
-					"hidden": false
-				},
-				{
-					"status": "incomplete",
-					"task": "ML : Flash (Lectures/Study guide)",
-					"ttc": 3,
-					"id": 2,
-					"timestamp": 1703315062
-				},
-				{
-					"status": "incomplete",
-					"task": "br 1",
-					"ttc": 0.5,
-					"id": 3,
-					"timestamp": 1703315061
-				},
-				{
-					"status": "incomplete",
-					"task": "ML : Written Ass Analysis",
-					"ttc": 2,
-					"id": 4,
-					"timestamp": 1703315060
-				},
-				{
-					"status": "incomplete",
-					"task": "ML : Flash Cards",
-					"ttc": 1,
-					"id": 5,
-					"timestamp": 1703315059
-				},
-				{
-					"status": "incomplete",
-					"task": "br 2",
-					"ttc": 0.75,
-					"id": 6,
-					"timestamp": 1703315058
-				},
-				{
-					"status": "incomplete",
-					"task": "ML : Note Creation",
-					"ttc": 0.75,
-					"id": 7,
-					"timestamp": 1703315057
-				},
-				{
-					"status": "incomplete",
-					"task": "ML : Practice Probs",
-					"ttc": 1.5,
-					"id": 9,
-					"timestamp": 1703315054
-				},
-				{
-					"status": "incomplete",
-					"task": "br",
-					"ttc": 0.5,
-					"id": 10,
-					"timestamp": 1703315053
-				},
-				{
-					"status": "incomplete",
-					"task": "Cyber : Practice",
-					"ttc": 1,
-					"id": 11,
-					"timestamp": 1703315052
-				},
-				{
-					"status": "incomplete",
-					"task": "Calculator Custom Formulas",
-					"ttc": 0.75,
-					"id": 12,
-					"timestamp": 1703315051
-				}
-			],
-			id: 1,
-			expected: 0,
-		}
-	]
-	testCases.forEach(({ description, tasks, id, expected }) => {
-		it(`Correctly calculates index for ${description} case`, () => {
-			expect(relativeSortIndex({ tasks, sort: sortFunction, id })).toBe(expected)
-		})
-	})
-})
-
 describe('highlightTaskRow', () => {
 	const testCases = [
 		{ isHighlighting: true, isChecked: true, isOld: true, expected: 'selected' },

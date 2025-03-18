@@ -1,6 +1,6 @@
 import { format } from "date-fns"
 import { TimePickerContainer, TopContainer, BottomContainer, BottomContentContainer, Separator } from "./TaskControl.elements"
-import { formatTimeLeft } from '../../../Core/utils/helpers.js'
+import { formatTaskControlTimeLeft } from '../../../Core/utils/helpers.js'
 import { DEFAULT_TASK_CONTROL_TOOL_TIPS, TIME_PICKER_COORDS, OWL_SIZE, TASK_CONTROL_TITLES, SORTING_METHODS, OPTION_NOTIFICATIONS } from "../../../Core/utils/constants"
 import { VALID_TIMERANGE_IDS } from '../../../Application/validIDs.js'
 import { theme } from "../../styles/MUITheme"
@@ -57,7 +57,7 @@ export const BottomSlot = ({ currentTime = new Date(), customHook = useBottomSlo
                 <MultipleDeleteButton state={{ fsmControlledState }} services={{ setControlledFSMState: setMultiDeleteFSMState }} />
                 {!isSmallScreen && <Separator />}
             </BottomContentContainer>
-            {!isSmallScreen && <BottomContentContainer><p title={'Time left until End of Task Period'}>{formatTimeLeft({ currentTime, endTime, overNightMode: isOwl })}</p></BottomContentContainer>}
+            {!isSmallScreen && <BottomContentContainer><p title={'Time left until End of Task Period'}>{formatTaskControlTimeLeft({ currentTime, endTime, overNightMode: isOwl })}</p></BottomContentContainer>}
             <BottomContentContainer>
                 {!isSmallScreen && <Separator />}
                 {!isExtraSmallScreen && <DropDownButton options={generateDropDownOptions(sort)} tabIndex={0} title={dropDownToolTip} />}

@@ -6,50 +6,19 @@ export const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
 export const add = (start, hours) => new Date(clamp(start.getTime() + hoursToMillis(hours), 0, MAX_SAFE_DATE)) // (Date: start, hours: hours) -> Date(start + hours)
 export const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
 // --- Helpers Exported
-export const formatTimeLeft = ({ minuteText = 'minutes left', hourText = 'hour', hourText2 = 'hours left', overNightMode = false, currentTime = new Date(), endTime, timeDifference = 0, isNegative = false }) => {
-	const calculateTimeDifference = ({ endTime, currentTime = new Date(), timeDifference = 0, overNightMode = false }) => (timeDifference > 0) // Returns Time in Milliseconds, given the constaints of the application
-		? timeDifference * MILLISECONDS_PER_HOUR
-		: Math.max(0, (overNightMode
-			? getTime(new Date(endTime)) + MILLISECONDS_PER_DAY
-			: getTime(endTime)) - currentTime.getTime())
-	const formatTime = timeMillis => { // Returns proper format of time, given the time and other relevant information
-		const totalHours = timeMillis / MILLISECONDS_PER_HOUR
-		const timeLeftInHours = Math.floor(totalHours)
-		const timeLeftInMinutes = Math.floor((totalHours - timeLeftInHours) * 60)
-		return (timeLeftInHours > 0)
-			? (timeLeftInMinutes > 0
-				? `${timeLeftInHours} ${hourText}${timeLeftInHours > 1 ? 's' : ''} ${timeLeftInMinutes} ${minuteText}`
-				: `${timeLeftInHours} ${hourText2}`)
-			: `${timeLeftInMinutes} ${minuteText}`
-	}
-	return isNegative
-		? `-${formatTime(calculateTimeDifference({ endTime, currentTime, timeDifference, overNightMode }))}`
-		: formatTime(calculateTimeDifference({ endTime, currentTime, timeDifference, overNightMode }))
-}
 export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400) => {
 	const startOfTodaySeconds = new Date(today).setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
 	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
 }
-export const hoursToSeconds = hours => hours * 60 * 60
 export const hoursToMillis = hours => hours * 60000 * 60
 export const millisToHours = milliseconds => (milliseconds / 60000) / 60
-export const isInt = number => ((!!number || number === 0) && typeof number === 'number' && Math.floor(number) === number && isFinite(number))
 export const isRelativelyOrdered = (list1, list2) => ((list1.length !== list2.length) || list1.length <= 1)
 	? list1.length <= 1
 	: list1.slice(0, -1).reduce((acc, a, i) => {
 		if (!acc) return false
 		const [b, c, d] = [list1[i + 1], list2[i], list2[i + 1]]
 		return (a < b && c < d) || (a > b && c > d)
-	}, true)
-export const relativeSortIndex = ({ tasks, sort, id, complete = TASK_STATUSES.COMPLETED, incomplete = TASK_STATUSES.INCOMPLETE }) => {
-	const newTasks = tasks.map(el => ({ ...el })) // ensures no proxies used
-	const completed = newTasks.filter(t => t.status === complete)
-	const incompleted = newTasks.filter(t => t.status === incomplete)
-	const task = newTasks.find(t => parseInt(t.id) === parseInt(id))
-	return task.status === complete
-		? sort(completed).indexOf(task) 					 // Incomplete --> Complete Case
-		: completed.length + sort(incompleted).indexOf(task) // Complete   --> Incomplete Case
-}
+	}, true) // useful for pbt testing deleteDnDEvent
 export const highlightTaskRow = (isHighlighting, isChecked, isOld) => {
 	if (isHighlighting && isChecked) return 'selected'
 	else if (!isHighlighting && !isChecked && isOld) return 'old'
@@ -107,7 +76,7 @@ export const taskListPipe = ({ oldTaskList, dnd, filter, sortAlgo, paginationRan
 	reorderList(dnd),
 	completedOnTop,
 	pagination(paginationRange),
-)(oldTaskList) 
+)(oldTaskList)
 // TODO: Glitch: Task dnd order does not reset upon switching sort algorithms. Potential Solutions => [make a pure function that takes in curr and prev sort algos and other stuff then compute it, do it in a thunk (less testable), something else]
 // TODO: Oversight: dnd order updates when you move an incomplete task to a complete index, it should not update when it is blatantly incorrect to allow it
 // -- Read-only TaskRow fields
@@ -164,11 +133,21 @@ export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, curren
 export const isInRangeInclusive = (value, min, max) => value >= min && value <= max
 export const parseBlur = ({ value, min, max, precision }) => !isNaN(parseFloat(value)) ? (clamp(parseFloat(value), min, max)).toFixed(precision) : min
 export const parseChange = ({ value, pattern, min, max }) => (pattern.test(value.trim())) && (isInRangeInclusive(parseFloat(value), min, max) || /^[^.]*\.[^.]*$/.test(value)) ? value.trim() : ''
+// -- Format helpers
+const findTimeLeft = hours => ({ timeLeftInHours: Math.floor(hours), timeLeftInMinutes: Math.floor((hours - Math.floor(hours)) * 60) })
+const timeFormat = ({ timeLeftInMinutes, timeLeftInHours }, { minuteText = 'minutes', hourText = 'hours' }) => {
+	if (timeLeftInHours <= 0) return `${timeLeftInMinutes} ${minuteText}`
+	if (timeLeftInMinutes <= 0) return `${timeLeftInHours} ${hourText}`
+	return `${timeLeftInHours} hour${timeLeftInHours > 1 ? 's' : ''} ${timeLeftInMinutes} ${minuteText}`
+}
 // -- TaskRow Slots helpers
 export const displayWaste = waste => waste ? formatTimeLeft({ isNegative: waste < 0, timeDifference: waste < 0 ? -waste : waste, minuteText: 'minutes', hourText: 'hour', hourText2: 'hours' }) : '0 minutes'
 export const displayEta = eta => eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime()) ? format(parseISO(eta), "HH:mm") : '00:00'
 export const displayEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
+export const formatTTC = ttc => (!ttc || isNaN(ttc)) ? '0 minutes' : timeFormat(findTimeLeft(ttc))
 export const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
 export const getTaskRowDnDStyle = provided => ({ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' })
 export const processThreadOptions = (oldOptions, newThread) => Array.from(new Set([...oldOptions, newThread])).filter(option => option.trim() !== '')
 export const getAvailableThreads = tasks => [...Array.from(new Set(tasks.map(task => task?.parentThread))).filter(option => option.trim() !== '')]
+// -- TaskControl helpers
+export const formatTaskControlTimeLeft = ({ currentTime, endTime, overNightMode, }) => timeFormat(findTimeLeft((Math.max(0, (overNightMode ? getTime(new Date(endTime)) + MILLISECONDS_PER_DAY : getTime(endTime)) - currentTime.getTime()) / MILLISECONDS_PER_HOUR)), { minuteText: 'minutes left', hourText: 'hours left' })
