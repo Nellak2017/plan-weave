@@ -78,7 +78,6 @@ export const taskListPipe = ({ oldTaskList, dnd, filter, sortAlgo, paginationRan
 	completedOnTop,
 	pagination(paginationRange),
 )(oldTaskList)
-// TODO: Glitch: Task dnd order does not reset upon switching sort algorithms. Potential Solutions => [make a pure function that takes in curr and prev sort algos and other stuff then compute it, do it in a thunk (less testable), something else]
 // -- Read-only TaskRow fields
 // TODO: See if you can simplify by making the timestamps just ISO strings?
 // TODO: Be sure to test these functions, something is fishy with calculate Waste and calculate Live Time
@@ -87,7 +86,6 @@ const lastIndex = (lis, pred) => lis?.findLastIndex(val => pred(val))
 export const firstCompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED)
 export const lastCompleteIndex = properlyOrderedTaskList => lastIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED) 
 const firstIncompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status !== TASK_STATUSES.COMPLETED)
-const lastIncompleteIndex = properlyOrderedTaskList => lastIndex(properlyOrderedTaskList, task => task?.status !== TASK_STATUSES.COMPLETED)
 const isValidDate = date => (date !== "Invalid Date") && !isNaN(new Date(date))
 const epochToMillis = epoch => epoch * 1000
 export const calculateLiveTime = (currentTaskRow, taskOrderPipeOptions, currentTime) => {

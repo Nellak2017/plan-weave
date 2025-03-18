@@ -1,2 +1,6 @@
 import { updateSortingAlgorithm } from './sortSlice.js'
-export const sortThunk = ({ id, value }) => dispatch => { dispatch(updateSortingAlgorithm({ id, value })) } // Reducer + Business Logic
+import { resetDnD } from '../../sessionContexts/dnd.js'
+export const sortThunk = ({ id, value }) => dispatch => { 
+    dispatch(resetDnD()) // this is a quality of life feature, it will reset dnd each time sort algo changes
+    dispatch(updateSortingAlgorithm({ id, value })) 
+} // Reducer + Business Logic

@@ -18,7 +18,8 @@ const dnd = createSlice({
             const { index } = action.payload
             return deleteDnDEvent(Array.from(state), index)
         },
+        resetDnD: state => Array.from(state).map((_, i) => i)
     }
 })
-export const { addDnD, updateDnD, deleteMultipleDnD, deleteDnD } = dnd.actions
+export const { addDnD, updateDnD, deleteMultipleDnD, deleteDnD, resetDnD } = dnd.actions
 export default dnd.reducer

@@ -16,14 +16,10 @@ export const tasksPerPage = (selector = useSelector) => tryCatchSyncFlat(() => s
 export const dnd = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.dnd), () => [])
 const taskEditorSearch = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.search?.searchTaskEditor?.searchValue), () => '')
 const taskEditorSort = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.sort?.sortTaskEditor?.sortAlgorithm), () => '')
-// TODO: Add a selector for the Task Transformation pipeline options!
 export const taskOrderPipeOptions = () => {
     const pageNum = pageNumber(), perPage = tasksPerPage()
     return {
-        oldTaskList: tasks(),
-        dnd: dnd(),
-        filter: taskEditorSearch(),
-        sortAlgo: SORTING_METHODS[taskEditorSort()],
+        oldTaskList: tasks(), dnd: dnd(), filter: taskEditorSearch(), sortAlgo: SORTING_METHODS[taskEditorSort()],
         paginationRange: { start: ((pageNum * perPage) - perPage) + 1, end: pageNum * perPage },
     }
 }
