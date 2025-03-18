@@ -6,6 +6,7 @@ export const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
 export const add = (start, hours) => new Date(clamp(start.getTime() + hoursToMillis(hours), 0, MAX_SAFE_DATE)) // (Date: start, hours: hours) -> Date(start + hours)
 export const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
 // --- Helpers Exported
+export const between = (value, { start, end }) => start <= value && end >= value
 export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400) => {
 	const startOfTodaySeconds = new Date(today).setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
 	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
@@ -78,22 +79,27 @@ export const taskListPipe = ({ oldTaskList, dnd, filter, sortAlgo, paginationRan
 	pagination(paginationRange),
 )(oldTaskList)
 // TODO: Glitch: Task dnd order does not reset upon switching sort algorithms. Potential Solutions => [make a pure function that takes in curr and prev sort algos and other stuff then compute it, do it in a thunk (less testable), something else]
-// TODO: Oversight: dnd order updates when you move an incomplete task to a complete index, it should not update when it is blatantly incorrect to allow it
 // -- Read-only TaskRow fields
 // TODO: See if you can simplify by making the timestamps just ISO strings?
 // TODO: Be sure to test these functions, something is fishy with calculate Waste and calculate Live Time
+const firstIndex = (lis, pred) => lis?.findIndex(val => pred(val))
+const lastIndex = (lis, pred) => lis?.findLastIndex(val => pred(val))
+export const firstCompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED)
+export const lastCompleteIndex = properlyOrderedTaskList => lastIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED) 
+const firstIncompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status !== TASK_STATUSES.COMPLETED)
+const lastIncompleteIndex = properlyOrderedTaskList => lastIndex(properlyOrderedTaskList, task => task?.status !== TASK_STATUSES.COMPLETED)
 const isValidDate = date => (date !== "Invalid Date") && !isNaN(new Date(date))
 const epochToMillis = epoch => epoch * 1000
 export const calculateLiveTime = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	const { id: taskID, liveTime: oldLiveTime, timestamp, status } = currentTaskRow || {}
 	const properlyOrderedTaskList = taskListPipe(taskOrderPipeOptions)
-	const firstIncompleteIndex = properlyOrderedTaskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
-	const currentTaskIndex = properlyOrderedTaskList?.findIndex(task => task?.id === taskID)
-	const lastCompletedTimeStamp = properlyOrderedTaskList?.[firstIncompleteIndex - 1]?.completedTimeStamp
+	const firstIncompleteIdx = firstIncompleteIndex(properlyOrderedTaskList)
+	const currentTaskIndex = firstIndex(properlyOrderedTaskList, task => task?.id === taskID)
+	const lastCompletedTimeStamp = properlyOrderedTaskList?.[firstIncompleteIdx - 1]?.completedTimeStamp
 
 	const base = isValidDate(currentTime) ? currentTime : new Date()// add(currentTime, oldLiveTime)
-	const prev = new Date(firstIncompleteIndex === 0 ? epochToMillis(timestamp) : epochToMillis(lastCompletedTimeStamp))
-	if (status === TASK_STATUSES.COMPLETED || currentTaskIndex !== firstIncompleteIndex) return oldLiveTime
+	const prev = new Date(firstIncompleteIdx === 0 ? epochToMillis(timestamp) : epochToMillis(lastCompletedTimeStamp))
+	if (status === TASK_STATUSES.COMPLETED || currentTaskIndex !== firstIncompleteIdx) return oldLiveTime
 	else return subtract(base, prev)
 }
 export const calculateWaste = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
