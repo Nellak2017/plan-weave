@@ -13,13 +13,14 @@ const dispatch = store.dispatch
 const setMultiDeleteFSMState = value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) }
 export const useTaskRow = taskID => {
     const usedTask = taskSelector(taskID)
-    const { status } = usedTask || {}
+    const { status, eta } = usedTask || {}
     const { startTaskEditor: start, endTaskEditor: end } = timeRange()
-    const timeRangeStartEnd = useMemo(() => ({ start, end }), [start, end])
+    const timeRangeStartEnd = useMemo(() => ({ start: start?.defaultTime, end: end?.defaultTime }), [start, end])
 
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
+    //console.log({ timeRangeStartEnd, timestamp: eta })
     // TODO: Figure out why end time is incorrect by being behind by 1 day. It should be always in a correct state. (when someone puts it as a end time less than start, set owl to be true and show toast warning. If it is like it initially also do the same thing too)
-    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld(timeRangeStartEnd, usedTask)), [timeRangeStartEnd, isChecked, isHighlighting, usedTask])
+    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, timeRange: timeRangeStartEnd })), [timeRangeStartEnd, isChecked, isHighlighting, usedTask])
     return { status, highlight }
 }
 export const useCompleteIcon = (taskID, currentTime) => {

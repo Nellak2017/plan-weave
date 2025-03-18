@@ -5,11 +5,12 @@ import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DA
 export const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
 export const add = (start, hours) => new Date(clamp(start.getTime() + hoursToMillis(hours), 0, MAX_SAFE_DATE)) // (Date: start, hours: hours) -> Date(start + hours)
 export const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
+// --- Uncategorized
+export const between = (value, { start, end }) => start <= value && value <= end
 // --- Helpers Exported
-export const between = (value, { start, end }) => start <= value && end >= value
 export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400) => {
 	const startOfTodaySeconds = new Date(today).setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
-	return (startOfTodaySeconds <= timestamp) && (timestamp <= (startOfTodaySeconds + secondsFromStart))
+	return between(timestamp, { start: startOfTodaySeconds, end: startOfTodaySeconds + secondsFromStart })
 }
 export const hoursToMillis = hours => hours * 60000 * 60
 export const millisToHours = milliseconds => (milliseconds / 60000) / 60
@@ -32,16 +33,8 @@ export const dateToToday = start => {
 	return new Date(initOfToday + (newStart.valueOf() - initOfStart)).toISOString()
 }
 export const endPlusOne = oldISO => new Date(dateToToday(parseISO(oldISO)).getTime() + hoursToMillis(24)).toISOString()
-export const isTaskOld = (timeRange, task) => {
-	const { start, end } = { ...timeRange }
-		? { start: parseISO(timeRange?.start), end: parseISO(timeRange?.end) }
-		: { 0: new Date(new Date().setHours(0, 0, 0, 0)), 1: new Date(new Date().setHours(24, 59, 59, 59)) }
-	const epochDiff = (end - start) / 1000 // seconds between end and start
-	const epochTimeSinceStart = (start.getTime() - new Date(start).setHours(0, 0, 0, 0)) / 1000 // seconds between 00:00 and start
-	const epochTotal = epochDiff >= 0 ? epochDiff + epochTimeSinceStart : epochTimeSinceStart // seconds in our modified day. If negative, then default to full day
-	const epochETA = parseISO(task?.eta)?.getTime() / 1000
-	return !isTimestampFromToday(start, epochETA, epochTotal)
-}
+const isoToMillis = isoDateString => new Date(isoDateString).getTime()
+export const isTaskOld = ({ eta, timeRange }) => !between(isoToMillis(eta), { start: isoToMillis(timeRange?.start), end: isoToMillis(timeRange?.end) }) // (iso, {start:iso, end:iso}) => bool
 export const tryCatchSyncFlat = (fn, errFn) => { try { return fn() } catch (e) { return errFn(e) } }
 export const tryCatchAsyncFlat = async (fn, errFn) => { try { const ret = await fn(); return ret } catch (e) { return errFn(e) } }
 export const calcMaxPage = (listLen, perPage) => Math.ceil(listLen / perPage) || 1
@@ -84,7 +77,7 @@ export const taskListPipe = ({ oldTaskList, dnd, filter, sortAlgo, paginationRan
 const firstIndex = (lis, pred) => lis?.findIndex(val => pred(val))
 const lastIndex = (lis, pred) => lis?.findLastIndex(val => pred(val))
 export const firstCompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED)
-export const lastCompleteIndex = properlyOrderedTaskList => lastIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED) 
+export const lastCompleteIndex = properlyOrderedTaskList => lastIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED)
 const firstIncompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status !== TASK_STATUSES.COMPLETED)
 const isValidDate = date => (date !== "Invalid Date") && !isNaN(new Date(date))
 const epochToMillis = epoch => epoch * 1000
@@ -134,9 +127,8 @@ export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, curren
 	return currentTaskRow?.ttc / (calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) + calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime))
 }
 // -- HoursInput Component helpers
-export const isInRangeInclusive = (value, min, max) => value >= min && value <= max
 export const parseBlur = ({ value, min, max, precision }) => !isNaN(parseFloat(value)) ? (clamp(parseFloat(value), min, max)).toFixed(precision) : min
-export const parseChange = ({ value, pattern, min, max }) => (pattern.test(value.trim())) && (isInRangeInclusive(parseFloat(value), min, max) || /^[^.]*\.[^.]*$/.test(value)) ? value.trim() : ''
+export const parseChange = ({ value, pattern, min, max }) => (pattern.test(value.trim())) && (between(parseFloat(value), { start: min, end: max }) || /^[^.]*\.[^.]*$/.test(value)) ?value.trim() : ''
 // -- Format helpers
 const findTimeLeft = hours => ({ timeLeftInHours: Math.floor(hours), timeLeftInMinutes: Math.floor((hours - Math.floor(hours)) * 60) })
 const timeFormat = ({ timeLeftInMinutes, timeLeftInHours }, { minuteText = 'minutes', hourText = 'hours' }) => {
