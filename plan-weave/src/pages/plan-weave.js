@@ -15,7 +15,7 @@ import { handleLogout } from '../Infra/workflows/logout.handlers.js'
 
 // TODO: Remove "Data" layer from Infra and replace with Hooks for consistency and simplicity
 const PlanWeave = () => {
-	const { middleContentData, rightContentData } = NavData // TODO: Instead of writing out Nav verbosely here, export default ones for each user of it for clarity
+	const { middleContentData, rightContentData } = NavData
 	const dispatch = store.dispatch
 	const router = useRouter()
 	const [user, loading, error] = useAuthState(auth)

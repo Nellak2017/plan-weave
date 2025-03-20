@@ -2,7 +2,8 @@
 /* eslint-disable max-lines */
 
 // TODO: PBT the ones that need it such as: dateToToday
-// Progress = 11 / 31
+// Progress = 14 / 22
+// Missing => deleteDnDEvent, deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, getAvailableThreads
 import {
 	clamp,
 	add,
@@ -15,13 +16,12 @@ import {
 	highlightTaskRow, // not covered by property based tests (only 8 cases)
 	dateToToday,
 	isTaskOld,
-	calculateWaste,
-	reorderList, // not covered by property based tests (Annoying, also unused content)
-	rearrangeDnD,
 	ordinalSet,
-	deleteDnDEvent,
+	rearrangeDnD,
 	pipe,
 
+	deleteDnDEvent, deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, getAvailableThreads
+	// reorderList, // not covered by property based tests (Annoying, also unused content)
 } from '../../../Core/utils/helpers.js'
 import { TASK_STATUSES, MAX_SAFE_DATE, MAX_SAFE_DATE_SMALL } from '../../../Core/utils/constants.js'
 import { format } from 'date-fns-tz'
@@ -349,6 +349,204 @@ describe('isTaskOld', () => {
 		)
 	})
 })
+describe('ordinalSet', () => {
+	// --- Example based tests
+	const testCases = [
+		{
+			description: 'should return empty array for empty input',
+			input: [],
+			expected: [],
+		},
+		{
+			description: 'should assign ordinal values to unique numbers in the input array',
+			input: [1, 3, 2],
+			expected: [0, 2, 1],
+		},
+	]
+
+	testCases.forEach(({ description, input, expected }) => {
+		it(description, () => {
+			expect(ordinalSet(input)).toEqual(expected)
+		})
+	})
+
+	// --- Property based tests
+	it('should preserve the length of the array', () => {
+		fc.assert(fc.property(
+			fc.array(fc.integer()),
+			(dnd) => {
+				expect((ordinalSet(dnd)).length).toBe(dnd.length)
+			}
+		))
+	})
+	it('should produce ordinal values within the correct range', () => {
+		fc.assert(fc.property(
+			fc.array(fc.integer()),
+			(dnd) => {
+				expect((ordinalSet(dnd)).every(value => value >= 0 && value < new Set(dnd).size)).toBe(true)
+			}
+		))
+	})
+	it('should preserve the uniqueness of ordinal values', () => {
+		fc.assert(fc.property(
+			fc.array(fc.integer()),
+			(dnd) => {
+				expect(new Set((ordinalSet(dnd))).size).toBe(new Set(dnd).size)
+			}
+		))
+	})
+	it('should correctly map input numbers to their ordinal values', () => {
+		fc.assert(fc.property(
+			fc.array(fc.integer()),
+			(dnd) => {
+				const result = ordinalSet(dnd)
+				const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
+				const mapping = {}
+				uniqueSortedArr.forEach((num, index) => {
+					mapping[num] = index
+				})
+				const correctMapping = dnd.every((num, index) => result[index] === mapping[num])
+				expect(correctMapping).toBe(true)
+			}
+		))
+	})
+})
+describe('rearrangeDnD', () => {
+	// --- Example based tests
+	const initialDnD = [1, 2, 3, 4], destinations = [0, 1, 2, 3]
+	destinations.forEach(destination => {
+		it(`moves 4 to index ${destination}`, () => {
+			const result = rearrangeDnD(initialDnD, 3, destination)
+			const expected = [...initialDnD] // Copy the initial DnD array
+			expected.splice(destination, 0, expected.splice(3, 1)[0]) // Perform the same rearrangement as the function
+			expect(result).toEqual(expected)
+		})
+	})
+	// --- Property based tests
+	it('should preserve the length of the array', () => {
+		fc.assert(fc.property(
+			fc.array(fc.anything()),
+			fc.nat(),
+			fc.nat(),
+			(dnd, source, destination) => {
+				const sourceIndex = source % dnd.length
+				const destinationIndex = destination % dnd.length
+				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
+				expect(result.length).toBe(dnd.length)
+			}
+		))
+	})
+	it('should contain the same elements as the original array', () => {
+		fc.assert(fc.property(
+			fc.array(fc.nat()),
+			fc.nat(),
+			fc.nat(),
+			(dnd, source, destination) => {
+				const sourceIndex = source % dnd.length
+				const destinationIndex = destination % dnd.length
+				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
+				const originalSorted = [...dnd].sort()
+				const resultSorted = [...result].sort()
+				expect(originalSorted).toEqual(resultSorted)
+			}
+		))
+	})
+	it('should be identical if source and destination are the same', () => {
+		fc.assert(fc.property(
+			fc.array(fc.anything()), // Arbitrary array
+			fc.nat(),
+			(dnd, index) => {
+				const idx = index % dnd.length
+				const result = rearrangeDnD(dnd, idx, idx)
+				expect(result).toEqual(dnd)
+			}
+		))
+	})
+	it('should preserve the order of elements not involved in the move', () => {
+		fc.assert(fc.property(
+			fc.array(fc.anything()), // Arbitrary array
+			fc.nat(),
+			fc.nat(),
+			(dnd, source, destination) => {
+				const sourceIndex = source % dnd.length
+				const destinationIndex = destination % dnd.length
+				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
+				const originalWithoutMovedItem = dnd.filter((_, i) => i !== sourceIndex)
+				const resultWithoutMovedItem = result.filter((_, i) => i !== destinationIndex)
+
+				expect(originalWithoutMovedItem).toEqual(resultWithoutMovedItem)
+			}
+		)
+		)
+	})
+	it('should place the moved item in the correct position', () => {
+		fc.assert(fc.property(
+			fc.array(fc.anything()), // Arbitrary array
+			fc.nat(),
+			fc.nat(),
+			(dnd, source, destination) => {
+				if (dnd.length === 0) return true
+				const sourceIndex = source % dnd.length
+				const destinationIndex = destination % dnd.length
+				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
+				expect(result[destinationIndex]).toEqual(dnd[sourceIndex])
+			}
+		))
+	})
+	it('should maintain the correctness of the overall array', () => {
+		fc.assert(fc.property(
+			fc.array(fc.anything()), // Arbitrary array
+			fc.nat(),
+			fc.nat(),
+			(dnd, source, destination) => {
+				if (dnd.length === 0) return true
+				const sourceIndex = source % dnd.length
+				const destinationIndex = destination % dnd.length
+				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
+
+				const expectedArray = [
+					...dnd.slice(0, sourceIndex),
+					...dnd.slice(sourceIndex + 1)
+				]
+				const resultWithoutMovedItem = [
+					...result.slice(0, destinationIndex),
+					...result.slice(destinationIndex + 1)
+				]
+				expect(expectedArray).toEqual(resultWithoutMovedItem)
+			}
+		))
+	})
+})
+describe('pipe', () => {
+	const areFunctionsEqual = (func1, func2) => (func1.length !== func2.length)
+		? false
+		: func1.toString() === func2.toString()
+	// --- Property based tests
+	// 1. Identity Property: (I ∘ I)(f) = f ; pipe(I, I)(f) = f
+	// 2. Associativity Property: (f ∘ g) ∘ h = f ∘ (g ∘ h)
+	test('Identity Property: (f ∘ I) = f ; pipe(I, I, ...1 or more times)(f) = f', () => {
+		fc.assert(fc.property(
+			fc.func(fc.anything()),
+			f => {
+				const I = x => x
+				const result = pipe(I, I)(f)
+				expect(result).toEqual(f)
+			}
+		))
+	})
+	test('Associativity Property: (f ∘ g) ∘ h = f ∘ (g ∘ h); pipe(pipe(f,g), h) = pipe(f, pipe(g, h))', () => {
+		fc.assert(fc.property(
+			fc.func(fc.anything()), // Generate a random function
+			fc.func(fc.anything()), // Generate another random function
+			fc.func(fc.anything()), // Generate another random function
+			(f, g, h) => {
+				const result1 = pipe(pipe(f, g), h) // Compose functions left to right
+				const result2 = pipe(f, pipe(g, h)) // Compose functions right to left
+				expect(areFunctionsEqual(result1, result2)).toBe(true)
+			}
+		))
+	})
+})
 /*
 describe('calculateWaste', () => {
 	// --- Example based tests
@@ -612,197 +810,6 @@ describe('reorderList', () => {
 
 })
 
-describe('rearrangeDnD', () => {
-	// --- Example based tests
-	const initialDnD = [1, 2, 3, 4]
-	const destinations = [0, 1, 2, 3]
-
-	destinations.forEach(destination => {
-		it(`moves 4 to index ${destination}`, () => {
-			const result = rearrangeDnD(initialDnD, 3, destination)
-			const expected = [...initialDnD] // Copy the initial DnD array
-			expected.splice(destination, 0, expected.splice(3, 1)[0]) // Perform the same rearrangement as the function
-			expect(result).toEqual(expected)
-		})
-	})
-
-	// --- Property based tests
-	it('should preserve the length of the array', () => {
-		fc.assert(fc.property(
-			fc.array(fc.anything()),
-			fc.nat(),
-			fc.nat(),
-			(dnd, source, destination) => {
-				const sourceIndex = source % dnd.length
-				const destinationIndex = destination % dnd.length
-				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
-				expect(result.length).toBe(dnd.length)
-			}
-		))
-	})
-
-	it('should contain the same elements as the original array', () => {
-		fc.assert(fc.property(
-			fc.array(fc.nat()),
-			fc.nat(),
-			fc.nat(),
-			(dnd, source, destination) => {
-				const sourceIndex = source % dnd.length
-				const destinationIndex = destination % dnd.length
-				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
-				const originalSorted = [...dnd].sort()
-				const resultSorted = [...result].sort()
-				expect(originalSorted).toEqual(resultSorted)
-			}
-		))
-	})
-
-	it('should be identical if source and destination are the same', () => {
-		fc.assert(fc.property(
-			fc.array(fc.anything()), // Arbitrary array
-			fc.nat(),
-			(dnd, index) => {
-				const idx = index % dnd.length
-				const result = rearrangeDnD(dnd, idx, idx)
-				expect(result).toEqual(dnd)
-			}
-		))
-	})
-
-	it('should preserve the order of elements not involved in the move', () => {
-		fc.assert(fc.property(
-			fc.array(fc.anything()), // Arbitrary array
-			fc.nat(),
-			fc.nat(),
-			(dnd, source, destination) => {
-				const sourceIndex = source % dnd.length
-				const destinationIndex = destination % dnd.length
-				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
-				const originalWithoutMovedItem = dnd.filter((_, i) => i !== sourceIndex)
-				const resultWithoutMovedItem = result.filter((_, i) => i !== destinationIndex)
-
-				expect(originalWithoutMovedItem).toEqual(resultWithoutMovedItem)
-			}
-		)
-		)
-	})
-
-	it('should place the moved item in the correct position', () => {
-		fc.assert(fc.property(
-			fc.array(fc.anything()), // Arbitrary array
-			fc.nat(),
-			fc.nat(),
-			(dnd, source, destination) => {
-				if (dnd.length === 0) return true
-				const sourceIndex = source % dnd.length
-				const destinationIndex = destination % dnd.length
-				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
-
-				expect(result[destinationIndex]).toEqual(dnd[sourceIndex])
-			}
-		))
-	})
-
-	it('should maintain the correctness of the overall array', () => {
-		fc.assert(fc.property(
-			fc.array(fc.anything()), // Arbitrary array
-			fc.nat(),
-			fc.nat(),
-			(dnd, source, destination) => {
-				if (dnd.length === 0) return true
-				const sourceIndex = source % dnd.length
-				const destinationIndex = destination % dnd.length
-				const result = rearrangeDnD(dnd, sourceIndex, destinationIndex)
-
-				const expectedArray = [
-					...dnd.slice(0, sourceIndex),
-					...dnd.slice(sourceIndex + 1)
-				]
-				const resultWithoutMovedItem = [
-					...result.slice(0, destinationIndex),
-					...result.slice(destinationIndex + 1)
-				]
-				expect(expectedArray).toEqual(resultWithoutMovedItem)
-			}
-		))
-	})
-
-})
-
-describe('ordinalSet', () => {
-	// --- Example based tests
-	const testCases = [
-		{
-			description: 'should return empty array for empty input',
-			input: [],
-			expected: [],
-		},
-		{
-			description: 'should assign ordinal values to unique numbers in the input array',
-			input: [1, 3, 2],
-			expected: [0, 2, 1],
-		},
-	]
-
-	testCases.forEach(({ description, input, expected }) => {
-		it(description, () => {
-			expect(ordinalSet(input)).toEqual(expected)
-		})
-	})
-
-	// --- Property based tests
-	it('should preserve the length of the array', () => {
-		fc.assert(fc.property(
-			fc.array(fc.integer()),
-			(dnd) => {
-				const result = ordinalSet(dnd)
-				expect(result.length).toBe(dnd.length)
-			}
-		))
-	})
-
-	it('should produce ordinal values within the correct range', () => {
-		fc.assert(fc.property(
-			fc.array(fc.integer()),
-			(dnd) => {
-				const result = ordinalSet(dnd)
-				const uniqueValues = new Set(dnd).size
-				const withinRange = result.every(value => value >= 0 && value < uniqueValues)
-				expect(withinRange).toBe(true)
-			}
-		))
-	})
-
-	it('should preserve the uniqueness of ordinal values', () => {
-		fc.assert(fc.property(
-			fc.array(fc.integer()),
-			(dnd) => {
-				const result = ordinalSet(dnd)
-				const uniqueValues = new Set(dnd).size
-				const uniqueOrdinals = new Set(result).size
-				expect(uniqueOrdinals).toBe(uniqueValues)
-			}
-		))
-	})
-
-	it('should correctly map input numbers to their ordinal values', () => {
-		fc.assert(fc.property(
-			fc.array(fc.integer()),
-			(dnd) => {
-				const result = ordinalSet(dnd)
-				const uniqueSortedArr = [...new Set(dnd)].sort((a, b) => a - b)
-				const mapping = {}
-				uniqueSortedArr.forEach((num, index) => {
-					mapping[num] = index
-				})
-				const correctMapping = dnd.every((num, index) => result[index] === mapping[num])
-				expect(correctMapping).toBe(true)
-			}
-		))
-	})
-
-})
-
 describe('deleteDnDEvent', () => {
 	// --- Example based tests
 	const testCases = [
@@ -902,39 +909,6 @@ describe('deleteDnDEvent', () => {
 				const output = deleteDnDEvent(dnd, [startIndex, endIndex])
 				const filteredDnd = dnd.filter((_, i) => i < startIndex || i > endIndex)
 				expect(isRelativelyOrdered(filteredDnd, output)).toBe(true)
-			}
-		))
-	})
-
-})
-describe('pipe', () => {
-	const areFunctionsEqual = (func1, func2) => (func1.length !== func2.length)
-		? false
-		: func1.toString() === func2.toString()
-
-	// --- Property based tests
-	// 1. Identity Property: (I ∘ I)(f) = f ; pipe(I, I)(f) = f
-	// 2. Associativity Property: (f ∘ g) ∘ h = f ∘ (g ∘ h)
-	test('Identity Property: (f ∘ I) = f ; pipe(I, I, ...1 or more times)(f) = f', () => {
-		fc.assert(fc.property(
-			fc.func(fc.anything()),
-			f => {
-				const I = x => x
-				const result = pipe(I, I)(f)
-				expect(result).toEqual(f)
-			}
-		))
-	})
-
-	test('Associativity Property: (f ∘ g) ∘ h = f ∘ (g ∘ h); pipe(pipe(f,g), h) = pipe(f, pipe(g, h))', () => {
-		fc.assert(fc.property(
-			fc.func(fc.anything()), // Generate a random function
-			fc.func(fc.anything()), // Generate another random function
-			fc.func(fc.anything()), // Generate another random function
-			(f, g, h) => {
-				const result1 = pipe(pipe(f, g), h) // Compose functions left to right
-				const result2 = pipe(f, pipe(g, h)) // Compose functions right to left
-				expect(areFunctionsEqual(result1, result2)).toBe(true)
 			}
 		))
 	})
