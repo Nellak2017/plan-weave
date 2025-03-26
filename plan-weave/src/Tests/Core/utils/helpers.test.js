@@ -2,7 +2,7 @@
 /* eslint-disable max-lines */
 
 // TODO: PBT the ones that need it such as: dateToToday
-// Progress = 15 / 22
+// Progress = 16 / 23
 // Missing => deleteDnDEvent, deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, getAvailableThreads
 import {
 	clamp,
@@ -17,11 +17,13 @@ import {
 	dateToToday,
 	isTaskOld,
 	ordinalSet,
+	isOrdinalSet, // not covered by any tests other than manual tests
 	rearrangeDnD,
+	deleteDnDEvent,
 	pipe,
 	getAvailableThreads,
 
-	deleteDnDEvent, deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency,
+	deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency,
 	// reorderList, // not covered by property based tests (Annoying, also unused content)
 } from '../../../Core/utils/helpers.js'
 import { TASK_STATUSES, MAX_SAFE_DATE, MAX_SAFE_DATE_SMALL } from '../../../Core/utils/constants.js'
@@ -517,6 +519,90 @@ describe('rearrangeDnD', () => {
 			}
 		))
 	})
+})
+describe('deleteDnDEvent', () => {
+	const testCases = [
+		{
+			description: '([0, 1], 0) -> [0]. Should delete 0th item then make the list an ordinal set.',
+			input: {
+				dnd: [0, 1],
+				index: 0
+			},
+			expected: [0],
+		},
+		{
+			description: '([], n) -> []. Should return empty list when empty dnd is given with any index.',
+			input: {
+				dnd: [],
+				index: 0
+			},
+			expected: [],
+		},
+		{
+			description: '([0], n > len) -> [0]. Should return same list when non-empty dnd is given with out of bounds index.',
+			input: {
+				dnd: [0],
+				index: 5
+			},
+			expected: [0],
+		},
+		{
+			description: '([1,2,0], 2) -> [0, 1]. Should return ordinal set of removed index on typical input.',
+			input: {
+				dnd: [1, 2, 0],
+				index: 2
+			},
+			expected: [0, 1],
+		},
+		{
+			description: '([2,1,0], 1) -> [1, 0]. Should return ordinal set of removed index on typical input.',
+			input: {
+				dnd: [2, 1, 0],
+				index: 1
+			},
+			expected: [1, 0],
+		},
+	]
+	testCases.forEach(({ description, input, expected }) => {
+		it(description, () => {
+			const { dnd, index } = input
+			expect(deleteDnDEvent(dnd, index)).toEqual(expected)
+		})
+	})
+	// --- Property based tests
+	// 1. Idempotency on invalid index – If an index is out of bounds, the output is the ordinal set of the input.
+	it('Idempotency on invalid index property - If an index is out of bounds, the output is the ordinal set of the input', () => {
+		fc.assert(fc.property(
+			fc.array(fc.nat(), { minLength: 0, maxLength: 100 }),
+			fc.integer({ min: 0, max: 200 }),
+			(dnd, index) => {
+				return (index < 0 || index >= dnd.length)
+					? JSON.stringify(deleteDnDEvent(dnd, index)) === JSON.stringify(ordinalSet(dnd))
+					: true
+			}
+		))
+	})
+	// 2. Length Decreases by at Most One – Removing an index should never add elements.
+	it('Length Decreases by at Most One property - Removing an index should never add elements', () => {
+		fc.assert(fc.property(
+			fc.array(fc.nat(), { minLength: 0, maxLength: 100 }),
+			fc.integer({ min: 0, max: 100 }),
+			(dnd, index) => {
+				const result = deleteDnDEvent(dnd, index)
+				return result.length <= dnd.length && result.length >= Math.max(0, dnd.length - 1)
+			}
+		))
+	})
+	// 3. Ordinal Property – The resulting list should always be a valid ordinal set [0, 1, 2, ...].
+	it('Ordinal Property - The resulting list should always be a valid ordinal set [0, 1, 2, ...]', () => {
+        fc.assert(fc.property(
+            fc.array(fc.nat(), { minLength: 0, maxLength: 100 }),
+            fc.nat(),
+            (dnd, index) => {
+                return isOrdinalSet(deleteDnDEvent(dnd, index))
+            }
+        ))
+    })
 })
 describe('pipe', () => {
 	const areFunctionsEqual = (func1, func2) => (func1.length !== func2.length)

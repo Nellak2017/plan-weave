@@ -49,6 +49,10 @@ export const ordinalSet = dnd => {
 	uniqueSortedArr.forEach((num, index) => { mapping[num] = index })
 	return dnd.map(num => mapping[num])
 }
+export const isOrdinalSet = arr => {
+	const expectedSet = new Set([...Array(new Set(arr).size).keys()]) // {0, 1, 2, ..., n-1}
+	return arr.length === expectedSet.size && arr.every(num => expectedSet.has(num))
+} // used for pbt properties
 export const addDnDConfig = oldDnDConfig => [0].concat(oldDnDConfig.map(x => x + 1))
 export const rearrangeDnD = (dnd, source, destination) => { // You _may_ have to modify this to account for completed tasks or maybe make a helper that separates responsibilities(?)
 	const both = (dnd.slice(0, source)).concat(dnd.slice(source + 1))
@@ -128,7 +132,7 @@ export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, curren
 }
 // -- HoursInput Component helpers
 export const parseBlur = ({ value, min, max, precision }) => !isNaN(parseFloat(value)) ? (clamp(parseFloat(value), min, max)).toFixed(precision) : min
-export const parseChange = ({ value, pattern, min, max }) => (pattern.test(value.trim())) && (between(parseFloat(value), { start: min, end: max }) || /^[^.]*\.[^.]*$/.test(value)) ?value.trim() : ''
+export const parseChange = ({ value, pattern, min, max }) => (pattern.test(value.trim())) && (between(parseFloat(value), { start: min, end: max }) || /^[^.]*\.[^.]*$/.test(value)) ? value.trim() : ''
 // -- Format helpers
 const findTimeLeft = hours => ({ timeLeftInHours: Math.floor(hours), timeLeftInMinutes: Math.floor((hours - Math.floor(hours)) * 60) })
 const timeFormat = ({ timeLeftInMinutes, timeLeftInHours }, { minuteText = 'minutes', hourText = 'hours' }) => {
