@@ -144,6 +144,6 @@ export const formatEta = eta => eta && typeof eta === 'string' && !isNaN(parseIS
 export const formatEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
 export const getTaskRowDnDStyle = provided => ({ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' })
 export const processThreadOptions = (oldOptions, newThread) => Array.from(new Set([...oldOptions, newThread])).filter(option => option.trim() !== '')
-export const getAvailableThreads = tasks => [...Array.from(new Set(tasks.map(task => task?.parentThread))).filter(option => option.trim() !== '')]
+export const getAvailableThreads = tasks => [...Array.from(new Set(tasks.map(task => task?.parentThread?.trim()))).filter(option => option.trim() !== '')]
 // -- TaskControl helpers
 export const formatTaskControlTimeLeft = ({ currentTime, endTime, overNightMode, }) => timeFormat(findTimeLeft((Math.max(0, (overNightMode ? getTime(new Date(endTime)) + MILLISECONDS_PER_DAY : getTime(endTime)) - currentTime.getTime()) / MILLISECONDS_PER_HOUR)), { minuteText: 'minutes left', hourText: 'hours left' })

@@ -2,7 +2,7 @@
 /* eslint-disable max-lines */
 
 // TODO: PBT the ones that need it such as: dateToToday
-// Progress = 14 / 22
+// Progress = 15 / 22
 // Missing => deleteDnDEvent, deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, getAvailableThreads
 import {
 	clamp,
@@ -19,8 +19,9 @@ import {
 	ordinalSet,
 	rearrangeDnD,
 	pipe,
+	getAvailableThreads,
 
-	deleteDnDEvent, deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, getAvailableThreads
+	deleteDnDEvent, deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency,
 	// reorderList, // not covered by property based tests (Annoying, also unused content)
 } from '../../../Core/utils/helpers.js'
 import { TASK_STATUSES, MAX_SAFE_DATE, MAX_SAFE_DATE_SMALL } from '../../../Core/utils/constants.js'
@@ -545,6 +546,83 @@ describe('pipe', () => {
 				expect(areFunctionsEqual(result1, result2)).toBe(true)
 			}
 		))
+	})
+})
+describe('getAvailableThreads', () => {
+	const testCases = [
+		{
+			input: [{ id: 1, parentThread: 'first' }, { id: 2, parentThread: 'second' }, { id: 3, parentThread: 'first' },],
+			expected: ['first', 'second'],
+		},
+		{
+			input: [{ id: 1, parentThread: '' }, { id: 2, parentThread: 'second' }, { id: 3, parentThread: 'first' },],
+			expected: ['first', 'second'],
+		},
+		{
+			input: [{ id: 1, parentThread: '     ' }, { id: 2, parentThread: 'second' }, { id: 3, parentThread: 'first' },],
+			expected: ['first', 'second'],
+		},
+		{
+			input: [{ id: 1, parentThread: '     ' },],
+			expected: [],
+		},
+		{
+			input: [],
+			expected: [],
+		},
+		{
+			input: [{ id: 1, parentThread: '     ' }, { id: 2, parentThread: 'second ' }, { id: 3, parentThread: 'first' },],
+			expected: ['first', 'second'],
+		},
+	]
+	testCases.forEach(({ input, expected }) => {
+		it(`Tasks with parentThreads:   '${input.map(task => task?.parentThread)}'\n    Returns unique parentThreads: '${expected}'`, () => {
+			expect(new Set(getAvailableThreads(input))).toEqual(new Set(expected))
+		})
+	})
+	// --- Property Tests
+	const taskArb = fc.array(
+		fc.record({
+			id: fc.integer({ min: 1, max: 10000 }),
+			parentThread: fc.string(),
+		})
+	)
+	// 1. Idempotenecy - running getAvailableThreads twice doesn't change results
+	it("Idempotenecy property: running getAvailableThreads twice doesn't change results", () => {
+		fc.assert(fc.property(taskArb, tasks => {
+			const firstRun = getAvailableThreads(tasks)
+			const secondRun = getAvailableThreads(firstRun.map(t => ({ id: t, parentThread: t })))
+			expect(new Set(secondRun)).toEqual(new Set(firstRun))
+		}))
+	})
+	// 2. Uniqueness - there should only be unique threads in output
+	it('Uniqueness property: getAvailableThreads should only return unique threads', () => {
+		fc.assert(fc.property(taskArb, tasks => {
+			const result = getAvailableThreads(tasks)
+			expect(new Set(result).size).toBe(result.length)
+		}))
+	})
+	// 3. Input Order Agnostic - reordering the input has no effect on the output
+	it('Input Order Agnostic property: getAvailableThreads should return the same threads regardless of input order', () => {
+		fc.assert(fc.property(taskArb, tasks => {
+			const shuffledTasks = [...tasks].sort(() => Math.random() - 0.5)
+			expect(new Set(getAvailableThreads(tasks))).toEqual(new Set(getAvailableThreads(shuffledTasks)))
+		}))
+	})
+	// 4. Complete Representation - Every thread in output is in the input Task List atleast once when the input task list is trimmed (to remove whitespace from input)
+	it('Complete Representation property - getAvailableThreads should only contain threads that are present in the trimmed input', () => {
+		fc.assert(fc.property(taskArb, tasks => {
+			const result = new Set(getAvailableThreads(tasks))
+			const validThreads = new Set(tasks.map(task => task.parentThread.trim()).filter(Boolean))
+			expect([...result].every(thread => validThreads.has(thread))).toBe(true)
+		}))
+	})
+	// 5. No White Space - The output never contains any amount of whitespace for any of the entries and none for the text as well
+	it('No White Space property - getAvailableThreads should not return empty or whitespace-only threads or threads with any amount of whitespace', () => {
+		fc.assert(fc.property(taskArb, tasks => {
+			const result = getAvailableThreads(tasks)
+			expect(result.every(thread => thread.trim() === thread && thread.length > 0)).toBe(true)
+		}))
 	})
 })
 /*
