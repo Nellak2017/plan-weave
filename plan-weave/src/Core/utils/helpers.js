@@ -49,10 +49,7 @@ export const ordinalSet = dnd => {
 	uniqueSortedArr.forEach((num, index) => { mapping[num] = index })
 	return dnd.map(num => mapping[num])
 }
-export const isOrdinalSet = arr => {
-	const expectedSet = new Set([...Array(new Set(arr).size).keys()]) // {0, 1, 2, ..., n-1}
-	return arr.length === expectedSet.size && arr.every(num => expectedSet.has(num))
-} // used for pbt properties
+export const isOrdinalSet = arr => JSON.stringify(ordinalSet(arr)) === JSON.stringify(arr) // used for pbt properties
 export const addDnDConfig = oldDnDConfig => [0].concat(oldDnDConfig.map(x => x + 1))
 export const rearrangeDnD = (dnd, source, destination) => { // You _may_ have to modify this to account for completed tasks or maybe make a helper that separates responsibilities(?)
 	const both = (dnd.slice(0, source)).concat(dnd.slice(source + 1))

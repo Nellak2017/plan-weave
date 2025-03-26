@@ -2,7 +2,7 @@
 /* eslint-disable max-lines */
 
 // TODO: PBT the ones that need it such as: dateToToday
-// Progress = 16 / 23
+// Progress = 17 / 23
 // Missing => deleteDnDEvent, deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, getAvailableThreads
 import {
 	clamp,
@@ -20,10 +20,11 @@ import {
 	isOrdinalSet, // not covered by any tests other than manual tests
 	rearrangeDnD,
 	deleteDnDEvent,
+	deleteMultipleDnDEvent,
 	pipe,
 	getAvailableThreads,
 
-	deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency,
+	taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency,
 	// reorderList, // not covered by property based tests (Annoying, also unused content)
 } from '../../../Core/utils/helpers.js'
 import { TASK_STATUSES, MAX_SAFE_DATE, MAX_SAFE_DATE_SMALL } from '../../../Core/utils/constants.js'
@@ -595,14 +596,113 @@ describe('deleteDnDEvent', () => {
 	})
 	// 3. Ordinal Property – The resulting list should always be a valid ordinal set [0, 1, 2, ...].
 	it('Ordinal Property - The resulting list should always be a valid ordinal set [0, 1, 2, ...]', () => {
-        fc.assert(fc.property(
-            fc.array(fc.nat(), { minLength: 0, maxLength: 100 }),
-            fc.nat(),
-            (dnd, index) => {
-                return isOrdinalSet(deleteDnDEvent(dnd, index))
-            }
-        ))
-    })
+		fc.assert(fc.property(
+			fc.array(fc.nat(), { minLength: 0, maxLength: 100 }),
+			fc.nat(),
+			(dnd, index) => {
+				return isOrdinalSet(deleteDnDEvent(dnd, index))
+			}
+		))
+	})
+})
+describe('deleteMultipleDnDEvent', () => {
+	const testCases = [
+		{
+			description: '([0, 1], [0]) -> [0]. Should delete 0th item then make the list an ordinal set.',
+			input: {
+				dnd: [0, 1],
+				indices: [0]
+			},
+			expected: [0],
+		},
+		{
+			description: '([], [n]) -> []. Should return empty list when empty dnd is given with any index.',
+			input: {
+				dnd: [],
+				indices: [0]
+			},
+			expected: [],
+		},
+		{
+			description: '([0], [n > len]) -> [0]. Should return same list when non-empty dnd is given with out of bounds index.',
+			input: {
+				dnd: [0],
+				indices: [5]
+			},
+			expected: [0],
+		},
+		{
+			description: '([1,2,0], [2]) -> [0, 1]. Should return ordinal set of removed index on typical input.',
+			input: {
+				dnd: [1, 2, 0],
+				indices: [2]
+			},
+			expected: [0, 1],
+		},
+		{
+			description: '([2,1,0], [1]) -> [1, 0]. Should return ordinal set of removed index on typical input.',
+			input: {
+				dnd: [2, 1, 0],
+				indices: [1]
+			},
+			expected: [1, 0],
+		},
+		{
+			description: '([2,1,0], [1,2]) -> [0]. Should return ordinal set of removed index on typical multiple delete.',
+			input: {
+				dnd: [2, 1, 0],
+				indices: [1, 2]
+			},
+			expected: [0],
+		},
+		{
+			description: '([2,1,0,3,5,4], [1,2]) -> [0,1,3,2]. Should return ordinal set of removed index on typical multiple delete.',
+			input: {
+				dnd: [2, 1, 0, 3, 5, 4],
+				indices: [1, 2]
+			},
+			expected: [0, 1, 3, 2],
+		},
+	]
+	testCases.forEach(({ description, input, expected }) => {
+		it(description, () => {
+			const { dnd, indices } = input
+			expect(deleteMultipleDnDEvent(dnd, indices)).toEqual(expected)
+		})
+	})
+	// --- Property based tests
+
+	// 1. Idempotency on invalid index – If an index is out of bounds, the output is the ordinal set of the input.
+	it('Idempotency on invalid index property - If an index is out of bounds, it is ignored in the output', () => {
+		fc.assert(fc.property(
+			fc.array(fc.nat(), { minLength: 0, maxLength: 100 }),
+			fc.array(fc.integer({ min: 0, max: 200 })),
+			(dnd, indices) => {
+				expect(deleteMultipleDnDEvent(dnd, indices)).toEqual(deleteMultipleDnDEvent(dnd, indices.filter(idx => 0 <= idx && idx < dnd.length)))
+			}
+		))
+	})
+	// 2. Length Decreases by at Most One – Removing an index should never add elements.
+	it('Length Decreases by at Most One property - Removing an index should never add elements', () => {
+		fc.assert(fc.property(
+			fc.array(fc.nat(), { minLength: 0, maxLength: 100 }),
+			fc.array(fc.integer({ min: 0, max: 100 })),
+			(dnd, indices) => {
+				const result = deleteMultipleDnDEvent(dnd, indices);
+				return result.length <= dnd.length && result.length >= Math.max(0, dnd.length - indices.length)
+			}
+		))
+	})
+	// 3. Ordinal Property – The resulting list should always be a valid ordinal set [0, 1, 2, ...].
+	it('Ordinal Property - The resulting list should always be a valid ordinal set [0, 1, 2, ...]', () => {
+		fc.assert(fc.property(
+			fc.array(fc.nat(), { minLength: 0, maxLength: 100 }),
+			fc.array(fc.nat({ min: 0, max: 100 })),
+			(dnd, indices) => {
+				return isOrdinalSet(deleteMultipleDnDEvent(dnd, indices))
+			}
+		))
+	})
 })
 describe('pipe', () => {
 	const areFunctionsEqual = (func1, func2) => (func1.length !== func2.length)
