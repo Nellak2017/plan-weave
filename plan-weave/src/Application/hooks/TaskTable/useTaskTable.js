@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { getHeaderLabels, taskListPipe, getTaskRenderNumber, firstCompleteIndex, lastCompleteIndex } from '../../../Core/utils/helpers.js'
+import { getHeaderLabels, taskListPipe, getTaskRenderNumber, firstCompleteIndex, lastCompleteIndex, getTaskIndexes } from '../../../Core/utils/helpers.js'
+import { TASK_STATUSES } from '../../../Core/utils/constants.js'
 import store from "../../store"
 import { isFullTask as isFullTaskSelector, taskOrderPipeOptions } from '../../selectors.js'
 import { updateDnDThunk } from '../../thunks.js'
@@ -15,7 +16,15 @@ export const useTaskTableDefault = () => {
         childState: { taskList, labels, renderNumber },
         childServices: {
             onDragEndEvent: result => {
-                if (result.destination) dispatch(updateDnDThunk({ payload: [result.source.index, result.destination.index], completedRange: { start, end } }))
+                if (result.destination) {
+                    const taskID = taskList[result.destination.index]?.id
+                    const isLive = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED) === taskList?.findIndex(task => task?.id === taskID)
+                    const taskUpdateInfo = isLive
+                        ? { taskID, value: new Date().toISOString() }
+                        : undefined // if live then send the taskUpdateInfo, otherwise don't send at all so it won't update the liveTimeStamp
+                    console.log(isLive)
+                    dispatch(updateDnDThunk({ payload: [result.source.index, result.destination.index], completedRange: { start, end }, taskUpdateInfo }))
+                }
             }
         }
     }

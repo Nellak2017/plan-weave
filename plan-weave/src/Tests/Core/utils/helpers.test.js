@@ -1,9 +1,9 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
 
-// TODO: PBT the ones that need it such as: dateToToday
-// Progress = 17 / 23
-// Missing => deleteDnDEvent, deleteMultipleDnDEvent, taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, getAvailableThreads
+// TODO: PBT the complex setup orchestrator functions
+// Progress = 18 / 23
+// Missing => calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, taskListPipe,
 import {
 	clamp,
 	add,
@@ -23,14 +23,12 @@ import {
 	deleteMultipleDnDEvent,
 	pipe,
 	getAvailableThreads,
-
-	taskListPipe, calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency,
-	// reorderList, // not covered by property based tests (Annoying, also unused content)
+	computeUpdatedLiveTime, // compute part of live time
+	
+	calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, taskListPipe, // These are orchestrators and require complex setups.  
 } from '../../../Core/utils/helpers.js'
-import { TASK_STATUSES, MAX_SAFE_DATE, MAX_SAFE_DATE_SMALL } from '../../../Core/utils/constants.js'
-import { format } from 'date-fns-tz'
+import { TASK_STATUSES, MAX_SAFE_DATE } from '../../../Core/utils/constants.js'
 import { fc } from '@fast-check/jest'
-import { formatISO } from 'date-fns'
 
 describe('clamp', () => {
 	// --- Property based tests
@@ -811,371 +809,127 @@ describe('getAvailableThreads', () => {
 		}))
 	})
 })
-/*
-describe('calculateWaste', () => {
-	// --- Example based tests
-	const start = new Date(1692975600000) // Friday, August 25, 2023 10:00:00 AM GMT-05:00
-	const completedTime = new Date(1692977400000) // Friday, August 25, 2023 10:30:00 AM GMT-05:00 	
-	const completedTimeSeconds = completedTime.getTime() / 1000
-
-	const hoursToMillis = hours => hours * 60000 * 60
-	const fmt = (dateISO) => format(new Date(dateISO), 'yyyy-MM-dd\'T\'HH:mm:ssXXX', { timeZone: 'America/Chicago' }) // gets it in correct format, so tests will pass
-	const addTestOnly = (dateA, hour) => fmt(new Date(dateA.getTime() + hoursToMillis(hour)).toISOString()) // used to be without these wrappers, but now dates are ISO strings
-
-	// Test cases covering what happens whenever we don't want any tasks updated and just want them initialized
-	const initialTestCases = [
-		{
-			name: 'Given a list of tasks, The first incomplete task in the list has: waste = time - eta. eta is the updated eta, not old eta',
-			input: {
-				taskList: [
-					{ status: 'incomplete', task: 'Task 1', waste: 0, ttc: 1, eta: addTestOnly(start, -1), id: 1, timestamp: 1 }, // incomplete tasks are not guaranteed to have correct eta/waste
-					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: addTestOnly(start, 8.5), id: 2, timestamp: 2 },
-					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: addTestOnly(start, 9), id: 3, timestamp: 3 },
-				],
-				time: completedTime // Friday, August 25, 2023 10:30:00 AM GMT-05:00
-			},
-			expected: [
-				{ status: 'incomplete', task: 'Task 1', waste: -.5, ttc: 1, eta: addTestOnly(start, 1), id: 1, timestamp: 1 }, // eta = 10+1=11. Waste = time - eta(new) --> Waste = 10.5 - 11 == -.5
-				{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: addTestOnly(start, 1 + .5), id: 2, timestamp: 2 }, // eta = 11+.5=11.5
-				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: addTestOnly(start, 1 + .5 + 1.5), id: 3, timestamp: 3 }, // eta = 12+1.5=13
-			],
-		},
-		{
-			name: 'Given a list of tasks, The tasks completed will not be touched, but the others will have the usual waste and eta calculations applied',
-			input: {
-				taskList: [
-					{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: addTestOnly(start, .5), id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // completed tasks are guaranteed to have correct eta/waste
-					{ status: 'incomplete', task: 'Task 2', waste: 0, ttc: .5, eta: addTestOnly(start, .5 + .5), id: 2, timestamp: 2 }, // incomplete tasks can have wrong eta/waste
-					{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: addTestOnly(start, .5 + .5 + 1.5), id: 3, timestamp: 3 },
-				],
-				time: completedTime // Friday, August 25, 2023 10:30:00 AM GMT-05:00
-			},
-			expected: [
-				{ status: 'completed', task: 'Task 1', waste: -.5, ttc: 1, eta: addTestOnly(start, .5), id: 1, timestamp: 1, completedTimeStamp: completedTimeSeconds }, // Completed tasks are not touched
-				{ status: 'incomplete', task: 'Task 2', waste: -.5, ttc: .5, eta: addTestOnly(start, .5 + .5), id: 2, timestamp: 2 }, // eta = 10.5+.5=11 waste should be 0
-				{ status: 'incomplete', task: 'Task 3', waste: 0, ttc: 1.5, eta: addTestOnly(start, .5 + .5 + 1.5), id: 3, timestamp: 3 }, // eta = 11+1.5=12.5 waste should be 0
-			],
-		}
-	]
-	// Task Row is responsible for updating and submitting Completed tasks
-
-	initialTestCases.forEach(testCase => {
-		const { taskList, time } = testCase.input
-		it(testCase.name, () => {
-			expect(calculateWaste({ start, taskList, time })).toEqual(testCase.expected)
-		})
-	})
-
-	// --- Property based tests
-
-	// Setup
-	const startArbitrary = fc.date({ min: new Date(0), max: new Date(MAX_SAFE_DATE_SMALL) })
-	const taskStatusArbitrary = fc.constantFrom(TASK_STATUSES.COMPLETED, TASK_STATUSES.INCOMPLETE, TASK_STATUSES.WAITING, TASK_STATUSES.INCONSISTENT)
-	const etaArbitrary = start => fc.date({ min: start, max: new Date(MAX_SAFE_DATE_SMALL) }).map(date => formatISO(date))
-	const ttcArbitrary = fc.float({ min: 0, max: 5 }).filter(ttc => !isNaN(ttc) && isFinite(ttc))
-	const completedTimeStampArbitrary = fc.integer({ min: 0, max: Math.floor(Date.now() / 1000) }) // CompletedTimeStamps are epoch in seconds
-	const taskArbitrary = start => fc.record({
-		status: taskStatusArbitrary,
-		waste: fc.float({ min: 0, max: 23 }),
-		eta: etaArbitrary(start),
-		ttc: ttcArbitrary,
-		completedTimeStamp: completedTimeStampArbitrary,
-	})
-	const taskListArbitrary = start => fc.array(taskArbitrary(start), { minLength: 0 })
-		.map(tasks => {
-			const completedTasks = tasks.filter(task => task.status === TASK_STATUSES.COMPLETED)
-			const incompleteTasks = tasks.filter(task => task.status !== TASK_STATUSES.COMPLETED)
-			return [...completedTasks, ...incompleteTasks]
-		})
-	const timeArbitrary = start => fc.date({ min: start, max: new Date(start.getTime() + 82800000) })
-	const calculateWasteArbitrary = fc.record({
-		start: startArbitrary,
-		taskList: fc.record({ start: startArbitrary }).chain(({ start }) => taskListArbitrary(start)),
-		time: fc.option(fc.record({ start: startArbitrary }).chain(({ start }) => timeArbitrary(start)), { nil: undefined })
-	})
-
-	// Property tests
-	test('completed tasks in the input taskList and output must match', () => {
-		fc.assert(fc.property(
-			calculateWasteArbitrary,
-			({ start, taskList, time }) => {
-				const result = calculateWaste({ start, taskList, time })
-				const completedTasksInput = taskList.filter(task => task.status === TASK_STATUSES.COMPLETED)
-				const completedTasksOutput = result.filter(task => task.status === TASK_STATUSES.COMPLETED)
-				expect(completedTasksOutput).toEqual(completedTasksInput)
-			}
-		))
-	})
-
-	test('waste is ( currentTime - (etas[0] + startTime) ) for 1st incomplete if 1st incomplete exists in the input taskList', () => {
-		fc.assert(fc.property(
-			calculateWasteArbitrary,
-			({ start, taskList, time }) => {
-				const result = calculateWaste({ start, taskList, time })
-				const incompleteTasks = result.filter(task => task.status === !TASK_STATUSES.COMPLETED)
-				if (incompleteTasks.length === 0) return true
-				const firstIncomplete = incompleteTasks[0]
-				const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
-				const lastCompletedTimestamp = taskList[firstIncompleteIndex - 1]?.completedTimeStamp * 1000 // last completed to millis
-				const startTime = firstIncompleteIndex === 0 ? start : new Date(lastCompletedTimestamp) // startTime is a Date 
-				const etas0 = firstIncomplete.ttc
-				const eta = add(startTime, etas0)
-				const currentTime = new Date(time || new Date())
-				const waste = subtract(currentTime, eta)
-				expect(firstIncomplete.waste).toBeCloseTo(waste)
-			})
-		)
-	})
-
-	test('waste is 0 for incomplete tasks with index > first incomplete task', () => {
-		fc.assert(fc.property(
-			calculateWasteArbitrary,
-			({ start, taskList, time }) => {
-				const res = calculateWaste({ start, taskList, time })
-				const firstIncompleteIndex = taskList.findIndex(task => task.status !== TASK_STATUSES.COMPLETED)
-				return res.every((task, index) =>
-					task.status !== TASK_STATUSES.COMPLETED && index > firstIncompleteIndex
-						? task.waste === 0
-						: true
-				)
-			}
-		))
-	})
-
-	test('eta is etas[i] + startTime for all incomplete tasks, where i is indexed based on incomplete pos', () => {
-		fc.assert(fc.property(
-			calculateWasteArbitrary,
-			({ start, taskList, time }) => {
-				const res = calculateWaste({ start, taskList, time })
-				const incompleteTasks = taskList.filter(task => task.status !== TASK_STATUSES.COMPLETED)
-				const firstIncompleteIndex = taskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED)
-				const lastCompletedTimestamp = taskList[firstIncompleteIndex - 1]?.completedTimeStamp * 1000
-				const startTime = firstIncompleteIndex === 0 ? start : new Date(lastCompletedTimestamp)
-				// const etas = etaList(incompleteTasks)
-				res.every((task, i) => {
-					if (task.status !== TASK_STATUSES.COMPLETED) {
-						// round to nearest second. date-fns formatISO doesn't have ms precision
-						expect(Math.floor(new Date(task.eta).getTime() / 1000))
-							.toBeCloseTo(Math.floor(add(startTime, etas[i - firstIncompleteIndex]).getTime() / 1000))
-					}
-					else return true
-				}
-				)
-			}
-		))
-	})
-
-	test('len(taskList input) == len(taskList output)', () => {
-		fc.assert(fc.property(
-			calculateWasteArbitrary,
-			({ start, taskList, time }) => {
-				const output = calculateWaste({ start, taskList, time })
-				return taskList.length === output.length
-			}),
-		)
-	})
-
-	test('task.status is valid for all tasks in output', () => {
-		fc.assert(fc.property(
-			calculateWasteArbitrary,
-			({ start, taskList, time }) => {
-				const output = calculateWaste({ start, taskList, time })
-				return output.every(task => Object.values(TASK_STATUSES).includes(task.status))
-			}),
-		)
-	})
-
-})
-describe('reorderList', () => {
-
-	// --- Property based tests
-
-	// Identity Property: Applying the transformation with the identity list ([0, 1, 2, ..., n]) should result in the same array of tasks.
-	test('should satisfy the identity property', () => {
-		fc.assert(fc.property(
-			fc.array(fc.object()),
-			tasks => {
-				const result = reorderList(tasks, tasks.map((_, i) => i))
-				expect(result).toEqual(tasks)
-			}
-		)
-		)
-	})
-
-	// // Reversibility Property: Applying the transformation twice with its inverse should result in the original array of tasks.
-	// test('should satisfy the reversibility property', () => {
-	// 	fc.assert(fc.property(
-	// 		fc.array(fc.object()), // Arbitrary array of objects for tasks
-	// 		fc.array(fc.object()).chain(tasks => {
-	// 			const indices = [...Array(tasks.length).keys()]
-	// 			return fc.tuple(
-	// 				fc.constant(tasks),
-	// 				fc.shuffledSubarray(indices, { minLength: tasks.length, maxLength: tasks.length })
-	// 			)
-	// 		}),
-	// 		(tasks, transformation) => {
-	// 			const result1 = transform(transform(tasks, transformation), transformation.map((_, i) => transformation.indexOf(i)))
-	// 			const result2 = transform(tasks, tasks.map((_, i) => i))
-	// 			expect(JSON.stringify(result1)).toEqual(JSON.stringify(result2))
-	// 		}
-	// 	)
-	// 	)
-	// })
-
-	// // Consistency Property: Reordering tasks with a transformation list should yield the same result regardless of the order of tasks or the transformation list.
-	// test('should satisfy the consistency property', () => {
-	// 	fc.assert(fc.property(
-	// 		fc.array(fc.object()),
-	// 		fc.array(fc.integer()),
-	// 		fc.array(fc.object()),
-	// 		fc.array(fc.integer()),
-	// 		(tasks1, transformation1, tasks2) => {
-	// 			// Applying the same transformation to different tasks should yield the same result
-	// 			const result1 = transform(tasks1, transformation1)
-	// 			const result2 = transform(tasks2, transformation1)
-
-	// 			expect(JSON.stringify(result1)).toEqual(JSON.stringify(result2))
-	// 		}
-	// 	)
-	// 	)
-	// })
-
-	// // Transitivity Property: If a transformation list A transforms tasks to a result B, and another transformation list B transforms B back to the original tasks, 
-	// // then composing transformation lists A and B should also transform the tasks back to the original order.
-	// test('should satisfy the transitivity property', () => {
-	// 	fc.assert(fc.property(
-	// 		fc.array(fc.object()),
-	// 		fc.array(fc.integer()),
-	// 		fc.array(fc.integer()),
-	// 		(tasks, transformation1, transformation2) => {
-	// 			// Applying composed transformation should yield the same result as applying each transformation individually
-	// 			const composedTransformation = transformation2.map(i => transformation1[i])
-	// 			const result1 = transform(transform(tasks, transformation1), transformation2)
-	// 			const result2 = transform(tasks, composedTransformation)
-
-	// 			expect(JSON.stringify(result1)).toEqual(JSON.stringify(result2))
-	// 		}
-	// 	)
-	// 	)
-	// })
-
-	// // Length Preservation Property: The length of the resulting array should always be the same as the length of the input array.
-	// test('should satisfy the length preservation property', () => {
-	// 	fc.assert(fc.property(
-	// 		fc.array(fc.object()), // Arbitrary array of objects for tasks
-	// 		fc.array(fc.integer()), // Arbitrary array of integers for transformation
-	// 		(tasks, transformation) => {
-	// 			const result = transform(tasks, transformation)
-	// 			expect(result.length).toBe(tasks.length)
-	// 		}
-	// 	)
-	// 	)
-	// })
-
-})
-
-describe('deleteDnDEvent', () => {
-	// --- Example based tests
+describe('computeUpdatedLiveTime', () => {
 	const testCases = [
 		{
-			description: 'should delete a single index',
-			input: [[1, 3, 2, 4, 5], [0, 0]],
-			expected: [1, 0, 2, 3],
+			description: "Should increase liveTime when task is INCOMPLETE and is the first incomplete task",
+			input: {
+				oldLiveTime: 5,
+				liveTimeStamp: new Date(Date.now() - hoursToMillis(2)).toISOString(), // 2 hours ago
+				currentTime: new Date(),
+				status: TASK_STATUSES.INCOMPLETE,
+				isFirstIncomplete: true
+			},
+			expected: 7 // 5 + 2
 		},
 		{
-			description: 'should delete a range of indices starting from 0',
-			input: [[1, 3, 2, 4, 5], [0, 2]],
-			expected: [0, 1],
+			description: "Should NOT increase liveTime when task is COMPLETE",
+			input: {
+				oldLiveTime: 3,
+				liveTimeStamp: new Date(Date.now() - hoursToMillis(1)).toISOString(), // 1 hour ago
+				currentTime: new Date(),
+				status: TASK_STATUSES.COMPLETED,
+				isFirstIncomplete: true
+			},
+			expected: 3 // No increase
 		},
 		{
-			description: 'should delete another range of indices starting from not 0',
-			input: [[1, 3, 2, 4, 5], [2, 3]],
-			expected: [0, 1, 2],
+			description: "Should NOT increase liveTime when task is INCOMPLETE but NOT the first incomplete task",
+			input: {
+				oldLiveTime: 4,
+				liveTimeStamp: new Date(Date.now() - hoursToMillis(3)).toISOString(), // 3 hours ago
+				currentTime: new Date(),
+				status: TASK_STATUSES.INCOMPLETE,
+				isFirstIncomplete: false
+			},
+			expected: 4 // No increase
 		},
+		{
+			description: "Should handle liveTimeStamp being exactly at currentTime (no increase)",
+			input: {
+				oldLiveTime: 2,
+				liveTimeStamp: new Date(),
+				currentTime: new Date(),
+				status: TASK_STATUSES.INCOMPLETE,
+				isFirstIncomplete: true
+			},
+			expected: 2 // No increase
+		},
+		{
+			description: "Should handle negative time difference gracefully (future timestamp)",
+			input: {
+				oldLiveTime: 6,
+				liveTimeStamp: new Date(Date.now() + hoursToMillis(1)).toISOString(), // 1 hour in the future
+				currentTime: new Date(),
+				status: TASK_STATUSES.INCOMPLETE,
+				isFirstIncomplete: true
+			},
+			expected: 6 // Should not decrease liveTime
+		}
 	]
-
 	testCases.forEach(({ description, input, expected }) => {
-		it(description, () => {
-			expect(deleteDnDEvent(...input)).toEqual(expected)
+		test(description, () => {
+			const result = computeUpdatedLiveTime(input)
+			expect(result).toBe(expected)
 		})
 	})
-
-	// --- Property based tests
-	// Constraints on outputs given valid inputs
-	// 1. Output is an array of natural numbers
-	// 	[nat, nat, nat, ...inf]
-	// 2. len(Output) = len(dnd) - ((endIndex - startIndex) + 1) // since it is strictly smaller than input dnd
-	// 	[nat, nat, nat, ...len(dnd) - ((endIndex - startIndex) + 1)]
-	// 3. all naturals 0 to len(dnd) - ((endIndex - startIndex) + 1) are in the output // making all naturals in list unique
-	// 	[nat, nat, nat, ...len(dnd) - ((endIndex - startIndex) + 1)]
-	// 4. for all pairs (a, b) in the ouput and (c, d) in the input dnd, the comparison between all pairs is the same for both.
-	// 	// i.e if a < b then c < d and vice versa. This ensures proper ordering of the natural numbers in the list
-	// 	// ex: [1,2,3] = input after deletions, [0, 1, 2] = output => (1 < 2) === (0 < 1) and (2 < 3) === (1 < 2) etc.
-	// 	[nat, nat, nat, ...len(dnd) - ((endIndex - startIndex) + 1)] // properly ordered
-	const setCompare = (set1, set2) => set1.size === set2.size && [...set1].every(x => set2.has(x))
-	const dndArbitrary = fc.uniqueArray(fc.nat(), { minLength: 1 })
-	const indexRangeArbitrary = max => fc.tuple(
-		fc.nat({ max }), // Start index is an int with a minimum of 0
-		fc.nat({ max }), // End index is an int >= start
-	).filter(([startIndex, endIndex]) => endIndex >= startIndex)
-
-	// Output is an array of natural numbers
-	test('Output is an array of natural numbers', () => {
-		fc.assert(fc.property(
-			dndArbitrary,
-			dndArbitrary.chain(arr => indexRangeArbitrary(arr.length - 1)),
-			(dnd, indexRange) => {
-				const output = deleteDnDEvent(dnd, indexRange)
-				expect(output.every(num => Number.isInteger(num) && num >= 0)).toBe(true)
-			}
-		))
-	})
-
-	// len(Output) = len(dnd) - ((endIndex - startIndex) + 1)
-	test('len(Output) = len(dnd) - ((endIndex - startIndex) + 1)', () => {
-		fc.assert(fc.property(
-			dndArbitrary,
-			dndArbitrary.chain(arr => indexRangeArbitrary(arr.length - 1)),
-			(dnd, [startIndex, endIndex]) => {
-				if (endIndex > dnd.length - 1) return // skip this case, endIndex should not be bigger than the len of list
-				const output = deleteDnDEvent(dnd, [startIndex, endIndex])
-				const lenOutput = output.length
-				const expectedLen = dnd.length - ((endIndex - startIndex) + 1)
-				expect(lenOutput).toBe(expectedLen)
-			}
-		))
-	})
-
-	// all naturals 0 to len(dnd) - ((endIndex - startIndex) + 1) are in output meaning no duplicates
-	test('all naturals 0 to len(dnd) - ((endIndex - startIndex) + 1) are in output meaning no duplicates', () => {
-		fc.assert(fc.property(
-			dndArbitrary,
-			dndArbitrary.chain(arr => indexRangeArbitrary(arr.length - 1)),
-			(dnd, [startIndex, endIndex]) => {
-				if (endIndex > dnd.length - 1) return // skip this case, endIndex should not be bigger than the len of list
-				const output = deleteDnDEvent(dnd, [startIndex, endIndex])
-				const expectedLen = dnd.length - ((endIndex - startIndex) + 1)
-				const expectedSet = new Set([...Array(expectedLen).keys()]) // {0...expectedLen}
-				const outputSet = new Set(output) // {0...expectedLen} ?
-				expect(setCompare(outputSet, expectedSet)).toBe(true)
-			}
-		))
-	})
-
-	// for all pairs (a, b) in the ouput and (c, d) in the input dnd, the comparison between all pairs is the same for both.
-	// Order is preserved after deletions
-	test('Order of elements is preserved after deletions', () => {
-		fc.assert(fc.property(
-			dndArbitrary,
-			dndArbitrary.chain(arr => indexRangeArbitrary(arr.length - 1)),
-			(dnd, [startIndex, endIndex]) => {
-				if (endIndex > dnd.length - 1) return // skip this case, endIndex should not be bigger than the len of list
-				const output = deleteDnDEvent(dnd, [startIndex, endIndex])
-				const filteredDnd = dnd.filter((_, i) => i < startIndex || i > endIndex)
-				expect(isRelativelyOrdered(filteredDnd, output)).toBe(true)
-			}
-		))
-	})
-
+	// --- Property Based Tests
+	test('Non-Decreasing Property - LiveTime should not decrease when status is INCOMPLETE and is the first incomplete', () => {
+        fc.assert(
+            fc.property(
+                fc.integer(0, 100), // oldLiveTime
+                fc.date({ min: new Date(Date.now() - hoursToMillis(10)), max: new Date() }), // liveTimeStamp in the past 10 hours
+                fc.date({ min: new Date(Date.now() - hoursToMillis(10)), max: new Date() }), // currentTime
+                (oldLiveTime, liveTimeStamp, currentTime) => {
+                    const result = computeUpdatedLiveTime({
+                        oldLiveTime,
+                        liveTimeStamp: liveTimeStamp.toISOString(),
+                        currentTime: currentTime,
+                        status: TASK_STATUSES.INCOMPLETE,
+                        isFirstIncomplete: true
+                    })
+                    return result >= oldLiveTime // Ensure liveTime never decreases
+                }
+            )
+        )
+    })
+	test('Idempotence for non-incomplete tasks Property - LiveTime should be unchanged when status is not INCOMPLETE', () => {
+        fc.assert(
+            fc.property(
+                fc.integer(0, 100),
+                fc.date(),
+                fc.date(),
+                fc.constantFrom(TASK_STATUSES.COMPLETED, TASK_STATUSES.CANCELLED),
+                (oldLiveTime, liveTimeStamp, currentTime, status) => {
+                    const result = computeUpdatedLiveTime({
+                        oldLiveTime,
+                        liveTimeStamp: liveTimeStamp.toISOString(),
+                        currentTime: currentTime,
+                        status,
+                        isFirstIncomplete: true
+                    })
+                    return result === oldLiveTime
+                }
+            )
+        )
+    })
+	test('Idempotence for non-live incomplete tasks Property - LiveTime should be unchanged if isFirstIncomplete is false', () => {
+        fc.assert(
+            fc.property(
+                fc.integer(0, 100),
+                fc.date(),
+                fc.date(),
+                (oldLiveTime, liveTimeStamp, currentTime) => {
+                    const result = computeUpdatedLiveTime({
+                        oldLiveTime,
+                        liveTimeStamp: liveTimeStamp.toISOString(),
+                        currentTime: currentTime,
+                        status: TASK_STATUSES.INCOMPLETE,
+                        isFirstIncomplete: false
+                    })
+                    return result === oldLiveTime
+                }
+            )
+        )
+    })
 })
-	*/
