@@ -74,14 +74,11 @@ export const taskListPipe = ({ oldTaskList, dnd, filter, sortAlgo, paginationRan
 )(oldTaskList)
 // -- Read-only TaskRow fields
 // TODO: See if you can simplify by making the timestamps just ISO strings?
-// TODO: Be sure to test these functions, something is fishy with calculate Waste and calculate Live Time
 const firstIndex = (lis, pred) => lis?.findIndex(val => pred(val))
 const lastIndex = (lis, pred) => lis?.findLastIndex(val => pred(val))
 export const firstCompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED)
 export const lastCompleteIndex = properlyOrderedTaskList => lastIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED)
-const firstIncompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status !== TASK_STATUSES.COMPLETED)
 const isValidDate = date => (date !== "Invalid Date") && !isNaN(new Date(date))
-const epochToMillis = epoch => epoch * 1000
 // -- compute helpers for the live time, waste, efficiency, and eta functions
 export const computeUpdatedLiveTime = ({ oldLiveTime, liveTimeStamp, currentTime, status, isFirstIncomplete }) => {
 	const processedCurrentTime = isValidDate(currentTime) ? currentTime : new Date()
@@ -90,58 +87,36 @@ export const computeUpdatedLiveTime = ({ oldLiveTime, liveTimeStamp, currentTime
 		? oldLiveTime + subtract(processedCurrentTime, processedLiveTimeStamp)
 		: oldLiveTime
 }
-const computeCalculateWaste = (liveTime, ttc) => liveTime - ttc
-const computeCalculateEfficiency = (liveTime, ttc) => ttc / liveTime // UI converts to Percentage
 // -- orchestration helpers for the live time, waste, efficiency, and eta functions
-export const getTaskIndexes = (taskID, pipeOptions) => {
+const getTaskIndexes = (taskID, pipeOptions) => {
 	const properlyOrderedTaskList = taskListPipe(pipeOptions)
 	return {
 		properlyOrderedTaskList,
 		firstIncompleteIndex: properlyOrderedTaskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED),
 		currentTaskIndex: properlyOrderedTaskList?.findIndex(task => task?.id === taskID)
 	}
-} // also used in useTaskTable
-export const calculateLiveTime = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
-	const { id: taskID, liveTime: oldLiveTime, timestamp, status } = currentTaskRow || {}
-	const properlyOrderedTaskList = taskListPipe(taskOrderPipeOptions)
-	const firstIncompleteIdx = firstIncompleteIndex(properlyOrderedTaskList)
-	const currentTaskIndex = firstIndex(properlyOrderedTaskList, task => task?.id === taskID)
-	const lastCompletedTimeStamp = properlyOrderedTaskList?.[firstIncompleteIdx - 1]?.completedTimeStamp
-
-	const base = isValidDate(currentTime) ? currentTime : new Date()// add(currentTime, oldLiveTime)
-	const prev = new Date(firstIncompleteIdx === 0 ? epochToMillis(timestamp) : epochToMillis(lastCompletedTimeStamp))
-	if (status === TASK_STATUSES.COMPLETED || currentTaskIndex !== firstIncompleteIdx) return oldLiveTime
-	else return subtract(base, prev)
 }
-export const calculateLiveTimeNew = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
+export const calculateLiveTime = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	const { id: taskID, liveTime: oldLiveTime, status, liveTimeStamp } = currentTaskRow || {}
-	const { firstIncompleteIdx, currentTaskIndex } = getTaskIndexes(taskID, taskOrderPipeOptions)
-	return computeUpdatedLiveTime({ oldLiveTime, liveTimeStamp, currentTime, status, isFirstIncomplete: currentTaskIndex === firstIncompleteIdx })
+	const { firstIncompleteIndex, currentTaskIndex } = getTaskIndexes(taskID, taskOrderPipeOptions)
+	return computeUpdatedLiveTime({ oldLiveTime, liveTimeStamp, currentTime, status, isFirstIncomplete: currentTaskIndex === firstIncompleteIndex })
 }
 export const calculateWaste = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
-	const { status, waste } = currentTaskRow || {}
-	if (status === TASK_STATUSES.COMPLETED) return waste
-	else return calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) - currentTaskRow?.ttc
-}
-export const calculateWasteNew = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	const { status, waste, ttc } = currentTaskRow || {}
 	if (status === TASK_STATUSES.COMPLETED) return waste
-	else return calculateLiveTimeNew(currentTaskRow, taskOrderPipeOptions, currentTime) - ttc // liveTime - ttc
+	else return calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) - ttc // liveTime - ttc
 }
 // TODO: Write the correct efficiency function
 export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
-	return currentTaskRow?.ttc / (calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) + calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime))
-}
-export const calculateEfficiencyNew = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	const { status, efficiency, ttc } = currentTaskRow || {}
 	if (status === TASK_STATUSES.COMPLETED) return efficiency
-	else return ttc / (calculateLiveTimeNew(currentTaskRow, taskOrderPipeOptions, currentTime)) // ttc / liveTime
+	else return ttc / (calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime)) // ttc / liveTime
 }
 export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	const { id: taskID, ttc, liveTime: oldLiveTime } = currentTaskRow || {}
 	const processedOldLiveTime = oldLiveTime || 0 // Must be done since some people won't have this update
 
-	const { properlyOrderedTaskList, firstIncompleteIdx, currentTaskIndex } = getTaskIndexes(taskID, taskOrderPipeOptions)
+	const { properlyOrderedTaskList, firstIncompleteIndex, currentTaskIndex } = getTaskIndexes(taskID, taskOrderPipeOptions)
 
 	const base = isValidDate(currentTime) ? currentTime : new Date()
 	const prev = properlyOrderedTaskList
@@ -153,7 +128,7 @@ export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) 
 	const processedFirstIncompleteSum = isValidDate(firstIncompleteSum) ? firstIncompleteSum : new Date()
 	const processedOtherIncompleteSum = isValidDate(otherIncompleteSum) ? otherIncompleteSum : new Date()
 
-	return currentTaskIndex === firstIncompleteIdx
+	return currentTaskIndex === firstIncompleteIndex
 		? formatISO(processedFirstIncompleteSum) // current time + (max(ttc, live time) - live time)
 		: formatISO(processedOtherIncompleteSum) // prev + max(ttc, live time) 
 }
@@ -170,7 +145,7 @@ const timeFormat = ({ timeLeftInMinutes, timeLeftInHours }, { minuteText = 'minu
 // -- TaskRow Slots helpers
 export const formatTTC = ttc => (!ttc || isNaN(ttc)) ? '0 minutes' : timeFormat(findTimeLeft(ttc), { minuteText: 'minutes', hourText: 'hours' })
 export const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
-export const formatWaste = waste => waste < 0 ? `-${formatTTC(waste)}` : formatTTC(waste)
+export const formatWaste = waste => waste < 0 ? `-${formatTTC(-waste)}` : formatTTC(waste) // TODO: Check this, I think there is a bug where when waste is -1 it shows -0 instead
 export const formatEta = eta => eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime()) ? format(parseISO(eta), "HH:mm") : '00:00'
 export const formatEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
 export const getTaskRowDnDStyle = provided => ({ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' })

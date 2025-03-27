@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { getHeaderLabels, taskListPipe, getTaskRenderNumber, firstCompleteIndex, lastCompleteIndex, getTaskIndexes } from '../../../Core/utils/helpers.js'
+import { getHeaderLabels, taskListPipe, getTaskRenderNumber, firstCompleteIndex, lastCompleteIndex } from '../../../Core/utils/helpers.js'
 import { TASK_STATUSES } from '../../../Core/utils/constants.js'
 import store from "../../store"
 import { isFullTask as isFullTaskSelector, taskOrderPipeOptions } from '../../selectors.js'
@@ -22,7 +22,6 @@ export const useTaskTableDefault = () => {
                     const taskUpdateInfo = isLive
                         ? { taskID, value: new Date().toISOString() }
                         : undefined // if live then send the taskUpdateInfo, otherwise don't send at all so it won't update the liveTimeStamp
-                    console.log(isLive)
                     dispatch(updateDnDThunk({ payload: [result.source.index, result.destination.index], completedRange: { start, end }, taskUpdateInfo }))
                 }
             }

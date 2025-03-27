@@ -4,7 +4,7 @@ import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS } from '../../../Core/utils/constan
 import { toggleTaskStatus, calculateWaste, calculateLiveTime, calculateEta } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
 
-const { completedTimeStamp, waste, liveTime, eta, task, ttc, dueDate, weight, parentThread } = FULL_TASK_FIELDS
+const { completedTimeStamp, waste, liveTime, eta, task, ttc, dueDate, weight, parentThread, liveTimeStamp } = FULL_TASK_FIELDS
 // TODO: API + Other
 export const addTaskThunkAPI = ({ userID }) => dispatch => {
     // addTaskAPI({task, userID}) // 1. POST to API
@@ -22,9 +22,11 @@ export const completeTaskThunkAPI = ({ userID, currentTaskRow, taskOrderPipeOpti
         { taskID: id, field: waste, value: calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime) },
         { taskID: id, field: liveTime, value: calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) },
         { taskID: id, field: eta, value: calculateEta(currentTaskRow, taskOrderPipeOptions, currentTime) },
-        // update the Efficiency value of the task (calculated)
+        { taskID: id, field: liveTimeStamp, value: new Date().toISOString() },
+        // TODO: update the Efficiency value of the task (calculated)
         // ... basically all the read only values get updated on complete to be inline with the calculations
     ]))
+    // TODO: update the live task with the correct liveTimeStamp (and possibly liveTime?)
     // dispatch(completeTaskDnD(...)) // 4. Update the dnd config 
 } // Reducer + Business Logic + Side-effects
 export const editTaskNameThunkAPI = ({ userID, taskID, taskName }) => dispatch => {
