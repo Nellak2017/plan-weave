@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { parseISO } from 'date-fns'
-import { toast as reactToast } from 'react-toastify'
-import { userID as userIDSelector, isOwl, isFullTask, fsmControlledState, timeRange } from '../../selectors.js'
+import { userID as userIDSelector, isOwl, isFullTask, fsmControlledState, timeRange, taskOrderPipeOptions, properlyOrderedTasks } from '../../selectors.js'
 import { searchThunk, sortThunk, checkTimeRangeThunk, toggleThunk, updateTimeRangeThunk, addTaskThunkAPI, updateMultiDeleteFSMThunk } from '../../thunks.js'
 import { VALID_SEARCH_IDS, VALID_SORT_IDS, VALID_TIMERANGE_IDS, VALID_TOGGLE_IDS, VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import store from '../../store.js'
+import { taskListPipe, firstIncompleteIndex } from '../../../Core/utils/helpers.js'
 
 // TODO: Implement time range checking feature that makes TimePicker Redux controlled (uses checkTimeRange function)
 const dispatch = store.dispatch
@@ -33,12 +33,14 @@ export const useTopSlot = () => {
 export const useBottomSlot = () => {
     const { startTaskEditor, endTaskEditor } = timeRange()
     const userID = userIDSelector()
+    const taskList = properlyOrderedTasks(), firstIncomplete = useMemo(() => firstIncompleteIndex(taskList), [taskList])
+    const prevTaskID = taskList?.[firstIncomplete]?.id || 0
     const childState = {
         isFullTask: isFullTask(), fsmControlledState: fsmControlledState(), isOwl: isOwl(),
         endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [endTaskEditor?.defaultTime]),
     }
     const childServices = {
-        addTask: () => { dispatch(addTaskThunkAPI({ userID })) },
+        addTask: () => { dispatch(addTaskThunkAPI({ userID, prevTaskID })) },
         fullTaskToggle: () => { dispatch(toggleThunk({ id: VALID_TOGGLE_IDS.FULL_TASK_ID })) },
         setMultiDeleteFSMState: value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) },
         sort: ({ value, id = VALID_SORT_IDS?.SORT_TASK_EDITOR }) => { dispatch(sortThunk({ id, value })) },

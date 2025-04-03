@@ -36,7 +36,7 @@ export const TaskTable = ({
 }
 
 export const TaskTableDefault = ({ currentTime, customHook = useTaskTableDefault }) => {
-    const { childState, childServices } = customHook?.() || {}
+    const { childState, childServices } = customHook?.(currentTime) || {}
     const { taskList, labels, renderNumber } = childState || {}
     const { onDragEndEvent } = childServices || {}
     return (

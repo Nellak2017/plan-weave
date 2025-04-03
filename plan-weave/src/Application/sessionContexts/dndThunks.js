@@ -1,16 +1,15 @@
 import { updateDnD } from './dnd.js'
-import { updateTask } from '../entities/tasks/tasks.js'
+import { setPrevLiveTaskID } from './prevLiveTaskID.js'
 import { between } from '../../Core/utils/helpers.js'
 
-export const updateDnDThunk = ({ payload, completedRange, taskUpdateInfo }) => dispatch => {
+export const updateDnDThunk = ({ payload, completedRange, taskList, firstIncomplete }) => dispatch => {
     const [source, destination] = payload || []
     const { start, end } = completedRange || {}
     if (between(destination, { start, end })) return
     else dispatch(updateDnD([source, destination]))
 
-    const { taskID, value } = taskUpdateInfo || {} // if not provided or undefined, it is assumed to not be live so is not updated
-    if (!taskUpdateInfo) return // if it is not live, then don't update the liveTimeStamp
-    else dispatch(updateTask({ taskID, field: 'liveTimeStamp', value })) // destructured for easy reading due to no types
+    if (source === firstIncomplete) { dispatch(setPrevLiveTaskID(taskList?.[source]?.id)) }
+    if (destination === firstIncomplete) { dispatch(setPrevLiveTaskID(taskList?.[destination]?.id))}
 }
 // this has business logic to prevent dropping on completed tasks.
-// It also will set the liveTimeStamp if the task is now in the live position
+// this has business logic to set prev live task so that the useEffect in useTaskTable can properly set the live->non-live task state 

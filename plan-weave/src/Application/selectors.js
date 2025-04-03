@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
-import { tryCatchSyncFlat, isStatusChecked, getAvailableThreads } from '../Core/utils/helpers.js'
+import { tryCatchSyncFlat, isStatusChecked, getAvailableThreads, taskListPipe } from '../Core/utils/helpers.js'
 import { SORTING_METHODS } from '../Core/utils/constants.js'
 import { CHOOSE, CHOSEN } from './finiteStateMachines/MultipleDeleteButton.fsm.js'
 // TODO: Add more business constraints here for these selectors
@@ -23,6 +23,10 @@ export const taskOrderPipeOptions = () => {
         paginationRange: { start: ((pageNum * perPage) - perPage) + 1, end: pageNum * perPage },
     }
 }
+export const properlyOrderedTasks = () => {
+    const options = taskOrderPipeOptions()
+    return taskListPipe(options)
+}
 export const isHighlighting = () => {
     const fsmState = fsmControlledState()
     return fsmState === CHOOSE || fsmState === CHOSEN
@@ -32,3 +36,4 @@ export const isAtleastOneTaskSelected = () => tasks().filter(task => task?.selec
 export const isZeroTasksSelected = () => tasks().filter(task => task?.selected)?.length === 0
 export const taskIDsToDelete = () => tasks().map((task, index) => ({ ...task, index })).filter(task => task?.selected).map(task => ({ index: task?.index, id: task?.id }))
 export const getAllThreadOptionsAvailable = (selector = useSelector) => tryCatchSyncFlat(() => selector(createSelector([state => state?.tasks], tasks => getAvailableThreads(tasks))), () => [])
+export const prevLiveTaskID = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.prevLiveTaskID), () => 0)

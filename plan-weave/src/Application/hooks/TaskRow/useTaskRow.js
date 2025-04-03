@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from 'react'
 import store from '../../store.js'
-import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, tasks as tasksSelector, getAllThreadOptionsAvailable } from '../../selectors.js'
+import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency, indexOfTaskToBeDeleted } from '../../../Core/utils/helpers.js'
 import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
@@ -18,7 +18,6 @@ export const useTaskRow = taskID => {
     const timeRangeStartEnd = useMemo(() => ({ start: start?.defaultTime, end: end?.defaultTime }), [start, end])
 
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
-    //console.log({ timeRangeStartEnd, timestamp: eta })
     // TODO: Figure out why end time is incorrect by being behind by 1 day. It should be always in a correct state. (when someone puts it as a end time less than start, set owl to be true and show toast warning. If it is like it initially also do the same thing too)
     const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, timeRange: timeRangeStartEnd })), [timeRangeStartEnd, isChecked, isHighlighting, usedTask])
     return { status, highlight }
@@ -100,6 +99,6 @@ export const useDependency = taskID => {
     return { childState, childServices }
 }
 export const useTrash = taskID => {
-    const userID = userIDSelector() || '', dnd = dndSelector() || [], tasks = tasksSelector?.() || []
+    const userID = userIDSelector() || '', dnd = dndSelector() || [], tasks = properlyOrderedTasks?.() || []
     return { onClickEvent: () => dispatch(deleteTaskThunkAPI({ userID, taskInfo: { index: indexOfTaskToBeDeleted(dnd, tasks, taskID), id: taskID } })) }
 }

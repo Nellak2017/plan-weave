@@ -7,5 +7,6 @@ import toggle from './boundedContexts/toggle/toggleSlice.js'
 import tasks from './entities/tasks/tasks.js'
 import dnd from './sessionContexts/dnd.js'
 import auth from './sessionContexts/auth.js'
-export const reducers = { tasks, dnd, search, sort, multiDelete, pagination, timeRange, toggle, auth, }
-export { tasks, dnd, search, sort, multiDelete, pagination, timeRange, toggle, auth, }
+import prevLiveTaskID from './sessionContexts/prevLiveTaskID.js'
+export const reducers = { tasks, dnd, search, sort, multiDelete, pagination, timeRange, toggle, auth, prevLiveTaskID }
+export { tasks, dnd, search, sort, multiDelete, pagination, timeRange, toggle, auth, prevLiveTaskID }

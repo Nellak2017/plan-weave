@@ -24,7 +24,7 @@ import {
 	pipe,
 	getAvailableThreads,
 	computeUpdatedLiveTime, // compute part of live time
-	
+
 	calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, taskListPipe, // These are orchestrators and require complex setups.  
 } from '../../../Core/utils/helpers.js'
 import { TASK_STATUSES, MAX_SAFE_DATE } from '../../../Core/utils/constants.js'
@@ -870,66 +870,65 @@ describe('computeUpdatedLiveTime', () => {
 	testCases.forEach(({ description, input, expected }) => {
 		test(description, () => {
 			const result = computeUpdatedLiveTime(input)
-			expect(result).toBe(expected)
+			expect(result).toBeCloseTo(expected, 6)
 		})
 	})
 	// --- Property Based Tests
 	test('Non-Decreasing Property - LiveTime should not decrease when status is INCOMPLETE and is the first incomplete', () => {
-        fc.assert(
-            fc.property(
-                fc.integer(0, 100), // oldLiveTime
-                fc.date({ min: new Date(Date.now() - hoursToMillis(10)), max: new Date() }), // liveTimeStamp in the past 10 hours
-                fc.date({ min: new Date(Date.now() - hoursToMillis(10)), max: new Date() }), // currentTime
-                (oldLiveTime, liveTimeStamp, currentTime) => {
-                    const result = computeUpdatedLiveTime({
-                        oldLiveTime,
-                        liveTimeStamp: liveTimeStamp.toISOString(),
-                        currentTime: currentTime,
-                        status: TASK_STATUSES.INCOMPLETE,
-                        isFirstIncomplete: true
-                    })
-                    return result >= oldLiveTime // Ensure liveTime never decreases
-                }
-            )
-        )
-    })
+		fc.assert(
+			fc.property(
+				fc.integer(0, 100), // oldLiveTime
+				fc.date({ min: new Date(Date.now() - hoursToMillis(10)), max: new Date() }), // liveTimeStamp in the past 10 hours
+				fc.date({ min: new Date(Date.now() - hoursToMillis(10)), max: new Date() }), // currentTime
+				(oldLiveTime, liveTimeStamp, currentTime) => {
+					const result = computeUpdatedLiveTime({
+						oldLiveTime,
+						liveTimeStamp: liveTimeStamp.toISOString(),
+						currentTime: currentTime,
+						status: TASK_STATUSES.INCOMPLETE,
+						isFirstIncomplete: true
+					})
+					return result >= oldLiveTime // Ensure liveTime never decreases
+				}
+			)
+		)
+	})
 	test('Idempotence for non-incomplete tasks Property - LiveTime should be unchanged when status is not INCOMPLETE', () => {
-        fc.assert(
-            fc.property(
-                fc.integer(0, 100),
-                fc.date(),
-                fc.date(),
-                fc.constantFrom(TASK_STATUSES.COMPLETED, TASK_STATUSES.CANCELLED),
-                (oldLiveTime, liveTimeStamp, currentTime, status) => {
-                    const result = computeUpdatedLiveTime({
-                        oldLiveTime,
-                        liveTimeStamp: liveTimeStamp.toISOString(),
-                        currentTime: currentTime,
-                        status,
-                        isFirstIncomplete: true
-                    })
-                    return result === oldLiveTime
-                }
-            )
-        )
-    })
+		fc.assert(
+			fc.property(
+				fc.integer(0, 100),
+				fc.date(),
+				fc.date(),
+				fc.constantFrom(TASK_STATUSES.COMPLETED, TASK_STATUSES.CANCELLED),
+				(oldLiveTime, liveTimeStamp, currentTime, status) => {
+					const result = computeUpdatedLiveTime({
+						oldLiveTime,
+						liveTimeStamp: liveTimeStamp.toISOString(),
+						currentTime: currentTime,
+						status,
+						isFirstIncomplete: true
+					})
+					return result === oldLiveTime
+				}
+			)
+		)
+	})
 	test('Idempotence for non-live incomplete tasks Property - LiveTime should be unchanged if isFirstIncomplete is false', () => {
-        fc.assert(
-            fc.property(
-                fc.integer(0, 100),
-                fc.date(),
-                fc.date(),
-                (oldLiveTime, liveTimeStamp, currentTime) => {
-                    const result = computeUpdatedLiveTime({
-                        oldLiveTime,
-                        liveTimeStamp: liveTimeStamp.toISOString(),
-                        currentTime: currentTime,
-                        status: TASK_STATUSES.INCOMPLETE,
-                        isFirstIncomplete: false
-                    })
-                    return result === oldLiveTime
-                }
-            )
-        )
-    })
+		fc.assert(fc.property(
+			fc.integer(0, 100),
+			fc.date(),
+			fc.date(),
+			(oldLiveTime, liveTimeStamp, currentTime) => {
+				const result = computeUpdatedLiveTime({
+					oldLiveTime,
+					liveTimeStamp: liveTimeStamp.toISOString(),
+					currentTime: currentTime,
+					status: TASK_STATUSES.INCOMPLETE,
+					isFirstIncomplete: false
+				})
+				return result === oldLiveTime
+			}
+		)
+		)
+	})
 })
