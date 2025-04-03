@@ -1,12 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useMemo, useEffect } from 'react'
-import { getHeaderLabels, getTaskRenderNumber, firstCompleteIndex, lastCompleteIndex, firstIncompleteIndex, calculateLiveTime, calculateWaste, calculateEfficiency, computeUpdatedLiveTime, computeUpdatedWaste, computeUpdatedEfficiency } from '../../../Core/utils/helpers.js'
+import { getHeaderLabels, getTaskRenderNumber, firstCompleteIndex, lastCompleteIndex, firstIncompleteIndex, computeUpdatedLiveTime, computeUpdatedWaste, computeUpdatedEfficiency } from '../../../Core/utils/helpers.js'
 import store from "../../store"
-import { isFullTask as isFullTaskSelector, taskOrderPipeOptions, dnd as dndSelector, prevLiveTaskID as prevLiveTaskIDSelector, properlyOrderedTasks } from '../../selectors.js'
+import { isFullTask as isFullTaskSelector, dnd as dndSelector, prevLiveTaskID as prevLiveTaskIDSelector, properlyOrderedTasks } from '../../selectors.js'
 import { updateDnDThunk } from '../../thunks.js'
 import { updateTask, updateTasksBatch } from '../../entities/tasks/tasks.js'
 import { TASK_STATUSES } from '../../../Core/utils/constants.js'
 
-// TODO: consider having the calculated tasklist be a selector as well that is memoized on pipelineOptions (how?) (make sure to update it here and everywhere it is used)
 const dispatch = store ? store.dispatch : () => { }
 export const useTaskTableDefault = (currentTime) => {
     const isFullTask = isFullTaskSelector()
@@ -39,9 +39,7 @@ export const useTaskTableDefault = (currentTime) => {
         childState: { taskList, labels, renderNumber },
         childServices: {
             onDragEndEvent: result => {
-                if (result.destination) {
-                    dispatch(updateDnDThunk({ payload: [result.source.index, result.destination.index], completedRange: { start, end }, taskList, firstIncomplete }))
-                }
+                if (result.destination) { dispatch(updateDnDThunk({ payload: [result.source.index, result.destination.index], completedRange: { start, end }, taskList, firstIncomplete })) }
             }
         }
     }

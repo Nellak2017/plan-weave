@@ -1,37 +1,43 @@
-import { useMemo } from 'react'
+/*eslint-disable  react-hooks/exhaustive-deps*/
+import { useMemo, useEffect } from 'react'
 import { parseISO } from 'date-fns'
-import { userID as userIDSelector, isOwl, isFullTask, fsmControlledState, timeRange, taskOrderPipeOptions, properlyOrderedTasks } from '../../selectors.js'
-import { searchThunk, sortThunk, checkTimeRangeThunk, toggleThunk, updateTimeRangeThunk, addTaskThunkAPI, updateMultiDeleteFSMThunk } from '../../thunks.js'
+import { userID as userIDSelector, isOwl, isFullTask, fsmControlledState, timeRange, properlyOrderedTasks } from '../../selectors.js'
+import { searchThunk, sortThunk, toggleThunk, updateTimeRangeThunk, addTaskThunkAPI, updateMultiDeleteFSMThunk } from '../../thunks.js'
 import { VALID_SEARCH_IDS, VALID_SORT_IDS, VALID_TIMERANGE_IDS, VALID_TOGGLE_IDS, VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import store from '../../store.js'
-import { taskListPipe, firstIncompleteIndex } from '../../../Core/utils/helpers.js'
+import { firstIncompleteIndex } from '../../../Core/utils/helpers.js'
+import { toast } from 'react-toastify'
+import { setDefaultTime } from '../../boundedContexts/timeRange/timeRangeSlice.js'
 
-// TODO: Implement time range checking feature that makes TimePicker Redux controlled (uses checkTimeRange function)
 const dispatch = store.dispatch
 export const useTopSlot = () => {
     const { startTaskEditor, endTaskEditor } = timeRange()
-    const childState = {
-        isOwl: isOwl(),
-        startTime: useMemo(() => startTaskEditor?.defaultTime ? parseISO(startTaskEditor?.defaultTime) : new Date(), [startTaskEditor?.defaultTime]),
-        endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [endTaskEditor?.defaultTime]),
-    }
+    const owl = isOwl()
+    const start = startTaskEditor?.defaultTime, end = endTaskEditor?.defaultTime
+    const startMillis = parseISO(start).getTime(), endMillis = parseISO(end).getTime()
+    useEffect(() => {
+        if ((endMillis < startMillis) && !owl) {
+            dispatch(setDefaultTime({ id: VALID_TIMERANGE_IDS.END_TIME_PICKER_ID, value: start }))
+            toast.warn('End time cannot be less than start time. End time is set to start time.')
+        }
+    }, [endTaskEditor?.defaultTime])
+    useEffect(() => {
+        if ((endMillis < startMillis) && !owl) {
+            dispatch(setDefaultTime({ id: VALID_TIMERANGE_IDS.START_TIME_PICKER_ID, value: end }))
+            toast.warn('End time cannot be less than start time. Start time is set to end time.')
+        }
+    }, [startTaskEditor?.defaultTime])
+    const childState = { isOwl: owl, startTime: useMemo(() => parseISO(start), [startTaskEditor?.defaultTime]), endTime: useMemo(() => parseISO(end), [endTaskEditor?.defaultTime]), }
     const childServices = {
         search: ({ value, id = VALID_SEARCH_IDS?.SEARCH_TASK_EDITOR_ID }) => { dispatch(searchThunk({ id, value })) },
         updateTimeRange: ({ id, value }) => { dispatch(updateTimeRangeThunk({ id, value })) },
-        toggleOwl: () => {
-            dispatch(toggleThunk({ id: VALID_TOGGLE_IDS.OWL_ID }))
-            // TODO: properly implement this
-            // if (prev) { toast.info('Overnight Mode is off: Tasks must be scheduled between 12 pm and 12 am. End time must be after the start time.', {autoClose: 5000,}) } 
-            // else { toast.info('Overnight Mode is on: You can schedule tasks overnight, and end time can be before the start time.', {autoClose: 5000,}) }
-            // const newDate = new Date(endTime.getTime() + hoursToMillis(owl ? -24 : 24))
-            // if (differenceInHours(newDate, startTime) <= owl ? 24 : 2 * 24) services?.updateTimeRange(undefined, newDate.toISOString())
-        },
+        toggleOwl: () => { dispatch(toggleThunk({ id: VALID_TOGGLE_IDS.OWL_ID })) },
     }
     return { childState, childServices }
 }
 
 export const useBottomSlot = () => {
-    const { startTaskEditor, endTaskEditor } = timeRange()
+    const { endTaskEditor } = timeRange()
     const userID = userIDSelector()
     const taskList = properlyOrderedTasks(), firstIncomplete = useMemo(() => firstIncompleteIndex(taskList), [taskList])
     const prevTaskID = taskList?.[firstIncomplete]?.id || 0

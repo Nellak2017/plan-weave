@@ -1,5 +1,6 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
+/* eslint-disable max-params */
 
 // TODO: PBT the complex setup orchestrator functions
 // Progress = 18 / 23
@@ -23,7 +24,7 @@ import {
 	deleteMultipleDnDEvent,
 	pipe,
 	getAvailableThreads,
-	computeUpdatedLiveTime, // compute part of live time
+	computeUpdatedLiveTime, // compute part of live time. not covered by property based tests (it is effectively addition)
 
 	calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, taskListPipe, // These are orchestrators and require complex setups.  
 } from '../../../Core/utils/helpers.js'
@@ -812,59 +813,49 @@ describe('getAvailableThreads', () => {
 describe('computeUpdatedLiveTime', () => {
 	const testCases = [
 		{
-			description: "Should increase liveTime when task is INCOMPLETE and is the first incomplete task",
+			description: "7 = 5 + 2. Should be 7 when oldLiveTime is 5 and the liveTimeStamp is 2 hours ago",
 			input: {
 				oldLiveTime: 5,
 				liveTimeStamp: new Date(Date.now() - hoursToMillis(2)).toISOString(), // 2 hours ago
 				currentTime: new Date(),
-				status: TASK_STATUSES.INCOMPLETE,
-				isFirstIncomplete: true
 			},
 			expected: 7 // 5 + 2
 		},
 		{
-			description: "Should NOT increase liveTime when task is COMPLETE",
+			description: "4 = 3 + 1. Should be 4 when oldLiveTime is 3 and the liveTimeStamp is 1 hour ago",
 			input: {
 				oldLiveTime: 3,
 				liveTimeStamp: new Date(Date.now() - hoursToMillis(1)).toISOString(), // 1 hour ago
 				currentTime: new Date(),
-				status: TASK_STATUSES.COMPLETED,
-				isFirstIncomplete: true
 			},
-			expected: 3 // No increase
+			expected: 4 // 3 + 1
 		},
 		{
-			description: "Should NOT increase liveTime when task is INCOMPLETE but NOT the first incomplete task",
+			description: "7 = 4 + 3. Should be 7 when oldLiveTime is 4 and the liveTimeStamp is 3 hours ago",
 			input: {
 				oldLiveTime: 4,
 				liveTimeStamp: new Date(Date.now() - hoursToMillis(3)).toISOString(), // 3 hours ago
 				currentTime: new Date(),
-				status: TASK_STATUSES.INCOMPLETE,
-				isFirstIncomplete: false
 			},
-			expected: 4 // No increase
+			expected: 7 // 4 + 3
 		},
 		{
-			description: "Should handle liveTimeStamp being exactly at currentTime (no increase)",
+			description: "2 = 2 + 0. Should be 2 when oldLiveTime is 2 and the liveTimeStamp is 0 hours ago",
 			input: {
 				oldLiveTime: 2,
 				liveTimeStamp: new Date(),
 				currentTime: new Date(),
-				status: TASK_STATUSES.INCOMPLETE,
-				isFirstIncomplete: true
 			},
 			expected: 2 // No increase
 		},
 		{
-			description: "Should handle negative time difference gracefully (future timestamp)",
+			description: "5 = 6 - 1. Should be 5 when oldLiveTime is 6 and the liveTimeStamp is 1 hour in the future",
 			input: {
 				oldLiveTime: 6,
 				liveTimeStamp: new Date(Date.now() + hoursToMillis(1)).toISOString(), // 1 hour in the future
 				currentTime: new Date(),
-				status: TASK_STATUSES.INCOMPLETE,
-				isFirstIncomplete: true
 			},
-			expected: 6 // Should not decrease liveTime
+			expected: 5 // 6 - 1
 		}
 	]
 	testCases.forEach(({ description, input, expected }) => {
@@ -874,61 +865,4 @@ describe('computeUpdatedLiveTime', () => {
 		})
 	})
 	// --- Property Based Tests
-	test('Non-Decreasing Property - LiveTime should not decrease when status is INCOMPLETE and is the first incomplete', () => {
-		fc.assert(
-			fc.property(
-				fc.integer(0, 100), // oldLiveTime
-				fc.date({ min: new Date(Date.now() - hoursToMillis(10)), max: new Date() }), // liveTimeStamp in the past 10 hours
-				fc.date({ min: new Date(Date.now() - hoursToMillis(10)), max: new Date() }), // currentTime
-				(oldLiveTime, liveTimeStamp, currentTime) => {
-					const result = computeUpdatedLiveTime({
-						oldLiveTime,
-						liveTimeStamp: liveTimeStamp.toISOString(),
-						currentTime: currentTime,
-						status: TASK_STATUSES.INCOMPLETE,
-						isFirstIncomplete: true
-					})
-					return result >= oldLiveTime // Ensure liveTime never decreases
-				}
-			)
-		)
-	})
-	test('Idempotence for non-incomplete tasks Property - LiveTime should be unchanged when status is not INCOMPLETE', () => {
-		fc.assert(
-			fc.property(
-				fc.integer(0, 100),
-				fc.date(),
-				fc.date(),
-				fc.constantFrom(TASK_STATUSES.COMPLETED, TASK_STATUSES.CANCELLED),
-				(oldLiveTime, liveTimeStamp, currentTime, status) => {
-					const result = computeUpdatedLiveTime({
-						oldLiveTime,
-						liveTimeStamp: liveTimeStamp.toISOString(),
-						currentTime: currentTime,
-						status,
-						isFirstIncomplete: true
-					})
-					return result === oldLiveTime
-				}
-			)
-		)
-	})
-	test('Idempotence for non-live incomplete tasks Property - LiveTime should be unchanged if isFirstIncomplete is false', () => {
-		fc.assert(fc.property(
-			fc.integer(0, 100),
-			fc.date(),
-			fc.date(),
-			(oldLiveTime, liveTimeStamp, currentTime) => {
-				const result = computeUpdatedLiveTime({
-					oldLiveTime,
-					liveTimeStamp: liveTimeStamp.toISOString(),
-					currentTime: currentTime,
-					status: TASK_STATUSES.INCOMPLETE,
-					isFirstIncomplete: false
-				})
-				return result === oldLiveTime
-			}
-		)
-		)
-	})
 })

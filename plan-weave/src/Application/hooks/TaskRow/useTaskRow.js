@@ -19,7 +19,7 @@ export const useTaskRow = taskID => {
 
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
     // TODO: Figure out why end time is incorrect by being behind by 1 day. It should be always in a correct state. (when someone puts it as a end time less than start, set owl to be true and show toast warning. If it is like it initially also do the same thing too)
-    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, timeRange: timeRangeStartEnd })), [timeRangeStartEnd, isChecked, isHighlighting, usedTask])
+    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, timeRange: timeRangeStartEnd })), [timeRangeStartEnd, isChecked, isHighlighting, eta])
     return { status, highlight }
 }
 export const useCompleteIcon = (taskID, currentTime) => {
@@ -93,7 +93,7 @@ export const useThread = taskID => {
 // TODO: Implement useDependency correctly. needs: dependency selector, implementation, testing
 export const useDependency = taskID => {
     const { dependencies } = taskSelector?.(taskID) || {}
-    const defaultValue = dependencies?.[0] || [] // TODO: Figure out correct default
+    const defaultValue = dependencies?.[0] || []
     const childState = { defaultValue, options: dependencies, /* I think this is correct?*/ }
     const childServices = { onChangeEvent: () => console.warn('onChange thunk not implemented for useDependency'), }
     return { childState, childServices }

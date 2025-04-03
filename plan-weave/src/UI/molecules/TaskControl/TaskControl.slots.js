@@ -27,7 +27,7 @@ export const TopSlot = ({ currentTime = new Date(), customHook = useTopSlot }) =
             <SearchBar services={{ search }} title={'Search for Tasks'} tabIndex={0} />
             {!isSmallScreen && <p title={'Current Time'}>{format(currentTime, 'HH:mm')}</p>}
             {!isSmallScreen &&
-                <TimePickerContainer>{/* onBlur={() => checkTimeRange({ startTime, endTime, isOwl })} */}
+                <TimePickerContainer>
                     <TimePickerWrapper
                         state={{ defaultTime: format(startTime, 'HH:mm'), offset: start, }}
                         services={{ onTimeChange: value => updateTimeRange?.({ id: START_TIME_PICKER_ID, value }) }}

@@ -2,7 +2,7 @@ import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch } from '
 import { addDnD, deleteMultipleDnD, deleteDnD } from '../../sessionContexts/dnd.js'
 import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
-import { computeUpdatedLiveTime, computeUpdatedWaste, computeUpdatedEfficiency, toggleTaskStatus, calculateLiveTime, calculateWaste, calculateEfficiency } from '../../../Core/utils/helpers.js'
+import { toggleTaskStatus, calculateLiveTime, calculateWaste, calculateEfficiency } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
 
 const { completedTimeStamp, task, parentThread, liveTimeStamp, liveTime, waste, efficiency } = FULL_TASK_FIELDS
