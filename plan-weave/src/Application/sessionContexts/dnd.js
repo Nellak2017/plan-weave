@@ -5,6 +5,7 @@ const dnd = createSlice({
     name: 'dnd',
     initialState: [],
     reducers: {
+        addManyDnD: (_, action) => [...Array(action.payload).keys()], // used for initial state
         addDnD: (state) => addDnDConfig(Array.from(state)),
         updateDnD: (state, action) => {
             const [source, destination] = action.payload
@@ -21,5 +22,5 @@ const dnd = createSlice({
         resetDnD: state => Array.from(state).map((_, i) => i)
     }
 })
-export const { addDnD, updateDnD, deleteMultipleDnD, deleteDnD, resetDnD } = dnd.actions
+export const { addManyDnD, addDnD, updateDnD, deleteMultipleDnD, deleteDnD, resetDnD } = dnd.actions
 export default dnd.reducer

@@ -73,7 +73,6 @@ export const taskListPipe = ({ oldTaskList, dnd, filter, sortAlgo, paginationRan
 	pagination(paginationRange),
 )(oldTaskList)
 // -- Read-only TaskRow fields
-// TODO: See if you can simplify by making the timestamps just ISO strings?
 const firstIndex = (lis, pred) => lis?.findIndex(val => pred(val))
 const lastIndex = (lis, pred) => lis?.findLastIndex(val => pred(val))
 export const firstCompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED)
@@ -137,7 +136,7 @@ const timeFormat = ({ timeLeftInMinutes, timeLeftInHours }, { minuteText = 'minu
 // -- TaskRow Slots helpers
 export const formatTTC = ttc => (!ttc || isNaN(ttc)) ? '0 minutes' : timeFormat(findTimeLeft(ttc), { minuteText: 'minutes', hourText: 'hours' })
 export const formatDate = localDueDate => localDueDate ? format(parseISO(localDueDate), 'MMM-d-yyyy @ h:mm a') : "invalid"
-export const formatWaste = waste => waste < 0 ? `-${formatTTC(-waste)}` : formatTTC(waste) // TODO: Check this, I think there is a bug where when waste is -1 it shows -0 instead
+export const formatWaste = waste => waste < 0 ? `-${formatTTC(-waste)}` : formatTTC(waste) // TODO: Test this, I think there is a bug where when waste is -1 it shows -0 instead
 export const formatEta = eta => eta && typeof eta === 'string' && !isNaN(parseISO(eta).getTime()) ? format(parseISO(eta), "HH:mm") : '00:00'
 export const formatEfficiency = efficiency => !efficiency || efficiency <= 0 ? '-' : `${(parseFloat(efficiency) * 100).toFixed(0)}%`
 export const getTaskRowDnDStyle = provided => ({ ...provided?.draggableProps?.style, boxShadow: provided?.isDragging ? '0px 4px 8px rgba(0, 0, 0, 0.1)' : 'none' })

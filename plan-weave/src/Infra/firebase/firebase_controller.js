@@ -4,15 +4,15 @@ import { toast } from 'react-toastify'
 import { DEV } from '../../Core/utils/constants.js'
 
 const db = getFirestore(app)
-const getTaskCollection = userId => `users/${userId}/tasks`
-export async function fetchTasksFromFirebase(userId, serialize = x => x) {
-	if (!userId) {
-		console.error("Can't fetch tasks without a userId defined")
+const getTaskCollection = userID => `users/${userID}/tasks`
+export async function fetchTasksFromFirebase(userID, serialize = x => x) {
+	if (!userID) {
+		console.error("Can't fetch tasks without a userID defined")
 		toast.error('Failed to fetch tasks')
 		return
 	}
 	try {
-		const TaskCollection = getTaskCollection(userId)
+		const TaskCollection = getTaskCollection(userID)
 		const tasksQuery = query(collection(db, TaskCollection))
 		const tasksSnapshot = await getDocs(tasksQuery)
 		const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
@@ -23,15 +23,14 @@ export async function fetchTasksFromFirebase(userId, serialize = x => x) {
 	}
 }
 
-export async function addTask(task, userId) {
-	// TODO: Add Task schema verification here too
-	if ((!task || !userId) && DEV) {
-		console.error('Invalid task or userId when trying to add tasks. Failed to add tasks to Firebase.')
+export async function addTask(task, userID) {
+	if ((!task || !userID) && DEV) {
+		console.error('Invalid task or userID when trying to add tasks. Failed to add tasks to Firebase.')
 		toast.error('Failed to add tasks to database, your tasks will not persist after refresh')
 	}
-	if ((!task || !userId)) return
+	if ((!task || !userID)) return
 	try {
-		const TaskCollection = getTaskCollection(userId)
+		const TaskCollection = getTaskCollection(userID)
 		const taskDocRef = doc(db, TaskCollection, task.id.toString()) // Assuming task.id is a number
 		await setDoc(taskDocRef, task)
 	} catch (e) {
@@ -40,28 +39,28 @@ export async function addTask(task, userId) {
 	}
 }
 // TODO: Refactor this to eliminate the add/update task function redundancy
-export async function updateTask(updatedTask, userId) {
-	if (!updatedTask || !userId) {
-		console.error('Invalid updated task or userId when trying to update task. Failed to update task')
+export async function updateTask(updatedTask, userID) {
+	if (!updatedTask || !userID) {
+		console.error('Invalid updated task or userID when trying to update task. Failed to update task')
 		toast.error('Failed to update task')
 	}
 	try {
-		const TaskCollection = getTaskCollection(userId)
+		const TaskCollection = getTaskCollection(userID)
 		const taskDocRef = doc(db, TaskCollection, updatedTask.id.toString()) // Assuming task.id is a number
-		await setDoc(taskDocRef, fillDefaults(updatedTask))
+		await setDoc(taskDocRef, updatedTask)
 	} catch (e) {
 		console.error(e)
 		toast.error('Failed to update task')
 	}
 }
 // accepts taskIds array or singular taskId
-export async function deleteTasks(taskIds, userId) {
-	if (!taskIds || !userId) {
-		console.error('Invalid taskIds or userId when trying to delete tasks. Failed to delete tasks')
+export async function deleteTasks(taskIds, userID) {
+	if (!taskIds || !userID) {
+		console.error('Invalid taskIds or userID when trying to delete tasks. Failed to delete tasks')
 		toast.error('Failed to delete tasks')
 	}
 	try {
-		const TaskCollection = getTaskCollection(userId)
+		const TaskCollection = getTaskCollection(userID)
 		const taskIdsArray = Array.isArray(taskIds) ? taskIds : [taskIds]
 		await Promise.all(taskIdsArray.map(async (taskId) => {
 			const taskDocRef = doc(db, TaskCollection, taskId.toString())

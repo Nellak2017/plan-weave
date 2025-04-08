@@ -41,9 +41,9 @@ export const useCompleteIcon = (taskID, currentTime) => {
     }
 }
 export const useTaskInputContainer = taskID => {
-    const { status, task } = taskSelector?.(taskID) || {}, userID = userIDSelector() || ''
-    const childState = { status, taskName: task }
-    const childServices = { onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ userID, taskID, taskName: e.target.value })) } }
+    const currentTaskRow = taskSelector?.(taskID) || {}, userID = userIDSelector() || ''
+    const childState = { status: currentTaskRow?.status, taskName: currentTaskRow?.task }
+    const childServices = { onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ userID, taskID, taskName: e.target.value, currentTaskRow })) } }
     return { childState, childServices }
 }
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
@@ -53,9 +53,9 @@ export const useWaste = (taskID, currentTime) => { // We calculate this from Red
     return { waste }
 }
 export const useTtc = taskID => {
-    const { status, ttc } = taskSelector?.(taskID) || {}, userID = userIDSelector() || ''
-    const childState = { status, ttc }
-    const childServices = { onBlurEvent: ttc => dispatch(editTtcThunkAPI({ userID, taskID, ttc: parseFloat(ttc) })), } // NOTE: onValueChangeEvent not used
+    const currentTaskRow = taskSelector?.(taskID) || {}, userID = userIDSelector() || ''
+    const childState = { status: currentTaskRow?.status, ttc: currentTaskRow?.ttc }
+    const childServices = { onBlurEvent: ttc => dispatch(editTtcThunkAPI({ userID, taskID, ttc: parseFloat(ttc), currentTaskRow })), } // NOTE: onValueChangeEvent not used
     return { childState, childServices }
 }
 export const useEta = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
@@ -71,23 +71,23 @@ export const useEfficiency = (taskID, currentTime) => { // We calculate this fro
     return { efficiency }
 }
 export const useDue = taskID => {
-    const { status, dueDate } = taskSelector?.(taskID) || { dueDate: new Date().toISOString() }
+    const currentTaskRow = taskSelector?.(taskID) || { dueDate: new Date().toISOString() }
     const userID = userIDSelector() || ''
-    const childState = { isChecked: isStatusChecked(status), dueDate }
-    const childServices = { onTimeChangeEvent: dueDate => dispatch(editDueThunkAPI({ userID, taskID, dueDate: formatISO(dueDate) })) }
+    const childState = { isChecked: isStatusChecked(currentTaskRow?.status), dueDate: currentTaskRow?.dueDate }
+    const childServices = { onTimeChangeEvent: dueDate => dispatch(editDueThunkAPI({ userID, taskID, dueDate: formatISO(dueDate), currentTaskRow })) }
     return { childState, childServices }
 }
 export const useWeight = taskID => {
-    const { status, weight, dueDate } = taskSelector?.(taskID) || {}
+    const currentTaskRow = taskSelector?.(taskID) || {}
     const userID = userIDSelector() || ''
-    const childState = { isChecked: isStatusChecked(status), dueDate, weight }
-    const childServices = { onValueChangeEvent: weight => dispatch(editWeightThunkAPI({ userID, taskID, weight: parseFloat(weight) })) }
+    const childState = { isChecked: isStatusChecked(currentTaskRow?.status), dueDate: currentTaskRow?.dueDate, weight: currentTaskRow?.weight }
+    const childServices = { onValueChangeEvent: weight => dispatch(editWeightThunkAPI({ userID, taskID, weight: parseFloat(weight), currentTaskRow })) }
     return { childState, childServices }
 }
 export const useThread = taskID => {
-    const { parentThread } = taskSelector?.(taskID) || {}, userID = userIDSelector() || '', threadsAvailable = getAllThreadOptionsAvailable?.() || []
-    const childState = { options: threadsAvailable, defaultValue: parentThread, }
-    const childServices = { onBlurEvent: newThread => dispatch(editThreadThunkAPI({ userID, taskID, newThread })), } // NOTE: onChangeEvent appears unnecessary
+    const currentTaskRow = taskSelector?.(taskID) || {}, userID = userIDSelector() || '', threadsAvailable = getAllThreadOptionsAvailable?.() || []
+    const childState = { options: threadsAvailable, defaultValue: currentTaskRow?.parentThread, }
+    const childServices = { onBlurEvent: newThread => dispatch(editThreadThunkAPI({ userID, taskID, newThread, currentTaskRow })), } // NOTE: onChangeEvent appears unnecessary
     return { childState, childServices }
 }
 // TODO: Implement useDependency correctly. needs: dependency selector, implementation, testing
