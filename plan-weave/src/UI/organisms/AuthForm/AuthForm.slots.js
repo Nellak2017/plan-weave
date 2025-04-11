@@ -7,11 +7,11 @@ import GoogleButton from 'react-google-button'
 import { TaskInput } from '../../atoms/TaskInput/TaskInput.js'
 import { AuthContainer, StyledAuthForm, InputSection, SignInContainer, OrSeparator, Line, Or, CenteredContainer, SubtitleContainer } from './AuthForm.elements.js'
 import { handleSignInWithEmail, handleSignUpWithEmail, handleSignInWithGoogle } from '../../../Infra/workflows/AuthForm.handlers.js'
-import logo from '../../../../public/Plan-Weave-Logo.png'
 import { useForm } from 'react-hook-form'
 import { useAuthForm } from '../../../Application/hooks/AuthForm/useAuthForm.js'
 import { useTheme } from '@mui/material/styles'
 
+const logo = { src: '/Plan-Weave-Logo.png' }
 const AuthInput = React.forwardRef((props, ref) => (<TaskInput ref={ref} {...props} />)); AuthInput.displayName = 'AuthInput'
 
 const GeneralAuthForm = ({

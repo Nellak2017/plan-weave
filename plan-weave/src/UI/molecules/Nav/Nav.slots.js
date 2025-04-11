@@ -1,6 +1,5 @@
 import { Button } from "@mui/material"
 import Image from 'next/image'
-import logo from '../../../../public/Plan-Weave-Logo-Square.png'
 import { BsArrowRightShort } from 'react-icons/bs'
 import Link from 'next/link'
 import { Logo, SiteTitle, LoginContainer, StyledNav, ContentContainer } from './Nav.elements'
@@ -8,7 +7,7 @@ import { Logo, SiteTitle, LoginContainer, StyledNav, ContentContainer } from './
 // The below Components are the default components for Nav that can be customized
 export const LeftContent = ({
     state: {
-        href = '/', logoPath = logo, alt = 'Plan Weave Logo', tabIndex = 0, title = 'Organize your tasks with Plan Weave',
+        href = '/', logoPath = { src: '/Plan-Weave-Logo-Square.png' }, alt = 'Plan Weave Logo', tabIndex = 0, title = 'Organize your tasks with Plan Weave',
         dimensions: { width = 64, height = 61 } = {},
     } = {}
 }) => (
