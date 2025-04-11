@@ -1,5 +1,5 @@
 import { getTime, parseISO, formatISO, format } from 'date-fns'
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE, FULL_TASK_HEADERS, RENDER_NUMBERS } from './constants.js'
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE, FULL_TASK_HEADERS, RENDER_NUMBERS, EFFICIENCY_RANGE } from './constants.js'
 
 // calculate waste helpers
 export const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
@@ -82,7 +82,7 @@ const isValidDate = date => (date !== "Invalid Date") && !isNaN(new Date(date))
 // -- compute helpers for the live time, waste, efficiency, and eta functions
 export const computeUpdatedLiveTime = ({ oldLiveTime, liveTimeStamp, currentTime }) => oldLiveTime + subtract(isValidDate(currentTime) ? currentTime : new Date(), new Date(liveTimeStamp))
 export const computeUpdatedWaste = ({ liveTime, ttc }) => liveTime - ttc
-export const computeUpdatedEfficiency = ({ liveTime, ttc }) => ttc / liveTime
+export const computeUpdatedEfficiency = ({ liveTime, ttc }) => clamp(ttc / liveTime, EFFICIENCY_RANGE.min, EFFICIENCY_RANGE.max)
 // -- orchestration helpers for the live time, waste, efficiency, and eta functions
 const getTaskIndexes = (taskID, pipeOptions) => {
 	const properlyOrderedTaskList = taskListPipe(pipeOptions)
@@ -98,11 +98,11 @@ export const calculateLiveTime = (currentTaskRow, taskOrderPipeOptions, currentT
 	const processedCurrentTime = isValidDate(currentTime) ? currentTime : new Date()
 	const processedLiveTimeStamp = new Date(liveTimeStamp)
 	return (processedLiveTimeStamp <= processedCurrentTime && status === TASK_STATUSES.INCOMPLETE && currentTaskIndex === firstIncompleteIndex)
-		? computeUpdatedLiveTime({ oldLiveTime, liveTimeStamp, currentTime})
+		? computeUpdatedLiveTime({ oldLiveTime, liveTimeStamp, currentTime })
 		: oldLiveTime
 }
 export const calculateWaste = (currentTaskRow, taskOrderPipeOptions, currentTime) => calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) - currentTaskRow?.ttc // liveTime - ttc
-export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, currentTime) =>  currentTaskRow?.ttc / (calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime)) // ttc / liveTime
+export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, currentTime) => clamp(currentTaskRow?.ttc / (calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime)), EFFICIENCY_RANGE.min, EFFICIENCY_RANGE.max) // ttc / liveTime
 export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
 	const { id: taskID, ttc, liveTime: oldLiveTime } = currentTaskRow || {}
 	const processedOldLiveTime = oldLiveTime || 0 // Must be done since some people won't have this update

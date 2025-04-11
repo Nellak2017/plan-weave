@@ -7,6 +7,7 @@ import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import { handleMaxZero, handleMinOne } from '../../finiteStateMachines/MultipleDeleteButton.fsm.js'
+import { EFFICIENCY_RANGE } from '../../../Core/utils/constants.js'
 
 // TODO: Test all more deeply, they appear done with few minor exceptions like last 3, api, correction of read only
 const dispatch = store.dispatch
@@ -68,7 +69,9 @@ export const useEfficiency = (taskID, currentTime) => { // We calculate this fro
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const currentTaskRow = taskSelector?.(taskID) || {}, pipelineOptions = taskOrderPipeOptions()
     const efficiency = useMemo(() => Math.abs(calculateEfficiency(currentTaskRow, pipelineOptions, currentTime)), [currentTaskRow, pipelineOptions, currentTime])
-    return { efficiency }
+    const { min, max } = EFFICIENCY_RANGE
+    const processedEfficiency = efficiency === min || efficiency === max ? efficiency * Infinity : efficiency // so it displays inf or -inf if it is the edge case but it is not stored like that, also it displays normally otherwise 
+    return { efficiency: processedEfficiency }
 }
 export const useDue = taskID => {
     const currentTaskRow = taskSelector?.(taskID) || { dueDate: new Date().toISOString() }
