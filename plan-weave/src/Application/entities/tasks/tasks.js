@@ -25,7 +25,7 @@ const tasks = createSlice({
                 if (taskIndex !== -1) state[taskIndex][field] = value
             })
         }, // Update tasks in batch
-        refreshTasks: state => state?.map(task => ({ ...task, timestamp: parseISO(dateToToday(new Date(task.timestamp).toISOString())).getTime() / 1000 })), // update every task in the task list to have timestamp for today but with it's hours
+        refreshTasks: state => state?.map(task => ({ ...task, eta: dateToToday(new Date(task.timestamp).toISOString()), timestamp: parseISO(dateToToday(new Date(task.timestamp).toISOString())).getTime() / 1000 })), // update every task in the task list to have timestamp for today but with it's hours
         toggleSelectTask: (state, action) => {
             const { taskID } = action?.payload || {}
             const taskIndex = state?.findIndex(task => task?.id === taskID)

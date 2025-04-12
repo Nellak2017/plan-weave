@@ -34,9 +34,14 @@ const PlanWeave = () => {
 	}, [user])
 
 	if (loading || error || !user) return <LoadingOrError loading={loading} error={error} user={user} />
+	// TODO: There is a code smell associated with how I implemented the Nav slots. Something about it is off. Investigate to improve abstraction.
 	return (
 		<>
-			<Nav slots={{ left: <LeftContent />, middle: <MiddleContent state={middleContentData()} />, right: <RightContent state={rightContentData({ router, handleLogout })} /> }} />
+			<Nav slots={{
+				left: <LeftContent />,
+				middle: <MiddleContent state={middleContentData()} />,
+				right: <RightContent state={rightContentData({ router, handleLogout, isDarkMode: false, handleDarkModeChange: () => toggleTheme() })} />
+			}} />
 			<TaskEditor />
 		</>
 	)

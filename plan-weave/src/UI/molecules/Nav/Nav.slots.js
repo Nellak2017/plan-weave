@@ -21,14 +21,18 @@ export const MiddleContent = ({ state: { label = 'Plan Weave', href = '/plan-wea
     <SiteTitle><Link href={href} tabIndex={tabIndex} title={title} aria-label={title}>{label}</Link></SiteTitle>
 )
 export const RightContent = ({
-    state: { linkData = [
-        { label: 'App', href: '/plan-weave', title: 'Go to Plan Weave App', onClick: null },
-        { label: 'Log in', href: '/login', title: 'Log into PlanWeave App', onClick: null },
-    ],
-        lastButtonData = { label: 'Sign Up', href: '/signup', title: 'Sign up', onClick: null }
+    state: {
+        prevComponent = <></>,
+        linkData = [
+            { label: 'App', href: '/plan-weave', title: 'Go to Plan Weave App', onClick: null },
+            { label: 'Log in', href: '/login', title: 'Log into PlanWeave App', onClick: null },
+        ],
+        lastButtonData = { label: 'Sign Up', href: '/signup', title: 'Sign up', onClick: null },
+        postComponent = <></>,
     } = {}
 }) => (
     <LoginContainer>
+        {prevComponent}
         {linkData?.map(({ label, href, title, onClick }) => <Link key={label} href={href} title={title} onClick={e => { if (onClick) { onClick(e) } }}>{label}</Link>)}
         {lastButtonData &&
             <Link href={lastButtonData?.href} className={'sign-up'} onClick={e => { if (lastButtonData?.onClick) { lastButtonData?.onClick(e) } }}>
@@ -36,6 +40,7 @@ export const RightContent = ({
                     {lastButtonData?.label}<BsArrowRightShort />
                 </Button>
             </Link>}
+        {postComponent}
     </LoginContainer>
 )
 export const DefaultContainer = ({ left, middle, right }) => (<StyledNav><ContentContainer>{left}{middle}{right}</ContentContainer></StyledNav>)
