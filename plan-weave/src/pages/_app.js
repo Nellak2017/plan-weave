@@ -8,11 +8,11 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Provider } from 'react-redux'
 import store from '../Application/store.js'
-import { usePreferredTheme } from '../Application/hooks/Helpers/useClientTheme.js'
+import { useLocalStorage } from '../Application/hooks/Helpers/useLocalStorage.js'
 
 const MyApp = ({ Component, pageProps }) => {
-  const { mode } = usePreferredTheme()
-  const MUITheme = useMemo(() => mode === 'dark' ? MUIDarkTheme : MUILightTheme, [mode])
+  const { value } = useLocalStorage('themeMode')
+  const MUITheme = useMemo(() => value === 'dark' ? MUIDarkTheme : MUILightTheme, [value])
   return (
     <>
       <Head><title>Plan Weave</title><meta name="viewport" content="width=device-width, initial-scale=1.0" /></Head>

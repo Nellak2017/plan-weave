@@ -1,8 +1,8 @@
 import { DarkModeSwitch } from 'react-toggle-dark-mode'
-import { usePreferredTheme } from '../../../Application/hooks/Helpers/useClientTheme'
+import { useLocalStorage } from '../../../Application/hooks/Helpers/useLocalStorage'
 const CustomDarkModeSwitch = () => {
-	const { mode, setModeProperly } = usePreferredTheme()
-	return <DarkModeSwitch checked={mode === 'dark'} onChange={setModeProperly} />
+	const { value, setValue } = useLocalStorage('themeMode')
+	return <DarkModeSwitch checked={value === 'dark'} onChange={() => setValue(value === 'dark' ? 'light' : 'dark')} />
 } // NOTE: using the hook makes this fully self-contained
 export const NavData = {
 	middleContentData: () => ({ label: 'App', href: '/plan-weave' }),
