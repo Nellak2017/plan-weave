@@ -24,7 +24,7 @@ export const WasteContainer = styled('td')(({ theme }) => ({
 }))
 export const TimeContainer = styled('td')(({ theme }) => ({
 	padding: theme.spacing(2), maxWidth: '200px', minWidth: '100px', textAlign: 'left',
-	input: { width: '40px', paddingLeft: '0', paddingRight: '0', outline: `1px solid ${theme.palette.text.disabled}`,},
+	input: { width: '40px', paddingLeft: '0', paddingRight: '0', outline: `1px solid ${theme.palette.text.disabled}`, },
 	'p, pre': { fontFamily: 'poppins', fontSize: theme.spacing(3) },
 }))
 export const IconContainer = styled('td')(() => ({}))
@@ -38,13 +38,4 @@ export const EfficiencyContainer = styled('td')(({ theme }) => ({
 export const DueContainer = styled('td')(({ theme }) => ({ minWidth: '160px', padding: theme.spacing(2), input: { width: '160px', }, }))
 export const WeightContainer = styled('td')(({ theme }) => ({ paddingLeft: '25px', padding: theme.spacing(2), input: { width: '40px', paddingLeft: '0', paddingRight: '0', outline: `1px solid ${theme.palette.text.disabled}`, }, }))
 export const ThreadContainer = styled('td')(({ theme }) => ({ padding: theme.spacing(2) }))
-export const DependencyContainer = styled('td')(({ theme }) => ({
-	padding: theme.spacing(2),
-	'& > div': { width: '100%' },
-	'.css-3w2yfm-ValueContainer': {
-		WebkitFlexWrap: 'nowrap', flexWrap: 'nowrap', columnGap: '5px',
-		paddingRight: '45px', maxWidth: '370px', width: '100%',
-		overflowX: 'auto', overflowY: 'hidden',
-		div: { flex: 'none', }
-	}
-}))
+export const DependencyContainer = styled('td')(({ theme }) => ({ padding: theme.spacing(2), '& > div': { width: '100%' }, }))

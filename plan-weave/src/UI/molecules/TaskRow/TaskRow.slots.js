@@ -121,12 +121,13 @@ export const Dependency = ({ taskID, customHook = useDependency }) => {
         <DependencyContainer title={dependencyToolTip}>
             <OptionPicker
                 state={{ options, multiple: true }}
-                services={{ onChange: onChangeEvent }}
                 defaultValue={defaultValue}
+                onChange={(e, newDependencies, reason, details) => onChangeEvent(newDependencies || [], reason, details)}
             />
         </DependencyContainer>
     )
 }
+export const TaskID = ({ taskID }) => (<WasteContainer>{taskID}</WasteContainer>)
 export const Trash = ({ taskID, customHook = useTrash }) => {
     const { onClickEvent } = customHook?.(taskID) || {}
     return (<TrashContainer><BiTrash title={deleteTooltip} onClick={onClickEvent} size={ICON_SIZE} /></TrashContainer>)

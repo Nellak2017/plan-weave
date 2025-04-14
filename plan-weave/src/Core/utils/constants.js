@@ -20,7 +20,6 @@ export const OPTION_NOTIFICATIONS = {
 	'eta': () => toast?.info('ETA Sorting applied. Tasks now appear in ETA order.'),
 	'': () => toast?.info('Default Sorting applied. Tasks now appear as they do in the database.'),
 }
-export const FULL_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA', 'Eff.%', 'Due', 'Weight', 'Thread', 'Predecessors']
 export const DEFAULT_SIMPLE_TASKS = [
 	{ status: 'completed', task: 'Example Task 1', waste: 2, ttc: 5, eta: '15:30', id: 1 },
 	{ status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: '18:30', id: 2 },
@@ -75,7 +74,8 @@ export const TIME_PICKER_COORDS = { start: { verticalOffset: 0, horizontalOffset
 export const PAGINATION_OPTIONS = [10, 20]
 export const PAGINATION_PICKER_TEXT = 'Tasks per page'
 export const TASK_EDITOR_WIDTH = 818
-export const RENDER_NUMBERS = { SIMPLE_TASK: 6, FULL_TASK: 11 }
+export const FULL_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA', 'Eff.%', 'Due', 'Weight', 'Thread', 'Predecessors', 'Task ID']
+export const RENDER_NUMBERS = { SIMPLE_TASK: 6, FULL_TASK: 12 }
 export const MULTIPLE_DELETE_MODAL_TOAST_CONFIG = { position: 'top-center', autoClose: false, closeOnClick: false, closeButton: false, draggable: false, }
 export const TASK_NAME_MAX_LENGTH = 100
 export const ICON_SIZE = 36

@@ -6,7 +6,7 @@ import { toggleTaskStatus, calculateLiveTime, calculateWaste, calculateEfficienc
 import { toast } from 'react-toastify'
 import { addTask as addTaskAPI, updateTask as updateTaskAPI, deleteTasks as deleteTasksAPI } from '../../../Infra/firebase/firebase_controller.js'
 
-const { completedTimeStamp, task, parentThread, liveTimeStamp, liveTime, waste, efficiency } = FULL_TASK_FIELDS
+const { completedTimeStamp, task, parentThread, liveTimeStamp, liveTime, waste, efficiency, dependencies } = FULL_TASK_FIELDS
 // TODO: For all PATCH API they require currentTaskRow to function, so add that in so it an work
 export const initialTaskUpdate = ({ taskList }) => dispatch => {
     dispatch(updateTasks(taskList))
@@ -56,6 +56,10 @@ export const editWeightThunkAPI = ({ userID, taskID, weight, currentTaskRow, }) 
 export const editThreadThunkAPI = ({ userID, taskID, newThread, currentTaskRow, }) => dispatch => { // newThread => string max len 30 chars
     updateTaskAPI({ ...currentTaskRow, parentThread: newThread }, userID) // 1. PATCH for the parentThread
     dispatch(updateTask({ taskID, field: parentThread, value: newThread.slice(0, 30) }))
+}
+export const editDependenciesThunkAPI = ({ userID, taskID, newDependencies, currentTaskRow, }) => dispatch => {
+    updateTaskAPI({ ...currentTaskRow, dependencies: newDependencies }, userID) // 1. PATCH to API
+    dispatch(updateTask({ taskID, field: dependencies, value: newDependencies }))
 }
 export const deleteTasksThunkAPI = ({ userID, taskInfos }) => dispatch => { // taskInfos => [{ index, id }]
     // Possibly some analytics collection stuff before deletion too..

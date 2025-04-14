@@ -1,8 +1,8 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useRef } from 'react'
 import store from '../../store.js'
 import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency, indexOfTaskToBeDeleted } from '../../../Core/utils/helpers.js'
-import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI } from '../../thunks.js'
+import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
@@ -93,12 +93,15 @@ export const useThread = taskID => {
     const childServices = { onBlurEvent: newThread => dispatch(editThreadThunkAPI({ userID, taskID, newThread, currentTaskRow })), } // NOTE: onChangeEvent appears unnecessary
     return { childState, childServices }
 }
-// TODO: Implement useDependency correctly. needs: dependency selector, implementation, testing
+// TODO: Implement useDependency correctly. needs: highlighting chain reaction, testing / revisions
 export const useDependency = taskID => {
-    const { dependencies } = taskSelector?.(taskID) || {}
-    const defaultValue = dependencies?.[0] || []
-    const childState = { defaultValue, options: dependencies, /* I think this is correct?*/ }
-    const childServices = { onChangeEvent: () => console.warn('onChange thunk not implemented for useDependency'), }
+    const currentTaskRow = taskSelector?.(taskID) || {}
+    const { dependencies } = currentTaskRow
+    const tasks = properlyOrderedTasks?.() || [], userID = userIDSelector() || ''
+    const defaultValueRef = useRef(dependencies || []), defaultValue = defaultValueRef.current // use a ref to keep it constant always
+    const options = useMemo(() => tasks?.filter(task => task?.id !== taskID)?.map(task => ({ value: task?.id, label: `${task?.task} (${task?.id})` })), [tasks])
+    const childState = { defaultValue, options, }
+    const childServices = { onChangeEvent: (newDependencies, reason, details) => { dispatch(editDependenciesThunkAPI({ userID, taskID, newDependencies, currentTaskRow })) }, }
     return { childState, childServices }
 }
 export const useTrash = taskID => {

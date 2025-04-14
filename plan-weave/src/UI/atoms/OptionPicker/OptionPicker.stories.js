@@ -18,7 +18,7 @@ Light.args = { state: { options }, }
 export const Dark = DarkTemplate.bind({})
 Dark.args = {
 	state: { options, },
-	services: { onChange: selectedOptions => console.log(selectedOptions) },
+	onChange: selectedOptions => console.log(selectedOptions),
 	defaultValue: options,
 }
 export default ReactSelectWrapperStories
