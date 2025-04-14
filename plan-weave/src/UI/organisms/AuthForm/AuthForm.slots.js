@@ -3,13 +3,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from "@mui/material"
-import GoogleButton from 'react-google-button'
+// import GoogleButton from 'react-google-button'
 import { TaskInput } from '../../atoms/TaskInput/TaskInput.js'
 import { AuthContainer, StyledAuthForm, InputSection, SignInContainer, OrSeparator, Line, Or, CenteredContainer, SubtitleContainer } from './AuthForm.elements.js'
 import { handleSignInWithEmail, handleSignUpWithEmail, handleSignInWithGoogle } from '../../../Infra/workflows/AuthForm.handlers.js'
 import { useForm } from 'react-hook-form'
 import { useAuthForm } from '../../../Application/hooks/AuthForm/useAuthForm.js'
-import { useTheme } from '@mui/material/styles'
+// import { useTheme } from '@mui/material/styles'
 
 const logo = { src: '/Plan-Weave-Logo.png' }
 const AuthInput = React.forwardRef((props, ref) => (<TaskInput ref={ref} {...props} />)); AuthInput.displayName = 'AuthInput'
@@ -21,7 +21,7 @@ const GeneralAuthForm = ({
     const router = useRouter()
     const { register, handleSubmit, formState: { errors } } = useForm()
     const { maxwidth } = customHook?.() || {}
-    const theme = useTheme(), variant = theme.palette.mode
+    // const theme = useTheme(), variant = theme.palette.mode
     return (
         <CenteredContainer>
             <AuthContainer maxwidth={maxwidth}>
@@ -44,10 +44,11 @@ const GeneralAuthForm = ({
                     </InputSection>
                     <SignInContainer><Button type='submit' name='email-auth' title={emailButtonText}> {emailButtonText}</Button></SignInContainer>
                 </StyledAuthForm>
-                <OrSeparator><Line /><Or>or</Or><Line /></OrSeparator>
+                {/* <OrSeparator><Line /><Or>or</Or><Line /></OrSeparator>
                 <SignInContainer id='google-auth-container'>
                     <GoogleButton name='google-auth' type={variant} signup={signup} onClick={e => { e.preventDefault(); handleSignInWithGoogle({ router }) }} />
-                </SignInContainer>
+                </SignInContainer> */}
+                {/* The Google Button is commented out on purpose. It will have to be re-implemented when we can properly handle OAuth */}
             </AuthContainer>
         </CenteredContainer>
     )

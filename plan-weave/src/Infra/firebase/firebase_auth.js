@@ -1,6 +1,6 @@
-import { getAuth, signInWithEmailAndPassword, signInWithPopup, createUserWithEmailAndPassword, GoogleAuthProvider, signOut } from 'firebase/auth'
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, createUserWithEmailAndPassword, GoogleAuthProvider, signOut, browserPopupRedirectResolver, } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
-import app from '../firebase/config.js' 
+import app from '../firebase/config.js'
 
 export const auth = getAuth(app)
 export const firestore = getFirestore(app)
@@ -18,7 +18,7 @@ export const signInWithEmail = async (email, password) => {
 export const signInWithGoogle = async () => {
 	const provider = new GoogleAuthProvider()
 	try {
-		const { user } = await signInWithPopup(auth, provider)
+		const { user } = await signInWithPopup(auth, provider, browserPopupRedirectResolver)
 		return user
 	} catch (e) {
 		console.error(e)
