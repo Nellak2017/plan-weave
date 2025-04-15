@@ -19,7 +19,6 @@ export const useTaskRow = taskID => {
     const timeRangeStartEnd = useMemo(() => ({ start: start?.defaultTime, end: end?.defaultTime }), [start, end])
 
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
-    // TODO: Figure out why end time is incorrect by being behind by 1 day. It should be always in a correct state. (when someone puts it as a end time less than start, set owl to be true and show toast warning. If it is like it initially also do the same thing too)
     const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, timeRange: timeRangeStartEnd })), [timeRangeStartEnd, isChecked, isHighlighting, eta])
     return { status, highlight }
 }

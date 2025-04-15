@@ -61,7 +61,7 @@ export const indexOfTaskToBeDeleted = (dnd, tasks, taskID) => dnd.indexOf(tasks.
 // -- TaskList processing
 const filterTasksBySearchTerm = searchTerm => (oldTaskList) => oldTaskList.filter(task => task?.task?.trim().includes(searchTerm?.toLowerCase()?.trim()))
 const sortTasksBySortAlgo = sortAlgo => (oldTaskList) => sortAlgo(oldTaskList)
-const completedOnTop = (oldTaskList) => [...oldTaskList.filter(task => task?.status === TASK_STATUSES.COMPLETED), ...oldTaskList.filter(task => task?.status === TASK_STATUSES.INCOMPLETE)]
+const completedOnTop = (oldTaskList) => [...oldTaskList.filter(task => task?.status === TASK_STATUSES.COMPLETED), ...oldTaskList.filter(task => task?.status !== TASK_STATUSES.COMPLETED)]
 const reorderList = reordering => (oldTaskList) => oldTaskList.map((_, i) => oldTaskList[reordering[i]])
 const pagination = ({ start, end }) => (oldTaskList) => oldTaskList.slice(start - 1, end)
 export const pipe = (...f) => x => f.reduce((acc, fn) => fn(acc), x)

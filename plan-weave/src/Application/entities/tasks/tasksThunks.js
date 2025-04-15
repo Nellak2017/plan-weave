@@ -1,13 +1,13 @@
-import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateTasks } from './tasks.js'
+import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateTasks, refreshTasks } from './tasks.js'
 import { addManyDnD, addDnD, deleteMultipleDnD, deleteDnD } from '../../sessionContexts/dnd.js'
 import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
 import { toggleTaskStatus, calculateLiveTime, calculateWaste, calculateEfficiency } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
 import { addTask as addTaskAPI, updateTask as updateTaskAPI, deleteTasks as deleteTasksAPI } from '../../../Infra/firebase/firebase_controller.js'
+import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
 
 const { completedTimeStamp, task, parentThread, liveTimeStamp, liveTime, waste, efficiency, dependencies } = FULL_TASK_FIELDS
-// TODO: For all PATCH API they require currentTaskRow to function, so add that in so it an work
 export const initialTaskUpdate = ({ taskList }) => dispatch => {
     dispatch(updateTasks(taskList))
     dispatch(addManyDnD(taskList.length))
@@ -77,4 +77,16 @@ export const deleteTaskThunkAPI = ({ userID, taskInfo }) => dispatch => { // tas
     dispatch(deleteTask({ taskID: ID }))
     dispatch(deleteDnD({ index }))
     dispatch(setPrevLiveTaskID(0))
+}
+export const refreshTasksThunkAPI = ({ userID, isOwl, currentTaskRow }) => dispatch => {
+    // updateTaskAPI(currentTaskRow?.map(task => ({
+    //     ...task,
+    //     eta: dateToToday(new Date(task.timestamp).toISOString()),
+    //     timestamp: parseISO(dateToToday(new Date(task.timestamp).toISOString())).getTime() / 1000
+    // })),
+    //     userID
+    // )
+    // TODO: Make refresh tasks a thunk so it is reflected
+    dispatch(refreshTimePickers({ isOwl }))
+    dispatch(refreshTasks())
 }

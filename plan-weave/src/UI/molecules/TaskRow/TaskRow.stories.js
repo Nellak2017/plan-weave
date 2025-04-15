@@ -28,5 +28,5 @@ const Template = ({ customHook, ...args }) => (
 export const Light = LightTemplateWithProvider.bind({})
 Light.args = { customHook: { status: 'completed', highlight: 'selected' }}
 export const Dark = DarkTemplateWithProvider.bind({})
-Dark.args = {}
+Dark.args = {customHook: { status: 'waiting', }}
 export default TaskRowStories

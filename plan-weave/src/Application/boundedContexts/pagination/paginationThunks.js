@@ -6,7 +6,7 @@ export const previousPageThunk = ({ id, max }) => dispatch => { dispatch(previou
 export const nextPageThunk = ({ id, max }) => dispatch => { dispatch(nextPage({ id, max })) } // Reducer + Business Logic
 export const setPageThunk = ({ id, value, max }) => dispatch => { dispatch(setPage({ id, value, max })) } // Reducer + Business Logic
 export const setTasksPerPageThunk = ({ id, value, min, max }) => dispatch => { dispatch(setTasksPerPage({ id, value, min, max })) } // Reducer + Business Logic
-export const refreshPaginationThunk = ({ isOwl }) => dispatch => {
+export const refreshPaginationThunk = ({ isOwl }) => dispatch => { // TODO: Remove, this is replaced by a task thunk instead
     dispatch(refreshTimePickers({ isOwl }))
     dispatch(refreshTasks())
 } // 2 Reducers + Business Logic (No API yet)
