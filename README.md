@@ -1,42 +1,59 @@
 [![version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/Nellak2017/plan-weave/)
-# Plan Weave
-[Plan Weave](https://www.planweave.com) is a task management web application that helps you keep track of your tasks, deadlines, and dependencies. With Plan Weave, you can easily create and organize tasks, set due dates and reminders, and track your progress toward completing your goals. 
+# 🧵 Plan Weave
+[Plan Weave](https://www.planweave.com) is a modern, time-based task management app designed for clarity, simplicity, and control. Think of it as your central source of truth for task tracking—whether you're planning projects, managing personal goals, or just trying to stay on track day-to-day.
 
-Plan Weave is currently in Development, so many advanced features are unavailable. 
-Currently only the bare essentials are covered as discussed in the [release notes](https://github.com/Nellak2017/plan-weave/releases/tag/v1.0.0) .
-The next release is __October 15th, 2025__ for version __2.0.0__.
+> 🚀 v1.0.0 is the first stable release! Advanced views (like Gantt, Calendar, and Graphs) are on the roadmap but not included yet. See the [release notes](https://github.com/Nellak2017/plan-weave/releases/tag/v1.0.0) for full details.
 
 ## Current Features
 
-- Task List
-- Task Create, Edit, and Delete
-- Task Drag and Drop
-- Task Searching
-- Task Sorting
-- Simple and Full Task Views
-- Individual Task Efficiency in real-time for Full-task
-- Individual Task Waste in real-time
-- Individual Task Due Dates in Full Task
+### 🔧 Core Task Editor
+- Create, Edit, and Delete Tasks
+- Drag and Drop Reordering
+- Simple or Full Task Views
+- Task Searching and Sorting
+- Pagination for large task sets
 
-## Upcoming Features (In future releases)
+### ⏱️ Time & Efficiency Tools
+- Real-time Task Efficiency % display
+- Real-time Task Waste tracking
+- Set Start Time, End Time, and Due Date
+- Overnight task support
+- Show time remaining in your day
+- ETA, TTC, and other derived metrics
 
-- Task Efficiency over Time Display
-- Thread View and Editor
-- Graph View and Editor
-- Task Matrix View
-- Light and Dark Mode
-- Settings Page
+### 🧠 Smart Features
+- Complete / Incomplete toggle
+- Task dependencies and threading
+- Lightweight, fast UI with light/dark mode toggle
+- Refresh and recycle old tasks into today's flow
 
-## Feature Wish List (Planned, but not coming for a long time)
+## 🛠 Tech Stack
+- __Frontend__: Next.js, MUI, Redux
+- __Backend__: Firebase (v1) → migrating to Go + PostgreSQL (v2)
+- __Tooling__: Jest, Storybook, fast-check
+- __Deployment__: Vercel
 
-- Feedback Page
-- Tutorial Page
-- Scheduled Tasks
-- Reminders through email
-- More Views like Gantt and Calendar
-- Team Support
-- ...Many More!
+## 🗺 Roadmap
 
+### 🔜 Next release: v2.0.0 — October 15th, 2025
+
+- Backend overhaul (Go + PostgreSQL)
+- Google OAuth
+- Verified Email Auth
+- Better query capabilities and security
+
+### Future Features
+- Task Efficiency over time view
+- Gantt View / Calendar View / Graph View
+- Recurring Tasks & Scheduled Alerts
+- Settings page and Theme control
+- Dependency graph and thread editors
+
+### Long-Term Wishlist
+- Tutorials and onboarding
+- Reminder system (email / push)
+- Team and multi-user support
+- Feedback / bug report integration
 
 ## Usage
 
