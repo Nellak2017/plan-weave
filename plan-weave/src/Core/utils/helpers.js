@@ -59,7 +59,8 @@ export const deleteDnDEvent = (dnd, index) => ordinalSet(dnd.filter((_, i) => i 
 export const deleteMultipleDnDEvent = (dnd, indices) => ordinalSet(dnd.filter((_, i) => !indices.includes(i)))
 export const indexOfTaskToBeDeleted = (dnd, tasks, taskID) => dnd.indexOf(tasks.findIndex(task => task.id === taskID))
 // -- TaskList processing
-const filterTasksBySearchTerm = searchTerm => (oldTaskList) => oldTaskList.filter(task => task?.task?.trim().includes(searchTerm?.toLowerCase()?.trim()))
+// TODO: Example / PBT these individual functions. I had a bug with my filter tasks by search term algorithm in v1.0.0
+const filterTasksBySearchTerm = searchTerm => (oldTaskList) => oldTaskList.filter(task => task?.task?.toLowerCase().trim().includes(searchTerm?.toLowerCase()?.trim()))
 const sortTasksBySortAlgo = sortAlgo => (oldTaskList) => sortAlgo(oldTaskList)
 const completedOnTop = (oldTaskList) => [...oldTaskList.filter(task => task?.status === TASK_STATUSES.COMPLETED), ...oldTaskList.filter(task => task?.status !== TASK_STATUSES.COMPLETED)]
 const reorderList = reordering => (oldTaskList) => oldTaskList.map((_, i) => oldTaskList[reordering[i]])
@@ -97,7 +98,7 @@ export const calculateLiveTime = (currentTaskRow, taskOrderPipeOptions, currentT
 	const { firstIncompleteIndex, currentTaskIndex } = getTaskIndexes(taskID, taskOrderPipeOptions)
 	const processedCurrentTime = isValidDate(currentTime) ? currentTime : new Date()
 	const processedLiveTimeStamp = new Date(liveTimeStamp)
-	return (processedLiveTimeStamp <= processedCurrentTime && status === TASK_STATUSES.INCOMPLETE && currentTaskIndex === firstIncompleteIndex)
+	return (processedLiveTimeStamp <= processedCurrentTime && status !== TASK_STATUSES.COMPLETED && currentTaskIndex === firstIncompleteIndex)
 		? computeUpdatedLiveTime({ oldLiveTime, liveTimeStamp, currentTime })
 		: oldLiveTime
 }
