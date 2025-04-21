@@ -3,5 +3,5 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("Hello from your Go backend!")
+	fmt.Println("You should compose your layers here")
 }
