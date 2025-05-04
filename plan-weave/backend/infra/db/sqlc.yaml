@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "queries.sql" # Path to queries file relative to this config file
+    schema: "schema.sql"   # Path to schema file relative to this config file
+    gen:
+      go:
+        package: "db"
+        out: "generated" # Path to schema file relative to this config file
+        #sql_package: "pgx/v5"
