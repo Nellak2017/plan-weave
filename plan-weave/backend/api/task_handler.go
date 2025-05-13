@@ -21,5 +21,5 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
-	fmt.Fprintf(w, "User: %s <%d>", task.Task, task.TTC)
+	fmt.Fprintf(w, "User: %s <%d>", task.Task, task.Ttc)
 }

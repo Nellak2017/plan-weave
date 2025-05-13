@@ -1,31 +1,55 @@
 package main
 
 import (
-	"context"
-	"log"
+	"encoding/json"
+	"fmt"
 	"os"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
+	"github.com/Nellak2017/plan-weave/core"
+	migrations "github.com/Nellak2017/plan-weave/infra/db/migrations/v1_firebase_migration"
 )
 
 func main() {
-	err := godotenv.Load("internal/config/.env") // Load the .env file
+	// Your raw JSON data (replace with actual JSON loading code)
+	rawJSON, err := os.ReadFile("./infra/db/migrations/v1_firebase_migration/firebase_raw.json") //at ./infra/db/migrations/v1_firebase_migration/firebase_raw.json
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		fmt.Println("Error reading JSON file:", err)
+		return
 	}
 
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
-	if err != nil {
-		log.Fatalf("Failed to connect: %v", err)
-	}
-	defer conn.Close(context.Background())
+	// fmt.Println("Raw JSON:", string(rawJSON))
 
-	var version string
-	err = conn.QueryRow(context.Background(), "SELECT version()").Scan(&version)
+	// Parse the raw JSON
+	var data core.FirebaseData
+	err = json.Unmarshal(rawJSON, &data)
 	if err != nil {
-		log.Fatalf("Query failed: %v", err)
+		fmt.Println("Error unmarshaling JSON:", err)
+		return
 	}
 
-	log.Println("Connected to:", version)
+	fmt.Println("Parsed Users:", data.Collections.Users)
+
+	// Write CSV files
+	err = migrations.WriteUsersCSV(data.Collections.Users)
+	if err != nil {
+		fmt.Println("Error writing users CSV:", err)
+		return
+	}
+	fmt.Println("Users CSV file written successfully!")
+
+	// err = migrations.WriteTasksCSV(data.Users)
+	// if err != nil {
+	// 	fmt.Println("Error writing tasks CSV:", err)
+	// 	return
+	// }
+	// fmt.Println("Tasks CSV file written successfully!")
+
+	// err = migrations.WriteTaskDependenciesCSV(data.Users)
+	// if err != nil {
+	// 	fmt.Println("Error writing task dependencies CSV:", err)
+	// 	return
+	// }
+	// fmt.Println("Task Dependencies CSV file written successfully!")
+	// fmt.Println("------------------------------------------------")
+	// fmt.Println("CSV files written successfully!")
 }
