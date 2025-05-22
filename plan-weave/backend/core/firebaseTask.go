@@ -32,7 +32,7 @@ type FirebaseTask struct {
 	DueDate            ISOTime      `json:"dueDate"`            // ISO
 	Efficiency         Efficiency   `json:"efficiency"`         // Percentage. Ex: 1.0 = 100%
 	ParentThread       ThreadID     `json:"parentThread"`       // Enum: Dynamically determined
-	CompletedTimeStamp int          `json:"completedTimeStamp"` // ISO
+	CompletedTimeStamp float64      `json:"completedTimeStamp"` // ISO
 	Timestamp          float64      `json:"timestamp"`          // ISO
 	Waste              Hours        `json:"waste"`              // Time wasted
 	Eta                ISOTime      `json:"eta"`                // Projected completion
@@ -41,10 +41,14 @@ type FirebaseTask struct {
 	LiveTimeStamp      ISOTime      `json:"liveTimeStamp"` // ISO
 }
 
+type FirebaseUserCollections struct {
+	Tasks map[string]FirebaseTask `json:"tasks"`
+}
+
 type FirebaseUser struct {
-	ID       string                  `json:"id"`
-	Username string                  `json:"username"`
-	Tasks    map[string]FirebaseTask `json:"tasks"`
+	ID          string                  `json:"id"`
+	Username    string                  `json:"username"`
+	Collections FirebaseUserCollections `json:"__collections__"` // Tasks    map[string]FirebaseTask `json:"tasks"`
 }
 
 type FirebaseData struct {

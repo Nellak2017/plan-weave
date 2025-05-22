@@ -2,8 +2,10 @@ package migrations
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/Nellak2017/plan-weave/core"
@@ -27,7 +29,7 @@ func WriteUsersCSV(users map[string]core.FirebaseUser) error {
 	}
 
 	// Writing users data
-	for userID, _ := range users {
+	for userID := range users {
 		// You can add user-specific fields here (for now, just user_id)
 		err := writer.Write([]string{userID, userID})
 		if err != nil {
@@ -60,15 +62,23 @@ func WriteTasksCSV(users map[string]core.FirebaseUser) error {
 
 	// Writing tasks data
 	for userID, user := range users {
-		for _, task := range user.Tasks {
-			taskIDStr := fmt.Sprintf("%d", task.ID)
+		for _, task := range user.Collections.Tasks {
 			err := writer.Write([]string{
-				taskIDStr, userID, task.Task, task.ParentThread, fmt.Sprintf("%f", task.Waste),
-				fmt.Sprintf("%d", task.Ttc), fmt.Sprintf("%f", task.Efficiency),
-				task.DueDate.Format(time.RFC3339), fmt.Sprintf("%d", task.Weight),
-				fmt.Sprintf("%d", task.CompletedTimeStamp), task.Status,
-				fmt.Sprintf("%d", task.Timestamp), fmt.Sprintf("%d", task.LiveTime),
-				task.LiveTimeStamp.Format(time.RFC3339), fmt.Sprintf("%v", task.Selected),
+				strconv.FormatInt(task.ID, 10),
+				userID,
+				task.Task,
+				task.ParentThread,
+				fmt.Sprintf("%.6f", task.Waste),
+				fmt.Sprintf("%.6f", task.Ttc),
+				fmt.Sprintf("%.6f", task.Efficiency),
+				task.DueDate.Format(time.RFC3339),
+				strconv.Itoa(int(task.Weight)),
+				strconv.Itoa(int(task.CompletedTimeStamp)),
+				task.Status,
+				fmt.Sprintf("%.0f", task.Timestamp),
+				fmt.Sprintf("%.6f", task.LiveTime),
+				task.LiveTimeStamp.Format(time.RFC3339),
+				strconv.FormatBool(task.Selected),
 				task.Eta.Format(time.RFC3339),
 			})
 			if err != nil {
@@ -98,7 +108,7 @@ func WriteTaskDependenciesCSV(users map[string]core.FirebaseUser) error {
 
 	// Writing task dependencies data
 	for _, user := range users {
-		for _, task := range user.Tasks {
+		for _, task := range user.Collections.Tasks {
 			taskIDStr := fmt.Sprintf("%d", task.ID)
 			// Writing dependencies
 			for _, dep := range task.Dependencies {
@@ -109,6 +119,34 @@ func WriteTaskDependenciesCSV(users map[string]core.FirebaseUser) error {
 			}
 		}
 	}
+
+	return nil
+}
+
+func RunFirebaseParse() error {
+	// Load the JSON dump
+	rawJSON, err := os.ReadFile("./infra/db/migrations/v1_firebase_migration/firebase_raw.json")
+	if err != nil {
+		return fmt.Errorf("failed to read firebase JSON: %w", err)
+	}
+
+	var data core.FirebaseData
+	err = json.Unmarshal(rawJSON, &data)
+	if err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	users := data.Collections.Users
+
+	// if err := WriteUsersCSV(users); err != nil {
+	// 	return fmt.Errorf("error writing users CSV: %w", err)
+	// }
+	if err := WriteTasksCSV(users); err != nil {
+		return fmt.Errorf("error writing tasks CSV: %w", err)
+	}
+	// if err := WriteTaskDependenciesCSV(users); err != nil {
+	// 	return fmt.Errorf("error writing task dependencies CSV: %w", err)
+	// }
 
 	return nil
 }
