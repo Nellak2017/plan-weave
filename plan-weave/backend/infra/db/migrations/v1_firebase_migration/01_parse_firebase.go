@@ -138,15 +138,15 @@ func RunFirebaseParse() error {
 
 	users := data.Collections.Users
 
-	// if err := WriteUsersCSV(users); err != nil {
-	// 	return fmt.Errorf("error writing users CSV: %w", err)
-	// }
+	if err := WriteUsersCSV(users); err != nil {
+		return fmt.Errorf("error writing users CSV: %w", err)
+	}
 	if err := WriteTasksCSV(users); err != nil {
 		return fmt.Errorf("error writing tasks CSV: %w", err)
 	}
-	// if err := WriteTaskDependenciesCSV(users); err != nil {
-	// 	return fmt.Errorf("error writing task dependencies CSV: %w", err)
-	// }
+	if err := WriteTaskDependenciesCSV(users); err != nil {
+		return fmt.Errorf("error writing task dependencies CSV: %w", err)
+	}
 
 	return nil
 }
