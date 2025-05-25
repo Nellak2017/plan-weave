@@ -1,5 +1,5 @@
 // The old v1 schema for the firebase task, will be used to migrate, remove later
-package core
+package migrations
 
 import "time"
 
@@ -32,8 +32,8 @@ type FirebaseTask struct {
 	DueDate            ISOTime      `json:"dueDate"`            // ISO
 	Efficiency         Efficiency   `json:"efficiency"`         // Percentage. Ex: 1.0 = 100%
 	ParentThread       ThreadID     `json:"parentThread"`       // Enum: Dynamically determined
-	CompletedTimeStamp float64      `json:"completedTimeStamp"` // ISO
-	Timestamp          float64      `json:"timestamp"`          // ISO
+	CompletedTimeStamp float64      `json:"completedTimeStamp"` // Convert to ISO later
+	Timestamp          float64      `json:"timestamp"`          // Convert to ISO later
 	Waste              Hours        `json:"waste"`              // Time wasted
 	Eta                ISOTime      `json:"eta"`                // Projected completion
 	Weight             Weight       `json:"weight"`

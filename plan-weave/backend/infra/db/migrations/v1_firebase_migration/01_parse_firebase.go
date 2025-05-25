@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Nellak2017/plan-weave/core"
+	"github.com/google/uuid"
 )
 
-// Converts Firebase Dump JSON to Go data structures
-func WriteUsersCSV(users map[string]core.FirebaseUser) error {
+// Converts Firebase Dump JSON to Go data structures. Returns map of user ids or an error
+func WriteUsersCSV(users map[string]FirebaseUser) (map[string]string, error) {
 	file, err := os.Create("./infra/db/migrations/v1_firebase_migration/03_users.csv") // implicitly assumes it is called from main.go
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer file.Close()
 
@@ -25,22 +25,25 @@ func WriteUsersCSV(users map[string]core.FirebaseUser) error {
 	// Writing CSV header for users table
 	err = writer.Write([]string{"user_id", "username"})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Writing users data
+	userUUIDs := make(map[string]string)
+
 	for userID := range users {
-		// You can add user-specific fields here (for now, just user_id)
-		err := writer.Write([]string{userID, userID})
+		uuid := uuid.New().String()
+		userUUIDs[userID] = uuid
+		err := writer.Write([]string{uuid, userID})
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return userUUIDs, nil
 }
 
-func WriteTasksCSV(users map[string]core.FirebaseUser) error {
+func WriteTasksCSV(users map[string]FirebaseUser, userUUIDs map[string]string) error {
 	file, err := os.Create("./infra/db/migrations/v1_firebase_migration/03_tasks.csv") // implicitly assumes it is called from main.go
 	if err != nil {
 		return err
@@ -62,10 +65,14 @@ func WriteTasksCSV(users map[string]core.FirebaseUser) error {
 
 	// Writing tasks data
 	for userID, user := range users {
+		uid, ok := userUUIDs[userID]
+		if !ok {
+			return fmt.Errorf("UUID for user %s not found", userID)
+		}
 		for _, task := range user.Collections.Tasks {
 			err := writer.Write([]string{
 				strconv.FormatInt(task.ID, 10),
-				userID,
+				uid, // correct UUID from generated users
 				task.Task,
 				task.ParentThread,
 				fmt.Sprintf("%.6f", task.Waste),
@@ -90,7 +97,7 @@ func WriteTasksCSV(users map[string]core.FirebaseUser) error {
 	return nil
 }
 
-func WriteTaskDependenciesCSV(users map[string]core.FirebaseUser) error {
+func WriteTaskDependenciesCSV(users map[string]FirebaseUser) error {
 	file, err := os.Create("./infra/db/migrations/v1_firebase_migration/03_task_dependencies.csv") // implicitly assumes it is called from main.go
 	if err != nil {
 		return err
@@ -130,7 +137,7 @@ func RunFirebaseParse() error {
 		return fmt.Errorf("failed to read firebase JSON: %w", err)
 	}
 
-	var data core.FirebaseData
+	var data FirebaseData
 	err = json.Unmarshal(rawJSON, &data)
 	if err != nil {
 		return fmt.Errorf("failed to parse JSON: %w", err)
@@ -138,10 +145,11 @@ func RunFirebaseParse() error {
 
 	users := data.Collections.Users
 
-	if err := WriteUsersCSV(users); err != nil {
+	userUUIDs, err := WriteUsersCSV(users)
+	if err != nil {
 		return fmt.Errorf("error writing users CSV: %w", err)
 	}
-	if err := WriteTasksCSV(users); err != nil {
+	if err := WriteTasksCSV(users, userUUIDs); err != nil {
 		return fmt.Errorf("error writing tasks CSV: %w", err)
 	}
 	if err := WriteTaskDependenciesCSV(users); err != nil {

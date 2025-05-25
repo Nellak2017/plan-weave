@@ -1,2 +1,2 @@
--- name: GetUserByID :one
-SELECT * FROM users WHERE id = $1;
+-- name: GetTaskByID :one
+SELECT * FROM tasks WHERE id = $1;
