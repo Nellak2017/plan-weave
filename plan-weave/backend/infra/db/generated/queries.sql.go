@@ -7,9 +7,104 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
+
+const addTask = `-- name: AddTask :one
+INSERT INTO tasks (
+    id, user_id, task, selected, ttc, live_time, due_date,
+    efficiency, parent_thread, waste, eta, weight, status,
+    live_time_stamp, last_complete_time, last_incomplete_time, is_live
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7,
+    $8, $9, $10, $11, $12, $13,
+    $14, $15, $16, $17
+)
+RETURNING id
+`
+
+type AddTaskParams struct {
+	ID                 int64
+	UserID             uuid.UUID
+	Task               string
+	Selected           bool
+	Ttc                float64
+	LiveTime           float64
+	DueDate            time.Time
+	Efficiency         float64
+	ParentThread       string
+	Waste              float64
+	Eta                time.Time
+	Weight             int32
+	Status             string
+	LiveTimeStamp      sql.NullTime
+	LastCompleteTime   time.Time
+	LastIncompleteTime time.Time
+	IsLive             bool
+}
+
+func (q *Queries) AddTask(ctx context.Context, arg AddTaskParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, addTask,
+		arg.ID,
+		arg.UserID,
+		arg.Task,
+		arg.Selected,
+		arg.Ttc,
+		arg.LiveTime,
+		arg.DueDate,
+		arg.Efficiency,
+		arg.ParentThread,
+		arg.Waste,
+		arg.Eta,
+		arg.Weight,
+		arg.Status,
+		arg.LiveTimeStamp,
+		arg.LastCompleteTime,
+		arg.LastIncompleteTime,
+		arg.IsLive,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const deleteTasks = `-- name: DeleteTasks :many
+DELETE FROM tasks
+WHERE user_id = $1 AND id = ANY($2::bigint[])
+RETURNING id
+`
+
+type DeleteTasksParams struct {
+	UserID  uuid.UUID
+	Column2 []int64
+}
+
+func (q *Queries) DeleteTasks(ctx context.Context, arg DeleteTasksParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, deleteTasks, arg.UserID, pq.Array(arg.Column2))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const getTasksByUserID = `-- name: GetTasksByUserID :many
 SELECT id, user_id, task, selected, ttc, live_time, due_date, efficiency, parent_thread, waste, eta, weight, status, live_time_stamp, last_complete_time, last_incomplete_time, is_live
@@ -57,4 +152,70 @@ func (q *Queries) GetTasksByUserID(ctx context.Context, userID uuid.UUID) ([]Tas
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateTask = `-- name: UpdateTask :one
+UPDATE tasks
+SET task = $3,
+    selected = $4,
+    ttc = $5,
+    live_time = $6,
+    due_date = $7,
+    efficiency = $8,
+    parent_thread = $9,
+    waste = $10,
+    eta = $11,
+    weight = $12,
+    status = $13,
+    live_time_stamp = $14,
+    last_complete_time = $15,
+    last_incomplete_time = $16,
+    is_live = $17
+WHERE user_id = $1 AND id = $2
+RETURNING id
+`
+
+type UpdateTaskParams struct {
+	UserID             uuid.UUID
+	ID                 int64
+	Task               string
+	Selected           bool
+	Ttc                float64
+	LiveTime           float64
+	DueDate            time.Time
+	Efficiency         float64
+	ParentThread       string
+	Waste              float64
+	Eta                time.Time
+	Weight             int32
+	Status             string
+	LiveTimeStamp      sql.NullTime
+	LastCompleteTime   time.Time
+	LastIncompleteTime time.Time
+	IsLive             bool
+}
+
+func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTask,
+		arg.UserID,
+		arg.ID,
+		arg.Task,
+		arg.Selected,
+		arg.Ttc,
+		arg.LiveTime,
+		arg.DueDate,
+		arg.Efficiency,
+		arg.ParentThread,
+		arg.Waste,
+		arg.Eta,
+		arg.Weight,
+		arg.Status,
+		arg.LiveTimeStamp,
+		arg.LastCompleteTime,
+		arg.LastIncompleteTime,
+		arg.IsLive,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }

@@ -19,26 +19,18 @@ func main() {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	databaseURL := os.Getenv("DATABASE_URL")
-
 	// ✅ Step 1: Parse pgx Config
-	cfg, err := pgx.ParseConfig(databaseURL)
+	cfg, err := pgx.ParseConfig(os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalf("Unable to parse DATABASE_URL: %v", err)
 	}
+	cfg.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 
 	// ✅ Step 2: Open sql.DB using stdlib
 	sqlDB := stdlib.OpenDB(*cfg)
 	defer sqlDB.Close()
 
 	// ✅ Step 3: Use sqlc's generated DB interface
-	queries := db.New(sqlDB)
-
-	taskService := &app.TaskService{Q: queries}
-	taskHandler := &api.TaskHandler{Service: taskService}
-
-	r := api.NewRouter(taskHandler)
-
 	log.Println("🚀 Plan Weave API running on :8080")
-	http.ListenAndServe(":8080", r)
+	http.ListenAndServe(":8080", api.NewRouter(&api.TaskHandler{Service: &app.TaskService{Q: db.New(sqlDB)}}))
 }
