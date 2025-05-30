@@ -2,24 +2,32 @@
 package api
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/Nellak2017/plan-weave/app"
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
-type UserHandler struct {
+type TaskHandler struct {
 	Service *app.TaskService
 }
 
-func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
-	id, _ := strconv.ParseInt(idStr, 10, 64)
-	task, err := h.Service.GetUser(id)
+func (h *TaskHandler) FetchTasks(w http.ResponseWriter, r *http.Request) {
+	userIDStr := chi.URLParam(r, "userID")
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		http.Error(w, "invalid userID", http.StatusBadRequest)
 		return
 	}
-	fmt.Fprintf(w, "User: %s <%d>", task.Task, task.Ttc)
+
+	tasks, err := h.Service.FetchTasks(r.Context(), userID)
+	if err != nil {
+		http.Error(w, "could not fetch tasks", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(tasks)
 }

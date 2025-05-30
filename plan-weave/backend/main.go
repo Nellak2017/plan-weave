@@ -1,48 +1,44 @@
 package main
 
 import (
-	"context"
 	"log"
+	"net/http"
 	"os"
-	"path/filepath"
 
+	"github.com/Nellak2017/plan-weave/api"
+	"github.com/Nellak2017/plan-weave/app"
+	db "github.com/Nellak2017/plan-weave/infra/db/generated"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	// if err := migrations.RunNewFirebaseParse(); err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Migration failed: %v\n", err)
-	// 	os.Exit(1)
-	// }
-	// fmt.Println("Firebase data successfully converted to CSVs.")
-
-	//Load the .env file
 	err := godotenv.Load("internal/config/.env")
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	// Connect to Supabase DB
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
-	if err != nil {
-		log.Fatalf("Failed to connect: %v", err)
-	}
-	defer conn.Close(context.Background())
+	databaseURL := os.Getenv("DATABASE_URL")
 
-	// Load the schema.sql file
-	schemaPath := filepath.Join(".", "infra", "db", "schema.sql")
-	schemaBytes, err := os.ReadFile(schemaPath)
+	// ✅ Step 1: Parse pgx Config
+	cfg, err := pgx.ParseConfig(databaseURL)
 	if err != nil {
-		log.Fatalf("Failed to read schema file: %v", err)
-	}
-	schemaSQL := string(schemaBytes)
-
-	// Execute the schema SQL to create tables
-	_, err = conn.Exec(context.Background(), schemaSQL)
-	if err != nil {
-		log.Fatalf("Failed to execute schema SQL: %v", err)
+		log.Fatalf("Unable to parse DATABASE_URL: %v", err)
 	}
 
-	log.Println("✅ Tables successfully created in the remote database.")
+	// ✅ Step 2: Open sql.DB using stdlib
+	sqlDB := stdlib.OpenDB(*cfg)
+	defer sqlDB.Close()
+
+	// ✅ Step 3: Use sqlc's generated DB interface
+	queries := db.New(sqlDB)
+
+	taskService := &app.TaskService{Q: queries}
+	taskHandler := &api.TaskHandler{Service: taskService}
+
+	r := api.NewRouter(taskHandler)
+
+	log.Println("🚀 Plan Weave API running on :8080")
+	http.ListenAndServe(":8080", r)
 }

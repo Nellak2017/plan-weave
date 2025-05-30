@@ -1,16 +1,17 @@
 // example service
 package app
 
-import "github.com/Nellak2017/plan-weave/core"
+import (
+	"context"
 
-type TaskRepo interface {
-	GetByID(id int64) (*core.Task, error)
-}
+	db "github.com/Nellak2017/plan-weave/infra/db/generated"
+	"github.com/google/uuid"
+)
 
 type TaskService struct {
-	Repo TaskRepo
+	Q *db.Queries
 }
 
-func (s *TaskService) GetUser(id int64) (*core.Task, error) {
-	return s.Repo.GetByID(id)
+func (s *TaskService) FetchTasks(ctx context.Context, userID uuid.UUID) ([]db.Task, error) {
+	return s.Q.GetTasksByUserID(ctx, userID)
 }

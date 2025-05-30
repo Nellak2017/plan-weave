@@ -1,2 +1,5 @@
--- name: GetTaskByID :one
-SELECT * FROM tasks WHERE id = $1;
+-- name: GetTasksByUserID :many
+SELECT *
+FROM tasks
+WHERE user_id = $1
+LIMIT 1000;
