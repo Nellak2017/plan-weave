@@ -219,3 +219,260 @@ func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (int64, 
 	err := row.Scan(&id)
 	return id, err
 }
+
+const updateTaskDueDate = `-- name: UpdateTaskDueDate :one
+UPDATE tasks SET due_date = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskDueDateParams struct {
+	DueDate time.Time
+	UserID  uuid.UUID
+	ID      int64
+}
+
+func (q *Queries) UpdateTaskDueDate(ctx context.Context, arg UpdateTaskDueDateParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskDueDate, arg.DueDate, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskEfficiency = `-- name: UpdateTaskEfficiency :one
+UPDATE tasks SET efficiency = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskEfficiencyParams struct {
+	Efficiency float64
+	UserID     uuid.UUID
+	ID         int64
+}
+
+func (q *Queries) UpdateTaskEfficiency(ctx context.Context, arg UpdateTaskEfficiencyParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskEfficiency, arg.Efficiency, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskEta = `-- name: UpdateTaskEta :one
+UPDATE tasks SET eta = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskEtaParams struct {
+	Eta    time.Time
+	UserID uuid.UUID
+	ID     int64
+}
+
+func (q *Queries) UpdateTaskEta(ctx context.Context, arg UpdateTaskEtaParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskEta, arg.Eta, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskIsLive = `-- name: UpdateTaskIsLive :one
+UPDATE tasks SET is_live = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskIsLiveParams struct {
+	IsLive bool
+	UserID uuid.UUID
+	ID     int64
+}
+
+func (q *Queries) UpdateTaskIsLive(ctx context.Context, arg UpdateTaskIsLiveParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskIsLive, arg.IsLive, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskLastCompleteTime = `-- name: UpdateTaskLastCompleteTime :one
+UPDATE tasks SET last_complete_time = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskLastCompleteTimeParams struct {
+	LastCompleteTime time.Time
+	UserID           uuid.UUID
+	ID               int64
+}
+
+func (q *Queries) UpdateTaskLastCompleteTime(ctx context.Context, arg UpdateTaskLastCompleteTimeParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskLastCompleteTime, arg.LastCompleteTime, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskLastIncompleteTime = `-- name: UpdateTaskLastIncompleteTime :one
+UPDATE tasks SET last_incomplete_time = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskLastIncompleteTimeParams struct {
+	LastIncompleteTime time.Time
+	UserID             uuid.UUID
+	ID                 int64
+}
+
+func (q *Queries) UpdateTaskLastIncompleteTime(ctx context.Context, arg UpdateTaskLastIncompleteTimeParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskLastIncompleteTime, arg.LastIncompleteTime, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskLiveTime = `-- name: UpdateTaskLiveTime :one
+UPDATE tasks SET live_time = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskLiveTimeParams struct {
+	LiveTime float64
+	UserID   uuid.UUID
+	ID       int64
+}
+
+func (q *Queries) UpdateTaskLiveTime(ctx context.Context, arg UpdateTaskLiveTimeParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskLiveTime, arg.LiveTime, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskLiveTimeStamp = `-- name: UpdateTaskLiveTimeStamp :one
+UPDATE tasks SET live_time_stamp = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskLiveTimeStampParams struct {
+	LiveTimeStamp sql.NullTime
+	UserID        uuid.UUID
+	ID            int64
+}
+
+func (q *Queries) UpdateTaskLiveTimeStamp(ctx context.Context, arg UpdateTaskLiveTimeStampParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskLiveTimeStamp, arg.LiveTimeStamp, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskParentThread = `-- name: UpdateTaskParentThread :one
+UPDATE tasks SET parent_thread = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskParentThreadParams struct {
+	ParentThread string
+	UserID       uuid.UUID
+	ID           int64
+}
+
+func (q *Queries) UpdateTaskParentThread(ctx context.Context, arg UpdateTaskParentThreadParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskParentThread, arg.ParentThread, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskSelected = `-- name: UpdateTaskSelected :one
+UPDATE tasks SET selected = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskSelectedParams struct {
+	Selected bool
+	UserID   uuid.UUID
+	ID       int64
+}
+
+func (q *Queries) UpdateTaskSelected(ctx context.Context, arg UpdateTaskSelectedParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskSelected, arg.Selected, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskStatus = `-- name: UpdateTaskStatus :one
+UPDATE tasks SET status = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskStatusParams struct {
+	Status string
+	UserID uuid.UUID
+	ID     int64
+}
+
+func (q *Queries) UpdateTaskStatus(ctx context.Context, arg UpdateTaskStatusParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskStatus, arg.Status, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskTTC = `-- name: UpdateTaskTTC :one
+UPDATE tasks SET ttc = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskTTCParams struct {
+	Ttc    float64
+	UserID uuid.UUID
+	ID     int64
+}
+
+func (q *Queries) UpdateTaskTTC(ctx context.Context, arg UpdateTaskTTCParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskTTC, arg.Ttc, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskText = `-- name: UpdateTaskText :one
+
+UPDATE tasks SET task = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskTextParams struct {
+	Task   string
+	UserID uuid.UUID
+	ID     int64
+}
+
+// UpdateTaskField related stuff...
+func (q *Queries) UpdateTaskText(ctx context.Context, arg UpdateTaskTextParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskText, arg.Task, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskWaste = `-- name: UpdateTaskWaste :one
+UPDATE tasks SET waste = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskWasteParams struct {
+	Waste  float64
+	UserID uuid.UUID
+	ID     int64
+}
+
+func (q *Queries) UpdateTaskWaste(ctx context.Context, arg UpdateTaskWasteParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskWaste, arg.Waste, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateTaskWeight = `-- name: UpdateTaskWeight :one
+UPDATE tasks SET weight = $1 WHERE user_id = $2 AND id = $3 RETURNING id
+`
+
+type UpdateTaskWeightParams struct {
+	Weight int32
+	UserID uuid.UUID
+	ID     int64
+}
+
+func (q *Queries) UpdateTaskWeight(ctx context.Context, arg UpdateTaskWeightParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, updateTaskWeight, arg.Weight, arg.UserID, arg.ID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}

@@ -92,6 +92,43 @@ func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *TaskHandler) UpdateTaskField(w http.ResponseWriter, r *http.Request) {
+	userID, err := uuid.Parse(chi.URLParam(r, "userID"))
+	if err != nil {
+		http.Error(w, invalidUserId, http.StatusBadRequest)
+		return
+	}
+
+	var payload struct {
+		TaskID int64  `json:"task_id"`
+		Field  string `json:"field"`
+		Value  string `json:"value"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	taskID, err := h.Service.UpdateTaskField(r.Context(), userID, payload.TaskID, payload.Field, payload.Value)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "task not found or not updated", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Printf("❌ UpdateTaskField error: %v", err)
+		http.Error(w, "could not update task field", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ Updated task %d field %s", taskID, payload.Field)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"updated_task_id": taskID,
+		"field":           payload.Field,
+	})
+}
+
 func (h *TaskHandler) DeleteTasks(w http.ResponseWriter, r *http.Request) {
 	userID, err := uuid.Parse(chi.URLParam(r, "userID"))
 	if err != nil {

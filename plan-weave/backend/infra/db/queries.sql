@@ -40,3 +40,50 @@ RETURNING id;
 DELETE FROM tasks
 WHERE user_id = $1 AND id = ANY($2::bigint[])
 RETURNING id;
+
+-- UpdateTaskField related stuff...
+
+-- name: UpdateTaskText :one
+UPDATE tasks SET task = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskSelected :one
+UPDATE tasks SET selected = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskTTC :one
+UPDATE tasks SET ttc = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskLiveTime :one
+UPDATE tasks SET live_time = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskEfficiency :one
+UPDATE tasks SET efficiency = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskWaste :one
+UPDATE tasks SET waste = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskDueDate :one
+UPDATE tasks SET due_date = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskEta :one
+UPDATE tasks SET eta = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskLiveTimeStamp :one
+UPDATE tasks SET live_time_stamp = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskLastCompleteTime :one
+UPDATE tasks SET last_complete_time = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskLastIncompleteTime :one
+UPDATE tasks SET last_incomplete_time = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskWeight :one
+UPDATE tasks SET weight = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskParentThread :one
+UPDATE tasks SET parent_thread = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskStatus :one
+UPDATE tasks SET status = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- name: UpdateTaskIsLive :one
+UPDATE tasks SET is_live = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
