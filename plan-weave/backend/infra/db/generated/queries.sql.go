@@ -154,6 +154,67 @@ func (q *Queries) GetTasksByUserID(ctx context.Context, userID uuid.UUID) ([]Tas
 	return items, nil
 }
 
+const refreshAllTasks = `-- name: RefreshAllTasks :many
+UPDATE tasks
+SET
+  live_time = 0,
+  status = 'incomplete',
+  last_complete_time = NOW(),
+  last_incomplete_time = NOW(),
+  is_live = false
+WHERE user_id = $1
+RETURNING id
+`
+
+func (q *Queries) RefreshAllTasks(ctx context.Context, userID uuid.UUID) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, refreshAllTasks, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const refreshTask = `-- name: RefreshTask :one
+
+UPDATE tasks
+SET
+  live_time = 0,
+  status = 'incomplete',
+  last_complete_time = NOW(),
+  last_incomplete_time = NOW(),
+  is_live = false
+WHERE id = $1 AND user_id = $2
+RETURNING id
+`
+
+type RefreshTaskParams struct {
+	ID     int64
+	UserID uuid.UUID
+}
+
+// Refresh Task related stuff...
+func (q *Queries) RefreshTask(ctx context.Context, arg RefreshTaskParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, refreshTask, arg.ID, arg.UserID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const updateTask = `-- name: UpdateTask :one
 UPDATE tasks
 SET task = $3,

@@ -172,3 +172,11 @@ func (s *TaskService) DeleteTasks(ctx context.Context, userID uuid.UUID, taskIDs
 	}
 	return s.Q.DeleteTasks(ctx, params)
 }
+
+func (s *TaskService) RefreshTask(ctx context.Context, userID uuid.UUID, taskID int64) (int64, error) {
+	return s.Q.RefreshTask(ctx, db.RefreshTaskParams{ID: taskID, UserID: userID})
+}
+
+func (s *TaskService) RefreshAllTasks(ctx context.Context, userID uuid.UUID) ([]int64, error) {
+	return s.Q.RefreshAllTasks(ctx, userID)
+}

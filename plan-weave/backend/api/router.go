@@ -17,6 +17,8 @@ func NewRouter(handler *TaskHandler) http.Handler {
 		r.Put(userID, handler.UpdateTask)
 		r.Patch(userID, handler.UpdateTaskField)
 		r.Delete(userID, handler.DeleteTasks)
+		r.Post(userID+"/refresh", handler.RefreshTask)
+		r.Post(userID+"/refresh_all", handler.RefreshAllTasks)
 	})
 
 	return r

@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// TODO: Upgrade my API responses by including the concept of affordances. Such as error, expected, received, hint, available next actions, etc.
 const invalidUserId = "invalid userID"
 
 type TaskHandler struct {
@@ -156,5 +157,63 @@ func (h *TaskHandler) DeleteTasks(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string][]int64{
 		"deleted_ids": deletedIDs,
+	})
+}
+
+func (h *TaskHandler) RefreshTask(w http.ResponseWriter, r *http.Request) {
+	userID, err := uuid.Parse(chi.URLParam(r, "userID"))
+	if err != nil {
+		http.Error(w, invalidUserId, http.StatusBadRequest)
+		return
+	}
+
+	var payload struct {
+		TaskID int64 `json:"task_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	taskID, err := h.Service.RefreshTask(r.Context(), userID, payload.TaskID)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "task not found or not owned by user", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Printf("❌ RefreshTask DB error: %v", err)
+		http.Error(w, "could not refresh task", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ Refreshed task %d", taskID)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"refreshed_task_id": taskID,
+	})
+}
+
+func (h *TaskHandler) RefreshAllTasks(w http.ResponseWriter, r *http.Request) {
+	userID, err := uuid.Parse(chi.URLParam(r, "userID"))
+	if err != nil {
+		http.Error(w, invalidUserId, http.StatusBadRequest)
+		return
+	}
+
+	taskIDs, err := h.Service.RefreshAllTasks(r.Context(), userID)
+	if err != nil {
+		log.Printf("❌ RefreshAllTasks DB error: %v", err)
+		http.Error(w, "could not refresh tasks", http.StatusInternalServerError)
+		return
+	}
+	if len(taskIDs) == 0 {
+		http.Error(w, "no tasks refreshed (not found or unauthorized)", http.StatusNotFound)
+		return
+	}
+
+	log.Printf("✅ Refreshed %d tasks", len(taskIDs))
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"refreshed_task_ids": taskIDs,
 	})
 }

@@ -87,3 +87,27 @@ UPDATE tasks SET status = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
 
 -- name: UpdateTaskIsLive :one
 UPDATE tasks SET is_live = $1 WHERE user_id = $2 AND id = $3 RETURNING id;
+
+-- Refresh Task related stuff...
+
+-- name: RefreshTask :one
+UPDATE tasks
+SET
+  live_time = 0,
+  status = 'incomplete',
+  last_complete_time = NOW(),
+  last_incomplete_time = NOW(),
+  is_live = false
+WHERE id = $1 AND user_id = $2
+RETURNING id;
+
+-- name: RefreshAllTasks :many
+UPDATE tasks
+SET
+  live_time = 0,
+  status = 'incomplete',
+  last_complete_time = NOW(),
+  last_incomplete_time = NOW(),
+  is_live = false
+WHERE user_id = $1
+RETURNING id;
