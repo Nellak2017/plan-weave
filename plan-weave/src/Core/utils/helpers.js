@@ -36,7 +36,7 @@ export const endPlusOne = oldISO => new Date(dateToToday(parseISO(oldISO)).getTi
 const isoToMillis = isoDateString => new Date(isoDateString).getTime()
 export const isTaskOld = ({ eta, timeRange }) => !between(isoToMillis(eta), { start: isoToMillis(timeRange?.start), end: isoToMillis(timeRange?.end) }) // (iso, {start:iso, end:iso}) => bool
 export const tryCatchSyncFlat = (fn, errFn) => { try { return fn() } catch (e) { return errFn(e) } }
-export const tryCatchAsyncFlat = async (fn, errFn) => { try { const ret = await fn(); return ret } catch (e) { return errFn(e) } }
+export const tryCatchAsyncFlat = async (fn, errFn) => { try { return await fn() } catch (e) { return errFn(e) } }
 export const calcMaxPage = (listLen, perPage) => Math.ceil(listLen / perPage) || 1
 export const getHeaderLabels = isFullTask => FULL_TASK_HEADERS.slice(0, isFullTask ? FULL_TASK_HEADERS.length : 4)
 export const isStatusChecked = status => status === TASK_STATUSES.COMPLETED
@@ -125,7 +125,7 @@ export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) 
 		: formatISO(processedOtherIncompleteSum) // prev + max(ttc, live time) 
 }
 // -- HoursInput Component helpers
-export const parseBlur = ({ value, min, max, precision }) => !isNaN(parseFloat(value)) ? (clamp(parseFloat(value), min, max)).toFixed(precision) : min
+export const parseBlur = ({ value, min, max, precision }) => isNaN(parseFloat(value)) ? min : (clamp(parseFloat(value), min, max)).toFixed(precision)
 export const parseChange = ({ value, pattern, min, max }) => (pattern.test(value.trim())) && (between(parseFloat(value), { start: min, end: max }) || /^[^.]*\.[^.]*$/.test(value)) ? value.trim() : ''
 // -- Format helpers
 const findTimeLeft = hours => ({ timeLeftInHours: Math.floor(hours), timeLeftInMinutes: Math.floor((hours - Math.floor(hours)) * 60) })
