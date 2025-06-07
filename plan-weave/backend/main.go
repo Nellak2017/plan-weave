@@ -32,5 +32,6 @@ func main() {
 
 	// ✅ Step 3: Use sqlc's generated DB interface
 	log.Println("🚀 Plan Weave API running on :8080")
-	http.ListenAndServe(":8080", api.NewRouter(&api.TaskHandler{Service: &app.TaskService{Q: db.New(sqlDB)}}))
+	conn := db.New(sqlDB)
+	http.ListenAndServe(":8080", api.NewRouter(&api.TaskHandler{Service: &app.TaskService{Q: conn}}, &api.HealthHandler{Service: &app.HealthService{Q: conn}}))
 }

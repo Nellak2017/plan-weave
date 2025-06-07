@@ -111,3 +111,9 @@ SET
   is_live = false
 WHERE user_id = $1
 RETURNING id;
+
+-- Health related stuff...
+
+-- name: PingDB :one
+SELECT 1;
+

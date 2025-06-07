@@ -1,6 +1,6 @@
 -- users.sql
 CREATE TABLE users (
-    user_id UUID PRIMARY KEY,
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     username TEXT NOT NULL UNIQUE
 );
 -- tasks.sql

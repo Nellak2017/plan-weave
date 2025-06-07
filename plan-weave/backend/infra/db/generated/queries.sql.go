@@ -154,6 +154,19 @@ func (q *Queries) GetTasksByUserID(ctx context.Context, userID uuid.UUID) ([]Tas
 	return items, nil
 }
 
+const pingDB = `-- name: PingDB :one
+
+SELECT 1
+`
+
+// Health related stuff...
+func (q *Queries) PingDB(ctx context.Context) (int32, error) {
+	row := q.db.QueryRowContext(ctx, pingDB)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const refreshAllTasks = `-- name: RefreshAllTasks :many
 UPDATE tasks
 SET
