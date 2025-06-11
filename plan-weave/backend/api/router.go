@@ -8,7 +8,7 @@ import (
 
 const userID = "/{userID}"
 
-func NewRouter(handler *TaskHandler, healthHandler *HealthHandler, authHandler *AuthHandler) http.Handler {
+func NewRouter(handler *TaskHandler, healthHandler *HealthHandler) http.Handler {
 	r := chi.NewRouter()
 
 	// Public Web Server health check endpoints
@@ -27,11 +27,5 @@ func NewRouter(handler *TaskHandler, healthHandler *HealthHandler, authHandler *
 		r.Post(userID+"/refresh", handler.RefreshTask)
 		r.Post(userID+"/refresh_all", handler.RefreshAllTasks)
 	})
-
-	// Auth endpoints
-	r.Route("/auth/", func(r chi.Router) {
-		r.Post("/user", authHandler.AddUser)
-	})
-
 	return r
 }

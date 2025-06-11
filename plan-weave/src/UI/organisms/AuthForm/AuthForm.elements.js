@@ -27,5 +27,6 @@ export const SignInContainer = styled('div')(() => ({
 export const OrSeparator = styled('span')(() => ({ display: 'flex', alignItems: 'center', textAlign: 'center', width: '80%', userSelect: 'none', }))
 export const Line = styled('section')(() => ({ width: '100%', height: '1px', }))
 export const Or = styled('div')(() => ({ padding: '0 10px', }))
-export const CenteredContainer = styled('div')(() => ({ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', }))
+export const CenteredContainer = styled('div')(() => ({ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', '& button:hover, a:hover': { boxShadow: 'none' }}))
 export const SubtitleContainer = styled('div')(({ theme }) => ({ display: 'flex', columnGap: theme.spacing(2), a: { textDecoration: 'underline' }, }))
+export const ForgotPasswordButton = styled('button')(({ theme }) => ({ background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', font: 'inherit', '&:hover': { background: 'none', color: theme.palette.primary.main, }}))

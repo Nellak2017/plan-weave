@@ -37,17 +37,12 @@ func main() {
 	// ✅ Step 5: Construct all services
 	taskService := &app.TaskService{Q: conn}
 	healthService := &app.HealthService{Q: conn}
-	authService := &app.AuthService{
-		ProjectURL: os.Getenv("SUPABASE_URL"),
-		AdminKey:   os.Getenv("SUPABASE_SERVICE_ROLE_KEY"),
-	}
 
 	// ✅ Step 6: Construct all handlers
 	taskHandler := &api.TaskHandler{Service: taskService}
 	healthHandler := &api.HealthHandler{Service: healthService}
-	authHandler := &api.AuthHandler{Service: authService}
 
 	// ✅ Step 7: Start the API
 	log.Println("🚀 Plan Weave API running on :8080")
-	http.ListenAndServe(":8080", api.NewRouter(taskHandler, healthHandler, authHandler))
+	http.ListenAndServe(":8080", api.NewRouter(taskHandler, healthHandler))
 }

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from "@mui/material"
 // import GoogleButton from 'react-google-button'
 import { TaskInput } from '../../atoms/TaskInput/TaskInput.js'
-import { AuthContainer, StyledAuthForm, InputSection, SignInContainer, OrSeparator, Line, Or, CenteredContainer, SubtitleContainer } from './AuthForm.elements.js'
+import { AuthContainer, StyledAuthForm, InputSection, SignInContainer, OrSeparator, Line, Or, CenteredContainer, SubtitleContainer, ForgotPasswordButton } from './AuthForm.elements.js'
 import { handleSignInWithEmail, handleSignUpWithEmail, handleSignInWithGoogle } from '../../../Infra/workflows/AuthForm.handlers.js'
 import { useForm } from 'react-hook-form'
 import { useAuthForm } from '../../../Application/hooks/AuthForm/useAuthForm.js'
@@ -14,8 +14,9 @@ import { useAuthForm } from '../../../Application/hooks/AuthForm/useAuthForm.js'
 const logo = { src: '/Plan-Weave-Logo.png' }
 const AuthInput = React.forwardRef((props, ref) => (<TaskInput ref={ref} {...props} />)); AuthInput.displayName = 'AuthInput'
 
+// TODO: Make the form more modern by using MUI for the email/password inputs and also make the Forgot your password? thing appear modern and standard
 const GeneralAuthForm = ({
-    state: { signup = false, title = 'Sign in', emailButtonText = 'Sign in with Email', callToAction = { text: "Don't have an account?", link: '/signup', linkText: 'Sign up.' }, } = {},
+    state: { title = 'Sign in', emailButtonText = 'Sign in with Email', callToAction = { text: "Don't have an account?", link: '/signup', linkText: 'Sign up.' }, forgotPasswordText = 'Forgot your password?' } = {},
     services: { emailSubmit = handleSignInWithEmail } = {}, customHook = useAuthForm
 }) => {
     const router = useRouter()
@@ -44,6 +45,14 @@ const GeneralAuthForm = ({
                     </InputSection>
                     <SignInContainer><Button type='submit' name='email-auth' title={emailButtonText}> {emailButtonText}</Button></SignInContainer>
                 </StyledAuthForm>
+                {forgotPasswordText &&
+                    <ForgotPasswordButton
+                        // onClick={() => triggerForgotPassword(email)}
+                        onClick={() => console.log(" I was clicked ")}
+                    >
+                        {forgotPasswordText}
+                    </ForgotPasswordButton>
+                }
                 {/* <OrSeparator><Line /><Or>or</Or><Line /></OrSeparator>
                 <SignInContainer id='google-auth-container'>
                     <GoogleButton name='google-auth' type={variant} signup={signup} onClick={e => { e.preventDefault(); handleSignInWithGoogle({ router }) }} />
@@ -54,4 +63,4 @@ const GeneralAuthForm = ({
     )
 }
 export const SignIn = ({ state }) => <GeneralAuthForm state={state} />
-export const SignUp = ({ state }) => <GeneralAuthForm state={{ ...state, signup: true, title: 'Sign up', emailButtonText: 'Sign up with Email', callToAction: { text: "Have an account?", link: '/login', linkText: 'Sign in.' }, }} services={{ emailSubmit: handleSignUpWithEmail }} />
+export const SignUp = ({ state }) => <GeneralAuthForm state={{ ...state, title: 'Sign up', emailButtonText: 'Sign up with Email', callToAction: { text: "Have an account?", link: '/login', linkText: 'Sign in.' }, forgotPasswordText: 'Forgot your password?' }} services={{ emailSubmit: handleSignUpWithEmail }} />
