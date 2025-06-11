@@ -81,3 +81,4 @@ export const TASK_NAME_MAX_LENGTH = 100
 export const ICON_SIZE = 36
 export const DEFAULT_THREAD = 'default'
 export const EFFICIENCY_RANGE = { min: -1e6, max: 1e6 }
+export const AUTH_FORM_TYPES = { signUpOption: 'SignUp', signInOption: 'SignIn', forgotPasswordOption: 'ForgotPassword' }

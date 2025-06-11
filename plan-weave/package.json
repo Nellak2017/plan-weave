@@ -49,8 +49,7 @@
     "redux": "^4.2.1",
     "rescript": "^11.0.0",
     "reselect": "^4.1.8",
-    "vercel": "^29.0.3",
-    "yup": "^1.1.1"
+    "vercel": "^29.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.21.8",

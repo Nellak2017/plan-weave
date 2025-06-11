@@ -16,7 +16,7 @@ const AuthInput = React.forwardRef((props, ref) => (<TaskInput ref={ref} {...pro
 
 // TODO: Make the form more modern by using MUI for the email/password inputs and also make the Forgot your password? thing appear modern and standard
 const GeneralAuthForm = ({
-    state: { title = 'Sign in', emailButtonText = 'Sign in with Email', callToAction = { text: "Don't have an account?", link: '/signup', linkText: 'Sign up.' }, forgotPasswordText = 'Forgot your password?' } = {},
+    state: { title = 'Sign in', emailButtonText = 'Sign in with Email', callToAction = { text: "Don't have an account?", link: '/signup', linkText: 'Sign up.' }, inputSections = { topText: 'Email Address', bottomText: 'Password' }, forgotPasswordText = 'Forgot your password?', forgotPasswordRedirect = '/forgot-password' } = {},
     services: { emailSubmit = handleSignInWithEmail } = {}, customHook = useAuthForm
 }) => {
     const router = useRouter()
@@ -29,30 +29,25 @@ const GeneralAuthForm = ({
                 <StyledAuthForm onSubmit={handleSubmit((data => emailSubmit({ router, ...data })))} method='POST' id='email-form' maxwidth={maxwidth}>
                     <Link href='/'><Image src={logo.src} alt='Plan Weave Logo' width={128} height={96} className={'logo'} title={'Go Home'} priority={true} /></Link>
                     <h2>{title}</h2>
-                    <SubtitleContainer>
+                    {callToAction && <SubtitleContainer>
                         <h3><p>{callToAction?.text}</p></h3>
                         <Link href={callToAction?.link}>{callToAction?.linkText}</Link>
-                    </SubtitleContainer>
-                    <InputSection>
-                        <label htmlFor='email'>Email Address</label>
-                        <AuthInput {...register('email', { required: 'Email is required', pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i })} id='email' name="email" type="email" placeholder="email@example.com" autoComplete='username' />
-                        {errors.email && <span>{errors.email.message || "Invalid email format"}</span>}
-                    </InputSection>
-                    <InputSection>
-                        <label htmlFor='password'>Password</label>
-                        <AuthInput {...register('password', { required: 'Password is required' })} id='password' name="password" type="password" placeholder="Enter your password" autoComplete='current-password' />
-                        {errors.password && <span>{errors.password.message || "Password is required"}</span>}
-                    </InputSection>
+                    </SubtitleContainer>}
+                    {inputSections?.topText &&
+                        <InputSection>
+                            <label htmlFor='email'>{inputSections?.topText}</label>
+                            <AuthInput {...register('email', { required: 'Email is required', pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i })} id='email' name="email" type="email" placeholder="email@example.com" autoComplete='username' />
+                            {errors.email && <span>{errors.email.message || "Invalid email format"}</span>}
+                        </InputSection>}
+                    {inputSections?.bottomText &&
+                        <InputSection>
+                            <label htmlFor='password'>{inputSections?.bottomText}</label>
+                            <AuthInput {...register('password', { required: 'Password is required' })} id='password' name="password" type="password" placeholder="Enter your password" autoComplete='current-password' />
+                            {errors.password && <span>{errors.password.message || "Password is required"}</span>}
+                        </InputSection>}
                     <SignInContainer><Button type='submit' name='email-auth' title={emailButtonText}> {emailButtonText}</Button></SignInContainer>
                 </StyledAuthForm>
-                {forgotPasswordText &&
-                    <ForgotPasswordButton
-                        // onClick={() => triggerForgotPassword(email)}
-                        onClick={() => console.log(" I was clicked ")}
-                    >
-                        {forgotPasswordText}
-                    </ForgotPasswordButton>
-                }
+                {forgotPasswordText && <Link href={forgotPasswordRedirect}>{forgotPasswordText}</Link>}
                 {/* <OrSeparator><Line /><Or>or</Or><Line /></OrSeparator>
                 <SignInContainer id='google-auth-container'>
                     <GoogleButton name='google-auth' type={variant} signup={signup} onClick={e => { e.preventDefault(); handleSignInWithGoogle({ router }) }} />
@@ -64,3 +59,4 @@ const GeneralAuthForm = ({
 }
 export const SignIn = ({ state }) => <GeneralAuthForm state={state} />
 export const SignUp = ({ state }) => <GeneralAuthForm state={{ ...state, title: 'Sign up', emailButtonText: 'Sign up with Email', callToAction: { text: "Have an account?", link: '/login', linkText: 'Sign in.' }, forgotPasswordText: 'Forgot your password?' }} services={{ emailSubmit: handleSignUpWithEmail }} />
+export const ForgotPassword = ({ state }) => <GeneralAuthForm state={{ ...state, title: 'Reset Password', callToAction: null, inputSections: { topText: null, bottomText: 'New Password' }, emailButtonText: 'Reset Password', forgotPasswordText: null }} />
