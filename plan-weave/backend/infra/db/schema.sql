@@ -38,3 +38,26 @@ CREATE TABLE task_dependencies (
 
     PRIMARY KEY (task_id, depends_on_task_id)
 );
+
+-- Triggers
+
+-- 1. Function that runs after auth.users insert
+CREATE OR REPLACE FUNCTION public.sync_auth_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.users (user_id, username)
+  VALUES (
+    NEW.id,
+    NEW.raw_user_meta_data->>'username'
+  )
+  ON CONFLICT (user_id) DO NOTHING;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. Attach it to auth.users
+CREATE TRIGGER trigger_sync_auth_user
+AFTER INSERT ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION public.sync_auth_user();
