@@ -6,7 +6,7 @@ import { Button } from "@mui/material"
 // import GoogleButton from 'react-google-button'
 import { TaskInput } from '../../atoms/TaskInput/TaskInput.js'
 import { AuthContainer, StyledAuthForm, InputSection, SignInContainer, OrSeparator, Line, Or, CenteredContainer, SubtitleContainer, ForgotPasswordButton } from './AuthForm.elements.js'
-import { handleSignInWithEmail, handleSignUpWithEmail, handleSignInWithGoogle } from '../../../Infra/workflows/AuthForm.handlers.js'
+import { handleSignInWithEmail, handleSignUpWithEmail, handleSignInWithGoogle, handleRequestPasswordReset, handleResetPassword } from '../../../Infra/workflows/AuthForm.handlers.js'
 import { useForm } from 'react-hook-form'
 import { useAuthForm } from '../../../Application/hooks/AuthForm/useAuthForm.js'
 // import { useTheme } from '@mui/material/styles'
@@ -17,7 +17,8 @@ const AuthInput = React.forwardRef((props, ref) => (<TaskInput ref={ref} {...pro
 // TODO: Make the form more modern by using MUI for the email/password inputs and also make the Forgot your password? thing appear modern and standard
 const GeneralAuthForm = ({
     state: { title = 'Sign in', emailButtonText = 'Sign in with Email', callToAction = { text: "Don't have an account?", link: '/signup', linkText: 'Sign up.' }, inputSections = { topText: 'Email Address', bottomText: 'Password' }, forgotPasswordText = 'Forgot your password?', forgotPasswordRedirect = '/forgot-password' } = {},
-    services: { emailSubmit = handleSignInWithEmail } = {}, customHook = useAuthForm
+    services: { emailSubmit = handleSignInWithEmail } = {}, customHook = useAuthForm,
+    token = '' // mainly for use in the reset password case. Not in state so it stands out very clearly.
 }) => {
     const router = useRouter()
     const { register, handleSubmit, formState: { errors } } = useForm()
@@ -26,7 +27,7 @@ const GeneralAuthForm = ({
     return (
         <CenteredContainer>
             <AuthContainer maxwidth={maxwidth}>
-                <StyledAuthForm onSubmit={handleSubmit((data => emailSubmit({ router, ...data })))} method='POST' id='email-form' maxwidth={maxwidth}>
+                <StyledAuthForm onSubmit={handleSubmit((data => emailSubmit({ router, token, ...data })))} method='POST' id='email-form' maxwidth={maxwidth}>
                     <Link href='/'><Image src={logo.src} alt='Plan Weave Logo' width={128} height={96} className={'logo'} title={'Go Home'} priority={true} /></Link>
                     <h2>{title}</h2>
                     {callToAction && <SubtitleContainer>
@@ -58,5 +59,6 @@ const GeneralAuthForm = ({
     )
 }
 export const SignIn = ({ state }) => <GeneralAuthForm state={state} />
-export const SignUp = ({ state }) => <GeneralAuthForm state={{ ...state, title: 'Sign up', emailButtonText: 'Sign up with Email', callToAction: { text: "Have an account?", link: '/login', linkText: 'Sign in.' }, forgotPasswordText: 'Forgot your password?' }} services={{ emailSubmit: handleSignUpWithEmail }} />
-export const ForgotPassword = ({ state }) => <GeneralAuthForm state={{ ...state, title: 'Reset Password', callToAction: null, inputSections: { topText: null, bottomText: 'New Password' }, emailButtonText: 'Reset Password', forgotPasswordText: null }} />
+export const SignUp = ({ state }) => <GeneralAuthForm state={{ ...state, title: 'Sign up', emailButtonText: 'Sign up with Email', callToAction: { text: "Have an account?", link: '/login', linkText: 'Sign in.' }, forgotPasswordText: null }} services={{ emailSubmit: handleSignUpWithEmail }} />
+export const ForgotPassword = ({ state }) => <GeneralAuthForm state={{ ...state, title: 'Enter Account Email', callToAction: null, inputSections: { topText: 'Your Email', bottomText: null }, emailButtonText: 'Send Reset Instructions', forgotPasswordText: null }} services={{ emailSubmit: handleRequestPasswordReset }} />
+export const ResetPassword = ({ state, token }) => <GeneralAuthForm token={token} state={{ ...state, title: 'Reset Your Password', callToAction: null, inputSections: { topText: null, bottomText: 'New Password' }, emailButtonText: 'Reset password', forgotPasswordText: null }} services={{ emailSubmit: handleResetPassword }} />
