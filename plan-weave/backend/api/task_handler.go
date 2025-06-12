@@ -14,14 +14,14 @@ import (
 )
 
 // TODO: Upgrade my API responses by including the concept of affordances. Such as error, expected, received, hint, available next actions, etc.
-const invalidUserId = "invalid userID"
+const invalidUserId = "invalid userID in token"
 
 type TaskHandler struct {
 	Service *app.TaskService
 }
 
 func (h *TaskHandler) FetchTasks(w http.ResponseWriter, r *http.Request) {
-	userIDStr := chi.URLParam(r, "userID")
+	userIDStr := GetUserID(r) // chi.URLParam(r, "userID") // Pull directly from middleware context
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		http.Error(w, invalidUserId, http.StatusBadRequest)
@@ -37,7 +37,7 @@ func (h *TaskHandler) FetchTasks(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(tasks)
-	log.Printf("✅ FetchTasks succeeded")
+	log.Printf("✅ FetchTasks succeeded for user %s", userID)
 }
 
 func (h *TaskHandler) AddTask(w http.ResponseWriter, r *http.Request) {
