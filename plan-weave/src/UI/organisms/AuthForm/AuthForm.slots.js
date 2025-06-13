@@ -18,7 +18,6 @@ const AuthInput = React.forwardRef((props, ref) => (<TaskInput ref={ref} {...pro
 const GeneralAuthForm = ({
     state: { title = 'Sign in', emailButtonText = 'Sign in with Email', callToAction = { text: "Don't have an account?", link: '/signup', linkText: 'Sign up.' }, inputSections = { topText: 'Email Address', bottomText: 'Password' }, forgotPasswordText = 'Forgot your password?', forgotPasswordRedirect = '/forgot-password' } = {},
     services: { emailSubmit = handleSignInWithEmail } = {}, customHook = useAuthForm,
-    token = '' // mainly for use in the reset password case. Not in state so it stands out very clearly.
 }) => {
     const router = useRouter()
     const { register, handleSubmit, formState: { errors } } = useForm()
@@ -27,7 +26,7 @@ const GeneralAuthForm = ({
     return (
         <CenteredContainer>
             <AuthContainer maxwidth={maxwidth}>
-                <StyledAuthForm onSubmit={handleSubmit((data => emailSubmit({ router, token, ...data })))} method='POST' id='email-form' maxwidth={maxwidth}>
+                <StyledAuthForm onSubmit={handleSubmit((data => emailSubmit({ router, ...data })))} method='POST' id='email-form' maxwidth={maxwidth}>
                     <Link href='/'><Image src={logo.src} alt='Plan Weave Logo' width={128} height={96} className={'logo'} title={'Go Home'} priority={true} /></Link>
                     <h2>{title}</h2>
                     {callToAction && <SubtitleContainer>
