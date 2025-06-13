@@ -1,0 +1,8 @@
+# Ignore everything outside of /backend since we're already in that directory
+.git
+node_modules
+test
+infra/db/migrations
+.env
+.env.*
+*.md

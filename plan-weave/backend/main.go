@@ -17,7 +17,7 @@ func main() {
 	// ✅ Step 1: Get environment variables
 	err := godotenv.Load("internal/config/.env")
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Printf("No local .env file found, relying on environment variables. Error loading .env file: %v", err)
 	}
 
 	// ✅ Step 2: Parse pgx Config

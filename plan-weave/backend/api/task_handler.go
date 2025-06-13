@@ -12,8 +12,9 @@ import (
 	"github.com/google/uuid"
 )
 
-// TODO: Upgrade my API responses by including the concept of affordances. Such as error, expected, received, hint, available next actions, etc.
 const invalidUserId = "invalid userID in token"
+const contentType = "Content-Type"
+const appJSON = "application/json"
 
 type TaskHandler struct {
 	Service *app.TaskService
@@ -33,7 +34,7 @@ func (h *TaskHandler) FetchTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentType, appJSON)
 	json.NewEncoder(w).Encode(tasks)
 	log.Printf("✅ FetchTasks succeeded for user %s", userID)
 }
@@ -59,7 +60,7 @@ func (h *TaskHandler) AddTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("✅ AddTask succeeded: taskID = %d", taskID)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentType, appJSON)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]any{
 		"created_task_id": taskID,
@@ -90,7 +91,7 @@ func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("✅ UpdateTask succeeded: taskID = %d", taskID)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentType, appJSON)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]any{
 		"updated_task_id": taskID,
@@ -127,7 +128,7 @@ func (h *TaskHandler) UpdateTaskField(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("✅ Updated task %d field %s", taskID, payload.Field)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentType, appJSON)
 	json.NewEncoder(w).Encode(map[string]any{
 		"updated_task_id": taskID,
 		"field":           payload.Field,
@@ -191,7 +192,7 @@ func (h *TaskHandler) RefreshTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("✅ Refreshed task %d", taskID)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentType, appJSON)
 	json.NewEncoder(w).Encode(map[string]any{
 		"refreshed_task_id": taskID,
 	})
@@ -216,7 +217,7 @@ func (h *TaskHandler) RefreshAllTasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("✅ Refreshed %d tasks", len(taskIDs))
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentType, appJSON)
 	json.NewEncoder(w).Encode(map[string]any{
 		"refreshed_task_ids": taskIDs,
 	})
