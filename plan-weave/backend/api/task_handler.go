@@ -9,7 +9,6 @@ import (
 
 	"github.com/Nellak2017/plan-weave/app"
 	db "github.com/Nellak2017/plan-weave/infra/db/generated"
-	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
@@ -21,8 +20,7 @@ type TaskHandler struct {
 }
 
 func (h *TaskHandler) FetchTasks(w http.ResponseWriter, r *http.Request) {
-	userIDStr := GetUserID(r) // chi.URLParam(r, "userID") // Pull directly from middleware context
-	userID, err := uuid.Parse(userIDStr)
+	userID, err := uuid.Parse(GetUserID(r))
 	if err != nil {
 		http.Error(w, invalidUserId, http.StatusBadRequest)
 		return
@@ -41,11 +39,19 @@ func (h *TaskHandler) FetchTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) AddTask(w http.ResponseWriter, r *http.Request) {
+	userID, err := uuid.Parse(GetUserID(r))
+	if err != nil {
+		http.Error(w, invalidUserId, http.StatusBadRequest)
+		return
+	}
+
 	var task db.Task
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
 		http.Error(w, "invalid task data", http.StatusBadRequest)
 		return
 	}
+	task.UserID = userID // Always override userID from middleware
+
 	taskID, err := h.Service.AddTask(r.Context(), task)
 	if err != nil {
 		log.Printf("❌ AddTasks DB error: %v", err)
@@ -55,13 +61,13 @@ func (h *TaskHandler) AddTask(w http.ResponseWriter, r *http.Request) {
 	log.Printf("✅ AddTask succeeded: taskID = %d", taskID)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	json.NewEncoder(w).Encode(map[string]any{
 		"created_task_id": taskID,
 	})
 }
 
 func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
-	userID, err := uuid.Parse(chi.URLParam(r, "userID"))
+	userID, err := uuid.Parse(GetUserID(r))
 	if err != nil {
 		http.Error(w, invalidUserId, http.StatusBadRequest)
 		return
@@ -71,10 +77,8 @@ func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid task data", http.StatusBadRequest)
 		return
 	}
-	if task.UserID != userID {
-		http.Error(w, "userID mismatch", http.StatusBadRequest)
-		return
-	}
+	task.UserID = userID // Always override userID
+
 	taskID, err := h.Service.UpdateTask(r.Context(), userID, task)
 	if errors.Is(err, sql.ErrNoRows) {
 		http.Error(w, "task not found", http.StatusNotFound)
@@ -88,13 +92,13 @@ func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	log.Printf("✅ UpdateTask succeeded: taskID = %d", taskID)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	json.NewEncoder(w).Encode(map[string]any{
 		"updated_task_id": taskID,
 	})
 }
 
 func (h *TaskHandler) UpdateTaskField(w http.ResponseWriter, r *http.Request) {
-	userID, err := uuid.Parse(chi.URLParam(r, "userID"))
+	userID, err := uuid.Parse(GetUserID(r))
 	if err != nil {
 		http.Error(w, invalidUserId, http.StatusBadRequest)
 		return
@@ -131,7 +135,7 @@ func (h *TaskHandler) UpdateTaskField(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) DeleteTasks(w http.ResponseWriter, r *http.Request) {
-	userID, err := uuid.Parse(chi.URLParam(r, "userID"))
+	userID, err := uuid.Parse(GetUserID(r))
 	if err != nil {
 		http.Error(w, invalidUserId, http.StatusBadRequest)
 		return
@@ -161,7 +165,7 @@ func (h *TaskHandler) DeleteTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) RefreshTask(w http.ResponseWriter, r *http.Request) {
-	userID, err := uuid.Parse(chi.URLParam(r, "userID"))
+	userID, err := uuid.Parse(GetUserID(r))
 	if err != nil {
 		http.Error(w, invalidUserId, http.StatusBadRequest)
 		return
@@ -194,7 +198,7 @@ func (h *TaskHandler) RefreshTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) RefreshAllTasks(w http.ResponseWriter, r *http.Request) {
-	userID, err := uuid.Parse(chi.URLParam(r, "userID"))
+	userID, err := uuid.Parse(GetUserID(r))
 	if err != nil {
 		http.Error(w, invalidUserId, http.StatusBadRequest)
 		return
