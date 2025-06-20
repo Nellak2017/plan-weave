@@ -28,14 +28,16 @@ export const DEFAULT_SIMPLE_TASKS = [
 ]
 export const DEFAULT_SIMPLE_TASK = {
 	id: new Date().getTime(), // guarantees unique ids down to the millisecond! IF and ONLY IF you do this logic in the caller as well!
+	userId: '', // new
 	status: 'incomplete', task: '', waste: 1, ttc: 1, eta: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // ISO Date, 12:00 noon
-	timestamp: Math.floor((new Date().getTime()) / 1000), // When task was originally created
-	completedTimeStamp: 0, // When task was completed last
-	// TODO: Remove the hidden feature, it means migration on the Back End.
-	// TODO: Can we migrate timestamp and completedTimeStamp to ISO strings?!
 	liveTime: 0, // used for time accumulation of tasks
 	selected: false, // used for the multi-delete feature
 	liveTimeStamp: new Date().toISOString(), // used for the correct waste, efficiency, and eta features. Set when a task goes live (first incomplete task)
+
+	timestamp: Math.floor((new Date().getTime()) / 1000), // TODO: Remove cascade
+	lastCompleteTime: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // When task was completed last
+	lastIncompleteTime: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // When task was incompleted last
+	isLive: false, // new
 } // Used when adding a new simple task
 export const DEFAULT_FULL_TASK = {
 	...DEFAULT_SIMPLE_TASK,

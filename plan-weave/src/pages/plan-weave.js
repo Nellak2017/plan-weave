@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import TaskEditor from '../UI/organisms/TaskEditor/TaskEditor.js'
 import Nav from '../UI/molecules/Nav/Nav.js'
@@ -11,6 +11,7 @@ import { handleLogout } from '../Infra/workflows/logout.handlers.js'
 import { initialTaskUpdate } from '../Application/entities/tasks/tasksThunks.js'
 import { setUserID } from '../Application/sessionContexts/auth.js'
 import { useSupabaseAuth } from '../Application/hooks/Helpers/useSupabaseAuth.js'
+import { fetchTasksFromSupabase } from '../Infra/Supabase/supabase_controller.js'
 
 // TODO: Remove "Data" layer from Infra and replace with Hooks for consistency and simplicity
 const PlanWeave = () => {
@@ -20,13 +21,9 @@ const PlanWeave = () => {
 	const { user, loading, error } = useSupabaseAuth()
 	useRedirectIfUnauthorized(user, loading)
 
-	// const fetchTasks = useCallback(async (userID, serialize) => {
-	// 	const taskList = await fetchTasksFromFirebase(userID, serialize)
-	// 	dispatch(initialTaskUpdate({ taskList }))
-	// })
 	useEffect(() => {
 		if (user) {
-			// fetchTasks(user?.uid, serialize)
+			(async () => dispatch(initialTaskUpdate({ taskList: await fetchTasksFromSupabase() })))()
 			dispatch(setUserID(user?.id))
 		}
 	}, [user])

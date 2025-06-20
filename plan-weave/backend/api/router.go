@@ -11,6 +11,9 @@ const base = "/"
 func NewRouter(handler *TaskHandler, healthHandler *HealthHandler) http.Handler {
 	r := chi.NewRouter()
 
+	// Add CORS middleware globally (all routes)
+	r.Use(CORSMiddleware)
+
 	// Public Web Server health check endpoints
 	r.Route("/health", func(r chi.Router) {
 		r.Get("/web_server", healthHandler.WebServer)

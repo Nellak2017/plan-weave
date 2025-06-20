@@ -7,7 +7,7 @@ import { toast } from 'react-toastify'
 import { addTask as addTaskAPI, updateTask as updateTaskAPI, deleteTasks as deleteTasksAPI } from '../../../Infra/firebase/firebase_controller.js'
 import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
 
-const { completedTimeStamp, task, parentThread, liveTimeStamp, liveTime, waste, efficiency, dependencies } = FULL_TASK_FIELDS
+const { lastCompleteTime, task, parentThread, liveTimeStamp, liveTime, waste, efficiency, dependencies } = FULL_TASK_FIELDS
 export const initialTaskUpdate = ({ taskList }) => dispatch => {
     dispatch(updateTasks(taskList))
     dispatch(addManyDnD(taskList.length))
@@ -27,7 +27,7 @@ export const completeTaskThunkAPI = ({ userID, currentTaskRow, taskOrderPipeOpti
     updateTaskAPI({ ...currentTaskRow, status: TASK_STATUSES.COMPLETED }, userID) // 1. PATCH to API
     dispatch(updateTasksBatch([
         { taskID: id, field: FULL_TASK_FIELDS.status, value: toggleTaskStatus(status) },
-        { taskID: id, field: completedTimeStamp, value: new Date().getTime() / 1000 },
+        { taskID: id, field: lastCompleteTime, value: new Date().getTime() / 1000 },
         { taskID: id, field: liveTimeStamp, value: new Date().toISOString() },
         { taskID: id, field: liveTime, value: calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) },
         { taskID: id, field: waste, value: calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime) },
