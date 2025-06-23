@@ -4,6 +4,16 @@ FROM tasks
 WHERE user_id = $1
 LIMIT 1000;
 
+-- name: GetTasksWithDependenciesByUserID :many
+SELECT 
+  t.*,
+  COALESCE(ARRAY_AGG(td.depends_on_task_id) FILTER (WHERE td.depends_on_task_id IS NOT NULL), ARRAY[]::BIGINT[])::BIGINT[] AS dependencies
+FROM tasks t
+LEFT JOIN task_dependencies td ON t.id = td.task_id
+WHERE t.user_id = $1
+GROUP BY t.id
+ORDER BY t.id;
+
 -- name: AddTask :one
 INSERT INTO tasks (
     id, user_id, task, selected, ttc, live_time, due_date,

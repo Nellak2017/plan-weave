@@ -38,7 +38,6 @@ export const useTopSlot = () => {
 
 export const useBottomSlot = () => {
     const { endTaskEditor } = timeRange()
-    const userID = userIDSelector()
     const taskList = properlyOrderedTasks(), firstIncomplete = useMemo(() => firstIncompleteIndex(taskList), [taskList])
     const prevTaskID = taskList?.[firstIncomplete]?.id || 0
     const childState = {
@@ -46,7 +45,7 @@ export const useBottomSlot = () => {
         endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [endTaskEditor?.defaultTime]),
     }
     const childServices = {
-        addTask: () => { dispatch(addTaskThunkAPI({ userID, prevTaskID })) },
+        addTask: () => { dispatch(addTaskThunkAPI({ prevTaskID })) },
         fullTaskToggle: () => { dispatch(toggleThunk({ id: VALID_TOGGLE_IDS.FULL_TASK_ID })) },
         setMultiDeleteFSMState: value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) },
         sort: ({ value, id = VALID_SORT_IDS?.SORT_TASK_EDITOR }) => { dispatch(sortThunk({ id, value })) },

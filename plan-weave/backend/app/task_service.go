@@ -19,6 +19,10 @@ func (s *TaskService) FetchTasks(ctx context.Context, userID uuid.UUID) ([]db.Ta
 	return s.Q.GetTasksByUserID(ctx, userID)
 }
 
+func (s *TaskService) FetchTasksWithDependencies(ctx context.Context, userID uuid.UUID) ([]db.GetTasksWithDependenciesByUserIDRow, error) {
+	return s.Q.GetTasksWithDependenciesByUserID(ctx, userID)
+}
+
 func (s *TaskService) AddTask(ctx context.Context, task db.Task) (int64, error) {
 	return s.Q.AddTask(ctx, db.AddTaskParams(task))
 }

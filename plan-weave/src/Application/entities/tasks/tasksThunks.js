@@ -4,18 +4,19 @@ import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
 import { toggleTaskStatus, calculateLiveTime, calculateWaste, calculateEfficiency } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
-import { addTask as addTaskAPI, updateTask as updateTaskAPI, deleteTasks as deleteTasksAPI } from '../../../Infra/firebase/firebase_controller.js'
+import { updateTask as updateTaskAPI, deleteTasks as deleteTasksAPI } from '../../../Infra/firebase/firebase_controller.js'
 import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
+import { addTaskToSupabase as addTaskAPI } from '../../../Infra/Supabase/supabase_controller.js'
 
 const { lastCompleteTime, task, parentThread, liveTimeStamp, liveTime, waste, efficiency, dependencies } = FULL_TASK_FIELDS
 export const initialTaskUpdate = ({ taskList }) => dispatch => {
     dispatch(updateTasks(taskList))
     dispatch(addManyDnD(taskList.length))
 }
-export const addTaskThunkAPI = ({ userID, prevTaskID }) => dispatch => {
+export const addTaskThunkAPI = ({ prevTaskID }) => dispatch => {
     const currentTimeMillis = new Date().getTime()
-    const addedTask = { ...DEFAULT_FULL_TASK, id: currentTimeMillis, liveTimeStamp: new Date().toISOString(), timestamp: currentTimeMillis / 1000 }
-    addTaskAPI(addedTask, userID) // 1. POST to API
+    const addedTask = { ...DEFAULT_FULL_TASK, id: currentTimeMillis, liveTimeStamp: new Date().toISOString() }
+    addTaskAPI(addedTask) // 1. POST to API
     dispatch(addTask(addedTask)) // 2. Add task to local reducer to sync state optimistically
     dispatch(addDnD()) // 3. Update the dnd config by adding the next ordinal to the list
     toast.info('You added a New Default Task') // 4. Inform user they added a new task

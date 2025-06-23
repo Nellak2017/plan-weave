@@ -154,6 +154,80 @@ func (q *Queries) GetTasksByUserID(ctx context.Context, userID uuid.UUID) ([]Tas
 	return items, nil
 }
 
+const getTasksWithDependenciesByUserID = `-- name: GetTasksWithDependenciesByUserID :many
+SELECT 
+  t.id, t.user_id, t.task, t.selected, t.ttc, t.live_time, t.due_date, t.efficiency, t.parent_thread, t.waste, t.eta, t.weight, t.status, t.live_time_stamp, t.last_complete_time, t.last_incomplete_time, t.is_live,
+  COALESCE(ARRAY_AGG(td.depends_on_task_id) FILTER (WHERE td.depends_on_task_id IS NOT NULL), ARRAY[]::BIGINT[])::BIGINT[] AS dependencies
+FROM tasks t
+LEFT JOIN task_dependencies td ON t.id = td.task_id
+WHERE t.user_id = $1
+GROUP BY t.id
+ORDER BY t.id
+`
+
+type GetTasksWithDependenciesByUserIDRow struct {
+	ID                 int64
+	UserID             uuid.UUID
+	Task               string
+	Selected           bool
+	Ttc                float64
+	LiveTime           float64
+	DueDate            time.Time
+	Efficiency         float64
+	ParentThread       string
+	Waste              float64
+	Eta                time.Time
+	Weight             int32
+	Status             string
+	LiveTimeStamp      sql.NullTime
+	LastCompleteTime   time.Time
+	LastIncompleteTime time.Time
+	IsLive             bool
+	Dependencies       []int64
+}
+
+func (q *Queries) GetTasksWithDependenciesByUserID(ctx context.Context, userID uuid.UUID) ([]GetTasksWithDependenciesByUserIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTasksWithDependenciesByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTasksWithDependenciesByUserIDRow
+	for rows.Next() {
+		var i GetTasksWithDependenciesByUserIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Task,
+			&i.Selected,
+			&i.Ttc,
+			&i.LiveTime,
+			&i.DueDate,
+			&i.Efficiency,
+			&i.ParentThread,
+			&i.Waste,
+			&i.Eta,
+			&i.Weight,
+			&i.Status,
+			&i.LiveTimeStamp,
+			&i.LastCompleteTime,
+			&i.LastIncompleteTime,
+			&i.IsLive,
+			pq.Array(&i.Dependencies),
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const pingDB = `-- name: PingDB :one
 
 SELECT 1
