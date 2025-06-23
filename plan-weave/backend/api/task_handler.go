@@ -84,6 +84,11 @@ func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	}
 	task.UserID = userID // Always override userID
 
+	if task.UserID != uuid.Nil && task.UserID != userID {
+		http.Error(w, "userID must not be provided or must match your own", http.StatusBadRequest)
+		return
+	}
+
 	taskID, err := h.Service.UpdateTask(r.Context(), userID, task)
 	if errors.Is(err, sql.ErrNoRows) {
 		http.Error(w, "task not found", http.StatusNotFound)
