@@ -26,10 +26,10 @@ func NewRouter(handler *TaskHandler, healthHandler *HealthHandler) http.Handler 
 		r.Get(base, handler.FetchTasks)
 		r.Post(base, handler.AddTask)
 		r.Put(base, handler.UpdateTask)
-		r.Patch(base, handler.UpdateTaskField) // TODO: Update this so you can't modify userID
+		r.Patch(base, handler.UpdateTaskField)
 		r.Delete(base, handler.DeleteTasks)
-		// TODO: Add an endpoint that can add a dependency to a task
-		// TODO: Add an endpoint that can add many dependencies to a task
+		r.Post(base+"add_task_dependencies/", handler.AddTaskDependencies)
+		r.Delete(base+"delete_task_dependencies/", handler.DeleteTaskDependencies)
 		r.Post(base+"refresh/", handler.RefreshTask)
 		r.Post(base+"refresh_all/", handler.RefreshAllTasks)
 	})

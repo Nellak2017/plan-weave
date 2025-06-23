@@ -72,6 +72,77 @@ func (q *Queries) AddTask(ctx context.Context, arg AddTaskParams) (int64, error)
 	return id, err
 }
 
+const addTaskDependencies = `-- name: AddTaskDependencies :many
+INSERT INTO task_dependencies (task_id, depends_on_task_id)
+SELECT $1, dep_id
+FROM unnest($2::bigint[]) AS dep_id
+WHERE dep_id != $1
+ON CONFLICT DO NOTHING
+RETURNING depends_on_task_id
+`
+
+type AddTaskDependenciesParams struct {
+	TaskID  int64
+	Column2 []int64
+}
+
+func (q *Queries) AddTaskDependencies(ctx context.Context, arg AddTaskDependenciesParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, addTaskDependencies, arg.TaskID, pq.Array(arg.Column2))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var depends_on_task_id int64
+		if err := rows.Scan(&depends_on_task_id); err != nil {
+			return nil, err
+		}
+		items = append(items, depends_on_task_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const deleteTaskDependencies = `-- name: DeleteTaskDependencies :many
+DELETE FROM task_dependencies
+WHERE task_id = $1 AND depends_on_task_id = ANY($2::bigint[])
+RETURNING depends_on_task_id
+`
+
+type DeleteTaskDependenciesParams struct {
+	TaskID  int64
+	Column2 []int64
+}
+
+func (q *Queries) DeleteTaskDependencies(ctx context.Context, arg DeleteTaskDependenciesParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, deleteTaskDependencies, arg.TaskID, pq.Array(arg.Column2))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var depends_on_task_id int64
+		if err := rows.Scan(&depends_on_task_id); err != nil {
+			return nil, err
+		}
+		items = append(items, depends_on_task_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const deleteTasks = `-- name: DeleteTasks :many
 DELETE FROM tasks
 WHERE user_id = $1 AND id = ANY($2::bigint[])
@@ -178,6 +249,23 @@ func (q *Queries) GetTasksByUserID(ctx context.Context, userID uuid.UUID) ([]Get
 		return nil, err
 	}
 	return items, nil
+}
+
+const isTaskOwnedByUser = `-- name: IsTaskOwnedByUser :one
+SELECT 1 FROM tasks
+WHERE id = $1 AND user_id = $2
+`
+
+type IsTaskOwnedByUserParams struct {
+	ID     int64
+	UserID uuid.UUID
+}
+
+func (q *Queries) IsTaskOwnedByUser(ctx context.Context, arg IsTaskOwnedByUserParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, isTaskOwnedByUser, arg.ID, arg.UserID)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
 }
 
 const pingDB = `-- name: PingDB :one

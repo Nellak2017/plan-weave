@@ -6,6 +6,7 @@ export const signUpWithEmail = async (email, password, client = supabase) => {
 }
 export const signInWithEmail = async (email, password, client = supabase) => {
     const { data, error } = await client.auth.signInWithPassword({ email, password })
+    console.log("Access token: ", data?.session?.access_token) // TODO: Remove before production
     return { user: data?.user ?? null, error }
 }
 export const signInWithGoogle = async (client = supabase) => {

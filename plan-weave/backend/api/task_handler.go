@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -171,6 +172,77 @@ func (h *TaskHandler) DeleteTasks(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string][]int64{
 		"deleted_ids": deletedIDs,
+	})
+}
+
+func (h *TaskHandler) AddTaskDependencies(w http.ResponseWriter, r *http.Request) {
+	userID, err := uuid.Parse(GetUserID(r))
+	if err != nil {
+		http.Error(w, "invalid user", http.StatusBadRequest)
+		return
+	}
+
+	var payload struct {
+		TaskID       int64   `json:"task_id"`
+		Dependencies []int64 `json:"dependencies"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	inserted, err := h.Service.AddTaskDependencies(r.Context(), payload.TaskID, userID, payload.Dependencies)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to add dependencies: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]any{
+		"added_dependencies": inserted,
+	})
+}
+
+func (h *TaskHandler) DeleteTaskDependencies(w http.ResponseWriter, r *http.Request) {
+	userID, err := uuid.Parse(GetUserID(r))
+	if err != nil {
+		http.Error(w, "invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	var req struct {
+		TaskID        int64   `json:"task_id"`
+		DependencyIDs []int64 `json:"dependency_ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// 🔒 Ownership check
+	isOwner, err := h.Service.IsTaskOwnedByUser(r.Context(), req.TaskID, userID)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	if !isOwner {
+		http.Error(w, "unauthorized: task does not belong to you", http.StatusForbidden)
+		return
+	}
+
+	// 🔨 Proceed with deletion
+	removed, err := h.Service.DeleteTaskDependencies(r.Context(), req.TaskID, req.DependencyIDs)
+	if err != nil {
+		log.Printf("❌ DeleteTaskDependencies error: %v", err)
+		http.Error(w, "could not remove dependencies", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ Deleted dependencies from task %d: %v", req.TaskID, removed)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"removed_dependencies": removed,
 	})
 }
 

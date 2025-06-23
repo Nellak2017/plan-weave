@@ -173,6 +173,61 @@ func (s *TaskService) DeleteTasks(ctx context.Context, userID uuid.UUID, taskIDs
 	return s.Q.DeleteTasks(ctx, params)
 }
 
+func (s *TaskService) AddTaskDependencies(ctx context.Context, taskID int64, userID uuid.UUID, dependencies []int64) ([]int64, error) {
+	if len(dependencies) == 0 {
+		return nil, nil
+	}
+
+	// Step 1: Get valid task IDs for the user
+	tasks, err := s.Q.GetTasksByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	validIDs := make(map[int64]struct{}, len(tasks))
+	for _, task := range tasks {
+		validIDs[task.ID] = struct{}{}
+	}
+
+	// Step 2: Filter out invalid/self dependencies
+	filtered := make([]int64, 0, len(dependencies))
+	for _, dep := range dependencies {
+		if dep == taskID {
+			continue
+		}
+		if _, ok := validIDs[dep]; ok {
+			filtered = append(filtered, dep)
+		}
+	}
+
+	if len(filtered) == 0 {
+		return nil, nil
+	}
+
+	// Step 3: Call SQLc method with params struct
+	return s.Q.AddTaskDependencies(ctx, db.AddTaskDependenciesParams{
+		TaskID:  taskID,
+		Column2: filtered,
+	})
+}
+
+func (s *TaskService) IsTaskOwnedByUser(ctx context.Context, taskID int64, userID uuid.UUID) (bool, error) {
+	_, err := s.Q.IsTaskOwnedByUser(ctx, db.IsTaskOwnedByUserParams{
+		ID:     taskID,
+		UserID: userID,
+	})
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	return err == nil, err
+}
+
+func (s *TaskService) DeleteTaskDependencies(ctx context.Context, taskID int64, deps []int64) ([]int64, error) {
+	return s.Q.DeleteTaskDependencies(ctx, db.DeleteTaskDependenciesParams{
+		TaskID:  taskID,
+		Column2: deps,
+	})
+}
+
 func (s *TaskService) RefreshTask(ctx context.Context, userID uuid.UUID, taskID int64) (int64, error) {
 	return s.Q.RefreshTask(ctx, db.RefreshTaskParams{ID: taskID, UserID: userID})
 }

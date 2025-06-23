@@ -45,6 +45,23 @@ DELETE FROM tasks
 WHERE user_id = $1 AND id = ANY($2::bigint[])
 RETURNING id;
 
+-- name: AddTaskDependencies :many
+INSERT INTO task_dependencies (task_id, depends_on_task_id)
+SELECT $1, dep_id
+FROM unnest($2::bigint[]) AS dep_id
+WHERE dep_id != $1
+ON CONFLICT DO NOTHING
+RETURNING depends_on_task_id;
+
+-- name: IsTaskOwnedByUser :one
+SELECT 1 FROM tasks
+WHERE id = $1 AND user_id = $2;
+
+-- name: DeleteTaskDependencies :many
+DELETE FROM task_dependencies
+WHERE task_id = $1 AND depends_on_task_id = ANY($2::bigint[])
+RETURNING depends_on_task_id;
+
 -- UpdateTaskField related stuff...
 
 -- name: UpdateTaskText :one
