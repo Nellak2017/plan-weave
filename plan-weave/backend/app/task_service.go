@@ -15,12 +15,8 @@ type TaskService struct {
 	Q *db.Queries
 }
 
-func (s *TaskService) FetchTasks(ctx context.Context, userID uuid.UUID) ([]db.Task, error) {
+func (s *TaskService) FetchTasks(ctx context.Context, userID uuid.UUID) ([]db.GetTasksByUserIDRow, error) {
 	return s.Q.GetTasksByUserID(ctx, userID)
-}
-
-func (s *TaskService) FetchTasksWithDependencies(ctx context.Context, userID uuid.UUID) ([]db.GetTasksWithDependenciesByUserIDRow, error) {
-	return s.Q.GetTasksWithDependenciesByUserID(ctx, userID)
 }
 
 func (s *TaskService) AddTask(ctx context.Context, task db.Task) (int64, error) {

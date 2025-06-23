@@ -1,10 +1,4 @@
 -- name: GetTasksByUserID :many
-SELECT *
-FROM tasks
-WHERE user_id = $1
-LIMIT 1000;
-
--- name: GetTasksWithDependenciesByUserID :many
 SELECT 
   t.*,
   COALESCE(ARRAY_AGG(td.depends_on_task_id) FILTER (WHERE td.depends_on_task_id IS NOT NULL), ARRAY[]::BIGINT[])::BIGINT[] AS dependencies

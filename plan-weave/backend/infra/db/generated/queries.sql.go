@@ -107,54 +107,6 @@ func (q *Queries) DeleteTasks(ctx context.Context, arg DeleteTasksParams) ([]int
 }
 
 const getTasksByUserID = `-- name: GetTasksByUserID :many
-SELECT id, user_id, task, selected, ttc, live_time, due_date, efficiency, parent_thread, waste, eta, weight, status, live_time_stamp, last_complete_time, last_incomplete_time, is_live
-FROM tasks
-WHERE user_id = $1
-LIMIT 1000
-`
-
-func (q *Queries) GetTasksByUserID(ctx context.Context, userID uuid.UUID) ([]Task, error) {
-	rows, err := q.db.QueryContext(ctx, getTasksByUserID, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Task
-	for rows.Next() {
-		var i Task
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Task,
-			&i.Selected,
-			&i.Ttc,
-			&i.LiveTime,
-			&i.DueDate,
-			&i.Efficiency,
-			&i.ParentThread,
-			&i.Waste,
-			&i.Eta,
-			&i.Weight,
-			&i.Status,
-			&i.LiveTimeStamp,
-			&i.LastCompleteTime,
-			&i.LastIncompleteTime,
-			&i.IsLive,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getTasksWithDependenciesByUserID = `-- name: GetTasksWithDependenciesByUserID :many
 SELECT 
   t.id, t.user_id, t.task, t.selected, t.ttc, t.live_time, t.due_date, t.efficiency, t.parent_thread, t.waste, t.eta, t.weight, t.status, t.live_time_stamp, t.last_complete_time, t.last_incomplete_time, t.is_live,
   COALESCE(ARRAY_AGG(td.depends_on_task_id) FILTER (WHERE td.depends_on_task_id IS NOT NULL), ARRAY[]::BIGINT[])::BIGINT[] AS dependencies
@@ -165,7 +117,7 @@ GROUP BY t.id
 ORDER BY t.id
 `
 
-type GetTasksWithDependenciesByUserIDRow struct {
+type GetTasksByUserIDRow struct {
 	ID                 int64
 	UserID             uuid.UUID
 	Task               string
@@ -186,15 +138,15 @@ type GetTasksWithDependenciesByUserIDRow struct {
 	Dependencies       []int64
 }
 
-func (q *Queries) GetTasksWithDependenciesByUserID(ctx context.Context, userID uuid.UUID) ([]GetTasksWithDependenciesByUserIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, getTasksWithDependenciesByUserID, userID)
+func (q *Queries) GetTasksByUserID(ctx context.Context, userID uuid.UUID) ([]GetTasksByUserIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTasksByUserID, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetTasksWithDependenciesByUserIDRow
+	var items []GetTasksByUserIDRow
 	for rows.Next() {
-		var i GetTasksWithDependenciesByUserIDRow
+		var i GetTasksByUserIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,

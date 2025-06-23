@@ -29,25 +29,6 @@ func (h *TaskHandler) FetchTasks(w http.ResponseWriter, r *http.Request) {
 
 	tasks, err := h.Service.FetchTasks(r.Context(), userID)
 	if err != nil {
-		log.Printf("❌ FetchTasks DB error: %v", err)
-		http.Error(w, "could not fetch tasks", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set(contentType, appJSON)
-	json.NewEncoder(w).Encode(tasks)
-	log.Printf("✅ FetchTasks succeeded for user %s", userID)
-}
-
-func (h *TaskHandler) FetchTasksWithDependencies(w http.ResponseWriter, r *http.Request) {
-	userID, err := uuid.Parse(GetUserID(r))
-	if err != nil {
-		http.Error(w, invalidUserId, http.StatusBadRequest)
-		return
-	}
-
-	tasks, err := h.Service.FetchTasksWithDependencies(r.Context(), userID)
-	if err != nil {
 		log.Printf("❌ FetchTasksWithDependencies DB error: %v", err)
 		http.Error(w, "could not fetch tasks with dependencies", http.StatusInternalServerError)
 		return
