@@ -53,6 +53,10 @@ func (h *TaskHandler) AddTask(w http.ResponseWriter, r *http.Request) {
 	}
 	task.UserID = userID // Always override userID from middleware
 
+	if task.UserID != uuid.Nil && task.UserID != userID {
+		http.Error(w, "userID must not be provided or must match your own", http.StatusBadRequest)
+		return
+	}
 	taskID, err := h.Service.AddTask(r.Context(), task)
 	if err != nil {
 		log.Printf("❌ AddTasks DB error: %v", err)

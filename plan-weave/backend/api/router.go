@@ -24,9 +24,9 @@ func NewRouter(handler *TaskHandler, healthHandler *HealthHandler) http.Handler 
 	r.Route("/tasks/", func(r chi.Router) {
 		r.Use(AuthMiddleware)
 		r.Get(base, handler.FetchTasks)
-		r.Post(base, handler.AddTask) // TODO: Update this so specifying the UserID in the body fails, it should be only our UserID updated
-		r.Put(base, handler.UpdateTask)
-		r.Patch(base, handler.UpdateTaskField)
+		r.Post(base, handler.AddTask)
+		r.Put(base, handler.UpdateTask)        // TODO: Update this so you can't modify userID
+		r.Patch(base, handler.UpdateTaskField) // TODO: Update this so you can't modify userID
 		r.Delete(base, handler.DeleteTasks)
 		// TODO: Add an endpoint that can add a dependency to a task
 		// TODO: Add an endpoint that can add many dependencies to a task
