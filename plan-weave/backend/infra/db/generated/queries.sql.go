@@ -109,6 +109,19 @@ func (q *Queries) AddTaskDependencies(ctx context.Context, arg AddTaskDependenci
 	return items, nil
 }
 
+const clearTaskDependencies = `-- name: ClearTaskDependencies :one
+DELETE FROM task_dependencies
+WHERE task_id = $1
+RETURNING task_id
+`
+
+func (q *Queries) ClearTaskDependencies(ctx context.Context, taskID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, clearTaskDependencies, taskID)
+	var task_id int64
+	err := row.Scan(&task_id)
+	return task_id, err
+}
+
 const deleteTaskDependencies = `-- name: DeleteTaskDependencies :many
 DELETE FROM task_dependencies
 WHERE task_id = $1 AND depends_on_task_id = ANY($2::bigint[])

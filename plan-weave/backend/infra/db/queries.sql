@@ -62,6 +62,11 @@ DELETE FROM task_dependencies
 WHERE task_id = $1 AND depends_on_task_id = ANY($2::bigint[])
 RETURNING depends_on_task_id;
 
+-- name: ClearTaskDependencies :one
+DELETE FROM task_dependencies
+WHERE task_id = $1
+RETURNING task_id;
+
 -- UpdateTaskField related stuff...
 
 -- name: UpdateTaskText :one

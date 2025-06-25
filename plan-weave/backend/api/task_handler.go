@@ -247,6 +247,39 @@ func (h *TaskHandler) DeleteTaskDependencies(w http.ResponseWriter, r *http.Requ
 	})
 }
 
+func (h *TaskHandler) ClearTaskDependencies(w http.ResponseWriter, r *http.Request) {
+	_, err := uuid.Parse(GetUserID(r))
+	if err != nil {
+		http.Error(w, invalidUserId, http.StatusBadRequest)
+		return
+	}
+
+	var req struct {
+		TaskID int64 `json:"task_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid task dependency clear request", http.StatusBadRequest)
+		return
+	}
+	taskID, err := h.Service.ClearTaskDependencies(r.Context(), req.TaskID)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "task dependencies not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Printf("❌ ClearTaskDependencies DB error: %v", err)
+		http.Error(w, "could not clear task dependencies", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ ClearTaskDependencies succeeded: taskID = %d", taskID)
+	w.Header().Set(contentType, appJSON)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]any{
+		"cleared_task_id": taskID,
+	})
+}
+
 func (h *TaskHandler) RefreshTask(w http.ResponseWriter, r *http.Request) {
 	userID, err := uuid.Parse(GetUserID(r))
 	if err != nil {

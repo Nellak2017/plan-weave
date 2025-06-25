@@ -30,7 +30,7 @@ func NewRouter(handler *TaskHandler, healthHandler *HealthHandler) http.Handler 
 		r.Delete(base, handler.DeleteTasks)
 		r.Post(base+"task_dependencies/", handler.AddTaskDependencies)
 		r.Delete(base+"task_dependencies/", handler.DeleteTaskDependencies)
-		// TODO: make a clear task dependencies endpoint that clears all the dependencies for a task
+		r.Post(base+"clear_dependencies/", handler.ClearTaskDependencies)
 		r.Post(base+"refresh/", handler.RefreshTask)
 		r.Post(base+"refresh_all/", handler.RefreshAllTasks)
 	})

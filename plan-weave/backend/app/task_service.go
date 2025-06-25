@@ -228,6 +228,10 @@ func (s *TaskService) DeleteTaskDependencies(ctx context.Context, taskID int64, 
 	})
 }
 
+func (s *TaskService) ClearTaskDependencies(ctx context.Context, taskID int64) (int64, error) {
+	return s.Q.ClearTaskDependencies(ctx, taskID)
+}
+
 func (s *TaskService) RefreshTask(ctx context.Context, userID uuid.UUID, taskID int64) (int64, error) {
 	return s.Q.RefreshTask(ctx, db.RefreshTaskParams{ID: taskID, UserID: userID})
 }
