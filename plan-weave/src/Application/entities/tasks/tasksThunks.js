@@ -4,9 +4,9 @@ import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
 import { toggleTaskStatus, calculateLiveTime, calculateWaste, calculateEfficiency } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
-import { updateTask as updateTaskAPI, deleteTasks as deleteTasksAPI } from '../../../Infra/firebase/firebase_controller.js'
+import { deleteTasks as deleteTasksAPI } from '../../../Infra/firebase/firebase_controller.js'
 import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
-import { addTaskToSupabase as addTaskAPI } from '../../../Infra/Supabase/supabase_controller.js'
+import { addTaskToSupabase as addTaskAPI, updateTaskToSupabase as updateTaskAPI } from '../../../Infra/Supabase/supabase_controller.js'
 
 const { lastCompleteTime, task, parentThread, liveTimeStamp, liveTime, waste, efficiency, dependencies } = FULL_TASK_FIELDS
 export const initialTaskUpdate = ({ taskList }) => dispatch => {
@@ -22,10 +22,12 @@ export const addTaskThunkAPI = ({ prevTaskID }) => dispatch => {
     toast.info('You added a New Default Task') // 4. Inform user they added a new task
     dispatch(setPrevLiveTaskID(prevTaskID))
 } // Reducer + Business Logic + Side-effects
-export const completeTaskThunkAPI = ({ userID, currentTaskRow, taskOrderPipeOptions, currentTime }) => dispatch => {
+// TODO: Refactor 'updateTasksBatch' to have this signature instead: (taskID, {[field]: value}) which will match the API closer
+// TODO: Refactor 'updateTask' to have this signature instead: (taskID, {[field]: value}) which will match the API closer
+export const completeTaskThunkAPI = ({ currentTaskRow, taskOrderPipeOptions, currentTime }) => dispatch => {
     const { id, status, } = currentTaskRow || {}
     // -- calculations on incoming task for batched update below
-    updateTaskAPI({ ...currentTaskRow, status: TASK_STATUSES.COMPLETED }, userID) // 1. PATCH to API
+    updateTaskAPI({ ...currentTaskRow, status: TASK_STATUSES.COMPLETED }) // 1. PATCH to API
     dispatch(updateTasksBatch([
         { taskID: id, field: FULL_TASK_FIELDS.status, value: toggleTaskStatus(status) },
         { taskID: id, field: lastCompleteTime, value: new Date().getTime() / 1000 },
@@ -38,31 +40,17 @@ export const completeTaskThunkAPI = ({ userID, currentTaskRow, taskOrderPipeOpti
     if (status === TASK_STATUSES.INCOMPLETE) { dispatch(setPrevLiveTaskID(id)) } // prevLiveTaskID = skip if (complete->incomplete) else id
     // dispatch(completeTaskDnD(...)) // 4. Update the dnd config 
 } // Reducer + Business Logic + Side-effects
-export const editTaskNameThunkAPI = ({ userID, taskID, taskName, currentTaskRow, }) => dispatch => {
-    updateTaskAPI({ ...currentTaskRow, task: taskName }, userID) // 1. PATCH to API
-    dispatch(updateTask({ taskID, field: task, value: taskName })) // 2. Update task by editing the name
+export const editTaskFieldThunkAPI = ({ taskID, field, value, currentTaskRow }) => dispatch => {
+    updateTaskAPI({ ...currentTaskRow, [field]: value })  // PATCH to API
+    dispatch(updateTask({ taskID, field, value }))        // Local Redux update
 }
-export const editTtcThunkAPI = ({ userID, taskID, ttc, currentTaskRow, }) => dispatch => {
-    updateTaskAPI({ ...currentTaskRow, ttc }, userID) // 1. PATCH to API
-    dispatch(updateTask({ taskID, field: FULL_TASK_FIELDS.ttc, value: ttc }))
-}
-export const editDueThunkAPI = ({ userID, taskID, dueDate, currentTaskRow, }) => dispatch => {
-    updateTaskAPI({ ...currentTaskRow, dueDate }, userID) // 1. PATCH to API
-    dispatch(updateTask({ taskID, field: FULL_TASK_FIELDS.dueDate, value: dueDate }))
-}
-export const editWeightThunkAPI = ({ userID, taskID, weight, currentTaskRow, }) => dispatch => {
-    updateTaskAPI({ ...currentTaskRow, weight }, userID) // 1. PATCH to API
-    dispatch(updateTask({ taskID, field: FULL_TASK_FIELDS.weight, value: weight }))
-}
-export const editThreadThunkAPI = ({ userID, taskID, newThread, currentTaskRow, }) => dispatch => { // newThread => string max len 30 chars
-    updateTaskAPI({ ...currentTaskRow, parentThread: newThread }, userID) // 1. PATCH for the parentThread
-    dispatch(updateTask({ taskID, field: parentThread, value: newThread.slice(0, 30) }))
-}
-export const editDependenciesThunkAPI = ({ userID, taskID, newDependencies, currentTaskRow, }) => dispatch => {
-    updateTaskAPI({ ...currentTaskRow, dependencies: newDependencies }, userID) // 1. PATCH to API
-    dispatch(updateTask({ taskID, field: dependencies, value: newDependencies }))
-}
-export const deleteTasksThunkAPI = ({ userID, taskInfos }) => dispatch => { // taskInfos => [{ index, id }]
+export const editTaskNameThunkAPI = ({ taskID, taskName, currentTaskRow }) => editTaskFieldThunkAPI({ taskID, field: 'task', value: taskName, currentTaskRow })
+export const editTtcThunkAPI = ({ taskID, ttc, currentTaskRow }) => editTaskFieldThunkAPI({ taskID, field: FULL_TASK_FIELDS.ttc, value: ttc, currentTaskRow })
+export const editDueThunkAPI = ({ taskID, dueDate, currentTaskRow }) => editTaskFieldThunkAPI({ taskID, field: FULL_TASK_FIELDS.dueDate, value: dueDate, currentTaskRow })
+export const editWeightThunkAPI = ({ taskID, weight, currentTaskRow }) => editTaskFieldThunkAPI({ taskID, field: FULL_TASK_FIELDS.weight, value: weight, currentTaskRow })
+export const editThreadThunkAPI = ({ taskID, newThread, currentTaskRow }) => editTaskFieldThunkAPI({ taskID, field: 'parentThread', value: newThread.slice(0, 30), currentTaskRow })
+export const editDependenciesThunkAPI = ({ taskID, newDependencies, currentTaskRow }) => editTaskFieldThunkAPI({ taskID, field: 'dependencies', value: newDependencies, currentTaskRow })
+export const deleteTasksThunkAPI = ({ taskInfos }) => dispatch => { // taskInfos => [{ index, id }]
     // Possibly some analytics collection stuff before deletion too..
     const IDs = taskInfos.map(info => info?.id), indices = taskInfos.map(info => info?.index)
     deleteTasksAPI(IDs, userID) // 1. DELETE to API using list of taskIDs
@@ -71,7 +59,7 @@ export const deleteTasksThunkAPI = ({ userID, taskInfos }) => dispatch => { // t
     dispatch(setPrevLiveTaskID(0))
     // NOTE: Pagination likely does not need to be touched since max page is a selector and will naturally push the user back to a previous page if all tasks are deleted on the second or higher page
 }
-export const deleteTaskThunkAPI = ({ userID, taskInfo }) => dispatch => { // taskInfo => { index, id }
+export const deleteTaskThunkAPI = ({ taskInfo }) => dispatch => { // taskInfo => { index, id }
     // Possibly some analytics collection stuff before deletion too..
     const ID = taskInfo?.id, index = taskInfo?.index
     deleteTasksAPI(ID, userID) // 1. DELETE to API using taskID and userID
@@ -79,7 +67,7 @@ export const deleteTaskThunkAPI = ({ userID, taskInfo }) => dispatch => { // tas
     dispatch(deleteDnD({ index }))
     dispatch(setPrevLiveTaskID(0))
 }
-export const refreshTasksThunkAPI = ({ userID, isOwl, currentTaskRow }) => dispatch => {
+export const refreshTasksThunkAPI = ({ isOwl, currentTaskRow }) => dispatch => {
     // updateTaskAPI(currentTaskRow?.map(task => ({
     //     ...task,
     //     eta: dateToToday(new Date(task.timestamp).toISOString()),

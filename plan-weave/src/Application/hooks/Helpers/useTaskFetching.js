@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from "react"
 
+// TODO: use or remove, this is not currently used!
 export const useTaskFetching = ({ user, serialize, dispatch, taskFetcher, taskUpdateReducer, userIDReducer }) => {
 	const fetchTasks = useCallback(async (userId, serialize) => {
 		const tasks = await taskFetcher(userId, serialize)
