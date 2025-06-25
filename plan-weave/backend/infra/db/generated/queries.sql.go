@@ -301,7 +301,12 @@ SET
   status = 'incomplete',
   last_complete_time = NOW(),
   last_incomplete_time = NOW(),
-  is_live = false
+  is_live = false,
+  eta = 
+    ( 
+      date_trunc('day', NOW()) +  -- start of today
+      (COALESCE(eta, NOW()) - date_trunc('day', COALESCE(eta, NOW())))  -- time offset from original day
+    )
 WHERE user_id = $1
 RETURNING id
 `
@@ -337,7 +342,12 @@ SET
   status = 'incomplete',
   last_complete_time = NOW(),
   last_incomplete_time = NOW(),
-  is_live = false
+  is_live = false,
+  eta = 
+    ( 
+      date_trunc('day', NOW()) +  -- start of today
+      (COALESCE(eta, NOW()) - date_trunc('day', COALESCE(eta, NOW())))  -- time offset from original day
+    )
 WHERE id = $1 AND user_id = $2
 RETURNING id
 `

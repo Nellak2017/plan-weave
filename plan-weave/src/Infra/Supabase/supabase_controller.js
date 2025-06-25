@@ -111,3 +111,23 @@ export const clearTaskDependenciesInSupabase = async ({ taskID }) => {
             .res(response => response?.ok ? response.json() : displayError('Clear task dependencies failed:', 'Could not clear task dependencies')(response?.statusText))
             .catch(displayError('Failed to clear task dependencies:', 'Server error while clearing task dependencies'))
 }
+export const refreshTaskInSupabase = async ({ taskID }) => {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    return error || !session
+        ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
+        : wretch(`${WEB_SERVER_URL}/tasks/refresh/`)
+            .auth(`Bearer ${session.access_token}`)
+            .post({ task_id: taskID })
+            .res(response => response?.ok ? response.json() : displayError('Refresh task failed:', 'Could not refresh task')(response?.statusText))
+            .catch(displayError('Failed to refresh task:', 'Server error while refreshing task'))
+}
+export const refreshAllTasksInSupabase = async () => {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    return error || !session
+        ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
+        : wretch(`${WEB_SERVER_URL}/tasks/refresh_all/`)
+            .auth(`Bearer ${session.access_token}`)
+            .post()
+            .res(response => response?.ok ? response.json() : displayError('Refreshing all tasks failed:', 'Could not refresh all tasks')(response?.statusText))
+            .catch(displayError('Failed to refresh all tasks:', 'Server error while refreshing all tasks'))
+}

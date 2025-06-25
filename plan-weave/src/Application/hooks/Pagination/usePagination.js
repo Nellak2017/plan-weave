@@ -5,7 +5,7 @@ import store from "../../store"
 import { tasks as tasksSelector, pageNumber as pageNumberSelector, tasksPerPage as tasksPerPageSelector, isOwl as owlSelector } from '../../selectors.js'
 import { previousPageThunk, nextPageThunk, setPageThunk, setTasksPerPageThunk } from '../../thunks.js'
 import { VALID_PAGINATION_IDS } from '../../validIDs.js'
-import { refreshTasksThunkAPI } from '../../entities/tasks/tasksThunks.js'
+import { refreshAllTasksThunkAPI } from '../../entities/tasks/tasksThunks.js'
 
 // TODO: Convert pagination information to URL arguments and figure out how to test this in Storybook too
 export const usePagination = () => {
@@ -28,7 +28,7 @@ export const usePagination = () => {
     const childState = { maxPage: max, localPageNumber, tasksPerPage }
     const childServices = {
         updatePage: value => { dispatch(setPageThunk({ id, value, max })) },
-        refresh: () => { dispatch(refreshTasksThunkAPI({ isOwl })) },
+        refresh: () => { dispatch(refreshAllTasksThunkAPI({ isOwl })) },
         setLocalPageNumber: value => { setLocalPageNumber(value) },
         handlePrevPage, handleNextPage, handlePageNumber, handleTasksPerPage,
     }

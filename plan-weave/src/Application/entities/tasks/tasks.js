@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { parseISO } from "date-fns"
 import { dateToToday } from "../../../Core/utils/helpers"
+import { TASK_STATUSES } from "../../../Core/utils/constants"
 
 const tasks = createSlice({
     name: 'tasks',
@@ -25,7 +26,18 @@ const tasks = createSlice({
                 if (taskIndex !== -1) state[taskIndex][field] = value
             })
         }, // Update tasks in batch
-        refreshTasks: state => state?.map(task => ({ ...task, eta: dateToToday(new Date(task.timestamp).toISOString()), timestamp: parseISO(dateToToday(new Date(task.timestamp).toISOString())).getTime() / 1000 })), // update every task in the task list to have timestamp for today but with it's hours
+        refreshTasks: state => {
+            const lastCompleteTime = new Date().toISOString()
+            return state?.map(task => ({
+                ...task,
+                liveTime: 0,
+                status: TASK_STATUSES.INCOMPLETE,
+                lastCompleteTime,
+                lastIncompleteTime: lastCompleteTime,
+                isLive: false,
+                eta: dateToToday(task?.eta || new Date().toISOString())
+            }))
+        }, // update every task in the task list to have timestamp for today but with it's hours
         toggleSelectTask: (state, action) => {
             const { taskID } = action?.payload || {}
             const taskIndex = state?.findIndex(task => task?.id === taskID)

@@ -12,6 +12,8 @@ import {
     addTaskDependenciesInSupabase as addTaskDependenciesAPI,
     deleteTaskDependenciesInSupabase as deleteTaskDependenciesAPI,
     clearTaskDependenciesInSupabase as clearTaskDependenciesAPI,
+    refreshTaskInSupabase as refreshTaskAPI,
+    refreshAllTasksInSupabase as refreshAllTasksAPI,
 } from '../../../Infra/Supabase/supabase_controller.js'
 
 const { lastCompleteTime, liveTimeStamp, liveTime, waste, efficiency } = FULL_TASK_FIELDS
@@ -72,16 +74,10 @@ export const deleteTaskThunkAPI = ({ taskInfo }) => dispatch => { // taskInfo =>
     dispatch(deleteDnD({ index }))
     dispatch(setPrevLiveTaskID(0))
 }
-export const refreshTasksThunkAPI = ({ isOwl, currentTaskRow }) => dispatch => {
-    // updateTaskAPI(currentTaskRow?.map(task => ({
-    //     ...task,
-    //     eta: dateToToday(new Date(task.timestamp).toISOString()),
-    //     timestamp: parseISO(dateToToday(new Date(task.timestamp).toISOString())).getTime() / 1000
-    // })),
-    //     userID
-    // )
-    // TODO: Make refresh tasks a thunk so it is reflected
-    dispatch(refreshTimePickers({ isOwl }))
+// TODO: Make refreshTaskThunkAPI
+export const refreshAllTasksThunkAPI = ({ isOwl }) => dispatch => {
+    refreshAllTasksAPI()                                      // 1. POST to API 
+    dispatch(refreshTimePickers({ isOwl }))                   // 2. Local Redux updates
     dispatch(refreshTasks())
 }
 export const addTaskDependencyAPI = ({ taskID, dependencies }) => dispatch => {
