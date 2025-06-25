@@ -1,15 +1,16 @@
-import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateTasks, refreshTasks } from './tasks.js'
+import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateTasks, refreshTasks, addTaskDependencies, deleteTaskDependencies } from './tasks.js'
 import { addManyDnD, addDnD, deleteMultipleDnD, deleteDnD } from '../../sessionContexts/dnd.js'
 import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
 import { toggleTaskStatus, calculateLiveTime, calculateWaste, calculateEfficiency } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
-// import { deleteTasks as deleteTasksAPI } from '../../../Infra/firebase/firebase_controller.js'
 import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
 import {
     addTaskToSupabase as addTaskAPI,
     updateTaskFieldInSupabase as updateTaskFieldAPI,
     deleteTasksInSupabase as deleteTasksAPI,
+    addTaskDependenciesInSupabase as addTaskDependenciesAPI,
+    deleteTaskDependenciesInSupabase as deleteTaskDependenciesAPI,
 } from '../../../Infra/Supabase/supabase_controller.js'
 
 const { lastCompleteTime, liveTimeStamp, liveTime, waste, efficiency } = FULL_TASK_FIELDS
@@ -53,7 +54,6 @@ export const editTtcThunkAPI = ({ taskID, ttc }) => editTaskFieldThunkAPI({ task
 export const editDueThunkAPI = ({ taskID, dueDate }) => editTaskFieldThunkAPI({ taskID, field: FULL_TASK_FIELDS.dueDate, value: dueDate })
 export const editWeightThunkAPI = ({ taskID, weight }) => editTaskFieldThunkAPI({ taskID, field: FULL_TASK_FIELDS.weight, value: weight })
 export const editThreadThunkAPI = ({ taskID, newThread }) => editTaskFieldThunkAPI({ taskID, field: 'parentThread', value: newThread.slice(0, 30) })
-export const editDependenciesThunkAPI = ({ taskID, newDependencies }) => editTaskFieldThunkAPI({ taskID, field: 'dependencies', value: newDependencies })
 export const deleteTasksThunkAPI = ({ taskInfos }) => dispatch => { // taskInfos => [{ index, id }]
     // Possibly some analytics collection stuff before deletion too..
     const IDs = taskInfos.map(info => info?.id), indices = taskInfos.map(info => info?.index)
@@ -82,4 +82,22 @@ export const refreshTasksThunkAPI = ({ isOwl, currentTaskRow }) => dispatch => {
     // TODO: Make refresh tasks a thunk so it is reflected
     dispatch(refreshTimePickers({ isOwl }))
     dispatch(refreshTasks())
+}
+export const addTaskDependencyAPI = ({ taskID, dependencies }) => dispatch => {
+    addTaskDependenciesAPI({ taskID, dependencies })           // 1. POST to API using taskID and dependencies list
+    dispatch(addTaskDependencies({ taskID, dependencies }))    // 2. Local Redux update
+}
+export const deleteTaskDependencyAPI = ({ taskID, dependencies }) => dispatch => {
+    deleteTaskDependenciesAPI({ taskID, dependencies })        // 1. DELETE to API using taskID and dependencies list
+    dispatch(deleteTaskDependencies({ taskID, dependencies })) // 2. Local Redux update
+}
+export const editDependenciesThunkAPI = ({ taskID, reason, details }) => dispatch => {
+    const dependencies = [details?.option?.value] // details?: { option?: { value, label }}
+    const possibleReasons = {
+        'removeOption': () => dispatch(deleteTaskDependencyAPI({ taskID, dependencies })),
+        'selectOption': () => dispatch(addTaskDependencyAPI({ taskID, dependencies })),
+        'clear': () => null, // TODO: add a clear dependency endpoint to simplify Front End code
+        // blur and createOption ignored
+    }
+    possibleReasons?.[reason]?.() // call possible reasons or do nothing
 }

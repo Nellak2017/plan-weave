@@ -1,4 +1,3 @@
-import React from 'react'
 import { MdOutlineCheckBox, MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
 import { TASK_ROW_TOOLTIPS, TASK_STATUSES, ICON_SIZE } from "../../../Core/utils/constants"
 import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContainer, TimeContainer, EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer, TrashContainer, } from "./TaskRow.elements"
@@ -122,7 +121,7 @@ export const Dependency = ({ taskID, customHook = useDependency }) => {
             <OptionPicker
                 state={{ options, multiple: true }}
                 defaultValue={defaultValue}
-                onChange={(e, newDependencies, reason, details) => onChangeEvent(newDependencies || [], reason, details)}
+                onChange={(_e, _newDependencies, reason, details) => onChangeEvent(reason, details)}
             />
         </DependencyContainer>
     )

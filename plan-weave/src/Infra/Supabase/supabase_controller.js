@@ -79,3 +79,26 @@ export const deleteTasksInSupabase = async (taskIDs = []) => {
             .res(response => response?.ok ? response.json() : displayError('Delete task(s) failed:', 'Could not delete selected tasks')(response?.statusText))
             .catch(displayError('Failed to delete task(s):', 'Server error while deleting tasks'))
 }
+export const addTaskDependenciesInSupabase = async ({ taskID, dependencies }) => {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    return error || !session
+        ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
+        : wretch(`${WEB_SERVER_URL}/tasks/task_dependencies/`)
+            .auth(`Bearer ${session.access_token}`)
+            .post({ task_id: taskID, dependencies })
+            .res(response => response?.ok ? response.json() : displayError('Add task dependency failed:', 'Could not add task dependencies')(response?.statusText))
+            .catch(displayError('Failed to add task dependencies:', 'Server error while adding task dependencies'))
+}
+
+export const deleteTaskDependenciesInSupabase = async ({ taskID, dependencies }) => {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    return error || !session
+        ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
+        : wretch(`${WEB_SERVER_URL}/tasks/task_dependencies/`)
+            .auth(`Bearer ${session.access_token}`)
+            .headers({ 'Content-Type': 'application/json' })
+            .body(JSON.stringify({ task_id: taskID, dependency_ids: dependencies }))
+            .delete()
+            .res(response => response?.ok ? response.json() : displayError('Delete task dependency failed:', 'Could not delete task dependencies')(response?.statusText))
+            .catch(displayError('Failed to delete task dependencies:', 'Server error while deleting task dependencies'))
+}

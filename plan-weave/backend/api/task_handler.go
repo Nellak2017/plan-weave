@@ -204,6 +204,7 @@ func (h *TaskHandler) AddTaskDependencies(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// TODO: update field "DependencyIDs" to "Dependencies" to be more consistent in the API
 func (h *TaskHandler) DeleteTaskDependencies(w http.ResponseWriter, r *http.Request) {
 	userID, err := uuid.Parse(GetUserID(r))
 	if err != nil {

@@ -29,10 +29,26 @@ const tasks = createSlice({
         toggleSelectTask: (state, action) => {
             const { taskID } = action?.payload || {}
             const taskIndex = state?.findIndex(task => task?.id === taskID)
-            if (taskIndex !== -1) state[taskIndex]['selected'] = !state[taskIndex]['selected']
+            if (taskIndex !== -1) state[taskIndex].selected = !state[taskIndex].selected
         },
         clearSelectedTasks: state => state?.map(task => ({ ...task, selected: false })),
+        addTaskDependencies: (state, action) => {
+            const { taskID, dependencies } = action.payload || {}
+            const taskIndex = state.findIndex(task => task?.id === taskID)
+            if (taskIndex === -1) return
+            const currentDeps = new Set(state[taskIndex].dependencies || [])
+            dependencies.forEach(dep => currentDeps.add(dep))
+            state[taskIndex].dependencies = Array.from(currentDeps)
+        },
+        deleteTaskDependencies: (state, action) => {
+            const { taskID, dependencies } = action.payload || {}
+            const taskIndex = state.findIndex(task => task?.id === taskID)
+            if (taskIndex === -1) return
+            const currentDeps = new Set(state[taskIndex].dependencies || [])
+            dependencies.forEach(dep => currentDeps.delete(dep))
+            state[taskIndex].dependencies = Array.from(currentDeps)
+        },
     }
 })
-export const { updateTasks, addTask, deleteTask, deleteTasks, refreshTasks, updateTask, toggleSelectTask, clearSelectedTasks, updateTasksBatch, } = tasks.actions
+export const { updateTasks, addTask, deleteTask, deleteTasks, refreshTasks, updateTask, toggleSelectTask, clearSelectedTasks, updateTasksBatch, addTaskDependencies, deleteTaskDependencies } = tasks.actions
 export default tasks.reducer

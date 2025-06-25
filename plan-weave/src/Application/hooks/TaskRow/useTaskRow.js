@@ -95,10 +95,11 @@ export const useDependency = taskID => {
     const currentTaskRow = taskSelector?.(taskID) || {}
     const { dependencies } = currentTaskRow
     const tasks = properlyOrderedTasks?.() || []
-    const defaultValueRef = useRef(dependencies || []), defaultValue = defaultValueRef.current // use a ref to keep it constant always
+    const defaultValueRef = useRef(dependencies || [])
+    const defaultValue = (defaultValueRef.current).map(depID => { const match = tasks?.find(t => t?.id === depID); return match ? { value: match?.id, label: `${match?.task} (${match?.id})` } : null }).filter(Boolean) // use a ref to keep it constant always
     const options = useMemo(() => tasks?.filter(task => task?.id !== taskID)?.map(task => ({ value: task?.id, label: `${task?.task} (${task?.id})` })), [tasks])
     const childState = { defaultValue, options, }
-    const childServices = { onChangeEvent: (newDependencies) => { dispatch(editDependenciesThunkAPI({ taskID, newDependencies })) }, }
+    const childServices = { onChangeEvent: (reason, details) => dispatch(editDependenciesThunkAPI({ taskID, reason, details })), }
     return { childState, childServices }
 }
 export const useTrash = taskID => {
