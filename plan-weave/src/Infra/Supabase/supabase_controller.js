@@ -46,7 +46,6 @@ export const addTaskToSupabase = async (task, deserialize = defaultTaskDeseriali
             .res(response => response?.ok ? response.json() : displayError('Add task failed: ', 'Add task failed')(response?.statusText))
             .catch(displayError('Failed to add task:', 'Failed to save task to server'))
 }
-
 export const updateTaskToSupabase = async (task, deserialize = defaultTaskDeserialize) => {
     const { data: { session }, error } = await supabase.auth.getSession()
     return (error || !session)
@@ -56,4 +55,14 @@ export const updateTaskToSupabase = async (task, deserialize = defaultTaskDeseri
             .put(deserialize(task))
             .res(response => response?.ok ? response.json() : displayError('Update task failed: ', 'Update task failed')(response?.statusText))
             .catch(displayError('Failed to update task:', 'Failed to update task on server'))
+}
+export const updateTaskFieldInSupabase = async ({ taskID, field, value }) => {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    return (error || !session)
+        ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
+        : wretch(`${WEB_SERVER_URL}/tasks/`)
+            .auth(`Bearer ${session.access_token}`)
+            .patch({ task_id: taskID, field, value, })
+            .res(response => response?.ok ? response.json() : displayError('Update task field failed:', 'Failed to update field')(response?.statusText))
+            .catch(displayError('Failed to patch task field:', 'Failed to update task field'))
 }

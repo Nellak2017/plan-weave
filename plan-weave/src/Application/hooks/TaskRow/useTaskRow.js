@@ -41,9 +41,9 @@ export const useCompleteIcon = (taskID, currentTime) => {
     }
 }
 export const useTaskInputContainer = taskID => {
-    const currentTaskRow = taskSelector?.(taskID) || {}, userID = userIDSelector() || ''
+    const currentTaskRow = taskSelector?.(taskID) || {}
     const childState = { status: currentTaskRow?.status, taskName: currentTaskRow?.task }
-    const childServices = { onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ userID, taskID, taskName: e.target.value, currentTaskRow })) } }
+    const childServices = { onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ taskID, taskName: e.target.value })) } }
     return { childState, childServices }
 }
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
@@ -53,9 +53,9 @@ export const useWaste = (taskID, currentTime) => { // We calculate this from Red
     return { waste }
 }
 export const useTtc = taskID => {
-    const currentTaskRow = taskSelector?.(taskID) || {}, userID = userIDSelector() || ''
+    const currentTaskRow = taskSelector?.(taskID) || {}
     const childState = { status: currentTaskRow?.status, ttc: currentTaskRow?.ttc }
-    const childServices = { onBlurEvent: ttc => dispatch(editTtcThunkAPI({ userID, taskID, ttc: parseFloat(ttc), currentTaskRow })), } // NOTE: onValueChangeEvent not used
+    const childServices = { onBlurEvent: ttc => dispatch(editTtcThunkAPI({ taskID, ttc: parseFloat(ttc) })), } // NOTE: onValueChangeEvent not used
     return { childState, childServices }
 }
 export const useEta = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
@@ -74,33 +74,31 @@ export const useEfficiency = (taskID, currentTime) => { // We calculate this fro
 }
 export const useDue = taskID => {
     const currentTaskRow = taskSelector?.(taskID) || { dueDate: new Date().toISOString() }
-    const userID = userIDSelector() || ''
     const childState = { isChecked: isStatusChecked(currentTaskRow?.status), dueDate: currentTaskRow?.dueDate }
-    const childServices = { onTimeChangeEvent: dueDate => dispatch(editDueThunkAPI({ userID, taskID, dueDate: formatISO(dueDate), currentTaskRow })) }
+    const childServices = { onTimeChangeEvent: dueDate => dispatch(editDueThunkAPI({ taskID, dueDate: formatISO(dueDate) })) }
     return { childState, childServices }
 }
 export const useWeight = taskID => {
     const currentTaskRow = taskSelector?.(taskID) || {}
-    const userID = userIDSelector() || ''
     const childState = { isChecked: isStatusChecked(currentTaskRow?.status), dueDate: currentTaskRow?.dueDate, weight: currentTaskRow?.weight }
-    const childServices = { onValueChangeEvent: weight => dispatch(editWeightThunkAPI({ userID, taskID, weight: parseFloat(weight), currentTaskRow })) }
+    const childServices = { onValueChangeEvent: weight => dispatch(editWeightThunkAPI({ taskID, weight: parseFloat(weight) })) }
     return { childState, childServices }
 }
 export const useThread = taskID => {
-    const currentTaskRow = taskSelector?.(taskID) || {}, userID = userIDSelector() || '', threadsAvailable = getAllThreadOptionsAvailable?.() || []
+    const currentTaskRow = taskSelector?.(taskID) || {}, threadsAvailable = getAllThreadOptionsAvailable?.() || []
     const childState = { options: threadsAvailable, defaultValue: currentTaskRow?.parentThread, }
-    const childServices = { onBlurEvent: newThread => dispatch(editThreadThunkAPI({ userID, taskID, newThread, currentTaskRow })), } // NOTE: onChangeEvent appears unnecessary
+    const childServices = { onBlurEvent: newThread => dispatch(editThreadThunkAPI({ taskID, newThread })), } // NOTE: onChangeEvent appears unnecessary
     return { childState, childServices }
 }
 // TODO: Implement useDependency correctly. needs: highlighting chain reaction, testing / revisions
 export const useDependency = taskID => {
     const currentTaskRow = taskSelector?.(taskID) || {}
     const { dependencies } = currentTaskRow
-    const tasks = properlyOrderedTasks?.() || [], userID = userIDSelector() || ''
+    const tasks = properlyOrderedTasks?.() || []
     const defaultValueRef = useRef(dependencies || []), defaultValue = defaultValueRef.current // use a ref to keep it constant always
     const options = useMemo(() => tasks?.filter(task => task?.id !== taskID)?.map(task => ({ value: task?.id, label: `${task?.task} (${task?.id})` })), [tasks])
     const childState = { defaultValue, options, }
-    const childServices = { onChangeEvent: (newDependencies, reason, details) => { dispatch(editDependenciesThunkAPI({ userID, taskID, newDependencies, currentTaskRow })) }, }
+    const childServices = { onChangeEvent: (newDependencies) => { dispatch(editDependenciesThunkAPI({ taskID, newDependencies })) }, }
     return { childState, childServices }
 }
 export const useTrash = taskID => {
