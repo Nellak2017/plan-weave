@@ -48,7 +48,13 @@ const tasks = createSlice({
             dependencies.forEach(dep => currentDeps.delete(dep))
             state[taskIndex].dependencies = Array.from(currentDeps)
         },
+        clearTaskDependencies: (state, action) => {
+            const { taskID } = action.payload || {}
+            const taskIndex = state.findIndex(task => task?.id === taskID)
+            if (taskIndex === -1) return
+            state[taskIndex].dependencies = []
+        }
     }
 })
-export const { updateTasks, addTask, deleteTask, deleteTasks, refreshTasks, updateTask, toggleSelectTask, clearSelectedTasks, updateTasksBatch, addTaskDependencies, deleteTaskDependencies } = tasks.actions
+export const { updateTasks, addTask, deleteTask, deleteTasks, refreshTasks, updateTask, toggleSelectTask, clearSelectedTasks, updateTasksBatch, addTaskDependencies, deleteTaskDependencies, clearTaskDependencies } = tasks.actions
 export default tasks.reducer

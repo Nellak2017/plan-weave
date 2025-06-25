@@ -1,4 +1,4 @@
-import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateTasks, refreshTasks, addTaskDependencies, deleteTaskDependencies } from './tasks.js'
+import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateTasks, refreshTasks, addTaskDependencies, deleteTaskDependencies, clearTaskDependencies } from './tasks.js'
 import { addManyDnD, addDnD, deleteMultipleDnD, deleteDnD } from '../../sessionContexts/dnd.js'
 import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
@@ -11,6 +11,7 @@ import {
     deleteTasksInSupabase as deleteTasksAPI,
     addTaskDependenciesInSupabase as addTaskDependenciesAPI,
     deleteTaskDependenciesInSupabase as deleteTaskDependenciesAPI,
+    clearTaskDependenciesInSupabase as clearTaskDependenciesAPI,
 } from '../../../Infra/Supabase/supabase_controller.js'
 
 const { lastCompleteTime, liveTimeStamp, liveTime, waste, efficiency } = FULL_TASK_FIELDS
@@ -91,13 +92,16 @@ export const deleteTaskDependencyAPI = ({ taskID, dependencies }) => dispatch =>
     deleteTaskDependenciesAPI({ taskID, dependencies })        // 1. DELETE to API using taskID and dependencies list
     dispatch(deleteTaskDependencies({ taskID, dependencies })) // 2. Local Redux update
 }
+export const clearTaskDependencyAPI = ({ taskID }) => dispatch => {
+    clearTaskDependenciesAPI({ taskID })                       // 1. POST to API using taskID
+    dispatch(clearTaskDependencies({ taskID }))                // 2. Local Redux update
+}
 export const editDependenciesThunkAPI = ({ taskID, reason, details }) => dispatch => {
     const dependencies = [details?.option?.value] // details?: { option?: { value, label }}
-    const possibleReasons = {
+    const possibleReasons = { // blur and createOption ignored
         'removeOption': () => dispatch(deleteTaskDependencyAPI({ taskID, dependencies })),
         'selectOption': () => dispatch(addTaskDependencyAPI({ taskID, dependencies })),
-        'clear': () => null, // TODO: add a clear dependency endpoint to simplify Front End code
-        // blur and createOption ignored
+        'clear': () => dispatch(clearTaskDependencyAPI({ taskID })),
     }
     possibleReasons?.[reason]?.() // call possible reasons or do nothing
 }

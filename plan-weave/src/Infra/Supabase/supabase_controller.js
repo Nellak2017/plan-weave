@@ -89,7 +89,6 @@ export const addTaskDependenciesInSupabase = async ({ taskID, dependencies }) =>
             .res(response => response?.ok ? response.json() : displayError('Add task dependency failed:', 'Could not add task dependencies')(response?.statusText))
             .catch(displayError('Failed to add task dependencies:', 'Server error while adding task dependencies'))
 }
-
 export const deleteTaskDependenciesInSupabase = async ({ taskID, dependencies }) => {
     const { data: { session }, error } = await supabase.auth.getSession()
     return error || !session
@@ -101,4 +100,14 @@ export const deleteTaskDependenciesInSupabase = async ({ taskID, dependencies })
             .delete()
             .res(response => response?.ok ? response.json() : displayError('Delete task dependency failed:', 'Could not delete task dependencies')(response?.statusText))
             .catch(displayError('Failed to delete task dependencies:', 'Server error while deleting task dependencies'))
+}
+export const clearTaskDependenciesInSupabase = async ({ taskID }) => {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    return error || !session
+        ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
+        : wretch(`${WEB_SERVER_URL}/tasks/clear_dependencies/`)
+            .auth(`Bearer ${session.access_token}`)
+            .post({ task_id: taskID })
+            .res(response => response?.ok ? response.json() : displayError('Clear task dependencies failed:', 'Could not clear task dependencies')(response?.statusText))
+            .catch(displayError('Failed to clear task dependencies:', 'Server error while clearing task dependencies'))
 }
