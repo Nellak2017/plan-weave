@@ -4,14 +4,15 @@ import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
 import { toggleTaskStatus, calculateLiveTime, calculateWaste, calculateEfficiency } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
-import { deleteTasks as deleteTasksAPI } from '../../../Infra/firebase/firebase_controller.js'
+// import { deleteTasks as deleteTasksAPI } from '../../../Infra/firebase/firebase_controller.js'
 import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
 import {
     addTaskToSupabase as addTaskAPI,
     updateTaskFieldInSupabase as updateTaskFieldAPI,
+    deleteTasksInSupabase as deleteTasksAPI,
 } from '../../../Infra/Supabase/supabase_controller.js'
 
-const { lastCompleteTime, task, parentThread, liveTimeStamp, liveTime, waste, efficiency, dependencies } = FULL_TASK_FIELDS
+const { lastCompleteTime, liveTimeStamp, liveTime, waste, efficiency } = FULL_TASK_FIELDS
 export const initialTaskUpdate = ({ taskList }) => dispatch => {
     dispatch(updateTasks(taskList))
     dispatch(addManyDnD(taskList.length))
@@ -26,6 +27,7 @@ export const addTaskThunkAPI = ({ prevTaskID }) => dispatch => {
     dispatch(setPrevLiveTaskID(prevTaskID))
 } // Reducer + Business Logic + Side-effects
 // TODO: Refactor 'updateTasksBatch' to have this signature instead: (taskID, {[field]: value}) which will match the API closer
+// TODO: Refactor the delete functions into one unifed function and use that instead OR do the general specific split as seen in the update functions
 export const completeTaskThunkAPI = ({ currentTaskRow, taskOrderPipeOptions, currentTime }) => dispatch => {
     const { id, status, } = currentTaskRow || {}
     // -- calculations on incoming task for batched update below
@@ -55,7 +57,7 @@ export const editDependenciesThunkAPI = ({ taskID, newDependencies }) => editTas
 export const deleteTasksThunkAPI = ({ taskInfos }) => dispatch => { // taskInfos => [{ index, id }]
     // Possibly some analytics collection stuff before deletion too..
     const IDs = taskInfos.map(info => info?.id), indices = taskInfos.map(info => info?.index)
-    deleteTasksAPI(IDs, userID) // 1. DELETE to API using list of taskIDs
+    deleteTasksAPI(IDs) // 1. DELETE to API using list of taskIDs
     dispatch(deleteTasks())
     dispatch(deleteMultipleDnD({ indices }))
     dispatch(setPrevLiveTaskID(0))
@@ -64,7 +66,7 @@ export const deleteTasksThunkAPI = ({ taskInfos }) => dispatch => { // taskInfos
 export const deleteTaskThunkAPI = ({ taskInfo }) => dispatch => { // taskInfo => { index, id }
     // Possibly some analytics collection stuff before deletion too..
     const ID = taskInfo?.id, index = taskInfo?.index
-    deleteTasksAPI(ID, userID) // 1. DELETE to API using taskID and userID
+    deleteTasksAPI([ID]) // 1. DELETE to API using taskID and userID
     dispatch(deleteTask({ taskID: ID }))
     dispatch(deleteDnD({ index }))
     dispatch(setPrevLiveTaskID(0))

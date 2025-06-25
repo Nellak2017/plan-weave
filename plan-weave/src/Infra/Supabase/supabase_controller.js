@@ -29,6 +29,7 @@ const defaultTaskSerializeList = taskList => taskList.map(defaultTaskSerialize)
 const defaultTaskDeserializeList = taskList => taskList.map(defaultTaskDeserialize)
 const displayError = (consoleErrorMessage = 'Failed to fetch tasks:', toastError = 'Failed to fetch tasks') => consoleError => { console.error(consoleErrorMessage, consoleError); toast.error(toastError); }
 
+// TODO: When a runtime error is thrown, it crashes the app, figure out how to make an error boundary for them
 export const fetchTasksFromSupabase = async (serialize = defaultTaskSerializeList) => {
     const { data: { session }, error } = await supabase.auth.getSession()
     return (error || !session)
@@ -65,4 +66,16 @@ export const updateTaskFieldInSupabase = async ({ taskID, field, value }) => {
             .patch({ task_id: taskID, field, value, })
             .res(response => response?.ok ? response.json() : displayError('Update task field failed:', 'Failed to update field')(response?.statusText))
             .catch(displayError('Failed to patch task field:', 'Failed to update task field'))
+}
+export const deleteTasksInSupabase = async (taskIDs = []) => {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    return error || !session
+        ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
+        : wretch(`${WEB_SERVER_URL}/tasks/`)
+            .auth(`Bearer ${session.access_token}`)
+            .headers({ 'Content-Type': 'application/json' })
+            .body(JSON.stringify(taskIDs))
+            .delete()
+            .res(response => response?.ok ? response.json() : displayError('Delete task(s) failed:', 'Could not delete selected tasks')(response?.statusText))
+            .catch(displayError('Failed to delete task(s):', 'Server error while deleting tasks'))
 }
