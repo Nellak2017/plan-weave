@@ -100,12 +100,12 @@ func (s *TaskService) UpdateTaskField(ctx context.Context, userID uuid.UUID, tas
 				return q.UpdateTaskTTC(ctx, db.UpdateTaskTTCParams{Ttc: f, UserID: userID, ID: taskID})
 			})
 		},
-		"live_time": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
+		"liveTime": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
 			return parseFloatAndCall(value, func(f float64) (int64, error) {
 				return q.UpdateTaskLiveTime(ctx, db.UpdateTaskLiveTimeParams{LiveTime: f, UserID: userID, ID: taskID})
 			})
 		},
-		"due_date": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
+		"dueDate": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
 			return parseTimeAndCall(value, func(t time.Time) (int64, error) {
 				return q.UpdateTaskDueDate(ctx, db.UpdateTaskDueDateParams{DueDate: t, UserID: userID, ID: taskID})
 			})
@@ -115,7 +115,7 @@ func (s *TaskService) UpdateTaskField(ctx context.Context, userID uuid.UUID, tas
 				return q.UpdateTaskEfficiency(ctx, db.UpdateTaskEfficiencyParams{Efficiency: f, UserID: userID, ID: taskID})
 			})
 		},
-		"parent_thread": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
+		"parentThread": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
 			return q.UpdateTaskParentThread(ctx, db.UpdateTaskParentThreadParams{ParentThread: value, UserID: userID, ID: taskID})
 		},
 		"waste": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
@@ -136,22 +136,22 @@ func (s *TaskService) UpdateTaskField(ctx context.Context, userID uuid.UUID, tas
 		"status": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
 			return q.UpdateTaskStatus(ctx, db.UpdateTaskStatusParams{Status: value, UserID: userID, ID: taskID})
 		},
-		"live_time_stamp": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
+		"liveTimeStamp": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
 			return parseNullTimeAndCall(value, func(t sql.NullTime) (int64, error) {
 				return q.UpdateTaskLiveTimeStamp(ctx, db.UpdateTaskLiveTimeStampParams{LiveTimeStamp: t, UserID: userID, ID: taskID})
 			})
 		},
-		"last_complete_time": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
+		"lastCompleteTime": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
 			return parseTimeAndCall(value, func(t time.Time) (int64, error) {
 				return q.UpdateTaskLastCompleteTime(ctx, db.UpdateTaskLastCompleteTimeParams{LastCompleteTime: t, UserID: userID, ID: taskID})
 			})
 		},
-		"last_incomplete_time": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
+		"lastIncompleteTime": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
 			return parseTimeAndCall(value, func(t time.Time) (int64, error) {
 				return q.UpdateTaskLastIncompleteTime(ctx, db.UpdateTaskLastIncompleteTimeParams{LastIncompleteTime: t, UserID: userID, ID: taskID})
 			})
 		},
-		"is_live": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
+		"isLive": func(ctx context.Context, userID uuid.UUID, taskID int64, value string) (int64, error) {
 			return parseBoolAndCall(value, func(b bool) (int64, error) {
 				return q.UpdateTaskIsLive(ctx, db.UpdateTaskIsLiveParams{IsLive: b, UserID: userID, ID: taskID})
 			})

@@ -1,4 +1,4 @@
-import { MdDragIndicator } from 'react-icons/md'
+import { MdDragIndicator, MdPlayArrow, MdPause } from 'react-icons/md'
 import { styled } from '@mui/system'
 
 const commonOverlayStyles = { content: "''", position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', zIndex: '1', pointerEvents: 'none', }
@@ -12,6 +12,8 @@ export const TaskRowStyled = styled('tr')(({ theme, status, highlight }) => ({
 	td: { display: 'table-cell', verticalAlign: 'middle', svg: { verticalAlign: 'middle' }, }
 }))
 export const DragIndicator = styled(MdDragIndicator)(({ theme }) => ({ '&:hover': { cursor: 'grab!important', color: theme.palette.primary.main, } }))
+export const PlayButton = styled(MdPlayArrow)(({ theme }) => ({ '&:hover': { cursor: 'pointer!important', color: theme.palette.primary.main, } }))
+export const PauseButton = styled(MdPause)(({ theme }) => ({ '&:hover': { cursor: 'pointer!important', color: theme.palette.primary.main, } }))
 // Containers
 export const TaskContainer = styled('td')(({ theme }) => ({
 	width: '375px', padding: theme.spacing(2),

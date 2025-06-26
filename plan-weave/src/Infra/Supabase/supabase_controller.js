@@ -63,7 +63,7 @@ export const updateTaskFieldInSupabase = async ({ taskID, field, value }) => {
         ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
         : wretch(`${WEB_SERVER_URL}/tasks/`)
             .auth(`Bearer ${session.access_token}`)
-            .patch({ task_id: taskID, field, value, })
+            .patch({ task_id: taskID, field, value: JSON.stringify(value), })
             .res(response => response?.ok ? response.json() : displayError('Update task field failed:', 'Failed to update field')(response?.statusText))
             .catch(displayError('Failed to patch task field:', 'Failed to update task field'))
 }

@@ -21,10 +21,10 @@ export const OPTION_NOTIFICATIONS = {
 	'': () => toast?.info('Default Sorting applied. Tasks now appear as they do in the database.'),
 }
 export const DEFAULT_SIMPLE_TASKS = [
-	{ status: 'completed', task: 'Example Task 1', waste: 2, ttc: 5, eta: '15:30', id: 1 },
-	{ status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: '18:30', id: 2 },
-	{ status: 'waiting', waste: 2, ttc: 5, eta: '23:30', id: 3 },
-	{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: '01:30', id: 4 },
+	{ status: 'completed', task: 'Example Task 1', waste: 2, ttc: 5, eta: new Date(new Date().setHours(15, 30, 0, 0)).toISOString(), id: 1 },
+	{ status: 'incomplete', task: 'Example Task 2', waste: 1, ttc: 2, eta: new Date(new Date().setHours(18, 30, 0, 0)).toISOString(), id: 2 },
+	{ status: 'waiting', waste: 2, ttc: 5, eta: new Date(new Date().setHours(23, 30, 0, 0)).toISOString(), id: 3 },
+	{ status: 'inconsistent', task: 'Example Task 2', waste: 1, ttc: 2, eta: new Date(new Date().setHours(1, 30, 0, 0)).toISOString(), id: 4 },
 ]
 export const DEFAULT_SIMPLE_TASK = {
 	id: new Date().getTime(), // guarantees unique ids down to the millisecond! IF and ONLY IF you do this logic in the caller as well!
@@ -55,6 +55,8 @@ export const DEFAULT_TASK_CONTROL_TOOL_TIPS = {
 }
 export const TASK_ROW_TOOLTIPS = {
 	dndTooltip: 'Drag-n-Drop tasks to change view',
+	playTooltip: 'Press Play to start time accumulation for this task',
+	pauseTooltip: 'Press Pause to stop time accumulation for this task',
 	completedTooltip: 'Mark Incomplete',
 	incompleteTooltip: 'Mark Complete',
 	taskTooltip: 'Task Name',
@@ -77,7 +79,7 @@ export const PAGINATION_OPTIONS = [10, 20]
 export const PAGINATION_PICKER_TEXT = 'Tasks per page'
 export const TASK_EDITOR_WIDTH = 818
 export const FULL_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA', 'Eff.%', 'Due', 'Weight', 'Thread', 'Predecessors', 'Task ID']
-export const RENDER_NUMBERS = { SIMPLE_TASK: 6, FULL_TASK: 12 }
+export const RENDER_NUMBERS = { SIMPLE_TASK: 7, FULL_TASK: 13 }
 export const MULTIPLE_DELETE_MODAL_TOAST_CONFIG = { position: 'top-center', autoClose: false, closeOnClick: false, closeButton: false, draggable: false, }
 export const TASK_NAME_MAX_LENGTH = 100
 export const ICON_SIZE = 36

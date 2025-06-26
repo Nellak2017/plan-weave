@@ -32,6 +32,27 @@ export const addTaskThunkAPI = ({ prevTaskID }) => dispatch => {
 } // Reducer + Business Logic + Side-effects
 // TODO: Refactor 'updateTasksBatch' to have this signature instead: (taskID, {[field]: value}) which will match the API closer
 // TODO: Refactor the delete functions into one unifed function and use that instead OR do the general specific split as seen in the update functions
+export const playPauseTaskThunkAPI = ({ taskID, isLive, previousLiveTime, liveTimeStamp }) =>  dispatch => {
+    // const newLiveTime = previousLiveTime + (new Date() - liveTimeStamp) // convert to real code
+    // const updateFields = play -> paused ? [{ taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive }, { taskID, field: FULL_TASK_FIELDS.liveTimeStamp, value: newLiveTime },] : [{ taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive }]
+    updateTaskFieldAPI({ taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive })
+    // if play -> paused then do this batch update
+    // else do a solo update to only update one field
+    dispatch(updateTasksBatch([
+        { taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive },
+        // { taskID, field: FULL_TASK_FIELDS.liveTimeStamp, value: newLiveTime },
+        // TODO: liveTimeStamp trick
+    ]))
+    /* 
+      liveTimeStamp trick:
+      # Calculate these values at the Thunk time, not continuously
+
+      liveTime = previous liveTime + (now - liveTimeStamp) # The continuous version of the isLive state will be addressed later
+      if Play -> Paused:
+        liveTimeStamp = now
+    */
+}
+
 export const completeTaskThunkAPI = ({ currentTaskRow, taskOrderPipeOptions, currentTime }) => dispatch => {
     const { id, status, } = currentTaskRow || {}
     // -- calculations on incoming task for batched update below
@@ -75,6 +96,13 @@ export const deleteTaskThunkAPI = ({ taskInfo }) => dispatch => { // taskInfo =>
     dispatch(setPrevLiveTaskID(0))
 }
 // TODO: Make refreshTaskThunkAPI
+/* 
+export const refreshAllTasksThunkAPI = ({ isOwl, taskID }) => dispatch => {
+    refreshTaskAPI({ taskID })                                // 1. POST to API 
+    dispatch(refreshTimePickers({ isOwl }))                   // 2. Local Redux updates
+    dispatch(refreshTask({ taskID }))                         // TODO: create this reducer
+}
+*/
 export const refreshAllTasksThunkAPI = ({ isOwl }) => dispatch => {
     refreshAllTasksAPI()                                      // 1. POST to API 
     dispatch(refreshTimePickers({ isOwl }))                   // 2. Local Redux updates

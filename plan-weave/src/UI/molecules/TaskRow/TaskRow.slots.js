@@ -1,6 +1,6 @@
 import { MdOutlineCheckBox, MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
 import { TASK_ROW_TOOLTIPS, TASK_STATUSES, ICON_SIZE } from "../../../Core/utils/constants"
-import { DragContainer, DragIndicator, IconContainer, TaskContainer, WasteContainer, TimeContainer, EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer, TrashContainer, } from "./TaskRow.elements"
+import { DragContainer, DragIndicator, PlayButton, PauseButton, IconContainer, TaskContainer, WasteContainer, TimeContainer, EfficiencyContainer, DueContainer, WeightContainer, ThreadContainer, DependencyContainer, TrashContainer, } from "./TaskRow.elements"
 import { TaskInput } from "../../atoms/TaskInput/TaskInput"
 import HoursInput, { HoursInputPositiveFloat } from '../../atoms/HoursInput/HoursInput.js'
 import { parseISO, format } from "date-fns"
@@ -8,14 +8,24 @@ import { formatWaste, formatEta, formatEfficiency, formatDate, formatTTC } from 
 import DateTimePickerWrapper from "../../atoms/DateTimePickerWrapper/DateTimePickerWrapper.js"
 import OptionPicker from "../../atoms/OptionPicker/OptionPicker.js"
 import { BiTrash } from "react-icons/bi"
-import { useCompleteIcon, useTaskInputContainer, useWaste, useTtc, useEta, useEfficiency, useDue, useWeight, useThread, useDependency, useTrash } from '../../../Application/hooks/TaskRow/useTaskRow.js'
-const { dndTooltip, completedTooltip, incompleteTooltip, taskTooltip, wasteTooltip, ttcTooltip, etaTooltip, efficencyToolTip, dueToolTip, weightToolTip, threadToolTip, dependencyToolTip, deleteTooltip } = TASK_ROW_TOOLTIPS
+import { useCompleteIcon, usePlayPause, useTaskInputContainer, useWaste, useTtc, useEta, useEfficiency, useDue, useWeight, useThread, useDependency, useTrash } from '../../../Application/hooks/TaskRow/useTaskRow.js'
+const { dndTooltip, playTooltip, pauseTooltip, completedTooltip, incompleteTooltip, taskTooltip, wasteTooltip, ttcTooltip, etaTooltip, efficencyToolTip, dueToolTip, weightToolTip, threadToolTip, dependencyToolTip, deleteTooltip } = TASK_ROW_TOOLTIPS
 
 export const Drag = ({ provided }) => (
     <DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''} >
         <DragIndicator size={ICON_SIZE} />
     </DragContainer>
 )
+export const PlayPause = ({ taskID, customHook = usePlayPause }) => {
+    const { isLive, handlePlayPauseClicked } = customHook?.(taskID) || {}
+    return (
+        <IconContainer title={isLive ? pauseTooltip : playTooltip}>
+            {isLive
+                ? <PauseButton size={ICON_SIZE} onClick={handlePlayPauseClicked} />
+                : <PlayButton size={ICON_SIZE} onClick={handlePlayPauseClicked} />}
+        </IconContainer>
+    )
+}
 export const CompleteIcon = ({ taskID, currentTime, customHook = useCompleteIcon }) => {
     const { isChecked, handleCheckBoxClicked } = customHook?.(taskID, currentTime) || {}
     return (

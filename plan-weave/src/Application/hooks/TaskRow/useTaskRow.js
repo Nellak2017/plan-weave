@@ -2,7 +2,7 @@ import { useMemo, useEffect, useRef } from 'react'
 import store from '../../store.js'
 import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency, indexOfTaskToBeDeleted } from '../../../Core/utils/helpers.js'
-import { completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI } from '../../thunks.js'
+import { playPauseTaskThunkAPI, completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
@@ -21,6 +21,12 @@ export const useTaskRow = taskID => {
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
     const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, timeRange: timeRangeStartEnd })), [timeRangeStartEnd, isChecked, isHighlighting, eta])
     return { status, highlight }
+}
+export const usePlayPause = (taskID) => {
+    // TODO: make a selector for liveTime that calculates it nearly continuously for use in calculations with eta
+    const isLive = taskSelector(taskID)?.isLive
+    const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ taskID, isLive })) }
+    return { isLive, handlePlayPauseClicked }
 }
 export const useCompleteIcon = (taskID, currentTime) => {
     const userID = userIDSelector(), currentTaskRow = taskSelector(taskID)
