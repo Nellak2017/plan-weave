@@ -26,6 +26,20 @@ const tasks = createSlice({
                 if (taskIndex !== -1) state[taskIndex][field] = value
             })
         }, // Update tasks in batch
+        refreshTask: (state, action) => {
+            const lastCompleteTime = new Date().toISOString()
+            const { taskID } = action?.payload || {}
+            const taskIndex = state?.findIndex(task => task?.id === taskID)
+            if (taskIndex !== -1) state[taskIndex] = {
+                ...state[taskIndex],
+                liveTime: 0,
+                status: TASK_STATUSES.INCOMPLETE,
+                lastCompleteTime,
+                lastIncompleteTime: lastCompleteTime,
+                isLive: false,
+                eta: dateToToday(state[taskIndex]?.eta || new Date().toISOString())
+            }
+        },
         refreshTasks: state => {
             const lastCompleteTime = new Date().toISOString()
             return state?.map(task => ({
@@ -68,5 +82,5 @@ const tasks = createSlice({
         }
     }
 })
-export const { updateTasks, addTask, deleteTask, deleteTasks, refreshTasks, updateTask, toggleSelectTask, clearSelectedTasks, updateTasksBatch, addTaskDependencies, deleteTaskDependencies, clearTaskDependencies } = tasks.actions
+export const { updateTasks, addTask, deleteTask, deleteTasks, refreshTask, refreshTasks, updateTask, toggleSelectTask, clearSelectedTasks, updateTasksBatch, addTaskDependencies, deleteTaskDependencies, clearTaskDependencies } = tasks.actions
 export default tasks.reducer

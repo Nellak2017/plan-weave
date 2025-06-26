@@ -3,7 +3,7 @@ import { useTaskRow } from '../../../Application/hooks/TaskRow/useTaskRow'
 import { TASK_EDITOR_WIDTH } from '../../../Core/utils/constants.js'
 import { getTaskRowDnDStyle } from '../../../Core/utils/helpers.js'
 import { TaskRowStyled } from './TaskRow.elements'
-import { Drag, PlayPause, CompleteIcon, TaskInputContainer, Waste, Ttc, Eta, Efficiency, Due, Weight, Thread, Dependency, TaskID, Trash } from './TaskRow.slots'
+import { Drag, PlayPause, CompleteIcon, TaskInputContainer, Waste, Ttc, Eta, Efficiency, Due, Weight, Thread, Dependency, TaskID, Refresh, Trash } from './TaskRow.slots'
 
 export const TaskRow = ({ renderNumber, children }) => <>{React.Children.toArray(children).slice(0, renderNumber || React.Children.toArray(children).length)}</> // Renders slice of children, and if no range provided it renders all children
 
@@ -29,6 +29,7 @@ export const TaskRowDefault = ({ state: { renderNumber, provided, taskID, curren
                 <Thread taskID={taskID} />
                 <Dependency taskID={taskID} />
                 <TaskID taskID={taskID} />
+                <Refresh taskID={taskID} />
             </TaskRow>
             <Trash taskID={taskID} />
         </TaskRowStyled>

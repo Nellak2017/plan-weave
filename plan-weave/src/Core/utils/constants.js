@@ -68,7 +68,8 @@ export const TASK_ROW_TOOLTIPS = {
 	dueTooltip: 'Task Due Date',
 	weightTooltip: 'Task Weight/Importance',
 	threadTooltip: 'Task Thread/Group',
-	dependenciesTooltip: 'Task Predecessors. What needs to be done Before this?'
+	dependenciesTooltip: 'Task Predecessors. What needs to be done Before this?',
+	refreshTooltip: 'Press Refresh to refresh this task', 
 }
 export const TASK_CONTROL_TITLES = { startButton: 'Enter Start Time', endButton: 'Enter End Time', }
 export const TASKEDITOR_SEARCH_PLACEHOLDER = 'Search for a Task'
@@ -79,7 +80,7 @@ export const PAGINATION_OPTIONS = [10, 20]
 export const PAGINATION_PICKER_TEXT = 'Tasks per page'
 export const TASK_EDITOR_WIDTH = 818
 export const FULL_TASK_HEADERS = ['Task', 'Waste', 'TTC', 'ETA', 'Eff.%', 'Due', 'Weight', 'Thread', 'Predecessors', 'Task ID']
-export const RENDER_NUMBERS = { SIMPLE_TASK: 7, FULL_TASK: 13 }
+export const RENDER_NUMBERS = { SIMPLE_TASK: 7, FULL_TASK: 14 }
 export const MULTIPLE_DELETE_MODAL_TOAST_CONFIG = { position: 'top-center', autoClose: false, closeOnClick: false, closeButton: false, draggable: false, }
 export const TASK_NAME_MAX_LENGTH = 100
 export const ICON_SIZE = 36

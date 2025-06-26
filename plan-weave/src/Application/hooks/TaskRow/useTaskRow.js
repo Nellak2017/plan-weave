@@ -2,7 +2,7 @@ import { useMemo, useEffect, useRef } from 'react'
 import store from '../../store.js'
 import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency, indexOfTaskToBeDeleted } from '../../../Core/utils/helpers.js'
-import { playPauseTaskThunkAPI, completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI } from '../../thunks.js'
+import { playPauseTaskThunkAPI, completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
@@ -107,6 +107,11 @@ export const useDependency = taskID => {
     const childState = { defaultValue, options, }
     const childServices = { onChangeEvent: (reason, details) => dispatch(editDependenciesThunkAPI({ taskID, reason, details })), }
     return { childState, childServices }
+}
+export const useRefresh = (taskID) => {
+    const isOwl = taskSelector?.(taskID)?.isOwl
+    const handleRefreshClicked = () => { dispatch(refreshTaskThunkAPI({ taskID, isOwl })) }
+    return { handleRefreshClicked }
 }
 export const useTrash = taskID => {
     const userID = userIDSelector() || '', dnd = dndSelector() || [], tasks = properlyOrderedTasks?.() || []

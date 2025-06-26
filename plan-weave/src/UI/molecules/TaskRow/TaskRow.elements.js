@@ -1,4 +1,5 @@
 import { MdDragIndicator, MdPlayArrow, MdPause } from 'react-icons/md'
+import { BiRecycle } from 'react-icons/bi'
 import { styled } from '@mui/system'
 
 const commonOverlayStyles = { content: "''", position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', zIndex: '1', pointerEvents: 'none', }
@@ -14,6 +15,7 @@ export const TaskRowStyled = styled('tr')(({ theme, status, highlight }) => ({
 export const DragIndicator = styled(MdDragIndicator)(({ theme }) => ({ '&:hover': { cursor: 'grab!important', color: theme.palette.primary.main, } }))
 export const PlayButton = styled(MdPlayArrow)(({ theme }) => ({ '&:hover': { cursor: 'pointer!important', color: theme.palette.primary.main, } }))
 export const PauseButton = styled(MdPause)(({ theme }) => ({ '&:hover': { cursor: 'pointer!important', color: theme.palette.primary.main, } }))
+export const RefreshButton = styled(BiRecycle)(({ theme }) => ({ '&:hover': { cursor: 'pointer!important', color: theme.palette.primary.main, } }))
 // Containers
 export const TaskContainer = styled('td')(({ theme }) => ({
 	width: '375px', padding: theme.spacing(2),

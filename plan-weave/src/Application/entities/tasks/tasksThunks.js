@@ -1,4 +1,4 @@
-import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateTasks, refreshTasks, addTaskDependencies, deleteTaskDependencies, clearTaskDependencies } from './tasks.js'
+import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateTasks, refreshTask, refreshTasks, addTaskDependencies, deleteTaskDependencies, clearTaskDependencies } from './tasks.js'
 import { addManyDnD, addDnD, deleteMultipleDnD, deleteDnD } from '../../sessionContexts/dnd.js'
 import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
@@ -95,14 +95,11 @@ export const deleteTaskThunkAPI = ({ taskInfo }) => dispatch => { // taskInfo =>
     dispatch(deleteDnD({ index }))
     dispatch(setPrevLiveTaskID(0))
 }
-// TODO: Make refreshTaskThunkAPI
-/* 
-export const refreshAllTasksThunkAPI = ({ isOwl, taskID }) => dispatch => {
+export const refreshTaskThunkAPI = ({ isOwl, taskID }) => dispatch => {
     refreshTaskAPI({ taskID })                                // 1. POST to API 
     dispatch(refreshTimePickers({ isOwl }))                   // 2. Local Redux updates
-    dispatch(refreshTask({ taskID }))                         // TODO: create this reducer
+    dispatch(refreshTask({ taskID }))                         
 }
-*/
 export const refreshAllTasksThunkAPI = ({ isOwl }) => dispatch => {
     refreshAllTasksAPI()                                      // 1. POST to API 
     dispatch(refreshTimePickers({ isOwl }))                   // 2. Local Redux updates
