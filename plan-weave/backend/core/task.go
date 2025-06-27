@@ -36,7 +36,7 @@ type Task struct {
 	Eta           ISOTime    // Projected completion
 	Weight        Weight
 	Status        TaskStatus // Enum: Statically determined
-	LiveTimeStamp ISOTime    // ISO // TODO: Remove?
+	LiveTimeStamp ISOTime    // ISO
 
 	LastCompleteTime   ISOTime // default = today
 	LastIncompleteTime ISOTime // default = today

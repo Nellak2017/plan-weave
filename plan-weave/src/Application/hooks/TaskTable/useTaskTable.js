@@ -28,11 +28,11 @@ export const useTaskTableDefault = (currentTime) => {
         const liveTime = computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime, liveTimeStamp: currentTaskRow?.liveTimeStamp, currentTime })
         const waste = computeUpdatedWaste({ liveTime, ttc }), efficiency = computeUpdatedEfficiency({ liveTime, ttc })
         if (prevLiveTaskID && currentTaskRow?.status !== TASK_STATUSES.COMPLETED) { // To prevent double completed updates since completed thunk takes care of it, preventing edge cases with useEffect
-            dispatch(updateTasksBatch([
-                { taskID: prevLiveTaskID, field: 'liveTime', value: liveTime },
-                { taskID: prevLiveTaskID, field: 'waste', value: waste },
-                { taskID: prevLiveTaskID, field: 'efficiency', value: efficiency },
-            ]))
+            // dispatch(updateTasksBatch([
+            //     { taskID: prevLiveTaskID, field: 'liveTime', value: liveTime },
+            //     { taskID: prevLiveTaskID, field: 'waste', value: waste },
+            //     { taskID: prevLiveTaskID, field: 'efficiency', value: efficiency },
+            // ]))
         }
     }, [prevLiveTaskID])
     return {

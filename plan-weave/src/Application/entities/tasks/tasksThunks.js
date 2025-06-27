@@ -32,17 +32,22 @@ export const addTaskThunkAPI = ({ prevTaskID }) => dispatch => {
 } // Reducer + Business Logic + Side-effects
 // TODO: Refactor 'updateTasksBatch' to have this signature instead: (taskID, {[field]: value}) which will match the API closer
 // TODO: Refactor the delete functions into one unifed function and use that instead OR do the general specific split as seen in the update functions
-export const playPauseTaskThunkAPI = ({ taskID, isLive, previousLiveTime, liveTimeStamp }) =>  dispatch => {
+export const playPauseTaskThunkAPI = ({ taskID, isLive, previousLiveTime, liveTimeStamp }) => dispatch => {
+    const elapsed = isLive
+        ? new Date().getTime() - new Date(liveTimeStamp).getTime()
+        : 0
+    const newLiveTime = isLive
+        ? previousLiveTime + elapsed / 1000 // convert to millis
+        : previousLiveTime // no acc if resuming
+    const updates = isLive
+        ? [{ taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive }, { taskID, field: FULL_TASK_FIELDS.liveTimeStamp, value: nowISOString }, { taskID, field: FULL_TASK_FIELDS.liveTime, value: newLiveTime, }]
+        : [{ taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive }, { taskID, field: FULL_TASK_FIELDS.liveTimeStamp, value: nowISOString },]
+    updateTaskFieldAPI({ taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive }) // TODO: We need to update the same fields as batch in the api, soo we must make batch match the shape of the api for convienience.
+    //dispatch(updateTasksBatch(updates))
     // const newLiveTime = previousLiveTime + (new Date() - liveTimeStamp) // convert to real code
     // const updateFields = play -> paused ? [{ taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive }, { taskID, field: FULL_TASK_FIELDS.liveTimeStamp, value: newLiveTime },] : [{ taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive }]
-    updateTaskFieldAPI({ taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive })
     // if play -> paused then do this batch update
     // else do a solo update to only update one field
-    dispatch(updateTasksBatch([
-        { taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive },
-        // { taskID, field: FULL_TASK_FIELDS.liveTimeStamp, value: newLiveTime },
-        // TODO: liveTimeStamp trick
-    ]))
     /* 
       liveTimeStamp trick:
       # Calculate these values at the Thunk time, not continuously
@@ -56,16 +61,19 @@ export const playPauseTaskThunkAPI = ({ taskID, isLive, previousLiveTime, liveTi
 export const completeTaskThunkAPI = ({ currentTaskRow, taskOrderPipeOptions, currentTime }) => dispatch => {
     const { id, status, } = currentTaskRow || {}
     // -- calculations on incoming task for batched update below
-    updateTaskFieldAPI({ taskID: id, field: FULL_TASK_FIELDS.COMPLETED, value: TASK_STATUSES.COMPLETED }) // 1. PUT to API
-    dispatch(updateTasksBatch([
-        { taskID: id, field: FULL_TASK_FIELDS.status, value: toggleTaskStatus(status) },
-        { taskID: id, field: lastCompleteTime, value: new Date().getTime() / 1000 },
-        { taskID: id, field: liveTimeStamp, value: new Date().toISOString() },
-        { taskID: id, field: liveTime, value: calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) },
-        { taskID: id, field: waste, value: calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime) },
-        { taskID: id, field: efficiency, value: calculateEfficiency(currentTaskRow, taskOrderPipeOptions, currentTime) },
-        // NOTE: liveTime, waste, efficiency, and eta are NOT controlled by the useEffects in TaskTable hook. Otherwise it will lead to double update bugs! 
-    ]))
+    // updateTaskFieldAPI({ taskID: id, field: FULL_TASK_FIELDS.COMPLETED, value: TASK_STATUSES.COMPLETED }) // 1. PUT to API
+    dispatch(updateTasksBatch({
+        taskID: id, updates: {
+            [FULL_TASK_FIELDS.status]: toggleTaskStatus(status),
+            [FULL_TASK_FIELDS.lastCompleteTime]: new Date().toISOString(),
+
+            [FULL_TASK_FIELDS.liveTimeStamp]: new Date().toISOString(),
+            [FULL_TASK_FIELDS.liveTime]: calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime),
+            [FULL_TASK_FIELDS.waste]: calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime),
+            [FULL_TASK_FIELDS.efficiency]: calculateEfficiency(currentTaskRow, taskOrderPipeOptions, currentTime),
+            // NOTE: liveTime, waste, efficiency, and eta are NOT controlled by the useEffects in TaskTable hook. Otherwise it will lead to double update bugs! 
+        }
+    }))
     if (status === TASK_STATUSES.INCOMPLETE) { dispatch(setPrevLiveTaskID(id)) } // prevLiveTaskID = skip if (complete->incomplete) else id
     // dispatch(completeTaskDnD(...)) // 4. Update the dnd config 
 } // Reducer + Business Logic + Side-effects
@@ -98,7 +106,7 @@ export const deleteTaskThunkAPI = ({ taskInfo }) => dispatch => { // taskInfo =>
 export const refreshTaskThunkAPI = ({ isOwl, taskID }) => dispatch => {
     refreshTaskAPI({ taskID })                                // 1. POST to API 
     dispatch(refreshTimePickers({ isOwl }))                   // 2. Local Redux updates
-    dispatch(refreshTask({ taskID }))                         
+    dispatch(refreshTask({ taskID }))
 }
 export const refreshAllTasksThunkAPI = ({ isOwl }) => dispatch => {
     refreshAllTasksAPI()                                      // 1. POST to API 
