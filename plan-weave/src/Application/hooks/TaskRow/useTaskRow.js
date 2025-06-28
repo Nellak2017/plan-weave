@@ -2,12 +2,13 @@ import { useMemo, useEffect, useRef } from 'react'
 import store from '../../store.js'
 import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency, indexOfTaskToBeDeleted } from '../../../Core/utils/helpers.js'
-import { playPauseTaskThunkAPI, completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
+import { playPauseTaskThunkAPI, completeTaskThunkAPI, updateDerivedThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, editLiveTimeStampAPI, editLiveTimeAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import { handleMaxZero, handleMinOne } from '../../finiteStateMachines/MultipleDeleteButton.fsm.js'
-import { EFFICIENCY_RANGE } from '../../../Core/utils/constants.js'
+import { EFFICIENCY_RANGE, TASK_STATUSES } from '../../../Core/utils/constants.js'
+import { useChangeEffect } from '../Helpers/useChangeEffect.js'
 
 // TODO: Test all more deeply, they appear done with few minor exceptions like last 3, api, correction of read only
 const dispatch = store.dispatch
@@ -24,19 +25,32 @@ export const useTaskRow = taskID => {
 }
 export const usePlayPause = (taskID) => {
     // TODO: make a selector for liveTime that calculates it nearly continuously for use in calculations with eta
-    const isLive = taskSelector(taskID)?.isLive
-    const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ taskID, isLive })) }
+    const currentTaskRow = taskSelector(taskID) || {}, { isLive } = currentTaskRow
+    const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ currentTaskRow })) }
+    // --- Play/Pause many-to-one State Updates
+    useChangeEffect(() => {
+        const pausing = currentTaskRow?.isLive && currentTaskRow?.status !== TASK_STATUSES.COMPLETED
+        if (pausing) { dispatch(editLiveTimeStampAPI({ taskID, liveTimeStamp: new Date().toISOString() })) }
+        else {
+            const deltaHours = (Date.now() - new Date(currentTaskRow?.liveTimeStamp).getTime()) / (1000 * 60 * 60)
+            const liveTime = (currentTaskRow?.liveTime ?? 0) + deltaHours
+            dispatch(editLiveTimeAPI({ taskID, liveTime }))
+        }
+    }, [currentTaskRow?.status, currentTaskRow?.isLive])
     return { isLive, handlePlayPauseClicked }
 }
 export const useCompleteIcon = (taskID, currentTime) => {
     const userID = userIDSelector(), currentTaskRow = taskSelector(taskID)
     const pipelineOptions = taskOrderPipeOptions(), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector()
     const isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected(), fsmState = fsmControlledState()
+    // --- Choose / Chosen Many-To-One State Updates (Many ways to get atleast one task selected, One way to update state)
     useEffect(() => {
-        isAtleastOneTaskSelectedForDeletion
-            ? handleMinOne(setMultiDeleteFSMState, fsmState)
-            : handleMaxZero(setMultiDeleteFSMState, fsmState)
-    }, [isAtleastOneTaskSelectedForDeletion, fsmState]) // NOTE: This useEffect is used to get us in or out of the choose or chosen state. It wasn't possible in the click function to my knowledge
+        isAtleastOneTaskSelectedForDeletion ? handleMinOne(setMultiDeleteFSMState, fsmState) : handleMaxZero(setMultiDeleteFSMState, fsmState)
+    }, [isAtleastOneTaskSelectedForDeletion, fsmState])
+    // --- Complete/Incomplete Many-To-One State Updates
+    useChangeEffect(() => {
+        dispatch(updateDerivedThunkAPI({ currentTaskRow, taskOrderPipeOptions: pipelineOptions, currentTime }))
+    }, [currentTaskRow?.status, currentTaskRow?.isLive])
     return {
         isChecked,
         handleCheckBoxClicked: () => {

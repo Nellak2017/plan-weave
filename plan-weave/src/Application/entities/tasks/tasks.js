@@ -20,13 +20,10 @@ const tasks = createSlice({
             if (taskIndex !== -1) state[taskIndex][field] = value // Edit a task by ID and field
         },
         updateTasksBatch: (state, action) => {
-            const { taskID, updates } = action.payload || {}
-            const taskIndex = state?.findIndex(task => task?.id === taskID)
+            const { id, updates } = action.payload || {}
+            const taskIndex = state?.findIndex(task => task?.id === id)
             if (taskIndex === -1) return
-            Object.entries(updates).forEach(([field, value]) => { 
-                console.log(`${state[taskIndex][field]} -> ${value}`)
-                state[taskIndex][field] = value 
-            })
+            Object.entries(updates).forEach(([field, value]) => { state[taskIndex][field] = value })
         },
         refreshTask: (state, action) => {
             const lastCompleteTime = new Date().toISOString()

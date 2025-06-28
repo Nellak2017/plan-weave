@@ -8,7 +8,8 @@ const defaultTaskSerialize = task => ({
     // simple task fields
     id: task?.ID, userId: task?.UserID,
     status: task?.Status, task: task?.Task, waste: task?.Waste, ttc: task?.Ttc, eta: task?.Eta,
-    liveTime: task?.LiveTime, selected: task?.Selected,
+    liveTime: task?.LiveTime, selected: task?.Selected, 
+    liveTimeStamp: task?.LiveTimeStamp?.Valid ? task?.LiveTimeStamp?.Time : new Date().toISOString(),
 
     // full task fields
     efficiency: task?.Efficiency, parentThread: task?.ParentThread, dueDate: task?.DueDate,
@@ -63,7 +64,7 @@ export const updateTaskFieldInSupabase = async ({ taskID, field, value }) => {
         ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
         : wretch(`${WEB_SERVER_URL}/tasks/`)
             .auth(`Bearer ${session.access_token}`)
-            .patch({ task_id: taskID, field, value: JSON.stringify(value), })
+            .patch({ task_id: taskID, field, value: typeof value === 'string' ? value : JSON.stringify(value), })
             .res(response => response?.ok ? response.json() : displayError('Update task field failed:', 'Failed to update field')(response?.statusText))
             .catch(displayError('Failed to patch task field:', 'Failed to update task field'))
 }
