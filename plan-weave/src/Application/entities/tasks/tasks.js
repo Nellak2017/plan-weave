@@ -40,7 +40,6 @@ const tasks = createSlice({
                 eta: dateToToday(add(new Date(lastCompleteTime), state[taskIndex]?.ttc || 0).toISOString())
             }
         },
-        // TODO: Fix server / client time mismatch in the eta setting (current issue is that server uses fixed value not list of values for eta, but it should not matter much for v2.0.0)
         refreshTasks: state => {
             const lastCompleteTime = new Date().toISOString()
             return state?.map(task => ({
@@ -52,7 +51,7 @@ const tasks = createSlice({
                 isLive: false,
                 eta: dateToToday(add(new Date(lastCompleteTime), task?.ttc || 0).toISOString())
             }))
-        }, // update every task in the task list to have timestamp for today but with it's hours
+        },
         toggleSelectTask: (state, action) => {
             const { taskID } = action?.payload || {}
             const taskIndex = state?.findIndex(task => task?.id === taskID)

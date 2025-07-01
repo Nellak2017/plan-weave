@@ -9,13 +9,11 @@ export const MAX_SAFE_DATE_SMALL = 253381737599000 // parsing this format leads 
 export const THEMES = VARIANTS // alias
 export const TASK_STATUSES = { COMPLETED: 'completed', INCOMPLETE: 'incomplete', WAITING: 'waiting', INCONSISTENT: 'inconsistent', }
 export const SORTING_METHODS = {
-	'timestamp': tasks => tasks?.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)),
 	'name': tasks => tasks?.slice().sort((a, b) => (a.task || '').localeCompare(b.task || '')),
 	'eta': tasks => tasks?.slice().sort((a, b) => parseISO(a?.eta).getTime() - parseISO(b?.eta).getTime()),
 	'': tasks => tasks?.slice(),
 }
 export const OPTION_NOTIFICATIONS = {
-	'timestamp': () => toast?.info('Time Sorting applied. Tasks now appear in chronological order.'),
 	'name': () => toast?.info('Name Sorting applied. Tasks now appear alphabetically.'),
 	'eta': () => toast?.info('ETA Sorting applied. Tasks now appear in ETA order.'),
 	'': () => toast?.info('Default Sorting applied. Tasks now appear as they do in the database.'),
@@ -34,7 +32,6 @@ export const DEFAULT_SIMPLE_TASK = {
 	selected: false, // used for the multi-delete feature
 	liveTimeStamp: new Date().toISOString(), // used for the correct waste, efficiency, and eta features. Set when a task goes live (first incomplete task)
 
-	timestamp: Math.floor((new Date().getTime()) / 1000), // TODO: Remove cascade
 	lastCompleteTime: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // When task was completed last
 	lastIncompleteTime: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), // When task was incompleted last
 	isLive: false, // new

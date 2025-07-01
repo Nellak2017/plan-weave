@@ -1,12 +1,13 @@
 import Nav from '../UI/molecules/Nav/Nav.js'
 import InfoSection from '../UI/molecules/InfoSection/InfoSection.js'
 import { useRouter } from 'next/router'
-import { body, NavData } from '../Infra/Data/HomePage/Data.js'
+import { useHomePage } from '../Application/hooks/Pages/HomePage/useHomePage.js'
 import { handleLogout } from '../Infra/workflows/logout.handlers.js'
 import { LeftContent, MiddleContent, RightContent } from '../UI/molecules/Nav/Nav.slots.js'
 import { useSupabaseAuth } from '../Application/hooks/Helpers/useSupabaseAuth.js'
 
 export default function Home() {
+  const { NavData, body } = useHomePage?.() || {}
   const { middleContentData, rightContentData } = NavData
   const router = useRouter()
   const { user } = useSupabaseAuth()

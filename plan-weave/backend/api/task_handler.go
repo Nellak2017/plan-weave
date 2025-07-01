@@ -205,7 +205,6 @@ func (h *TaskHandler) AddTaskDependencies(w http.ResponseWriter, r *http.Request
 	})
 }
 
-// TODO: update field "DependencyIDs" to "Dependencies" to be more consistent in the API
 func (h *TaskHandler) DeleteTaskDependencies(w http.ResponseWriter, r *http.Request) {
 	userID, err := uuid.Parse(GetUserID(r))
 	if err != nil {
@@ -214,8 +213,8 @@ func (h *TaskHandler) DeleteTaskDependencies(w http.ResponseWriter, r *http.Requ
 	}
 
 	var req struct {
-		TaskID        int64   `json:"task_id"`
-		DependencyIDs []int64 `json:"dependency_ids"`
+		TaskID       int64   `json:"task_id"`
+		Dependencies []int64 `json:"dependency_ids"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
@@ -234,7 +233,7 @@ func (h *TaskHandler) DeleteTaskDependencies(w http.ResponseWriter, r *http.Requ
 	}
 
 	// 🔨 Proceed with deletion
-	removed, err := h.Service.DeleteTaskDependencies(r.Context(), req.TaskID, req.DependencyIDs)
+	removed, err := h.Service.DeleteTaskDependencies(r.Context(), req.TaskID, req.Dependencies)
 	if err != nil {
 		log.Printf("❌ DeleteTaskDependencies error: %v", err)
 		http.Error(w, "could not remove dependencies", http.StatusInternalServerError)

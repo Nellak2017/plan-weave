@@ -6,7 +6,7 @@ import {
 } from '../../selectors.js'
 import {
     highlightTaskRow, isTaskOld, isStatusChecked, indexOfTaskToBeDeleted, millisToHours,
-    computeUpdatedWaste, computeUpdatedEfficiency, calculateEta,
+    computeUpdatedLiveTime, computeUpdatedWaste, computeUpdatedEfficiency, calculateEta,
 } from '../../../Core/utils/helpers.js'
 import { playPauseTaskThunkAPI, completeTaskThunkAPI, updateDerivedThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, editLiveTimeStampAPI, editLiveTimeAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
@@ -30,16 +30,14 @@ export const useTaskRow = taskID => {
     return { status, highlight }
 }
 export const usePlayPause = (taskID) => {
-    const currentTaskRow = taskSelector(taskID) || {}, { isLive } = currentTaskRow
+    const currentTaskRow = taskSelector(taskID) || {}, { isLive, liveTimeStamp } = currentTaskRow, currentTime = Date.now()
     const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ currentTaskRow })) }
     // --- Play/Pause many-to-one State Updates
     useChangeEffect(() => {
         const pausing = currentTaskRow?.isLive && currentTaskRow?.status !== TASK_STATUSES.COMPLETED
         if (pausing) { dispatch(editLiveTimeStampAPI({ taskID, liveTimeStamp: new Date().toISOString() })) }
         else {
-            // TODO: Replace this custom logic with the 'computeUpdatedLiveTime' helper
-            const deltaHours = millisToHours(Date.now() - new Date(currentTaskRow?.liveTimeStamp).getTime())
-            const liveTime = (currentTaskRow?.liveTime ?? 0) + deltaHours
+            const liveTime = computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime })
             dispatch(editLiveTimeAPI({ taskID, liveTime }))
         }
     }, [currentTaskRow?.status, currentTaskRow?.isLive])

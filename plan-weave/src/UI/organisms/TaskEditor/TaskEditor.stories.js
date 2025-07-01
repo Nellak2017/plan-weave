@@ -14,12 +14,11 @@ const LightTemplate = args => <MUIThemeProvider theme={lightTheme}><Provider sto
 const DarkTemplate = args => <MUIThemeProvider theme={theme}><Provider store={store}><TaskEditor {...args} /></Provider></MUIThemeProvider>
 const options = [
 	{ name: 'name', listener: () => toast.info('Name Sorting applied. Tasks now appear alphabetically.'), algorithm: 'name' },
-	{ name: 'time created', listener: () => toast.info('Time Sorting applied. Tasks now appear in chronological order.'), algorithm: 'timestamp' },
 	{ name: 'ETA', listener: () => toast.info('ETA Sorting applied. Tasks now appear in ETA order.'), algorithm: 'eta' },
 	{ name: 'default', listener: () => toast.info('Default Sorting applied. Tasks now appear as they do in the database.'), algorithm: '' },
 ]
 export const Light = LightTemplate.bind({})
 Light.args = { sortingAlgorithm: '', options }
 export const Dark = DarkTemplate.bind({})
-Dark.args = { sortingAlgorithm: 'timestamp', options }
+Dark.args = { sortingAlgorithm: 'default', options }
 export default TaskEditorStories

@@ -1,4 +1,3 @@
-// TODO: Determine if it lives here or in sessionContexts or somewhere else
 import { useState, useEffect } from 'react'
 import { supabase } from '../../../Infra/Supabase/supabaseClient.js'
 
