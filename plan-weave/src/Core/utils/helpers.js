@@ -84,46 +84,7 @@ const isValidDate = date => (date !== "Invalid Date") && !isNaN(new Date(date))
 export const computeUpdatedLiveTime = ({ oldLiveTime, liveTimeStamp, currentTime }) => oldLiveTime + subtract(isValidDate(currentTime) ? currentTime : new Date(), new Date(liveTimeStamp))
 export const computeUpdatedWaste = ({ liveTime, ttc }) => liveTime - ttc
 export const computeUpdatedEfficiency = ({ liveTime, ttc }) => clamp(ttc / liveTime, EFFICIENCY_RANGE.min, EFFICIENCY_RANGE.max)
-// -- orchestration helpers for the live time, waste, efficiency, and eta functions
-const getTaskIndexes = (taskID, pipeOptions) => {
-	const properlyOrderedTaskList = taskListPipe(pipeOptions)
-	return {
-		properlyOrderedTaskList,
-		firstIncompleteIndex: properlyOrderedTaskList?.findIndex(task => task?.status !== TASK_STATUSES.COMPLETED),
-		currentTaskIndex: properlyOrderedTaskList?.findIndex(task => task?.id === taskID)
-	}
-}
-export const calculateLiveTime = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
-	const { id: taskID, liveTime: oldLiveTime, status, liveTimeStamp } = currentTaskRow || {}
-	const { firstIncompleteIndex, currentTaskIndex } = getTaskIndexes(taskID, taskOrderPipeOptions)
-	const processedCurrentTime = isValidDate(currentTime) ? currentTime : new Date()
-	const processedLiveTimeStamp = new Date(liveTimeStamp)
-	return (processedLiveTimeStamp <= processedCurrentTime && status !== TASK_STATUSES.COMPLETED && currentTaskIndex === firstIncompleteIndex)
-		? computeUpdatedLiveTime({ oldLiveTime, liveTimeStamp, currentTime })
-		: oldLiveTime
-}
-export const calculateWaste = (currentTaskRow, taskOrderPipeOptions, currentTime) => calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime) - currentTaskRow?.ttc // liveTime - ttc
-export const calculateEfficiency = (currentTaskRow, taskOrderPipeOptions, currentTime) => clamp(currentTaskRow?.ttc / (calculateLiveTime(currentTaskRow, taskOrderPipeOptions, currentTime)), EFFICIENCY_RANGE.min, EFFICIENCY_RANGE.max) // ttc / liveTime
-export const calculateEta = (currentTaskRow, taskOrderPipeOptions, currentTime) => {
-	const { id: taskID, ttc, liveTime: oldLiveTime } = currentTaskRow || {}
-	const processedOldLiveTime = oldLiveTime || 0 // Must be done since some people won't have this update
-
-	const { properlyOrderedTaskList, firstIncompleteIndex, currentTaskIndex } = getTaskIndexes(taskID, taskOrderPipeOptions)
-
-	const base = isValidDate(currentTime) ? currentTime : new Date()
-	const prev = properlyOrderedTaskList
-		.slice(0, currentTaskIndex)
-		.reduce((acc, task) => add(acc, Math.max(task?.ttc, task?.liveTime)), base)
-	const adjustedTtc = Math.max(ttc, processedOldLiveTime)
-
-	const firstIncompleteSum = add(base, adjustedTtc - processedOldLiveTime), otherIncompleteSum = add(prev, adjustedTtc)
-	const processedFirstIncompleteSum = isValidDate(firstIncompleteSum) ? firstIncompleteSum : new Date()
-	const processedOtherIncompleteSum = isValidDate(otherIncompleteSum) ? otherIncompleteSum : new Date()
-
-	return currentTaskIndex === firstIncompleteIndex
-		? formatISO(processedFirstIncompleteSum) // current time + (max(ttc, live time) - live time)
-		: formatISO(processedOtherIncompleteSum) // prev + max(ttc, live time) 
-}
+export const calculateEta = ({ liveTime, ttc, dependencyEtasMillis }) => new Date(Math.max(...dependencyEtasMillis) + hoursToMillis(Math.max((ttc - liveTime), 0))).toISOString()
 // -- HoursInput Component helpers
 export const parseBlur = ({ value, min, max, precision }) => isNaN(parseFloat(value)) ? min : (clamp(parseFloat(value), min, max)).toFixed(precision)
 export const parseChange = ({ value, pattern, min, max }) => (pattern.test(value.trim())) && (between(parseFloat(value), { start: min, end: max }) || /^[^.]*\.[^.]*$/.test(value)) ? value.trim() : ''

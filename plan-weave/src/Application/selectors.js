@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
-import { tryCatchSyncFlat, isStatusChecked, getAvailableThreads, taskListPipe } from '../Core/utils/helpers.js'
-import { SORTING_METHODS } from '../Core/utils/constants.js'
+import { tryCatchSyncFlat, isStatusChecked, getAvailableThreads, taskListPipe, millisToHours } from '../Core/utils/helpers.js'
+import { SORTING_METHODS, TASK_STATUSES } from '../Core/utils/constants.js'
 import { CHOOSE, CHOSEN } from './finiteStateMachines/MultipleDeleteButton.fsm.js'
 // TODO: Add more business constraints here for these selectors
 export const tasks = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.tasks), () => [])
@@ -37,3 +37,20 @@ export const isZeroTasksSelected = () => tasks().filter(task => task?.selected)?
 export const taskIDsToDelete = () => tasks().map((task, index) => ({ ...task, index })).filter(task => task?.selected).map(task => ({ index: task?.index, id: task?.id }))
 export const getAllThreadOptionsAvailable = (selector = useSelector) => tryCatchSyncFlat(() => selector(createSelector([state => state?.tasks], tasks => getAvailableThreads(tasks))), () => [])
 export const prevLiveTaskID = (selector = useSelector) => tryCatchSyncFlat(() => selector(state => state?.prevLiveTaskID), () => 0)
+export const liveTime = (taskID, now = Date.now()) => {
+    const currentTaskRow = task(taskID)
+    const paused = !currentTaskRow?.isLive || currentTaskRow?.status === TASK_STATUSES.COMPLETED
+    return paused
+        ? currentTaskRow?.liveTime || 0
+        : (currentTaskRow?.liveTime ?? 0) + millisToHours(now - new Date(currentTaskRow?.liveTimeStamp).getTime())
+}
+export const dependencyEtasMillis = (taskID, now = Date.now()) => {
+    // TODO: solve the efficient ETA problem without brute force recursion since you can't store it in Redux efficiently
+    // const taskList = tasks()
+    // const findTask = (taskID, tasks = taskList) => tasks.find(task => task?.id === taskID)
+    // const etasMillis = (findTask(taskID)?.dependencies || []).map(depID => new Date(findTask(depID)?.eta).getTime() || 0).filter(eta => eta !== 0)
+    
+    return [new Date(now).getTime()] // etasMillis.length > 0 ? etasMillis : 
+    // NOTE: This is the async version. The sync version may involve recursion 
+    // NOTE: You may alternatively solve this by storing a data structure in redux for the topological sort
+}

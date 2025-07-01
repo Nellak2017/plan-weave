@@ -239,3 +239,18 @@ func (s *TaskService) RefreshTask(ctx context.Context, userID uuid.UUID, taskID 
 func (s *TaskService) RefreshAllTasks(ctx context.Context, userID uuid.UUID) ([]int64, error) {
 	return s.Q.RefreshAllTasks(ctx, userID)
 }
+func (s *TaskService) UpdateTaskEta(ctx context.Context, eta time.Time, userID uuid.UUID, taskID int64) error {
+	_, err := s.Q.UpdateTaskEta(ctx, db.UpdateTaskEtaParams{
+		Eta:    eta,
+		UserID: userID,
+		ID:     taskID,
+	})
+	return err
+}
+
+func (s *TaskService) UpdateAllTaskEtas(ctx context.Context, eta time.Time, userID uuid.UUID) ([]int64, error) {
+	return s.Q.UpdateAllTaskEtasForUser(ctx, db.UpdateAllTaskEtasForUserParams{
+		Eta:    eta,
+		UserID: userID,
+	})
+}

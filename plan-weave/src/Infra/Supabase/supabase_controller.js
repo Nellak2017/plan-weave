@@ -8,7 +8,7 @@ const defaultTaskSerialize = task => ({
     // simple task fields
     id: task?.ID, userId: task?.UserID,
     status: task?.Status, task: task?.Task, waste: task?.Waste, ttc: task?.Ttc, eta: task?.Eta,
-    liveTime: task?.LiveTime, selected: task?.Selected, 
+    liveTime: task?.LiveTime, selected: task?.Selected,
     liveTimeStamp: task?.LiveTimeStamp?.Valid ? task?.LiveTimeStamp?.Time : new Date().toISOString(),
 
     // full task fields
@@ -112,23 +112,23 @@ export const clearTaskDependenciesInSupabase = async ({ taskID }) => {
             .res(response => response?.ok ? response.json() : displayError('Clear task dependencies failed:', 'Could not clear task dependencies')(response?.statusText))
             .catch(displayError('Failed to clear task dependencies:', 'Server error while clearing task dependencies'))
 }
-export const refreshTaskInSupabase = async ({ taskID }) => {
+export const refreshTaskInSupabase = async ({ taskID, eta }) => {
     const { data: { session }, error } = await supabase.auth.getSession()
     return error || !session
         ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
         : wretch(`${WEB_SERVER_URL}/tasks/refresh/`)
             .auth(`Bearer ${session.access_token}`)
-            .post({ task_id: taskID })
+            .post({ task_id: taskID, eta })
             .res(response => response?.ok ? response.json() : displayError('Refresh task failed:', 'Could not refresh task')(response?.statusText))
             .catch(displayError('Failed to refresh task:', 'Server error while refreshing task'))
 }
-export const refreshAllTasksInSupabase = async () => {
+export const refreshAllTasksInSupabase = async (eta) => {
     const { data: { session }, error } = await supabase.auth.getSession()
     return error || !session
         ? displayError('Failed to get Supabase session:', 'Not authenticated. Please log in again.')(error)
         : wretch(`${WEB_SERVER_URL}/tasks/refresh_all/`)
             .auth(`Bearer ${session.access_token}`)
-            .post()
+            .post({ eta })
             .res(response => response?.ok ? response.json() : displayError('Refreshing all tasks failed:', 'Could not refresh all tasks')(response?.statusText))
             .catch(displayError('Failed to refresh all tasks:', 'Server error while refreshing all tasks'))
 }

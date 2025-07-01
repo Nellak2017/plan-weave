@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Nellak2017/plan-weave/app"
 	db "github.com/Nellak2017/plan-weave/infra/db/generated"
@@ -288,13 +289,22 @@ func (h *TaskHandler) RefreshTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var payload struct {
-		TaskID int64 `json:"task_id"`
+		TaskID int64     `json:"task_id"`
+		Eta    time.Time `json:"eta"` // Required
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
+	// Update ETA first (fail fast)
+	if err := h.Service.UpdateTaskEta(r.Context(), payload.Eta, userID, payload.TaskID); err != nil {
+		log.Printf("❌ Update ETA failed: %v", err)
+		http.Error(w, "could not update eta", http.StatusInternalServerError)
+		return
+	}
+
+	// Proceed with Refresh if ETA updated
 	taskID, err := h.Service.RefreshTask(r.Context(), userID, payload.TaskID)
 	if errors.Is(err, sql.ErrNoRows) {
 		http.Error(w, "task not found or not owned by user", http.StatusNotFound)
@@ -320,6 +330,24 @@ func (h *TaskHandler) RefreshAllTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var payload struct {
+		Eta time.Time `json:"eta"` // Required
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Update all ETAs first (fail fast)
+	_, err = h.Service.UpdateAllTaskEtas(r.Context(), payload.Eta, userID)
+	if err != nil {
+		log.Printf("❌ UpdateAllTaskEtas failed: %v", err)
+		http.Error(w, "could not update etas", http.StatusInternalServerError)
+		return
+	}
+
+	// Proceed with Refresh if ETA updated
 	taskIDs, err := h.Service.RefreshAllTasks(r.Context(), userID)
 	if err != nil {
 		log.Printf("❌ RefreshAllTasks DB error: %v", err)

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { parseISO } from "date-fns"
-import { dateToToday } from "../../../Core/utils/helpers"
+import { dateToToday, add } from "../../../Core/utils/helpers"
 import { TASK_STATUSES } from "../../../Core/utils/constants"
 
 const tasks = createSlice({
@@ -25,6 +25,7 @@ const tasks = createSlice({
             if (taskIndex === -1) return
             Object.entries(updates).forEach(([field, value]) => { state[taskIndex][field] = value })
         },
+        // TODO: also update waste and efficiency on both client and server side for most UX accuracy
         refreshTask: (state, action) => {
             const lastCompleteTime = new Date().toISOString()
             const { taskID } = action?.payload || {}
@@ -36,9 +37,10 @@ const tasks = createSlice({
                 lastCompleteTime,
                 lastIncompleteTime: lastCompleteTime,
                 isLive: false,
-                eta: dateToToday(state[taskIndex]?.eta || new Date().toISOString())
+                eta: dateToToday(add(new Date(lastCompleteTime), state[taskIndex]?.ttc || 0).toISOString())
             }
         },
+        // TODO: Fix server / client time mismatch in the eta setting (current issue is that server uses fixed value not list of values for eta, but it should not matter much for v2.0.0)
         refreshTasks: state => {
             const lastCompleteTime = new Date().toISOString()
             return state?.map(task => ({
@@ -48,7 +50,7 @@ const tasks = createSlice({
                 lastCompleteTime,
                 lastIncompleteTime: lastCompleteTime,
                 isLive: false,
-                eta: dateToToday(task?.eta || new Date().toISOString())
+                eta: dateToToday(add(new Date(lastCompleteTime), task?.ttc || 0).toISOString())
             }))
         }, // update every task in the task list to have timestamp for today but with it's hours
         toggleSelectTask: (state, action) => {

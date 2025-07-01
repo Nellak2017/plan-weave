@@ -1,13 +1,19 @@
 import { useMemo, useEffect, useRef } from 'react'
 import store from '../../store.js'
-import { task as taskSelector, timeRange, userID as userIDSelector, taskOrderPipeOptions, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks } from '../../selectors.js'
-import { highlightTaskRow, isTaskOld, isStatusChecked, calculateWaste, calculateEta, calculateEfficiency, indexOfTaskToBeDeleted } from '../../../Core/utils/helpers.js'
+import {
+    task as taskSelector, timeRange, userID as userIDSelector, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks,
+    liveTime as liveTimeSelector, dependencyEtasMillis as dependencyEtasMillisSelector,
+} from '../../selectors.js'
+import {
+    highlightTaskRow, isTaskOld, isStatusChecked, indexOfTaskToBeDeleted, millisToHours,
+    computeUpdatedWaste, computeUpdatedEfficiency, calculateEta,
+} from '../../../Core/utils/helpers.js'
 import { playPauseTaskThunkAPI, completeTaskThunkAPI, updateDerivedThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, editLiveTimeStampAPI, editLiveTimeAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import { handleMaxZero, handleMinOne } from '../../finiteStateMachines/MultipleDeleteButton.fsm.js'
-import { EFFICIENCY_RANGE, TASK_STATUSES } from '../../../Core/utils/constants.js'
+import { TASK_STATUSES } from '../../../Core/utils/constants.js'
 import { useChangeEffect } from '../Helpers/useChangeEffect.js'
 
 // TODO: Test all more deeply, they appear done with few minor exceptions like last 3, api, correction of read only
@@ -24,7 +30,6 @@ export const useTaskRow = taskID => {
     return { status, highlight }
 }
 export const usePlayPause = (taskID) => {
-    // TODO: make a selector for liveTime that calculates it nearly continuously for use in calculations with eta
     const currentTaskRow = taskSelector(taskID) || {}, { isLive } = currentTaskRow
     const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ currentTaskRow })) }
     // --- Play/Pause many-to-one State Updates
@@ -32,7 +37,8 @@ export const usePlayPause = (taskID) => {
         const pausing = currentTaskRow?.isLive && currentTaskRow?.status !== TASK_STATUSES.COMPLETED
         if (pausing) { dispatch(editLiveTimeStampAPI({ taskID, liveTimeStamp: new Date().toISOString() })) }
         else {
-            const deltaHours = (Date.now() - new Date(currentTaskRow?.liveTimeStamp).getTime()) / (1000 * 60 * 60)
+            // TODO: Replace this custom logic with the 'computeUpdatedLiveTime' helper
+            const deltaHours = millisToHours(Date.now() - new Date(currentTaskRow?.liveTimeStamp).getTime())
             const liveTime = (currentTaskRow?.liveTime ?? 0) + deltaHours
             dispatch(editLiveTimeAPI({ taskID, liveTime }))
         }
@@ -40,8 +46,8 @@ export const usePlayPause = (taskID) => {
     return { isLive, handlePlayPauseClicked }
 }
 export const useCompleteIcon = (taskID, currentTime) => {
-    const userID = userIDSelector(), currentTaskRow = taskSelector(taskID)
-    const pipelineOptions = taskOrderPipeOptions(), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector()
+    const currentTaskRow = taskSelector(taskID)
+    const isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector()
     const isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected(), fsmState = fsmControlledState()
     // --- Choose / Chosen Many-To-One State Updates (Many ways to get atleast one task selected, One way to update state)
     useEffect(() => {
@@ -49,14 +55,13 @@ export const useCompleteIcon = (taskID, currentTime) => {
     }, [isAtleastOneTaskSelectedForDeletion, fsmState])
     // --- Complete/Incomplete Many-To-One State Updates
     useChangeEffect(() => {
-        dispatch(updateDerivedThunkAPI({ currentTaskRow, taskOrderPipeOptions: pipelineOptions, currentTime }))
+        const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
+        dispatch(updateDerivedThunkAPI({ currentTaskRow, dependencyEtasMillis }))
     }, [currentTaskRow?.status, currentTaskRow?.isLive])
     return {
         isChecked,
         handleCheckBoxClicked: () => {
-            isHighlighting
-                ? dispatch(toggleSelectTask({ taskID }))
-                : dispatch(completeTaskThunkAPI({ userID, currentTaskRow, taskOrderPipeOptions: pipelineOptions, currentTime }))
+            isHighlighting ? dispatch(toggleSelectTask({ taskID })) : dispatch(completeTaskThunkAPI({ currentTaskRow }))
         }
     }
 }
@@ -66,10 +71,10 @@ export const useTaskInputContainer = taskID => {
     const childServices = { onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ taskID, taskName: e.target.value })) } }
     return { childState, childServices }
 }
-export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const currentTaskRow = taskSelector?.(taskID) || {}, pipelineOptions = taskOrderPipeOptions()
-    const waste = useMemo(() => calculateWaste(currentTaskRow, pipelineOptions, currentTime), [pipelineOptions, currentTime, currentTaskRow])
+export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on liveTime
+    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID)
+    const { ttc } = currentTaskRow
+    const waste = useMemo(() => computeUpdatedWaste({ liveTime, ttc }), [currentTaskRow, liveTime, currentTime])
     return { waste }
 }
 export const useTtc = taskID => {
@@ -79,18 +84,17 @@ export const useTtc = taskID => {
     return { childState, childServices }
 }
 export const useEta = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const currentTaskRow = taskSelector?.(taskID) || {}, pipelineOptions = taskOrderPipeOptions()
-    const eta = useMemo(() => calculateEta(currentTaskRow, pipelineOptions, currentTime), [currentTaskRow, pipelineOptions, currentTime])
+    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID)
+    const { ttc } = currentTaskRow
+    const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
+    const eta = useMemo(() => calculateEta({ ttc, liveTime, dependencyEtasMillis }), [currentTaskRow, liveTime, currentTime])
     return { eta }
 }
-export const useEfficiency = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const currentTaskRow = taskSelector?.(taskID) || {}, pipelineOptions = taskOrderPipeOptions()
-    const efficiency = useMemo(() => Math.abs(calculateEfficiency(currentTaskRow, pipelineOptions, currentTime)), [currentTaskRow, pipelineOptions, currentTime])
-    const { min, max } = EFFICIENCY_RANGE
-    const processedEfficiency = efficiency === min || efficiency === max ? efficiency * Infinity : efficiency // so it displays inf or -inf if it is the edge case but it is not stored like that, also it displays normally otherwise 
-    return { efficiency: processedEfficiency }
+export const useEfficiency = (taskID, currentTime) => { // We calculate this from Redux state and memoize on liveTime
+    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID)
+    const { ttc } = currentTaskRow
+    const efficiency = useMemo(() => computeUpdatedEfficiency({ liveTime, ttc }), [currentTaskRow, liveTime, currentTime])
+    return { efficiency }
 }
 export const useDue = taskID => {
     const currentTaskRow = taskSelector?.(taskID) || { dueDate: new Date().toISOString() }

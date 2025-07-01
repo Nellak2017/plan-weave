@@ -2,7 +2,11 @@ import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateT
 import { addManyDnD, addDnD, deleteMultipleDnD, deleteDnD } from '../../sessionContexts/dnd.js'
 import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
-import { toggleTaskStatus, calculateLiveTime, calculateWaste, calculateEfficiency, calculateEta } from '../../../Core/utils/helpers.js'
+import {
+    toggleTaskStatus,
+    computeUpdatedWaste, computeUpdatedEfficiency, calculateEta,
+    dateToToday, add,
+} from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
 import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
 import {
@@ -50,15 +54,15 @@ export const completeTaskThunkAPI = ({ currentTaskRow }) => dispatch => {
     dispatch(updateTasksBatch({ id, updates }))         // 2. Update local Redux store to match DB 
     // dispatch(completeTaskDnD(...))                   // 3. Update the dnd config 
 }
-export const updateDerivedThunkAPI = ({ currentTaskRow, taskOrderPipeOptions, currentTime }) => dispatch => {
-    const { id } = currentTaskRow || {}
-    // TODO: Check and see if you use the compute functions or the calculate functions for waste, efficiency, and eta in this thunk
+export const updateDerivedThunkAPI = ({ currentTaskRow, dependencyEtasMillis }) => dispatch => {
+    const { id, liveTime, ttc } = currentTaskRow || {}
     const updates = {
-        [FULL_TASK_FIELDS.waste]: calculateWaste(currentTaskRow, taskOrderPipeOptions, currentTime),
-        [FULL_TASK_FIELDS.efficiency]: calculateEfficiency(currentTaskRow, taskOrderPipeOptions, currentTime),
-        [FULL_TASK_FIELDS.eta]: calculateEta(currentTaskRow, taskOrderPipeOptions, currentTime),
+        [FULL_TASK_FIELDS.waste]: computeUpdatedWaste({ liveTime, ttc }),
+        [FULL_TASK_FIELDS.efficiency]: computeUpdatedEfficiency({ liveTime, ttc }),
+        [FULL_TASK_FIELDS.eta]: calculateEta({ liveTime, ttc, dependencyEtasMillis }),
     }
-    dispatch(updateTasksBatch({ id, updates })) // 2. Update local Redux store to match DB
+    updateTaskAPI({ ...currentTaskRow, ...updates })    // 1. PUT to API
+    dispatch(updateTasksBatch({ id, updates }))         // 2. Update local Redux store to match DB
 }
 const editTaskFieldThunkAPI = ({ taskID, field, value }) => dispatch => {
     updateTaskFieldAPI({ taskID, field, value })          // 1. PUT to API
@@ -88,13 +92,15 @@ export const deleteTaskThunkAPI = ({ taskInfo }) => dispatch => { // taskInfo =>
     dispatch(deleteDnD({ index }))
     dispatch(setPrevLiveTaskID(0))
 }
-export const refreshTaskThunkAPI = ({ isOwl, taskID }) => dispatch => {
-    refreshTaskAPI({ taskID })                                // 1. POST to API 
+export const refreshTaskThunkAPI = ({ isOwl, taskID, currentTaskRow }) => dispatch => {
+    const eta = dateToToday(add(new Date(new Date().toISOString()), currentTaskRow?.ttc || 0).toISOString())
+    refreshTaskAPI({ taskID, eta })                           // 1. POST to API 
     dispatch(refreshTimePickers({ isOwl }))                   // 2. Local Redux updates
     dispatch(refreshTask({ taskID }))
 }
 export const refreshAllTasksThunkAPI = ({ isOwl }) => dispatch => {
-    refreshAllTasksAPI()                                      // 1. POST to API 
+    const eta = new Date().toISOString() // TODO: make into eta list eventually on API and this for more accuracy
+    refreshAllTasksAPI(eta)                                   // 1. POST to API 
     dispatch(refreshTimePickers({ isOwl }))                   // 2. Local Redux updates
     dispatch(refreshTasks())
 }

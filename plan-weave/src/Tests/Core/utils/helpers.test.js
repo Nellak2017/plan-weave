@@ -3,8 +3,8 @@
 /* eslint-disable max-params */
 
 // TODO: PBT the complex setup orchestrator functions
-// Progress = 18 / 23
-// Missing => calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, taskListPipe,
+// Progress = / 
+// Missing =>
 import {
 	clamp,
 	add,
@@ -25,10 +25,8 @@ import {
 	pipe,
 	getAvailableThreads,
 	computeUpdatedLiveTime, // compute part of live time. not covered by property based tests (it is effectively addition)
-
-	calculateLiveTime, calculateWaste, calculateEta, calculateEfficiency, taskListPipe, // These are orchestrators and require complex setups.  
 } from '../../../Core/utils/helpers.js'
-import { TASK_STATUSES, MAX_SAFE_DATE } from '../../../Core/utils/constants.js'
+import {  MAX_SAFE_DATE } from '../../../Core/utils/constants.js'
 import { fc } from '@fast-check/jest'
 
 describe('clamp', () => {

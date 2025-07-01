@@ -301,12 +301,7 @@ SET
   status = 'incomplete',
   last_complete_time = NOW(),
   last_incomplete_time = NOW(),
-  is_live = false,
-  eta = 
-    ( 
-      date_trunc('day', NOW()) +  -- start of today
-      (COALESCE(eta, NOW()) - date_trunc('day', COALESCE(eta, NOW())))  -- time offset from original day
-    )
+  is_live = false
 WHERE user_id = $1
 RETURNING id
 `
@@ -342,12 +337,7 @@ SET
   status = 'incomplete',
   last_complete_time = NOW(),
   last_incomplete_time = NOW(),
-  is_live = false,
-  eta = 
-    ( 
-      date_trunc('day', NOW()) +  -- start of today
-      (COALESCE(eta, NOW()) - date_trunc('day', COALESCE(eta, NOW())))  -- time offset from original day
-    )
+  is_live = false
 WHERE id = $1 AND user_id = $2
 RETURNING id
 `
@@ -363,6 +353,41 @@ func (q *Queries) RefreshTask(ctx context.Context, arg RefreshTaskParams) (int64
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+const updateAllTaskEtasForUser = `-- name: UpdateAllTaskEtasForUser :many
+UPDATE tasks
+SET eta = $1
+WHERE user_id = $2
+RETURNING id
+`
+
+type UpdateAllTaskEtasForUserParams struct {
+	Eta    time.Time
+	UserID uuid.UUID
+}
+
+func (q *Queries) UpdateAllTaskEtasForUser(ctx context.Context, arg UpdateAllTaskEtasForUserParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, updateAllTaskEtasForUser, arg.Eta, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateTask = `-- name: UpdateTask :one
