@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { supabase } from './supabaseClient.js'
 import wretch from 'wretch' // used for DX only. If it is too bloated remove for manual version
 import { toast } from 'react-toastify'
@@ -27,7 +28,6 @@ const defaultTaskDeserialize = task => ({
     Weight: task?.weight, LastCompleteTime: task?.lastCompleteTime, LastIncompleteTime: task?.lastIncompleteTime, IsLive: task?.isLive
 })
 const defaultTaskSerializeList = taskList => taskList.map(defaultTaskSerialize)
-const defaultTaskDeserializeList = taskList => taskList.map(defaultTaskDeserialize)
 const displayError = (consoleErrorMessage = 'Failed to fetch tasks:', toastError = 'Failed to fetch tasks') => consoleError => { console.error(consoleErrorMessage, consoleError); toast.error(toastError); }
 
 // TODO: When a runtime error is thrown, it crashes the app, figure out how to make an error boundary for them

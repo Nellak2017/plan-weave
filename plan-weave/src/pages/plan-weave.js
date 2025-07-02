@@ -20,24 +20,18 @@ const PlanWeave = () => {
 	const router = useRouter()
 	const { user, loading, error } = useSupabaseAuth()
 	useRedirectIfUnauthorized(user, loading)
-
 	useEffect(() => {
 		if (user) {
 			(async () => dispatch(initialTaskUpdate({ taskList: await fetchTasksFromSupabase() })))()
 			dispatch(setUserID(user?.id))
 		}
-	}, [user])
-
+	}, [user, dispatch])
 	// TODO: There is a code smell associated with how I implemented the Nav slots. Something about it is off. Investigate to improve abstraction.
 	return loading || error || !user
 		? <LoadingOrError loading={loading} error={error} user={user} />
 		: (
 			<>
-				<Nav slots={{
-					left: <LeftContent />,
-					middle: <MiddleContent state={middleContentData()} />,
-					right: <RightContent state={rightContentData({ router, handleLogout })} />
-				}} />
+				<Nav slots={{ left: <LeftContent />, middle: <MiddleContent state={middleContentData()} />, right: <RightContent state={rightContentData({ router, handleLogout })} />}} />
 				<TaskEditor />
 			</>
 		)

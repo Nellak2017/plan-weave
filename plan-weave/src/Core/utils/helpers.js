@@ -1,5 +1,7 @@
-import { getTime, parseISO, formatISO, format } from 'date-fns'
+import { getTime, parseISO, format } from 'date-fns'
 import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_DAY, TASK_STATUSES, MAX_SAFE_DATE, FULL_TASK_HEADERS, RENDER_NUMBERS, EFFICIENCY_RANGE } from './constants.js'
+
+// TODO: Modularize the helpers.js by breaking them down by respective Entity and PBT helpers and only have shared/global ones in here
 
 // calculate waste helpers
 export const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
@@ -76,6 +78,7 @@ export const taskListPipe = ({ oldTaskList, dnd, filter, sortAlgo, paginationRan
 // -- Read-only TaskRow fields
 const firstIndex = (lis, pred) => lis?.findIndex(val => pred(val))
 const lastIndex = (lis, pred) => lis?.findLastIndex(val => pred(val))
+// TODO: cacade delete: firstInded, lastIndex, firstCompleteIndex, lastCompleteIndex, firstIncompleteIndex (They are not needed in the Stopwatch model, most likely)
 export const firstCompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED)
 export const lastCompleteIndex = properlyOrderedTaskList => lastIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.COMPLETED)
 export const firstIncompleteIndex = properlyOrderedTaskList => firstIndex(properlyOrderedTaskList, task => task?.status === TASK_STATUSES.INCOMPLETE)

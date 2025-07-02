@@ -8,11 +8,9 @@ import { TaskRowDefault } from '../TaskRow/TaskRow.js'
 import { useTaskTableDefault } from '../../../Application/hooks/TaskTable/useTaskTable.js'
 
 const NoTasksRow = ({ text = 'No Tasks are made yet. Make some by pressing the + button above.' }) => (<tr><NoTasksTd colSpan='4'>{text}</NoTasksTd></tr>)
-
 export const TaskTable = ({
     state: { labels = getHeaderLabels(false), DefaultComponent = NoTasksRow, } = {},
-    services: { onDragEndEvent } = {},
-    children
+    services: { onDragEndEvent } = {}, children
 }) => {
     const childrenArray = React.Children.toArray(children)
     return (
@@ -34,7 +32,6 @@ export const TaskTable = ({
         </DragDropContext>
     )
 }
-
 export const TaskTableDefault = ({ currentTime, customHook = useTaskTableDefault }) => {
     const { childState, childServices } = customHook?.(currentTime) || {}
     const { taskList, labels, renderNumber } = childState || {}

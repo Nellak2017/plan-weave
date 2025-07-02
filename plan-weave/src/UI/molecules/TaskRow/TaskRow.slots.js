@@ -11,11 +11,7 @@ import { BiTrash } from "react-icons/bi"
 import { useCompleteIcon, usePlayPause, useTaskInputContainer, useWaste, useTtc, useEta, useEfficiency, useDue, useWeight, useThread, useDependency, useRefresh, useTrash } from '../../../Application/hooks/TaskRow/useTaskRow.js'
 const { dndTooltip, playTooltip, pauseTooltip, completedTooltip, incompleteTooltip, taskTooltip, wasteTooltip, ttcTooltip, etaTooltip, efficencyToolTip, dueToolTip, weightToolTip, threadToolTip, dependencyToolTip, refreshTooltip, deleteTooltip } = TASK_ROW_TOOLTIPS
 
-export const Drag = ({ provided }) => (
-    <DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''} >
-        <DragIndicator size={ICON_SIZE} />
-    </DragContainer>
-)
+export const Drag = ({ provided }) => (<DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''} ><DragIndicator size={ICON_SIZE} /></DragContainer>)
 export const PlayPause = ({ taskID, customHook = usePlayPause }) => {
     const { isLive, handlePlayPauseClicked } = customHook?.(taskID) || {}
     return (
@@ -114,11 +110,7 @@ export const Thread = ({ taskID, customHook = useThread }) => {
     const { onBlurEvent } = childServices || {}
     return (
         <ThreadContainer title={threadToolTip}>
-            <OptionPicker
-                state={{ options, label: 'Select Thread', multiple: false }}
-                value={defaultValue} // Controlled -> immediate feedback when updating options. Always matches Redux
-                onBlur={e => onBlurEvent(e.target.value)}
-            />
+            <OptionPicker state={{ options, label: 'Select Thread', multiple: false }} value={defaultValue} onBlur={e => onBlurEvent(e.target.value)} />
         </ThreadContainer>
     )
 }
@@ -129,8 +121,8 @@ export const Dependency = ({ taskID, customHook = useDependency }) => {
     return (
         <DependencyContainer title={dependencyToolTip}>
             <OptionPicker
-                state={{ options, multiple: true }}
-                defaultValue={defaultValue}
+                state={{ options, multiple: true }} defaultValue={defaultValue}
+                // eslint-disable-next-line max-params
                 onChange={(_e, _newDependencies, reason, details) => onChangeEvent(reason, details)}
             />
         </DependencyContainer>
@@ -139,11 +131,7 @@ export const Dependency = ({ taskID, customHook = useDependency }) => {
 export const TaskID = ({ taskID }) => (<WasteContainer>{taskID}</WasteContainer>)
 export const Refresh = ({ taskID, customHook = useRefresh }) => {
     const { handleRefreshClicked } = customHook?.(taskID) || {}
-    return (
-        <IconContainer title={refreshTooltip}>
-            <RefreshButton size={ICON_SIZE} onClick={handleRefreshClicked} />
-        </IconContainer>
-    )
+    return (<IconContainer title={refreshTooltip}><RefreshButton size={ICON_SIZE} onClick={handleRefreshClicked} /></IconContainer>)
 }
 export const Trash = ({ taskID, customHook = useTrash }) => {
     const { onClickEvent } = customHook?.(taskID) || {}

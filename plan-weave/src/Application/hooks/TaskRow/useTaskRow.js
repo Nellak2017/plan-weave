@@ -1,13 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useMemo, useEffect, useRef } from 'react'
 import store from '../../store.js'
-import {
-    task as taskSelector, timeRange, userID as userIDSelector, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks,
-    liveTime as liveTimeSelector, dependencyEtasMillis as dependencyEtasMillisSelector,
-} from '../../selectors.js'
-import {
-    highlightTaskRow, isTaskOld, isStatusChecked, indexOfTaskToBeDeleted, millisToHours,
-    computeUpdatedLiveTime, computeUpdatedWaste, computeUpdatedEfficiency, calculateEta,
-} from '../../../Core/utils/helpers.js'
+import { task as taskSelector, timeRange, userID as userIDSelector, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks, liveTime as liveTimeSelector, dependencyEtasMillis as dependencyEtasMillisSelector, } from '../../selectors.js'
+import { highlightTaskRow, isTaskOld, isStatusChecked, indexOfTaskToBeDeleted, computeUpdatedLiveTime, computeUpdatedWaste, computeUpdatedEfficiency, calculateEta, } from '../../../Core/utils/helpers.js'
 import { playPauseTaskThunkAPI, completeTaskThunkAPI, updateDerivedThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, editLiveTimeStampAPI, editLiveTimeAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
@@ -24,29 +19,23 @@ export const useTaskRow = taskID => {
     const { status, eta } = usedTask || {}
     const { startTaskEditor: start, endTaskEditor: end } = timeRange()
     const timeRangeStartEnd = useMemo(() => ({ start: start?.defaultTime, end: end?.defaultTime }), [start, end])
-
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
     const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, timeRange: timeRangeStartEnd })), [timeRangeStartEnd, isChecked, isHighlighting, eta])
     return { status, highlight }
 }
 export const usePlayPause = (taskID) => {
-    const currentTaskRow = taskSelector(taskID) || {}, { isLive, liveTimeStamp } = currentTaskRow, currentTime = Date.now()
+    const currentTaskRow = taskSelector(taskID) || {}, { isLive, liveTimeStamp } = currentTaskRow, currentTime = new Date()
     const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ currentTaskRow })) }
     // --- Play/Pause many-to-one State Updates
     useChangeEffect(() => {
         const pausing = currentTaskRow?.isLive && currentTaskRow?.status !== TASK_STATUSES.COMPLETED
         if (pausing) { dispatch(editLiveTimeStampAPI({ taskID, liveTimeStamp: new Date().toISOString() })) }
-        else {
-            const liveTime = computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime })
-            dispatch(editLiveTimeAPI({ taskID, liveTime }))
-        }
+        else dispatch(editLiveTimeAPI({ taskID, liveTime: computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime }) }))
     }, [currentTaskRow?.status, currentTaskRow?.isLive])
     return { isLive, handlePlayPauseClicked }
 }
 export const useCompleteIcon = (taskID, currentTime) => {
-    const currentTaskRow = taskSelector(taskID)
-    const isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector()
-    const isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected(), fsmState = fsmControlledState()
+    const currentTaskRow = taskSelector(taskID), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector(), isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected(), fsmState = fsmControlledState()
     // --- Choose / Chosen Many-To-One State Updates (Many ways to get atleast one task selected, One way to update state)
     useEffect(() => {
         isAtleastOneTaskSelectedForDeletion ? handleMinOne(setMultiDeleteFSMState, fsmState) : handleMaxZero(setMultiDeleteFSMState, fsmState)
@@ -56,12 +45,7 @@ export const useCompleteIcon = (taskID, currentTime) => {
         const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
         dispatch(updateDerivedThunkAPI({ currentTaskRow, dependencyEtasMillis }))
     }, [currentTaskRow?.status, currentTaskRow?.isLive])
-    return {
-        isChecked,
-        handleCheckBoxClicked: () => {
-            isHighlighting ? dispatch(toggleSelectTask({ taskID })) : dispatch(completeTaskThunkAPI({ currentTaskRow }))
-        }
-    }
+    return { isChecked, handleCheckBoxClicked: () => { isHighlighting ? dispatch(toggleSelectTask({ taskID })) : dispatch(completeTaskThunkAPI({ currentTaskRow })) } }
 }
 export const useTaskInputContainer = taskID => {
     const currentTaskRow = taskSelector?.(taskID) || {}
@@ -70,9 +54,8 @@ export const useTaskInputContainer = taskID => {
     return { childState, childServices }
 }
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on liveTime
-    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID)
-    const { ttc } = currentTaskRow
-    const waste = useMemo(() => computeUpdatedWaste({ liveTime, ttc }), [currentTaskRow, liveTime, currentTime])
+    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID), { ttc } = currentTaskRow
+    const waste = useMemo(() => computeUpdatedWaste({ liveTime, ttc }), [currentTaskRow, liveTime, ttc, currentTime])
     return { waste }
 }
 export const useTtc = taskID => {
@@ -82,16 +65,13 @@ export const useTtc = taskID => {
     return { childState, childServices }
 }
 export const useEta = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID)
-    const { ttc } = currentTaskRow
-    const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
-    const eta = useMemo(() => calculateEta({ ttc, liveTime, dependencyEtasMillis }), [currentTaskRow, liveTime, currentTime])
+    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID), { ttc } = currentTaskRow, dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
+    const eta = useMemo(() => calculateEta({ ttc, liveTime, dependencyEtasMillis }), [currentTaskRow, liveTime, ttc, dependencyEtasMillis, currentTime])
     return { eta }
 }
 export const useEfficiency = (taskID, currentTime) => { // We calculate this from Redux state and memoize on liveTime
-    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID)
-    const { ttc } = currentTaskRow
-    const efficiency = useMemo(() => computeUpdatedEfficiency({ liveTime, ttc }), [currentTaskRow, liveTime, currentTime])
+    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID), { ttc } = currentTaskRow
+    const efficiency = useMemo(() => computeUpdatedEfficiency({ liveTime, ttc }), [currentTaskRow, liveTime, ttc, currentTime])
     return { efficiency }
 }
 export const useDue = taskID => {
@@ -119,14 +99,13 @@ export const useDependency = taskID => {
     const tasks = properlyOrderedTasks?.() || []
     const defaultValueRef = useRef(dependencies || [])
     const defaultValue = (defaultValueRef.current).map(depID => { const match = tasks?.find(t => t?.id === depID); return match ? { value: match?.id, label: `${match?.task} (${match?.id})` } : null }).filter(Boolean) // use a ref to keep it constant always
-    const options = useMemo(() => tasks?.filter(task => task?.id !== taskID)?.map(task => ({ value: task?.id, label: `${task?.task} (${task?.id})` })), [tasks])
+    const options = useMemo(() => tasks?.filter(task => task?.id !== taskID)?.map(task => ({ value: task?.id, label: `${task?.task} (${task?.id})` })), [tasks, taskID])
     const childState = { defaultValue, options, }
     const childServices = { onChangeEvent: (reason, details) => dispatch(editDependenciesThunkAPI({ taskID, reason, details })), }
     return { childState, childServices }
 }
 export const useRefresh = (taskID) => {
-    const isOwl = taskSelector?.(taskID)?.isOwl
-    const handleRefreshClicked = () => { dispatch(refreshTaskThunkAPI({ taskID, isOwl })) }
+    const isOwl = taskSelector?.(taskID)?.isOwl, handleRefreshClicked = () => { dispatch(refreshTaskThunkAPI({ taskID, isOwl })) }
     return { handleRefreshClicked }
 }
 export const useTrash = taskID => {

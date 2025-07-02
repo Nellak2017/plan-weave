@@ -1,7 +1,7 @@
 /*eslint-disable  react-hooks/exhaustive-deps*/
 import { useMemo, useEffect } from 'react'
 import { parseISO } from 'date-fns'
-import { userID as userIDSelector, isOwl, isFullTask, fsmControlledState, timeRange, properlyOrderedTasks } from '../../selectors.js'
+import { isOwl, isFullTask, fsmControlledState, timeRange, properlyOrderedTasks } from '../../selectors.js'
 import { searchThunk, sortThunk, toggleThunk, updateTimeRangeThunk, addTaskThunkAPI, updateMultiDeleteFSMThunk } from '../../thunks.js'
 import { VALID_SEARCH_IDS, VALID_SORT_IDS, VALID_TIMERANGE_IDS, VALID_TOGGLE_IDS, VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import store from '../../store.js'
@@ -11,10 +11,7 @@ import { setDefaultTime } from '../../boundedContexts/timeRange/timeRangeSlice.j
 
 const dispatch = store.dispatch
 export const useTopSlot = () => {
-    const { startTaskEditor, endTaskEditor } = timeRange()
-    const owl = isOwl()
-    const start = startTaskEditor?.defaultTime, end = endTaskEditor?.defaultTime
-    const startMillis = parseISO(start).getTime(), endMillis = parseISO(end).getTime()
+    const { startTaskEditor, endTaskEditor } = timeRange(), owl = isOwl(), start = startTaskEditor?.defaultTime, end = endTaskEditor?.defaultTime, startMillis = parseISO(start).getTime(), endMillis = parseISO(end).getTime()
     useEffect(() => {
         if ((endMillis < startMillis) && !owl) {
             dispatch(setDefaultTime({ id: VALID_TIMERANGE_IDS.END_TIME_PICKER_ID, value: start }))
@@ -35,11 +32,8 @@ export const useTopSlot = () => {
     }
     return { childState, childServices }
 }
-
 export const useBottomSlot = () => {
-    const { endTaskEditor } = timeRange()
-    const taskList = properlyOrderedTasks(), firstIncomplete = useMemo(() => firstIncompleteIndex(taskList), [taskList])
-    const prevTaskID = taskList?.[firstIncomplete]?.id || 0
+    const { endTaskEditor } = timeRange(), taskList = properlyOrderedTasks(), firstIncomplete = useMemo(() => firstIncompleteIndex(taskList), [taskList]), prevTaskID = taskList?.[firstIncomplete]?.id || 0
     const childState = {
         isFullTask: isFullTask(), fsmControlledState: fsmControlledState(), isOwl: isOwl(),
         endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [endTaskEditor?.defaultTime]),

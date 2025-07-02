@@ -43,7 +43,6 @@ export const TopSlot = ({ currentTime = new Date(), customHook = useTopSlot }) =
         </TopContainer>
     )
 }
-
 export const BottomSlot = ({ currentTime = new Date(), customHook = useBottomSlot }) => {
     const { childState, childServices } = customHook?.() || {}
     const { isFullTask, fsmControlledState, endTime, isOwl } = childState || {}

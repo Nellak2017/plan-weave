@@ -2,24 +2,10 @@ import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateT
 import { addManyDnD, addDnD, deleteMultipleDnD, deleteDnD } from '../../sessionContexts/dnd.js'
 import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
-import {
-    toggleTaskStatus,
-    computeUpdatedWaste, computeUpdatedEfficiency, calculateEta,
-    dateToToday, add,
-} from '../../../Core/utils/helpers.js'
+import { toggleTaskStatus, computeUpdatedWaste, computeUpdatedEfficiency, calculateEta, dateToToday, add, } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
 import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
-import {
-    addTaskToSupabase as addTaskAPI,
-    updateTaskToSupabase as updateTaskAPI,
-    updateTaskFieldInSupabase as updateTaskFieldAPI,
-    deleteTasksInSupabase as deleteTasksAPI,
-    addTaskDependenciesInSupabase as addTaskDependenciesAPI,
-    deleteTaskDependenciesInSupabase as deleteTaskDependenciesAPI,
-    clearTaskDependenciesInSupabase as clearTaskDependenciesAPI,
-    refreshTaskInSupabase as refreshTaskAPI,
-    refreshAllTasksInSupabase as refreshAllTasksAPI,
-} from '../../../Infra/Supabase/supabase_controller.js'
+import { addTaskToSupabase as addTaskAPI, updateTaskToSupabase as updateTaskAPI, updateTaskFieldInSupabase as updateTaskFieldAPI, deleteTasksInSupabase as deleteTasksAPI, addTaskDependenciesInSupabase as addTaskDependenciesAPI, deleteTaskDependenciesInSupabase as deleteTaskDependenciesAPI, clearTaskDependenciesInSupabase as clearTaskDependenciesAPI, refreshTaskInSupabase as refreshTaskAPI, refreshAllTasksInSupabase as refreshAllTasksAPI, } from '../../../Infra/Supabase/supabase_controller.js'
 
 export const initialTaskUpdate = ({ taskList }) => dispatch => {
     dispatch(updateTasks(taskList))

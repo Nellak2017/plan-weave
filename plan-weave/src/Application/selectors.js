@@ -49,7 +49,6 @@ export const dependencyEtasMillis = (taskID, now = Date.now()) => {
     // const taskList = tasks()
     // const findTask = (taskID, tasks = taskList) => tasks.find(task => task?.id === taskID)
     // const etasMillis = (findTask(taskID)?.dependencies || []).map(depID => new Date(findTask(depID)?.eta).getTime() || 0).filter(eta => eta !== 0)
-    
     return [new Date(now).getTime()] // etasMillis.length > 0 ? etasMillis : 
     // NOTE: This is the async version. The sync version may involve recursion 
     // NOTE: You may alternatively solve this by storing a data structure in redux for the topological sort

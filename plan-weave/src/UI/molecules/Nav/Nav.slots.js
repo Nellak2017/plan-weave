@@ -12,9 +12,7 @@ export const LeftContent = ({
     } = {}
 }) => (
     <Logo className='logo' tabIndex={tabIndex}>
-        <Link href={href} tabIndex={tabIndex}>
-            <Image src={logoPath.src} alt={alt} width={width} height={height} title={title} aria-label={title} />
-        </Link>
+        <Link href={href} tabIndex={tabIndex}><Image src={logoPath.src} alt={alt} width={width} height={height} title={title} aria-label={title} /></Link>
     </Logo>
 )
 export const MiddleContent = ({ state: { label = 'Plan Weave', href = '/plan-weave', tabIndex = 0, title = 'Go to Plan Weave App' } = {} }) => (

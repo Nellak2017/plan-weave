@@ -10,10 +10,7 @@ export const useChangeEffect = (effectFn, deps) => {
     useEffect(() => {
         if (!hasMountedRef.current) { hasMountedRef.current = true; prevDepsRef.current = deps; return }
         if (!shallowEqualArray(prevDepsRef.current, deps)) { prevDepsRef.current = deps; effectFn() }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, deps)
 }
-const shallowEqualArray = (a, b) => { // Compare shallow values of deps
-    if (a.length !== b.length) return false
-    for (let i = 0; i < a.length; i++) { if (a[i] !== b[i]) return false }
-    return true
-}
+const shallowEqualArray = (a, b) => a.length === b.length && a.every((val, i) => val === b[i])

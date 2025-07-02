@@ -15,6 +15,7 @@ const logo = { src: '/Plan-Weave-Logo.png' }
 const AuthInput = React.forwardRef((props, ref) => (<TaskInput ref={ref} {...props} />)); AuthInput.displayName = 'AuthInput'
 
 // TODO: Make the form more modern by using MUI for the email/password inputs and also make the Forgot your password? thing appear modern and standard
+// eslint-disable-next-line complexity
 const GeneralAuthForm = ({
     state: { title = 'Sign in', emailButtonText = 'Sign in with Email', callToAction = { text: "Don't have an account?", link: '/signup', linkText: 'Sign up.' }, inputSections = { topText: 'Email Address', bottomText: 'Password' }, forgotPasswordText = 'Forgot your password?', forgotPasswordRedirect = '/forgot-password' } = {},
     services: { emailSubmit = handleSignInWithEmail } = {}, customHook = useAuthForm,
