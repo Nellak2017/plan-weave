@@ -114,6 +114,7 @@ export const useDependency = taskID => {
     const invalidTargets = useMemo(() => {
         const visited = new Set()
         const stack = [taskID]
+        // eslint-disable-next-line fp/no-loops
         while (stack.length > 0) {
             const current = stack.pop()
             if (!visited.has(current)) {
