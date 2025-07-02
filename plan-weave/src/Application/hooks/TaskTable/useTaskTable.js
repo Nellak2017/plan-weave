@@ -3,6 +3,7 @@ import { getHeaderLabels, getTaskRenderNumber, firstCompleteIndex, lastCompleteI
 import store from "../../store"
 import { isFullTask as isFullTaskSelector, properlyOrderedTasks } from '../../selectors.js'
 import { updateDnDThunk } from '../../thunks.js'
+// import { useInterval } from '../Helpers/useInterval.js'
 
 const dispatch = store ? store.dispatch : () => { }
 export const useTaskTableDefault = () => {
@@ -12,6 +13,7 @@ export const useTaskTableDefault = () => {
     const renderNumber = useMemo(() => getTaskRenderNumber(isFullTask), [isFullTask])
     const start = firstCompleteIndex(taskList), end = lastCompleteIndex(taskList) // Needed so that you can not place incomplete tasks in the range of completed tasks!
     const firstIncomplete = useMemo(() => firstIncompleteIndex(taskList), [taskList])
+    // useInterval(() => console.log('hi'), 60*1000) // TODO: Loop through the tasks and send an update for the correct calculated liveTime for each every 1 minute
     return {
         childState: { taskList, labels, renderNumber },
         childServices: {

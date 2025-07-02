@@ -12,23 +12,24 @@ import { initialTaskUpdate } from '../Application/entities/tasks/tasksThunks.js'
 import { setUserID } from '../Application/sessionContexts/auth.js'
 import { useSupabaseAuth } from '../Application/hooks/Helpers/useSupabaseAuth.js'
 import { fetchTasksFromSupabase } from '../Infra/Supabase/supabase_controller.js'
+import { tasks as tasksSelector } from '../Application/selectors.js'
 
-// TODO: There is a bug where if the user navigates away from the page and returns, waste and efficiency and liveTimeStamp are messed with
-// NOTE: The Above TODO may possibly be fixed if we find a way to make the 'initialTaskUpdate' only run for the length of the session!
-// NOTE: It may also be possible to fix the problem by checking if valid tasks exist in the redux store and if so we don't need to fetch or something
+// TODO: There is a bug where if the user unexpectedly refreshes or closes the tab, then the data fetched later is stale
+// NOTE: This seems to be caused by liveTime being stale. We need to periodically update liveTime or something to mitigate this
 const PlanWeave = () => {
 	const { NavData } = usePlanWeavePage?.() || {}
 	const { middleContentData, rightContentData } = NavData
 	const dispatch = store.dispatch
 	const router = useRouter()
 	const { user, loading, error } = useSupabaseAuth()
+	const taskList = tasksSelector()
 	useRedirectIfUnauthorized(user, loading)
 	useEffect(() => {
-		if (user) {
+		if (user && taskList?.length === 0) {
 			(async () => dispatch(initialTaskUpdate({ taskList: await fetchTasksFromSupabase() })))()
 			dispatch(setUserID(user?.id))
 		}
-	}, [user, dispatch])
+	}, [user, taskList?.length, dispatch])
 	// TODO: There is a code smell associated with how I implemented the Nav slots. Something about it is off. Investigate to improve abstraction.
 	return loading || error || !user
 		? <LoadingOrError loading={loading} error={error} user={user} />
