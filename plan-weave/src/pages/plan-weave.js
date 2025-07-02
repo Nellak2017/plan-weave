@@ -13,6 +13,9 @@ import { setUserID } from '../Application/sessionContexts/auth.js'
 import { useSupabaseAuth } from '../Application/hooks/Helpers/useSupabaseAuth.js'
 import { fetchTasksFromSupabase } from '../Infra/Supabase/supabase_controller.js'
 
+// TODO: There is a bug where if the user navigates away from the page and returns, waste and efficiency and liveTimeStamp are messed with
+// NOTE: The Above TODO may possibly be fixed if we find a way to make the 'initialTaskUpdate' only run for the length of the session!
+// NOTE: It may also be possible to fix the problem by checking if valid tasks exist in the redux store and if so we don't need to fetch or something
 const PlanWeave = () => {
 	const { NavData } = usePlanWeavePage?.() || {}
 	const { middleContentData, rightContentData } = NavData

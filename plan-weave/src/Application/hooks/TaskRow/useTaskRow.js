@@ -97,9 +97,38 @@ export const useDependency = taskID => {
     const currentTaskRow = taskSelector?.(taskID) || {}
     const { dependencies } = currentTaskRow
     const tasks = properlyOrderedTasks?.() || []
+
+    // STEP 1: Build reverse dependency graph
+    const reverseMap = useMemo(() => {
+        const map = new Map()
+        tasks.forEach(task => {
+            (task.dependencies || []).forEach(dep => {
+                if (!map.has(dep)) map.set(dep, [])
+                map.get(dep).push(task.id)
+            })
+        })
+        return map
+    }, [tasks])
+
+    // STEP 2: Find all tasks that (transitively) depend on taskID
+    const invalidTargets = useMemo(() => {
+        const visited = new Set()
+        const stack = [taskID]
+        while (stack.length > 0) {
+            const current = stack.pop()
+            if (!visited.has(current)) {
+                visited.add(current)
+                stack.push(...reverseMap.get(current) || [])
+            }
+        }
+        return visited
+    }, [taskID, reverseMap])
+
+    // STEP 3: Build options list (exclude self + tasks that depend on this one)
+    const options = useMemo(() => tasks?.filter(task => !invalidTargets.has(task.id))?.map(task => ({ value: task?.id, label: `${task?.task} (${task?.id})` })), [tasks, invalidTargets]) // taskID
+
     const defaultValueRef = useRef(dependencies || [])
-    const defaultValue = (defaultValueRef.current).map(depID => { const match = tasks?.find(t => t?.id === depID); return match ? { value: match?.id, label: `${match?.task} (${match?.id})` } : null }).filter(Boolean) // use a ref to keep it constant always
-    const options = useMemo(() => tasks?.filter(task => task?.id !== taskID)?.map(task => ({ value: task?.id, label: `${task?.task} (${task?.id})` })), [tasks, taskID])
+    const defaultValue = (defaultValueRef.current)?.map(depID => { const match = tasks?.find(t => t?.id === depID); return match ? { value: match?.id, label: `${match?.task} (${match?.id})` } : null }).filter(Boolean) // use a ref to keep it constant always
     const childState = { defaultValue, options, }
     const childServices = { onChangeEvent: (reason, details) => dispatch(editDependenciesThunkAPI({ taskID, reason, details })), }
     return { childState, childServices }
