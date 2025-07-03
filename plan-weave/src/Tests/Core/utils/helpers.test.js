@@ -25,8 +25,10 @@ import {
 	pipe,
 	getAvailableThreads,
 	computeUpdatedLiveTime, // compute part of live time. not covered by property based tests (it is effectively addition)
+	getInsertionIndex,
+	insertTaskAtIndex,
 } from '../../../Core/utils/helpers.js'
-import {  MAX_SAFE_DATE } from '../../../Core/utils/constants.js'
+import { MAX_SAFE_DATE } from '../../../Core/utils/constants.js'
 import { fc } from '@fast-check/jest'
 
 describe('clamp', () => {
@@ -863,4 +865,102 @@ describe('computeUpdatedLiveTime', () => {
 		})
 	})
 	// --- Property Based Tests
+})
+describe('getInsertionIndex', () => {
+	const testCases = [
+		{
+			name: 'Page 1, less than full page → insert at end',
+			input: { tasksPerPage: 10, pageNumber: 1, taskList: Array(7).fill('task') },
+			expected: 7,
+		},
+		{
+			name: 'Page 1, exactly full page → insert at endIndex - 1',
+			input: { tasksPerPage: 10, pageNumber: 1, taskList: Array(10).fill('task') },
+			expected: 9,
+		},
+		{
+			name: 'Page 2, taskList has 20 → full → insert at endIndex - 1',
+			input: { tasksPerPage: 10, pageNumber: 2, taskList: Array(20).fill('task') },
+			expected: 19,
+		},
+		{
+			name: 'Page 2, only 15 tasks → incomplete page → insert at end',
+			input: { tasksPerPage: 10, pageNumber: 2, taskList: Array(15).fill('task') },
+			expected: 15,
+		},
+		{
+			name: 'Page 3, taskList only has 15 → insert at end',
+			input: { tasksPerPage: 10, pageNumber: 3, taskList: Array(15).fill('task') },
+			expected: 15,
+		},
+		{
+			name: 'Page 1, empty task list → insert at index 0',
+			input: { tasksPerPage: 10, pageNumber: 1, taskList: [] },
+			expected: 0,
+		},
+		{
+			name: 'Page 2, taskList has 11 -> insert at index 10',
+			input: { tasksPerPage: 10, pageNumber: 2, taskList: Array(11).fill('task')},
+			expected: 11,
+		}
+	]
+	testCases.forEach(({ name, input, expected }) => {
+    test(name, () => {
+      expect(getInsertionIndex(input)).toBe(expected)
+    })
+  })
+})
+describe('insertTaskAtIndex', () => {
+  const testCases = [
+    {
+      name: 'Insert in middle',
+      input: {
+        taskList: ['A', 'B', 'D'],
+        insertLocation: 2,
+        addedTask: 'C',
+      },
+      expected: ['A', 'B', 'C', 'D'],
+    },
+    {
+      name: 'Insert at beginning',
+      input: {
+        taskList: ['B', 'C'],
+        insertLocation: 0,
+        addedTask: 'A',
+      },
+      expected: ['A', 'B', 'C'],
+    },
+    {
+      name: 'Insert at end',
+      input: {
+        taskList: ['A', 'B'],
+        insertLocation: 2,
+        addedTask: 'C',
+      },
+      expected: ['A', 'B', 'C'],
+    },
+    {
+      name: 'Insert into empty list',
+      input: {
+        taskList: [],
+        insertLocation: 0,
+        addedTask: 'X',
+      },
+      expected: ['X'],
+    },
+	{
+      name: 'Insert into page 2 with array(11) to have it at end of array',
+      input: {
+        taskList: Array(11).fill('task'),
+        insertLocation: 11,
+        addedTask: 'X',
+      },
+      expected: [...Array(11).fill('task'), 'X'],
+    },
+  ]
+  testCases.forEach(({ name, input, expected }) => {
+    test(name, () => {
+      expect(insertTaskAtIndex(input)).toEqual(expected)
+    })
+  })
 })
