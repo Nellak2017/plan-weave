@@ -1,11 +1,11 @@
 /*eslint-disable  react-hooks/exhaustive-deps*/
 import { useMemo, useEffect } from 'react'
 import { parseISO } from 'date-fns'
-import { isOwl, isFullTask, fsmControlledState, timeRange, properlyOrderedTasks } from '../../selectors.js'
+import { isOwl, isFullTask, fsmControlledState, timeRange, properlyOrderedTasks, tasksPerPage as tasksPerPageSelector, pageNumber as pageNumberSelector } from '../../selectors.js'
 import { searchThunk, sortThunk, toggleThunk, updateTimeRangeThunk, addTaskThunkAPI, updateMultiDeleteFSMThunk } from '../../thunks.js'
 import { VALID_SEARCH_IDS, VALID_SORT_IDS, VALID_TIMERANGE_IDS, VALID_TOGGLE_IDS, VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import store from '../../store.js'
-import { firstIncompleteIndex } from '../../../Core/utils/helpers.js'
+import { firstIncompleteIndex, getInsertionIndex } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
 import { setDefaultTime } from '../../boundedContexts/timeRange/timeRangeSlice.js'
 
@@ -34,12 +34,13 @@ export const useTopSlot = () => {
 }
 export const useBottomSlot = () => {
     const { endTaskEditor } = timeRange(), taskList = properlyOrderedTasks(), firstIncomplete = useMemo(() => firstIncompleteIndex(taskList), [taskList]), prevTaskID = taskList?.[firstIncomplete]?.id || 0
+    const tasksPerPage = tasksPerPageSelector(), pageNumber = pageNumberSelector(), insertLocation = getInsertionIndex({ tasksPerPage, pageNumber, taskList }) // location to insert the added task
     const childState = {
         isFullTask: isFullTask(), fsmControlledState: fsmControlledState(), isOwl: isOwl(),
         endTime: useMemo(() => endTaskEditor?.defaultTime ? parseISO(endTaskEditor?.defaultTime) : new Date(), [endTaskEditor?.defaultTime]),
     }
     const childServices = {
-        addTask: () => { dispatch(addTaskThunkAPI({ prevTaskID })) },
+        addTask: () => { dispatch(addTaskThunkAPI({ prevTaskID, insertLocation })) },
         fullTaskToggle: () => { dispatch(toggleThunk({ id: VALID_TOGGLE_IDS.FULL_TASK_ID })) },
         setMultiDeleteFSMState: value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) },
         sort: ({ value, id = VALID_SORT_IDS?.SORT_TASK_EDITOR }) => { dispatch(sortThunk({ id, value })) },

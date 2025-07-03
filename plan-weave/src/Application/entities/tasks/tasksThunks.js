@@ -11,14 +11,14 @@ export const initialTaskUpdate = ({ taskList }) => dispatch => {
     dispatch(updateTasks(taskList))
     dispatch(addManyDnD(taskList.length))
 }
-export const addTaskThunkAPI = ({ prevTaskID }) => dispatch => {
+export const addTaskThunkAPI = ({ prevTaskID, insertLocation }) => dispatch => {
     // TODO: Look closer at this task creation, you miss atleast userID upon creation
     const currentTimeMillis = new Date().getTime()
     const addedTask = { ...DEFAULT_FULL_TASK, id: currentTimeMillis, liveTimeStamp: new Date().toISOString() }
-    addTaskAPI(addedTask)                      // 1. POST to API
-    dispatch(addTask(addedTask))               // 2. Add task to local reducer to sync state optimistically
-    dispatch(addDnD())                         // 3. Update the dnd config by adding the next ordinal to the list
-    toast.info('You added a New Default Task') // 4. Inform user they added a new task
+    addTaskAPI(addedTask)                                                // 1. POST to API
+    dispatch(addTask({ insertLocation, addedTask }))                     // 2. Add task to local reducer to sync state optimistically
+    dispatch(addDnD())                                                   // 3. Update the dnd config by adding the next ordinal to the list
+    toast.info('You added a New Default Task')                           // 4. Inform user they added a new task
     dispatch(setPrevLiveTaskID(prevTaskID))
 } // Reducer + Business Logic + Side-effects
 // TODO: Refactor the delete functions into one unifed function and use that instead OR do the general specific split as seen in the update functions

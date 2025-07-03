@@ -34,6 +34,7 @@ export const usePlayPause = (taskID) => {
     }, [currentTaskRow?.status, currentTaskRow?.isLive])
     return { isLive, handlePlayPauseClicked }
 }
+// TODO: When a Task completes, it should have an ETA equal to the time it completed by definition and no longer calculated
 export const useCompleteIcon = (taskID, currentTime) => {
     const currentTaskRow = taskSelector(taskID), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector(), isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected(), fsmState = fsmControlledState()
     // --- Choose / Chosen Many-To-One State Updates (Many ways to get atleast one task selected, One way to update state)
@@ -53,6 +54,11 @@ export const useTaskInputContainer = taskID => {
     const childServices = { onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ taskID, taskName: e.target.value })) } }
     return { childState, childServices }
 }
+// TODO: Ensure that when a task is deleted, all the references to that task are also deleted in the task dependencies
+// TODO: Investigate isOld bug where task is considered old when it isn't
+// TODO: Investigate Drag and Drop bug where incomplete task snaps out of position when you have incomplete tasks above it
+// TODO: Investigate a refresh all bug where "invalid time" happens when it is 1 day later and I try to refresh
+// TODO: There is a bug where waste gets bigger and bigger the more you complete a task, investigate
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on liveTime
     const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID), { ttc } = currentTaskRow
     const waste = useMemo(() => computeUpdatedWaste({ liveTime, ttc }), [currentTaskRow, liveTime, ttc, currentTime])

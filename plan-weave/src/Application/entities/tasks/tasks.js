@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit"
-import { dateToToday, add } from "../../../Core/utils/helpers"
+import { dateToToday, add, insertTaskAtIndex } from "../../../Core/utils/helpers"
 import { TASK_STATUSES } from "../../../Core/utils/constants"
 
 const tasks = createSlice({
@@ -7,7 +7,10 @@ const tasks = createSlice({
     initialState: [],
     reducers: {
         updateTasks: (_, action) => action.payload, // lets you change all global tasks at once
-        addTask: (state, action) => [action.payload, ...state],// Add a new task to the state
+        addTask: (state, action) => {
+            const { insertLocation, addedTask } = action.payload
+            return insertTaskAtIndex({ taskList: state, insertLocation, addedTask })
+        }, // Add a new task to the state at the end of the pagination for better UX
         deleteTask: (state, action) => {
             const { taskID } = action?.payload || {}
             return state?.filter(task => task?.id !== taskID)

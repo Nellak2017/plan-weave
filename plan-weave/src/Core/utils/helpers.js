@@ -109,3 +109,11 @@ export const processThreadOptions = (oldOptions, newThread) => Array.from(new Se
 export const getAvailableThreads = tasks => [...Array.from(new Set(tasks.map(task => task?.parentThread?.trim()))).filter(option => option.trim() !== '')]
 // -- TaskControl helpers
 export const formatTaskControlTimeLeft = ({ currentTime, endTime, overNightMode, }) => timeFormat(findTimeLeft((Math.max(0, (overNightMode ? getTime(new Date(endTime)) + MILLISECONDS_PER_DAY : getTime(endTime)) - currentTime.getTime()) / MILLISECONDS_PER_HOUR)), { minuteText: 'minutes left', hourText: 'hours left' })
+// -- Task Reducer helpers
+export const getInsertionIndex = ({ tasksPerPage, pageNumber, taskList }) => {
+	const startIndex = (pageNumber - 1) * tasksPerPage
+	const endIndex = startIndex + tasksPerPage
+	if (taskList.length <= startIndex) { return taskList.length }
+	return taskList.slice(startIndex, endIndex).length === tasksPerPage ? endIndex - 1 : taskList.length
+}
+export const insertTaskAtIndex = ({ taskList, insertLocation, addedTask }) => [...taskList.slice(0, insertLocation), addedTask, ...taskList.slice(insertLocation)]
