@@ -3,7 +3,7 @@ import { useMemo, useEffect, useRef } from 'react'
 import store from '../../store.js'
 import { task as taskSelector, timeRange, userID as userIDSelector, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks, liveTime as liveTimeSelector, dependencyEtasMillis as dependencyEtasMillisSelector, } from '../../selectors.js'
 import { highlightTaskRow, isTaskOld, isStatusChecked, indexOfTaskToBeDeleted, computeUpdatedLiveTime, computeUpdatedWaste, computeUpdatedEfficiency, calculateEta, } from '../../../Core/utils/helpers.js'
-import { playPauseTaskThunkAPI, completeTaskThunkAPI, updateDerivedThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, editLiveTimeStampAPI, editLiveTimeAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
+import { playPauseTaskThunkAPI, pauseTaskThunkAPI, completeTaskThunkAPI, updateDerivedThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, editLiveTimeStampAPI, editLiveTimeAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
@@ -14,6 +14,13 @@ import { useChangeEffect } from '../Helpers/useChangeEffect.js'
 // TODO: Test all more deeply, they appear done with few minor exceptions like last 3, api, correction of read only
 const dispatch = store.dispatch
 const setMultiDeleteFSMState = value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) }
+const updateLiveTimeAndDerived = ({ currentTaskRow, liveTimeStamp, currentTime, taskID }) => {
+    const liveTime = computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime })
+    dispatch(editLiveTimeAPI({ taskID, liveTime }))
+    const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
+    dispatch(updateDerivedThunkAPI({ currentTaskRow: { ...currentTaskRow, liveTime }, dependencyEtasMillis }))
+    // Set ETA to now
+}
 export const useTaskRow = taskID => {
     const usedTask = taskSelector(taskID)
     const { status, eta } = usedTask || {}
@@ -24,71 +31,29 @@ export const useTaskRow = taskID => {
     return { status, highlight }
 }
 export const usePlayPause = (taskID) => {
-    const currentTaskRow = taskSelector(taskID) || {}, { isLive, liveTimeStamp } = currentTaskRow, currentTime = new Date()
+    const currentTaskRow = taskSelector(taskID) || {}, { isLive } = currentTaskRow
     const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ currentTaskRow })) }
-    // --- Play/Pause many-to-one State Updates
-    // useChangeEffect(() => {}, [currentTaskRow?.status, currentTaskRow?.isLive])
     return { isLive, handlePlayPauseClicked }
 }
 // TODO: When a Task completes, it should have an ETA equal to the time it completed by definition and no longer calculated
 export const useCompleteIcon = (taskID, currentTime) => {
     const currentTaskRow = taskSelector(taskID), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector(), isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected(), fsmState = fsmControlledState()
     const { liveTimeStamp } = currentTaskRow
+    const isComplete = currentTaskRow?.status === TASK_STATUSES.COMPLETED, isLive = currentTaskRow?.isLive
     // --- Choose / Chosen Many-To-One State Updates (Many ways to get atleast one task selected, One way to update state)
     useEffect(() => {
         isAtleastOneTaskSelectedForDeletion ? handleMinOne(setMultiDeleteFSMState, fsmState) : handleMaxZero(setMultiDeleteFSMState, fsmState)
     }, [isAtleastOneTaskSelectedForDeletion, fsmState])
     // --- Complete/Incomplete Many-To-One State Updates
-    /*
-Note: When a task is completed, waste and efficiency and eta are frozen in place
-
-Logic table for expected updates for each case:
-
-(paused, incomplete) -> (paused, complete) = { status = 'complete', lastComplete = now; isLive = false, eta = now; }
-(paused, incomplete) -> (playing, incomplete) = { ; isLive = true, liveTimeStamp = now; }
-(paused, complete) -> (paused, incomplete) = { status = 'incomplete', lastIncomplete = now; isLive = false; ; }
-
-(playing, incomplete) -> (paused, complete) = { status = 'complete', lastComplete = now; isLive = false, liveTime = calcLiveTime(...); waste = calcWaste(...), eff = calcEff(...), eta = now }
-(playing, incomplete) -> (paused, incomplete) = { ; isLive = false, liveTime = calcLiveTime(...); waste = calcWaste(...), eff = calcEff(...), eta = now }
-
-Table for how to detect these cases (Before isLive changes):
-
-# isLive signal changes
-(paused, incomplete) -> (playing, incomplete) = (isLive && !isComplete) 
-(playing, incomplete) -> (paused, incomplete) = (!isLive && !isComplete)
- 
-# isComplete signal changes
-(paused, incomplete) -> (paused, complete) = (isComplete && !isLive) 
-(paused, complete) -> (paused, incomplete) = (!isComplete && !isLive) 
-(playing, incomplete) -> (paused, complete) = (isComplete && isLive) // can only happen if complete is pressed
-*/
-    // NOTE: This way of doing it is the hacky useEffect way. For a better way, consider using state machines
+    // TODO: This way of doing it is the hacky useEffect way. For a better way, consider using state machines
     useChangeEffect(() => {
-        const isComplete = currentTaskRow?.status === TASK_STATUSES.COMPLETED, isLive = currentTaskRow?.isLive
-        dispatch(playPauseTaskThunkAPI({ currentTaskRow, overrideValue: false })) // Always set isLive to false here since we are not doing it in the Thunk (Temporal Coupling)
-        if (!isComplete && !isLive) return // (paused, complete) -> (paused, incomplete)
-        else if (isComplete && !isLive) return // (paused, incomplete) -> (paused, complete)
-        else if (isComplete && isLive) {
-            const liveTime = computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime })
-            dispatch(editLiveTimeAPI({ taskID, liveTime }))
-            const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
-            dispatch(updateDerivedThunkAPI({ currentTaskRow: { ...currentTaskRow, liveTime }, dependencyEtasMillis }))
-            // Set ETA to now
-        } // (playing, incomplete) -> (paused, complete)
-        else return // (playing, incomplete) -> (playing, incomplete) = (!isComplete && isLive) = not possible
-        // NOTE: We must update isLive here, but be extremely careful not to create an infinite loop!
-        // NOTE: We created temporal coupling by using isLive to determine states, this means order matters quite alot. We could re-write to state machine but that takes effort
+        dispatch(pauseTaskThunkAPI({ currentTaskRow })) // Always set isLive to false here since we are not doing it in the Thunk (Temporal Coupling)
+        if (isComplete && isLive) updateLiveTimeAndDerived({ currentTaskRow, liveTimeStamp, currentTime, taskID }) // (playing, incomplete) -> (paused, complete)
     }, [currentTaskRow?.status])
     useChangeEffect(() => {
-        if (currentTaskRow?.status === TASK_STATUSES.COMPLETED) return // To prevent infinite loops (due to temporal coupling aka isLive updated _after_ something)
-        if (currentTaskRow?.isLive) { dispatch(editLiveTimeStampAPI({ taskID, liveTimeStamp: currentTime.toISOString() })) } // (paused, incomplete) -> (playing, incomplete)
-        else {
-            // update liveTime, then update derived, set eta to now
-            const liveTime = computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime })
-            dispatch(editLiveTimeAPI({ taskID, liveTime }))
-            const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
-            dispatch(updateDerivedThunkAPI({ currentTaskRow: { ...currentTaskRow, liveTime }, dependencyEtasMillis }))
-        } // (playing, incomplete) -> (paused, incomplete)
+        if (isComplete) return // To prevent infinite loops (due to temporal coupling aka isLive updated _after_ something)
+        if (isLive) dispatch(editLiveTimeStampAPI({ taskID, liveTimeStamp: currentTime.toISOString() }))  // (paused, incomplete) -> (playing, incomplete)
+        else updateLiveTimeAndDerived({ currentTaskRow, liveTimeStamp, currentTime, taskID })  // (playing, incomplete) -> (paused, incomplete)
     }, [currentTaskRow?.isLive])
     return { isChecked, handleCheckBoxClicked: () => { isHighlighting ? dispatch(toggleSelectTask({ taskID })) : dispatch(completeTaskThunkAPI({ currentTaskRow })) } }
 }
@@ -103,7 +68,6 @@ export const useTaskInputContainer = taskID => {
 // TODO: Investigate isOld bug where task is considered old when it isn't
 // TODO: Investigate Drag and Drop bug where incomplete task snaps out of position when you have incomplete tasks above it
 // TODO: Investigate a refresh all bug where "invalid time" happens when it is 1 day later and I try to refresh
-// TODO: There is a bug where waste gets bigger and bigger the more you complete a task, investigate
 export const useWaste = (taskID, currentTime) => { // We calculate this from Redux state and memoize on liveTime
     const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID), { ttc } = currentTaskRow
     const waste = useMemo(() => computeUpdatedWaste({ liveTime, ttc }), [currentTaskRow, liveTime, ttc, currentTime])

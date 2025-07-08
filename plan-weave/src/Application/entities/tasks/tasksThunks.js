@@ -16,7 +16,8 @@ export const addTaskThunkAPI = ({ prevTaskID, insertLocation }) => dispatch => {
     const currentTimeMillis = new Date().getTime(), currentTimeISO = new Date(currentTimeMillis).toISOString()
     const { liveTime, ttc } = DEFAULT_FULL_TASK
     const dependencyEtasMillis = [currentTimeMillis]
-    const addedTask = { ...DEFAULT_FULL_TASK, id: currentTimeMillis, liveTimeStamp: currentTimeISO, lastCompleteTime: currentTimeISO, lastIncompleteTime: currentTimeISO, 
+    const addedTask = {
+        ...DEFAULT_FULL_TASK, id: currentTimeMillis, liveTimeStamp: currentTimeISO, lastCompleteTime: currentTimeISO, lastIncompleteTime: currentTimeISO,
         efficiency: computeUpdatedEfficiency({ liveTime, ttc }),
         eta: calculateEta({ liveTime, ttc, dependencyEtasMillis })
     }
@@ -27,9 +28,13 @@ export const addTaskThunkAPI = ({ prevTaskID, insertLocation }) => dispatch => {
     dispatch(setPrevLiveTaskID(prevTaskID))
 } // Reducer + Business Logic + Side-effects
 // TODO: Refactor the delete functions into one unifed function and use that instead OR do the general specific split as seen in the update functions
-export const playPauseTaskThunkAPI = ({ currentTaskRow: { id, isLive, status }, overrideValue = null }) => dispatch => {
-    // if (status === TASK_STATUSES.COMPLETED) return // If it is already complete, play or pause doesn't update
-    const update = { taskID: id, field: FULL_TASK_FIELDS.isLive, value: overrideValue !== null ? overrideValue : !isLive }
+export const playPauseTaskThunkAPI = ({ currentTaskRow: { id, isLive } }) => dispatch => {
+    const update = { taskID: id, field: FULL_TASK_FIELDS.isLive, value: !isLive }
+    updateTaskFieldAPI(update)
+    dispatch(updateTask(update))
+}
+export const pauseTaskThunkAPI = ({ currentTaskRow: { id } }) => dispatch => {
+    const update = { taskID: id, field: FULL_TASK_FIELDS.isLive, value: false }
     updateTaskFieldAPI(update)
     dispatch(updateTask(update))
 }
@@ -39,7 +44,6 @@ export const completeTaskThunkAPI = ({ currentTaskRow }) => dispatch => {
     const updates = {
         [FULL_TASK_FIELDS.status]: toggleTaskStatus(status),
         [status === TASK_STATUSES.INCOMPLETE ? lastCompleteTime : lastIncompleteTime]: new Date().toISOString(),
-        //[FULL_TASK_FIELDS.isLive]: false, // If a task is complete it is never live
     }
     updateTaskAPI({ ...currentTaskRow, ...updates })    // 1. PUT to API
     dispatch(updateTasksBatch({ id, updates }))         // 2. Update local Redux store to match DB 
