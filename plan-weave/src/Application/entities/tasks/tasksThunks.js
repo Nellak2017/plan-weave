@@ -2,12 +2,13 @@ import { addTask, deleteTask, updateTask, deleteTasks, updateTasksBatch, updateT
 import { addManyDnD, addDnD, deleteMultipleDnD, deleteDnD } from '../../sessionContexts/dnd.js'
 import { setPrevLiveTaskID } from '../../sessionContexts/prevLiveTaskID.js'
 import { DEFAULT_FULL_TASK, FULL_TASK_FIELDS, TASK_STATUSES } from '../../../Core/utils/constants.js'
-import { toggleTaskStatus, computeUpdatedWaste, computeUpdatedEfficiency, calculateEta, dateToToday, add, } from '../../../Core/utils/helpers.js'
+import { toggleTaskStatus, computeUpdatedWaste, computeUpdatedEfficiency, calculateEta, computeUpdatedLiveTime, dateToToday, add, } from '../../../Core/utils/helpers.js'
 import { toast } from 'react-toastify'
 import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
 import { addTaskToSupabase as addTaskAPI, updateTaskToSupabase as updateTaskAPI, updateTaskFieldInSupabase as updateTaskFieldAPI, deleteTasksInSupabase as deleteTasksAPI, addTaskDependenciesInSupabase as addTaskDependenciesAPI, deleteTaskDependenciesInSupabase as deleteTaskDependenciesAPI, clearTaskDependenciesInSupabase as clearTaskDependenciesAPI, refreshTaskInSupabase as refreshTaskAPI, refreshAllTasksInSupabase as refreshAllTasksAPI, } from '../../../Infra/Supabase/supabase_controller.js'
 
 export const initialTaskUpdate = ({ taskList }) => dispatch => {
+    if (!taskList?.length) return
     dispatch(updateTasks(taskList))
     dispatch(addManyDnD(taskList.length))
 }
@@ -27,27 +28,37 @@ export const addTaskThunkAPI = ({ prevTaskID, insertLocation }) => dispatch => {
     toast.info('You added a New Default Task')                           // 4. Inform user they added a new task
     dispatch(setPrevLiveTaskID(prevTaskID))
 } // Reducer + Business Logic + Side-effects
+const updateLiveTimeAndDerived = ({ currentTaskRow, liveTimeStamp, currentTime, taskID, dependencyEtasMillis }) => dispatch => {
+    const liveTime = computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime })
+    dispatch(editLiveTimeAPI({ taskID, liveTime }))
+    dispatch(updateDerivedThunkAPI({ currentTaskRow: { ...currentTaskRow, liveTime }, dependencyEtasMillis }))
+}
 // TODO: Refactor the delete functions into one unifed function and use that instead OR do the general specific split as seen in the update functions
-export const playPauseTaskThunkAPI = ({ currentTaskRow: { id, isLive } }) => dispatch => {
-    const update = { taskID: id, field: FULL_TASK_FIELDS.isLive, value: !isLive }
+export const playPauseTaskThunkAPI = ({ currentTaskRow, currentTime, dependencyEtasMillis }) => dispatch => {
+    const { id: taskID, isLive, status, liveTimeStamp } = currentTaskRow || {}
+    if (status === TASK_STATUSES.COMPLETED) return
+    const update = { taskID, field: FULL_TASK_FIELDS.isLive, value: !isLive }
     updateTaskFieldAPI(update)
     dispatch(updateTask(update))
+    if (!isLive) dispatch(editLiveTimeStampAPI({ taskID, liveTimeStamp: currentTime.toISOString() }))  // (paused, incomplete) -> (playing, incomplete)
+    else dispatch(updateLiveTimeAndDerived({ currentTaskRow, liveTimeStamp, currentTime, taskID, dependencyEtasMillis }))             // (playing, incomplete) -> (paused, incomplete)
 }
-export const pauseTaskThunkAPI = ({ currentTaskRow: { id } }) => dispatch => {
-    const update = { taskID: id, field: FULL_TASK_FIELDS.isLive, value: false }
-    updateTaskFieldAPI(update)
-    dispatch(updateTask(update))
-}
-export const completeTaskThunkAPI = ({ currentTaskRow }) => dispatch => {
-    const { id, status, } = currentTaskRow || {}
+export const completeTaskThunkAPI = ({ currentTaskRow, currentTime, dependencyEtasMillis }) => dispatch => {
+    const { id, status, isLive, liveTime, ttc, liveTimeStamp } = currentTaskRow || {}
     const { lastCompleteTime, lastIncompleteTime } = FULL_TASK_FIELDS
+    const isComplete = status === TASK_STATUSES.COMPLETED
     const updates = {
         [FULL_TASK_FIELDS.status]: toggleTaskStatus(status),
-        [status === TASK_STATUSES.INCOMPLETE ? lastCompleteTime : lastIncompleteTime]: new Date().toISOString(),
+        [isComplete ? lastIncompleteTime : lastCompleteTime]: currentTime.toISOString(),
+        [FULL_TASK_FIELDS.isLive]: false, // if it is complete it is always not live
+        [FULL_TASK_FIELDS.eta]: isComplete ? calculateEta({ liveTime, ttc, dependencyEtasMillis }) : currentTime.toISOString(),
     }
     updateTaskAPI({ ...currentTaskRow, ...updates })    // 1. PUT to API
     dispatch(updateTasksBatch({ id, updates }))         // 2. Update local Redux store to match DB 
-    // dispatch(completeTaskDnD(...))                   // 3. Update the dnd config 
+    if (!isComplete && isLive) {                        // 3. Conditionally update liveTime and Derived in both Redux and DB 
+        dispatch(updateLiveTimeAndDerived({ currentTaskRow: { ...currentTaskRow, ttc: 0 }, liveTimeStamp, currentTime, taskID: id, dependencyEtasMillis })) // currentTaskRow is like that to force eta being set to now when appropriate
+    }
+    // dispatch(completeTaskDnD(...))                   // 4. Update the dnd config 
 }
 export const updateDerivedThunkAPI = ({ currentTaskRow, dependencyEtasMillis }) => dispatch => {
     const { id, liveTime, ttc } = currentTaskRow || {}
@@ -70,6 +81,7 @@ export const editWeightThunkAPI = ({ taskID, weight }) => editTaskFieldThunkAPI(
 export const editThreadThunkAPI = ({ taskID, newThread }) => editTaskFieldThunkAPI({ taskID, field: 'parentThread', value: newThread.slice(0, 30) })
 export const editLiveTimeStampAPI = ({ taskID, liveTimeStamp }) => editTaskFieldThunkAPI({ taskID, field: FULL_TASK_FIELDS.liveTimeStamp, value: liveTimeStamp })
 export const editLiveTimeAPI = ({ taskID, liveTime }) => editTaskFieldThunkAPI({ taskID, field: FULL_TASK_FIELDS.liveTime, value: liveTime })
+export const editEtaAPI = ({ taskID, eta }) => editTaskFieldThunkAPI({ taskID, field: FULL_TASK_FIELDS.eta, value: eta })
 export const deleteTasksThunkAPI = ({ taskInfos }) => dispatch => { // taskInfos => [{ index, id }]
     // Possibly some analytics collection stuff before deletion too..
     const IDs = taskInfos.map(info => info?.id), indices = taskInfos.map(info => info?.index)

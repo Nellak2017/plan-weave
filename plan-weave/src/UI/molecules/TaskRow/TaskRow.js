@@ -17,7 +17,7 @@ export const TaskRowDefault = ({ state: { renderNumber, provided, taskID, curren
         >
             <TaskRow renderNumber={renderNumber}>
                 <Drag provided={provided} />
-                <PlayPause taskID={taskID} />
+                <PlayPause taskID={taskID} currentTime={currentTime} />
                 <CompleteIcon taskID={taskID} currentTime={currentTime} />
                 <TaskInputContainer taskID={taskID} />
                 <Waste taskID={taskID} currentTime={currentTime} />

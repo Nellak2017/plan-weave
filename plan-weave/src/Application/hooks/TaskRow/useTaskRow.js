@@ -2,25 +2,16 @@
 import { useMemo, useEffect, useRef } from 'react'
 import store from '../../store.js'
 import { task as taskSelector, timeRange, userID as userIDSelector, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks, liveTime as liveTimeSelector, dependencyEtasMillis as dependencyEtasMillisSelector, } from '../../selectors.js'
-import { highlightTaskRow, isTaskOld, isStatusChecked, indexOfTaskToBeDeleted, computeUpdatedLiveTime, computeUpdatedWaste, computeUpdatedEfficiency, calculateEta, } from '../../../Core/utils/helpers.js'
-import { playPauseTaskThunkAPI, pauseTaskThunkAPI, completeTaskThunkAPI, updateDerivedThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, editLiveTimeStampAPI, editLiveTimeAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
+import { highlightTaskRow, isTaskOld, isStatusChecked, indexOfTaskToBeDeleted, computeUpdatedWaste, computeUpdatedEfficiency, calculateEta, } from '../../../Core/utils/helpers.js'
+import { playPauseTaskThunkAPI, completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import { handleMaxZero, handleMinOne } from '../../finiteStateMachines/MultipleDeleteButton.fsm.js'
-import { TASK_STATUSES } from '../../../Core/utils/constants.js'
-import { useChangeEffect } from '../Helpers/useChangeEffect.js'
 
 // TODO: Test all more deeply, they appear done with few minor exceptions like last 3, api, correction of read only
 const dispatch = store.dispatch
 const setMultiDeleteFSMState = value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) }
-const updateLiveTimeAndDerived = ({ currentTaskRow, liveTimeStamp, currentTime, taskID }) => {
-    const liveTime = computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime })
-    dispatch(editLiveTimeAPI({ taskID, liveTime }))
-    const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
-    dispatch(updateDerivedThunkAPI({ currentTaskRow: { ...currentTaskRow, liveTime }, dependencyEtasMillis }))
-    // Set ETA to now
-}
 export const useTaskRow = taskID => {
     const usedTask = taskSelector(taskID)
     const { status, eta } = usedTask || {}
@@ -30,32 +21,19 @@ export const useTaskRow = taskID => {
     const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, timeRange: timeRangeStartEnd })), [timeRangeStartEnd, isChecked, isHighlighting, eta])
     return { status, highlight }
 }
-export const usePlayPause = (taskID) => {
+export const usePlayPause = (taskID, currentTime) => {
     const currentTaskRow = taskSelector(taskID) || {}, { isLive } = currentTaskRow
-    const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ currentTaskRow })) }
+    const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
+    const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ currentTaskRow, currentTime, dependencyEtasMillis })) }
     return { isLive, handlePlayPauseClicked }
 }
 // TODO: When a Task completes, it should have an ETA equal to the time it completed by definition and no longer calculated
 export const useCompleteIcon = (taskID, currentTime) => {
     const currentTaskRow = taskSelector(taskID), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector(), isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected(), fsmState = fsmControlledState()
-    const { liveTimeStamp } = currentTaskRow
-    const isComplete = currentTaskRow?.status === TASK_STATUSES.COMPLETED, isLive = currentTaskRow?.isLive
+    const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
     // --- Choose / Chosen Many-To-One State Updates (Many ways to get atleast one task selected, One way to update state)
-    useEffect(() => {
-        isAtleastOneTaskSelectedForDeletion ? handleMinOne(setMultiDeleteFSMState, fsmState) : handleMaxZero(setMultiDeleteFSMState, fsmState)
-    }, [isAtleastOneTaskSelectedForDeletion, fsmState])
-    // --- Complete/Incomplete Many-To-One State Updates
-    // TODO: This way of doing it is the hacky useEffect way. For a better way, consider using state machines
-    useChangeEffect(() => {
-        dispatch(pauseTaskThunkAPI({ currentTaskRow })) // Always set isLive to false here since we are not doing it in the Thunk (Temporal Coupling)
-        if (isComplete && isLive) updateLiveTimeAndDerived({ currentTaskRow, liveTimeStamp, currentTime, taskID }) // (playing, incomplete) -> (paused, complete)
-    }, [currentTaskRow?.status])
-    useChangeEffect(() => {
-        if (isComplete) return // To prevent infinite loops (due to temporal coupling aka isLive updated _after_ something)
-        if (isLive) dispatch(editLiveTimeStampAPI({ taskID, liveTimeStamp: currentTime.toISOString() }))  // (paused, incomplete) -> (playing, incomplete)
-        else updateLiveTimeAndDerived({ currentTaskRow, liveTimeStamp, currentTime, taskID })  // (playing, incomplete) -> (paused, incomplete)
-    }, [currentTaskRow?.isLive])
-    return { isChecked, handleCheckBoxClicked: () => { isHighlighting ? dispatch(toggleSelectTask({ taskID })) : dispatch(completeTaskThunkAPI({ currentTaskRow })) } }
+    useEffect(() => { isAtleastOneTaskSelectedForDeletion ? handleMinOne(setMultiDeleteFSMState, fsmState) : handleMaxZero(setMultiDeleteFSMState, fsmState) }, [isAtleastOneTaskSelectedForDeletion, fsmState])
+    return { isChecked, handleCheckBoxClicked: () => { isHighlighting ? dispatch(toggleSelectTask({ taskID })) : dispatch(completeTaskThunkAPI({ currentTaskRow, currentTime, dependencyEtasMillis })) } }
 }
 export const useTaskInputContainer = taskID => {
     const currentTaskRow = taskSelector?.(taskID) || {}

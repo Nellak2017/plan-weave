@@ -12,8 +12,8 @@ import { useCompleteIcon, usePlayPause, useTaskInputContainer, useWaste, useTtc,
 const { dndTooltip, playTooltip, pauseTooltip, completedTooltip, incompleteTooltip, taskTooltip, wasteTooltip, ttcTooltip, etaTooltip, efficencyToolTip, dueToolTip, weightToolTip, threadToolTip, dependencyToolTip, refreshTooltip, deleteTooltip } = TASK_ROW_TOOLTIPS
 
 export const Drag = ({ provided }) => (<DragContainer title={dndTooltip} {...provided?.dragHandleProps ?? ''} ><DragIndicator size={ICON_SIZE} /></DragContainer>)
-export const PlayPause = ({ taskID, customHook = usePlayPause }) => {
-    const { isLive, handlePlayPauseClicked } = customHook?.(taskID) || {}
+export const PlayPause = ({ taskID, currentTime, customHook = usePlayPause }) => {
+    const { isLive, handlePlayPauseClicked } = customHook?.(taskID, currentTime) || {}
     return (
         <IconContainer title={isLive ? pauseTooltip : playTooltip}>
             {isLive

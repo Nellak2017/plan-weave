@@ -27,7 +27,7 @@ const defaultTaskDeserialize = task => ({
     // dependencies not included
     Weight: task?.weight, LastCompleteTime: task?.lastCompleteTime, LastIncompleteTime: task?.lastIncompleteTime, IsLive: task?.isLive
 })
-const defaultTaskSerializeList = taskList => taskList.map(defaultTaskSerialize)
+const defaultTaskSerializeList = taskList => taskList?.map(defaultTaskSerialize)
 const displayError = (consoleErrorMessage = 'Failed to fetch tasks:', toastError = 'Failed to fetch tasks') => consoleError => { console.error(consoleErrorMessage, consoleError); toast.error(toastError); }
 
 // TODO: When a runtime error is thrown, it crashes the app, figure out how to make an error boundary for them
