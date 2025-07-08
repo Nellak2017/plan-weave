@@ -7,6 +7,7 @@ import { toast } from 'react-toastify'
 import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
 import { addTaskToSupabase as addTaskAPI, updateTaskToSupabase as updateTaskAPI, updateTaskFieldInSupabase as updateTaskFieldAPI, deleteTasksInSupabase as deleteTasksAPI, addTaskDependenciesInSupabase as addTaskDependenciesAPI, deleteTaskDependenciesInSupabase as deleteTaskDependenciesAPI, clearTaskDependenciesInSupabase as clearTaskDependenciesAPI, refreshTaskInSupabase as refreshTaskAPI, refreshAllTasksInSupabase as refreshAllTasksAPI, } from '../../../Infra/Supabase/supabase_controller.js'
 
+// TODO: refactor calculateEta to computeDisplayedEta while maintaining correctness
 export const initialTaskUpdate = ({ taskList }) => dispatch => {
     if (!taskList?.length) return
     dispatch(updateTasks(taskList))

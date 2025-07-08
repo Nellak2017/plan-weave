@@ -2,7 +2,7 @@
 import { useMemo, useEffect, useRef } from 'react'
 import store from '../../store.js'
 import { task as taskSelector, timeRange, userID as userIDSelector, isHighlighting as isHighlightingSelector, isChecked as isCheckedSelector, isAtleastOneTaskSelected, fsmControlledState, dnd as dndSelector, getAllThreadOptionsAvailable, properlyOrderedTasks, liveTime as liveTimeSelector, dependencyEtasMillis as dependencyEtasMillisSelector, } from '../../selectors.js'
-import { highlightTaskRow, isTaskOld, isStatusChecked, indexOfTaskToBeDeleted, computeUpdatedWaste, computeUpdatedEfficiency, calculateEta, } from '../../../Core/utils/helpers.js'
+import { highlightTaskRow, isTaskOld, isStatusChecked, indexOfTaskToBeDeleted, computeUpdatedWaste, computeUpdatedEfficiency, computeDisplayedEta } from '../../../Core/utils/helpers.js'
 import { playPauseTaskThunkAPI, completeTaskThunkAPI, editTaskNameThunkAPI, editTtcThunkAPI, editDueThunkAPI, editWeightThunkAPI, updateMultiDeleteFSMThunk, deleteTaskThunkAPI, editThreadThunkAPI, editDependenciesThunkAPI, refreshTaskThunkAPI } from '../../thunks.js'
 import { toggleSelectTask } from '../../entities/tasks/tasks.js'
 import { formatISO } from 'date-fns'
@@ -58,8 +58,8 @@ export const useTtc = taskID => {
     return { childState, childServices }
 }
 export const useEta = (taskID, currentTime) => { // We calculate this from Redux state and memoize on time
-    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID), { ttc } = currentTaskRow, dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
-    const eta = useMemo(() => calculateEta({ ttc, liveTime, dependencyEtasMillis }), [currentTaskRow, liveTime, ttc, dependencyEtasMillis, currentTime])
+    const currentTaskRow = taskSelector?.(taskID) || {}, liveTime = liveTimeSelector(taskID), { ttc, status } = currentTaskRow, dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
+    const eta = useMemo(() => computeDisplayedEta({ liveTime, ttc, dependencyEtasMillis, status, eta: currentTaskRow?.eta }), [currentTaskRow, liveTime, ttc, dependencyEtasMillis, currentTime])
     return { eta }
 }
 export const useEfficiency = (taskID, currentTime) => { // We calculate this from Redux state and memoize on liveTime

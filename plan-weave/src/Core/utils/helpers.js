@@ -88,6 +88,7 @@ export const computeUpdatedLiveTime = ({ oldLiveTime, liveTimeStamp, currentTime
 export const computeUpdatedWaste = ({ liveTime, ttc }) => liveTime - ttc
 export const computeUpdatedEfficiency = ({ liveTime, ttc }) => clamp(ttc / liveTime, EFFICIENCY_RANGE.min, EFFICIENCY_RANGE.max)
 export const calculateEta = ({ liveTime, ttc, dependencyEtasMillis }) => new Date(Math.max(...dependencyEtasMillis) + hoursToMillis(Math.max((ttc - liveTime), 0))).toISOString()
+export const computeDisplayedEta = ({ liveTime, ttc, dependencyEtasMillis, status, eta }) => status === TASK_STATUSES.COMPLETED ? eta : calculateEta({ liveTime, ttc, dependencyEtasMillis })
 // -- HoursInput Component helpers
 export const parseBlur = ({ value, min, max, precision }) => isNaN(parseFloat(value)) ? min : (clamp(parseFloat(value), min, max)).toFixed(precision)
 export const parseChange = ({ value, pattern, min, max }) => (pattern.test(value.trim())) && (between(parseFloat(value), { start: min, end: max }) || /^[^.]*\.[^.]*$/.test(value)) ? value.trim() : ''
