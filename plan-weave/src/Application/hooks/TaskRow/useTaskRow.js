@@ -27,25 +27,69 @@ export const usePlayPause = (taskID) => {
     const currentTaskRow = taskSelector(taskID) || {}, { isLive, liveTimeStamp } = currentTaskRow, currentTime = new Date()
     const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ currentTaskRow })) }
     // --- Play/Pause many-to-one State Updates
-    useChangeEffect(() => {
-        const pausing = currentTaskRow?.isLive && currentTaskRow?.status !== TASK_STATUSES.COMPLETED
-        if (pausing) { dispatch(editLiveTimeStampAPI({ taskID, liveTimeStamp: new Date().toISOString() })) }
-        else dispatch(editLiveTimeAPI({ taskID, liveTime: computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime }) }))
-    }, [currentTaskRow?.status, currentTaskRow?.isLive])
+    // useChangeEffect(() => {}, [currentTaskRow?.status, currentTaskRow?.isLive])
     return { isLive, handlePlayPauseClicked }
 }
 // TODO: When a Task completes, it should have an ETA equal to the time it completed by definition and no longer calculated
 export const useCompleteIcon = (taskID, currentTime) => {
     const currentTaskRow = taskSelector(taskID), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector(), isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected(), fsmState = fsmControlledState()
+    const { liveTimeStamp } = currentTaskRow
     // --- Choose / Chosen Many-To-One State Updates (Many ways to get atleast one task selected, One way to update state)
     useEffect(() => {
         isAtleastOneTaskSelectedForDeletion ? handleMinOne(setMultiDeleteFSMState, fsmState) : handleMaxZero(setMultiDeleteFSMState, fsmState)
     }, [isAtleastOneTaskSelectedForDeletion, fsmState])
     // --- Complete/Incomplete Many-To-One State Updates
+    /*
+Note: When a task is completed, waste and efficiency and eta are frozen in place
+
+Logic table for expected updates for each case:
+
+(paused, incomplete) -> (paused, complete) = { status = 'complete', lastComplete = now; isLive = false, eta = now; }
+(paused, incomplete) -> (playing, incomplete) = { ; isLive = true, liveTimeStamp = now; }
+(paused, complete) -> (paused, incomplete) = { status = 'incomplete', lastIncomplete = now; isLive = false; ; }
+
+(playing, incomplete) -> (paused, complete) = { status = 'complete', lastComplete = now; isLive = false, liveTime = calcLiveTime(...); waste = calcWaste(...), eff = calcEff(...), eta = now }
+(playing, incomplete) -> (paused, incomplete) = { ; isLive = false, liveTime = calcLiveTime(...); waste = calcWaste(...), eff = calcEff(...), eta = now }
+
+Table for how to detect these cases (Before isLive changes):
+
+# isLive signal changes
+(paused, incomplete) -> (playing, incomplete) = (isLive && !isComplete) 
+(playing, incomplete) -> (paused, incomplete) = (!isLive && !isComplete)
+ 
+# isComplete signal changes
+(paused, incomplete) -> (paused, complete) = (isComplete && !isLive) 
+(paused, complete) -> (paused, incomplete) = (!isComplete && !isLive) 
+(playing, incomplete) -> (paused, complete) = (isComplete && isLive) // can only happen if complete is pressed
+*/
+    // NOTE: This way of doing it is the hacky useEffect way. For a better way, consider using state machines
     useChangeEffect(() => {
-        const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
-        dispatch(updateDerivedThunkAPI({ currentTaskRow, dependencyEtasMillis }))
-    }, [currentTaskRow?.status, currentTaskRow?.isLive])
+        const isComplete = currentTaskRow?.status === TASK_STATUSES.COMPLETED, isLive = currentTaskRow?.isLive
+        dispatch(playPauseTaskThunkAPI({ currentTaskRow, overrideValue: false })) // Always set isLive to false here since we are not doing it in the Thunk (Temporal Coupling)
+        if (!isComplete && !isLive) return // (paused, complete) -> (paused, incomplete)
+        else if (isComplete && !isLive) return // (paused, incomplete) -> (paused, complete)
+        else if (isComplete && isLive) {
+            const liveTime = computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime })
+            dispatch(editLiveTimeAPI({ taskID, liveTime }))
+            const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
+            dispatch(updateDerivedThunkAPI({ currentTaskRow: { ...currentTaskRow, liveTime }, dependencyEtasMillis }))
+            // Set ETA to now
+        } // (playing, incomplete) -> (paused, complete)
+        else return // (playing, incomplete) -> (playing, incomplete) = (!isComplete && isLive) = not possible
+        // NOTE: We must update isLive here, but be extremely careful not to create an infinite loop!
+        // NOTE: We created temporal coupling by using isLive to determine states, this means order matters quite alot. We could re-write to state machine but that takes effort
+    }, [currentTaskRow?.status])
+    useChangeEffect(() => {
+        if (currentTaskRow?.status === TASK_STATUSES.COMPLETED) return // To prevent infinite loops (due to temporal coupling aka isLive updated _after_ something)
+        if (currentTaskRow?.isLive) { dispatch(editLiveTimeStampAPI({ taskID, liveTimeStamp: currentTime.toISOString() })) } // (paused, incomplete) -> (playing, incomplete)
+        else {
+            // update liveTime, then update derived, set eta to now
+            const liveTime = computeUpdatedLiveTime({ oldLiveTime: currentTaskRow?.liveTime ?? 0, liveTimeStamp, currentTime })
+            dispatch(editLiveTimeAPI({ taskID, liveTime }))
+            const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)
+            dispatch(updateDerivedThunkAPI({ currentTaskRow: { ...currentTaskRow, liveTime }, dependencyEtasMillis }))
+        } // (playing, incomplete) -> (paused, incomplete)
+    }, [currentTaskRow?.isLive])
     return { isChecked, handleCheckBoxClicked: () => { isHighlighting ? dispatch(toggleSelectTask({ taskID })) : dispatch(completeTaskThunkAPI({ currentTaskRow })) } }
 }
 export const useTaskInputContainer = taskID => {
@@ -54,6 +98,7 @@ export const useTaskInputContainer = taskID => {
     const childServices = { onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ taskID, taskName: e.target.value })) } }
     return { childState, childServices }
 }
+// TODO: Store DnD config in backend so that user order is respected over refreshes
 // TODO: Ensure that when a task is deleted, all the references to that task are also deleted in the task dependencies
 // TODO: Investigate isOld bug where task is considered old when it isn't
 // TODO: Investigate Drag and Drop bug where incomplete task snaps out of position when you have incomplete tasks above it
