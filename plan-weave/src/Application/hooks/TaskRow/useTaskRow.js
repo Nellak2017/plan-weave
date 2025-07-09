@@ -9,7 +9,6 @@ import { formatISO } from 'date-fns'
 import { VALID_MULTI_DELETE_IDS } from '../../validIDs.js'
 import { handleMaxZero, handleMinOne } from '../../finiteStateMachines/MultipleDeleteButton.fsm.js'
 
-// TODO: Test all more deeply, they appear done with few minor exceptions like last 3, api, correction of read only
 const dispatch = store.dispatch
 const setMultiDeleteFSMState = value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) }
 export const useTaskRow = taskID => {
@@ -27,7 +26,6 @@ export const usePlayPause = (taskID, currentTime) => {
     const handlePlayPauseClicked = () => { dispatch(playPauseTaskThunkAPI({ currentTaskRow, currentTime, dependencyEtasMillis })) }
     return { isLive, handlePlayPauseClicked }
 }
-// TODO: When a Task completes, it should have an ETA equal to the time it completed by definition and no longer calculated
 export const useCompleteIcon = (taskID, currentTime) => {
     const currentTaskRow = taskSelector(taskID), isChecked = isCheckedSelector(taskID), isHighlighting = isHighlightingSelector(), isAtleastOneTaskSelectedForDeletion = isAtleastOneTaskSelected(), fsmState = fsmControlledState()
     const dependencyEtasMillis = dependencyEtasMillisSelector(taskID, currentTime)

@@ -7,19 +7,17 @@ import { toast } from 'react-toastify'
 import { refreshTimePickers } from '../../boundedContexts/timeRange/timeRangeSlice.js'
 import { addTaskToSupabase as addTaskAPI, updateTaskToSupabase as updateTaskAPI, updateTaskFieldInSupabase as updateTaskFieldAPI, deleteTasksInSupabase as deleteTasksAPI, addTaskDependenciesInSupabase as addTaskDependenciesAPI, deleteTaskDependenciesInSupabase as deleteTaskDependenciesAPI, clearTaskDependenciesInSupabase as clearTaskDependenciesAPI, refreshTaskInSupabase as refreshTaskAPI, refreshAllTasksInSupabase as refreshAllTasksAPI, } from '../../../Infra/Supabase/supabase_controller.js'
 
-// TODO: refactor calculateEta to computeDisplayedEta while maintaining correctness
 export const initialTaskUpdate = ({ taskList }) => dispatch => {
     if (!taskList?.length) return
     dispatch(updateTasks(taskList))
     dispatch(addManyDnD(taskList.length))
 }
-export const addTaskThunkAPI = ({ prevTaskID, insertLocation }) => dispatch => {
-    // TODO: Look closer at this task creation, you miss atleast userID upon creation
+export const addTaskThunkAPI = ({ prevTaskID, insertLocation, userID }) => dispatch => {
     const currentTimeMillis = new Date().getTime(), currentTimeISO = new Date(currentTimeMillis).toISOString()
     const { liveTime, ttc } = DEFAULT_FULL_TASK
     const dependencyEtasMillis = [currentTimeMillis]
     const addedTask = {
-        ...DEFAULT_FULL_TASK, id: currentTimeMillis, liveTimeStamp: currentTimeISO, lastCompleteTime: currentTimeISO, lastIncompleteTime: currentTimeISO,
+        ...DEFAULT_FULL_TASK, id: currentTimeMillis, userId: userID, liveTimeStamp: currentTimeISO, lastCompleteTime: currentTimeISO, lastIncompleteTime: currentTimeISO,
         efficiency: computeUpdatedEfficiency({ liveTime, ttc }),
         eta: calculateEta({ liveTime, ttc, dependencyEtasMillis })
     }
