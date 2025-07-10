@@ -52,10 +52,11 @@ export const completeTaskThunkAPI = ({ currentTaskRow, currentTime, dependencyEt
         [FULL_TASK_FIELDS.isLive]: false, // if it is complete it is always not live
         [FULL_TASK_FIELDS.eta]: isComplete ? calculateEta({ liveTime, ttc, dependencyEtasMillis }) : currentTime.toISOString(),
     }
-    updateTaskAPI({ ...currentTaskRow, ...updates })    // 1. PUT to API
+    const updatedTaskRow = { ...currentTaskRow, ...updates }
+    updateTaskAPI({ ...updatedTaskRow })                // 1. PUT to API
     dispatch(updateTasksBatch({ id, updates }))         // 2. Update local Redux store to match DB 
     if (!isComplete && isLive) {                        // 3. Conditionally update liveTime and Derived in both Redux and DB 
-        dispatch(updateLiveTimeAndDerived({ currentTaskRow: { ...currentTaskRow, ttc: 0 }, liveTimeStamp, currentTime, taskID: id, dependencyEtasMillis })) // currentTaskRow is like that to force eta being set to now when appropriate
+        dispatch(updateLiveTimeAndDerived({ currentTaskRow: { ...updatedTaskRow, ttc: 0 }, liveTimeStamp, currentTime, taskID: id, dependencyEtasMillis })) // currentTaskRow is like that to force eta being set to now when appropriate
     }
     // dispatch(completeTaskDnD(...))                   // 4. Update the dnd config 
 }
