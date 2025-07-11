@@ -29,7 +29,7 @@ const PlanWeave = () => {
 			(async () => dispatch(initialTaskUpdate({ taskList: await fetchTasksFromSupabase() })))()
 			dispatch(setUserID(user?.id))
 		}
-	}, [user, taskList?.length, dispatch])
+	}, [user, dispatch])
 	// TODO: There is a code smell associated with how I implemented the Nav slots. Something about it is off. Investigate to improve abstraction.
 	return loading || error || !user
 		? <LoadingOrError loading={loading} error={error} user={user} />

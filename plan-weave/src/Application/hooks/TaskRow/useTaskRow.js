@@ -40,7 +40,6 @@ export const useTaskInputContainer = taskID => {
     return { childState, childServices }
 }
 // TODO: Investigate why when I complete a task client side and then refresh it is then incomplete and playing (playing, incomplete) -> (paused, complete)
-// TODO: Investigate why rapid deletions cause ghost tasks to appear
 // TODO: Store DnD config in backend so that user order is respected over refreshes
 // TODO: Ensure that when a task is deleted, all the references to that task are also deleted in the task dependencies
 // TODO: Investigate isOld bug where task is considered old when it isn't
