@@ -39,7 +39,8 @@ export const useTaskInputContainer = taskID => {
     const childServices = { onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ taskID, taskName: e.target.value })) } }
     return { childState, childServices }
 }
-// TODO: Investigate why when I complete a task client side and then refresh it is then incomplete and playing (playing, incomplete) -> (paused, complete)
+// TODO: Add 'auto focus to created task after creation' feature
+// TODO: Add 'add task' and 'delete task' shortcuts! add task = ctrl+'+', delete task that is focused = ctrl+'-'
 // TODO: Store DnD config in backend so that user order is respected over refreshes
 // TODO: Ensure that when a task is deleted, all the references to that task are also deleted in the task dependencies
 // TODO: Investigate isOld bug where task is considered old when it isn't

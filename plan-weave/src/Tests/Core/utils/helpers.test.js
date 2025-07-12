@@ -27,6 +27,7 @@ import {
 	computeUpdatedLiveTime, // compute part of live time. not covered by property based tests (it is effectively addition)
 	getInsertionIndex,
 	insertTaskAtIndex,
+	formatWaste,
 } from '../../../Core/utils/helpers.js'
 import { MAX_SAFE_DATE } from '../../../Core/utils/constants.js'
 import { fc } from '@fast-check/jest'
@@ -900,67 +901,117 @@ describe('getInsertionIndex', () => {
 		},
 		{
 			name: 'Page 2, taskList has 11 -> insert at index 10',
-			input: { tasksPerPage: 10, pageNumber: 2, taskList: Array(11).fill('task')},
+			input: { tasksPerPage: 10, pageNumber: 2, taskList: Array(11).fill('task') },
 			expected: 11,
 		}
 	]
 	testCases.forEach(({ name, input, expected }) => {
-    test(name, () => {
-      expect(getInsertionIndex(input)).toBe(expected)
-    })
-  })
+		test(name, () => {
+			expect(getInsertionIndex(input)).toBe(expected)
+		})
+	})
 })
 describe('insertTaskAtIndex', () => {
-  const testCases = [
-    {
-      name: 'Insert in middle',
-      input: {
-        taskList: ['A', 'B', 'D'],
-        insertLocation: 2,
-        addedTask: 'C',
-      },
-      expected: ['A', 'B', 'C', 'D'],
-    },
-    {
-      name: 'Insert at beginning',
-      input: {
-        taskList: ['B', 'C'],
-        insertLocation: 0,
-        addedTask: 'A',
-      },
-      expected: ['A', 'B', 'C'],
-    },
-    {
-      name: 'Insert at end',
-      input: {
-        taskList: ['A', 'B'],
-        insertLocation: 2,
-        addedTask: 'C',
-      },
-      expected: ['A', 'B', 'C'],
-    },
-    {
-      name: 'Insert into empty list',
-      input: {
-        taskList: [],
-        insertLocation: 0,
-        addedTask: 'X',
-      },
-      expected: ['X'],
-    },
-	{
-      name: 'Insert into page 2 with array(11) to have it at end of array',
-      input: {
-        taskList: Array(11).fill('task'),
-        insertLocation: 11,
-        addedTask: 'X',
-      },
-      expected: [...Array(11).fill('task'), 'X'],
-    },
-  ]
-  testCases.forEach(({ name, input, expected }) => {
-    test(name, () => {
-      expect(insertTaskAtIndex(input)).toEqual(expected)
-    })
-  })
+	const testCases = [
+		{
+			name: 'Insert in middle',
+			input: {
+				taskList: ['A', 'B', 'D'],
+				insertLocation: 2,
+				addedTask: 'C',
+			},
+			expected: ['A', 'B', 'C', 'D'],
+		},
+		{
+			name: 'Insert at beginning',
+			input: {
+				taskList: ['B', 'C'],
+				insertLocation: 0,
+				addedTask: 'A',
+			},
+			expected: ['A', 'B', 'C'],
+		},
+		{
+			name: 'Insert at end',
+			input: {
+				taskList: ['A', 'B'],
+				insertLocation: 2,
+				addedTask: 'C',
+			},
+			expected: ['A', 'B', 'C'],
+		},
+		{
+			name: 'Insert into empty list',
+			input: {
+				taskList: [],
+				insertLocation: 0,
+				addedTask: 'X',
+			},
+			expected: ['X'],
+		},
+		{
+			name: 'Insert into page 2 with array(11) to have it at end of array',
+			input: {
+				taskList: Array(11).fill('task'),
+				insertLocation: 11,
+				addedTask: 'X',
+			},
+			expected: [...Array(11).fill('task'), 'X'],
+		},
+	]
+	testCases.forEach(({ name, input, expected }) => {
+		test(name, () => {
+			expect(insertTaskAtIndex(input)).toEqual(expected)
+		})
+	})
+})
+
+describe('formatWaste', () => {
+	const testCases = [
+		{
+			name: 'formatWaste(1.5) = 1 hour 30 minutes',
+			input: 1.5,
+			expected: '1 hour 30 minutes',
+		},
+		{
+			name: 'formatWaste(1) = 1 hours',
+			input: 1,
+			expected: '1 hours',
+		},
+		{
+			name: 'formatWaste(0) = 0 minutes',
+			input: 0,
+			expected: '0 minutes',
+		},
+		{
+			name: 'formatWaste(.5) = 30 minutes',
+			input: .5,
+			expected: '30 minutes',
+		},
+		{
+			name: 'formatWaste(1/60) = 1 minutes',
+			input: 1/60,
+			expected: '1 minutes',
+		},
+		{
+			name: 'formatWaste(7/60) = 7 minutes',
+			input: 7/60,
+			expected: '7 minutes',
+		},
+		{
+			name: 'formatWaste(-1/60) = -1 minutes',
+			input: -1/60,
+			expected: '-1 minutes',
+		},
+		{
+			name: 'formatWaste(-1) = -1 hours',
+			input: -1,
+			expected: '-1 hours',
+		},
+	]
+	testCases.forEach(({ name, input, expected }) => {
+		test(name, () => {
+			expect(formatWaste(input)).toEqual(expected)
+		})
+	})
 })
