@@ -39,6 +39,7 @@ export const useTaskInputContainer = taskID => {
     const childServices = { onBlurEvent: e => { dispatch(editTaskNameThunkAPI({ taskID, taskName: e.target.value })) } }
     return { childState, childServices }
 }
+// TODO: Investigate single refresh feature listing incorrect waste and other values
 // TODO: Add 'auto focus to created task after creation' feature
 // TODO: Add 'add task' and 'delete task' shortcuts! add task = ctrl+'+', delete task that is focused = ctrl+'-'
 // TODO: Store DnD config in backend so that user order is respected over refreshes

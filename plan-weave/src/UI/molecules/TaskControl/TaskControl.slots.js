@@ -29,11 +29,6 @@ export const TopSlot = ({ currentTime = new Date(), customHook = useTopSlot }) =
             {!isSmallScreen &&
                 <TimePickerContainer>
                     <TimePickerWrapper
-                        state={{ defaultTime: format(startTime, 'HH:mm'), offset: start, }}
-                        services={{ onTimeChange: value => updateTimeRange?.({ id: START_TIME_PICKER_ID, value }) }}
-                        title={startButton} tabIndex={0}
-                    />
-                    <TimePickerWrapper
                         state={{ defaultTime: format(endTime, 'HH:mm'), offset: end, }}
                         services={{ onTimeChange: value => updateTimeRange?.({ id: END_TIME_PICKER_ID, value }) }}
                         title={endButton} tabIndex={0}
