@@ -17,7 +17,7 @@ const { end } = TIME_PICKER_COORDS
 const { END_TIME_PICKER_ID } = VALID_TIMERANGE_IDS
 const { endButton } = TASK_CONTROL_TITLES
 
-// TODO: Remove unused variables, update CSS, continue cascade
+// TODO: Update used functions, update selectors, update thunks, update state?.timeRange, continue cascade
 export const TopSlot = ({ currentTime = new Date(), customHook = useTopSlot }) => {
     const { childState, childServices } = customHook?.() || {}
     const { endTime, isOwl } = childState || {}
