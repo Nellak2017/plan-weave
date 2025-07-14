@@ -13,13 +13,14 @@ const styleIfToggled = cond => cond && { color: theme.palette.primary.main }
 const onKeyDownFactory = fx => e => { if (e.key === 'Enter') { fx() } }
 const generateDropDownOptions = fx => Object.keys(SORTING_METHODS).map(value => ({ name: value || 'default', listener: () => { OPTION_NOTIFICATIONS?.[value]?.(); fx?.({ value }) } }))
 const { owlToolTip, addToolTip, dropDownToolTip, fullTaskToggleTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
-const { start, end } = TIME_PICKER_COORDS
-const { START_TIME_PICKER_ID, END_TIME_PICKER_ID } = VALID_TIMERANGE_IDS
-const { startButton, endButton } = TASK_CONTROL_TITLES
+const { end } = TIME_PICKER_COORDS
+const { END_TIME_PICKER_ID } = VALID_TIMERANGE_IDS
+const { endButton } = TASK_CONTROL_TITLES
 
+// TODO: Remove unused variables, update CSS, continue cascade
 export const TopSlot = ({ currentTime = new Date(), customHook = useTopSlot }) => {
     const { childState, childServices } = customHook?.() || {}
-    const { startTime, endTime, isOwl } = childState || {}
+    const { endTime, isOwl } = childState || {}
     const { search, updateTimeRange, toggleOwl } = childServices || {}
     const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'))
     return (

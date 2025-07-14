@@ -22,4 +22,4 @@ export const BottomContainer = styled('div')(({ theme, maxwidth }) => ({
 }))
 export const BottomContentContainer = styled('span')(({ theme }) => ({ display: 'inline-flex', alignItems: 'center', flexDirection: 'row', columnGap: theme.spacing(2), fontSize: theme.typography.h4.fontSize, paddingBottom: theme.spacing(2), }))
 export const Separator = styled('i')(({ theme }) => ({ width: '1px', height: theme.typography.h3.fontSize, margin: `0 ${theme.spacing(1)}`, backgroundColor: theme.palette.text.primary, }))
-export const TimePickerContainer = styled('div')(({ theme }) => ({ display: 'flex', columnGap: theme.spacing(2), }))
+export const TimePickerContainer = styled('div')(({ theme }) => ({ display: 'flex', columnGap: theme.spacing(2), marginLeft: theme.spacing(5)})) /* marginLeft added since the start time was removed, it is not maintainable but an easy fix */
