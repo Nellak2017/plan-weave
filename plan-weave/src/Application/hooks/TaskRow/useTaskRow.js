@@ -13,12 +13,12 @@ const dispatch = store.dispatch
 const setMultiDeleteFSMState = value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) }
 export const useTaskRow = (taskID, currentTime) => {
     const usedTask = taskSelector(taskID)
-    const { status} = usedTask || {}
+    const { status } = usedTask || {}
     const { eta } = useEta(taskID, currentTime) // Using another hook defined below!
     const { endTaskEditor } = timeRange()
-    const timeRangeStartEnd = useMemo(() => ({ end: endTaskEditor?.defaultTime }), [endTaskEditor])
+    const end = useMemo(() => endTaskEditor?.defaultTime, [endTaskEditor])
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
-    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, timeRange: timeRangeStartEnd })), [timeRangeStartEnd, isChecked, isHighlighting, eta])
+    const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, end })), [end, isChecked, isHighlighting, eta])
     return { status, highlight }
 }
 export const usePlayPause = (taskID, currentTime) => {

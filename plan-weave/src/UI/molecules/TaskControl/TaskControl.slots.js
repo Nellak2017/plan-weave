@@ -1,7 +1,7 @@
 import { format } from "date-fns"
 import { TimePickerContainer, TopContainer, BottomContainer, BottomContentContainer, Separator } from "./TaskControl.elements"
 import { formatTaskControlTimeLeft } from '../../../Core/utils/helpers.js'
-import { DEFAULT_TASK_CONTROL_TOOL_TIPS, TIME_PICKER_COORDS, OWL_SIZE, TASK_CONTROL_TITLES, SORTING_METHODS, OPTION_NOTIFICATIONS } from "../../../Core/utils/constants"
+import { DEFAULT_TASK_CONTROL_TOOL_TIPS, OWL_SIZE, TASK_CONTROL_TITLES, SORTING_METHODS, OPTION_NOTIFICATIONS } from "../../../Core/utils/constants"
 import { VALID_TIMERANGE_IDS } from '../../../Application/validIDs.js'
 import { theme } from "../../styles/MUITheme"
 import { GiOwl } from "react-icons/gi"; import { BiPlusCircle } from 'react-icons/bi'; import { IoIosInformationCircleOutline } from "react-icons/io"
@@ -13,11 +13,9 @@ const styleIfToggled = cond => cond && { color: theme.palette.primary.main }
 const onKeyDownFactory = fx => e => { if (e.key === 'Enter') { fx() } }
 const generateDropDownOptions = fx => Object.keys(SORTING_METHODS).map(value => ({ name: value || 'default', listener: () => { OPTION_NOTIFICATIONS?.[value]?.(); fx?.({ value }) } }))
 const { owlToolTip, addToolTip, dropDownToolTip, fullTaskToggleTip } = DEFAULT_TASK_CONTROL_TOOL_TIPS
-const { end } = TIME_PICKER_COORDS
 const { END_TIME_PICKER_ID } = VALID_TIMERANGE_IDS
 const { endButton } = TASK_CONTROL_TITLES
 
-// TODO: Update used functions, update selectors, update thunks, update state?.timeRange, continue cascade
 export const TopSlot = ({ currentTime = new Date(), customHook = useTopSlot }) => {
     const { childState, childServices } = customHook?.() || {}
     const { endTime, isOwl } = childState || {}
@@ -30,7 +28,7 @@ export const TopSlot = ({ currentTime = new Date(), customHook = useTopSlot }) =
             {!isSmallScreen &&
                 <TimePickerContainer>
                     <TimePickerWrapper
-                        state={{ defaultTime: format(endTime, 'HH:mm'), offset: end, }}
+                        state={{ defaultTime: format(endTime, 'HH:mm') }}
                         services={{ onTimeChange: value => updateTimeRange?.({ id: END_TIME_PICKER_ID, value }) }}
                         title={endButton} tabIndex={0}
                     />

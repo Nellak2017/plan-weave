@@ -7,9 +7,11 @@ import { AiOutlineClockCircle } from 'react-icons/ai'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { TimeClock } from '@mui/x-date-pickers'
+import { TIME_PICKER_COORDS} from '../../../Core/utils/constants.js'
 
+const { verticalOffset: v, horizontalOffset: h } = TIME_PICKER_COORDS.end
 export const TimePickerWrapper = ({
-  state: { defaultTime = '14:00', offset: { verticalOffset = 0, horizontalOffset = 0 } = {} } = {},
+  state: { defaultTime = '14:00', offset: { verticalOffset = v, horizontalOffset = h } = {} } = {},
   services: { onTimeChange } = {},
   ...rest
 }) => {
