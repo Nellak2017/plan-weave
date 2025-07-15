@@ -8,7 +8,7 @@ import { Drag, PlayPause, CompleteIcon, TaskInputContainer, Waste, Ttc, Eta, Eff
 export const TaskRow = ({ renderNumber, children }) => <>{React.Children.toArray(children).slice(0, renderNumber || React.Children.toArray(children).length)}</> // Renders slice of children, and if no range provided it renders all children
 
 export const TaskRowDefault = ({ state: { renderNumber, provided, taskID, currentTime } = {}, customHook = useTaskRow }) => {
-    const { status, highlight } = customHook?.(taskID) || {}
+    const { status, highlight } = customHook?.(taskID, currentTime) || {}
     return (
         <TaskRowStyled
             status={status} highlight={highlight}

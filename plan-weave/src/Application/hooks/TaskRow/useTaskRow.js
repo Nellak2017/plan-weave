@@ -11,11 +11,12 @@ import { handleMaxZero, handleMinOne } from '../../finiteStateMachines/MultipleD
 
 const dispatch = store.dispatch
 const setMultiDeleteFSMState = value => { dispatch(updateMultiDeleteFSMThunk({ id: VALID_MULTI_DELETE_IDS.MULTI_DELETE_TASK_EDITOR_ID, value })) }
-export const useTaskRow = taskID => {
+export const useTaskRow = (taskID, currentTime) => {
     const usedTask = taskSelector(taskID)
-    const { status, eta } = usedTask || {}
-    const { startTaskEditor: start, endTaskEditor: end } = timeRange()
-    const timeRangeStartEnd = useMemo(() => ({ start: start?.defaultTime, end: end?.defaultTime }), [start, end])
+    const { status} = usedTask || {}
+    const { eta } = useEta(taskID, currentTime) // Using another hook defined below!
+    const { endTaskEditor } = timeRange()
+    const timeRangeStartEnd = useMemo(() => ({ end: endTaskEditor?.defaultTime }), [endTaskEditor])
     const isHighlighting = isHighlightingSelector(), isChecked = isCheckedSelector(taskID)
     const highlight = useMemo(() => highlightTaskRow(isHighlighting, isChecked, isTaskOld({ eta, timeRange: timeRangeStartEnd })), [timeRangeStartEnd, isChecked, isHighlighting, eta])
     return { status, highlight }

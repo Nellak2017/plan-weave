@@ -9,6 +9,7 @@ export const add = (start, hours) => new Date(clamp(start.getTime() + hoursToMil
 export const subtract = (time, eta) => millisToHours(time.getTime() - eta.getTime()) // (Date: time, Date: eta) -> time - eta (hours)
 // --- Uncategorized
 export const between = (value, { start, end }) => start <= value && value <= end
+export const greaterThan = (value, { end }) => value > end
 // --- Helpers Exported
 export const isTimestampFromToday = (today, timestamp, secondsFromStart = 86400) => {
 	const startOfTodaySeconds = new Date(today).setHours(0, 0, 0, 0) / 1000 // seconds since 1970 from start of day
@@ -36,7 +37,7 @@ export const dateToToday = start => {
 }
 export const endPlusOne = oldISO => new Date(dateToToday(parseISO(oldISO)).getTime() + hoursToMillis(24)).toISOString()
 const isoToMillis = isoDateString => new Date(isoDateString).getTime()
-export const isTaskOld = ({ eta, timeRange }) => !between(isoToMillis(eta), { start: isoToMillis(timeRange?.start), end: isoToMillis(timeRange?.end) }) // (iso, {start:iso, end:iso}) => bool
+export const isTaskOld = ({ eta, timeRange }) => greaterThan(isoToMillis(eta), { end: isoToMillis(timeRange?.end) }) // (iso, {end:iso}) => bool
 export const tryCatchSyncFlat = (fn, errFn) => { try { return fn() } catch (e) { return errFn(e) } }
 export const tryCatchAsyncFlat = async (fn, errFn) => { try { return await fn() } catch (e) { return errFn(e) } }
 export const calcMaxPage = (listLen, perPage) => Math.ceil(listLen / perPage) || 1
