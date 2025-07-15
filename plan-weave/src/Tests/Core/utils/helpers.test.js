@@ -28,6 +28,7 @@ import {
 	getInsertionIndex,
 	insertTaskAtIndex,
 	formatWaste,
+	greaterThan,
 } from '../../../Core/utils/helpers.js'
 import { MAX_SAFE_DATE } from '../../../Core/utils/constants.js'
 import { fc } from '@fast-check/jest'
@@ -285,54 +286,42 @@ describe('isTaskOld', () => {
 	const testCases = [
 		{
 			input: {
-				timeRange: {
-					start: '2023-03-18T00:00:00Z', // UTC Mar 18, 2023, 12:00:00 AM
-					end: '2023-03-18T23:59:58Z' // UTC Mar 18, 2023, 11:59:58 PM
-				},
+				end: '2023-03-18T23:59:58Z', // UTC Mar 18, 2023, 11:59:58 PM
 				eta: '2023-03-18T23:59:59Z' // UTC Mar 18, 2023, 11:59:59 PM
 			},
 			expected: true,
 		},
 		{
 			input: {
-				timeRange: undefined,
+				end: undefined,
 				eta: '2023-03-17T12:00:00Z'
 			},
-			expected: true,
+			expected: false,
 		},
 		{
 			input: {
-				timeRange: {
-					start: '2025-03-18T19:20:00.000Z', // UTC Mar 18, 2025, 7:20:00 PM
-					end: '2025-03-18T06:00:00.000Z', // UTC Mar 18, 2025, 6:00:00 AM
-				},
+				end: '2025-03-18T06:00:00.000Z', // UTC Mar 18, 2025, 6:00:00 AM
 				eta: '2023-03-18T12:00:00Z' // UTC Mar 18, 2023, 12:00:00 PM
 			},
-			expected: true,
+			expected: false,
 		},
 		{
 			input: {
-				timeRange: {
-					start: '2025-03-18T06:00:00.000Z', // UTC Mar 18, 2025, 6:00:00 AM
-					end: '2025-03-18T19:20:00.000Z', // UTC Mar 18, 2025, 7:20:00 PM
-				},
+				end: '2025-03-18T19:20:00.000Z', // UTC Mar 18, 2025, 7:20:00 PM
 				eta: '2023-03-18T12:00:00Z' // UTC Mar 18, 2023, 12:00:00 PM
 			},
-			expected: true,
+			expected: false,
 		},
 		{
 			input: {
-				timeRange: {
-					start: '2025-03-18T06:00:00.000Z', // UTC Mar 18, 2025, 6:00:00 AM
-					end: '2025-03-18T19:20:00.000Z', // UTC Mar 18, 2025, 7:20:00 PM
-				},
+				end: '2025-03-18T19:20:00.000Z', // UTC Mar 18, 2025, 7:20:00 PM
 				eta: '2025-03-18T19:19:00.000Z' // UTC Mar 18, 2025, 7:19:00 PM
 			},
 			expected: false,
 		},
 	]
 	testCases.forEach(({ input, expected }) => {
-		it(`A task on ${input?.eta} is ${expected ? 'not old' : 'old'} in the range of ${input?.timeRange?.start} to ${input?.timeRange?.end}`, () => {
+		it(`A task on ${input?.eta} is ${expected ? 'not old' : 'old'} with the end time of ${input?.timeRange?.end}`, () => {
 			expect(isTaskOld(input)).toBe(expected)
 		})
 	})
@@ -341,13 +330,12 @@ describe('isTaskOld', () => {
 		fc.assert(
 			fc.property(
 				fc.integer({ min: 0, max: MAX_SAFE_DATE }), // Random ETA (>= 1971)
-				fc.integer({ min: 0, max: MAX_SAFE_DATE }), // Start Date (>= 1971)
 				fc.integer({ min: 0, max: MAX_SAFE_DATE }), // End Date (>= 1971)
-				(etaMillis, startMillis, endMillis) => {
+				(etaMillis, endMillis) => {
 					expect(isTaskOld({
 						eta: new Date(etaMillis).toISOString(),
-						timeRange: { start: new Date(startMillis).toISOString(), end: new Date(endMillis).toISOString() }
-					})).toBe(!between(etaMillis, { start: startMillis, end: endMillis }))
+						end: new Date(endMillis).toISOString()
+					})).toBe(greaterThan(etaMillis, endMillis))
 				}
 			),
 		)
@@ -990,17 +978,17 @@ describe('formatWaste', () => {
 		},
 		{
 			name: 'formatWaste(1/60) = 1 minutes',
-			input: 1/60,
+			input: 1 / 60,
 			expected: '1 minutes',
 		},
 		{
 			name: 'formatWaste(7/60) = 7 minutes',
-			input: 7/60,
+			input: 7 / 60,
 			expected: '7 minutes',
 		},
 		{
 			name: 'formatWaste(-1/60) = -1 minutes',
-			input: -1/60,
+			input: -1 / 60,
 			expected: '-1 minutes',
 		},
 		{
