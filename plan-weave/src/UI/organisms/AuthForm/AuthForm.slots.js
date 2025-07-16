@@ -46,7 +46,7 @@ const GeneralAuthForm = ({
                             <AuthInput {...register('password', { required: 'Password is required' })} id='password' name="password" type="password" placeholder="Enter your password" autoComplete='current-password' />
                             {errors.password && <span>{errors.password.message || "Password is required"}</span>}
                         </InputSection>}
-                    <SignInContainer><Button type='submit' name='email-auth' title={emailButtonText}> {emailButtonText}</Button></SignInContainer>
+                    <SignInContainer><Button type='submit' name='email-auth' id='email-auth' title={emailButtonText}> {emailButtonText}</Button></SignInContainer>
                 </StyledAuthForm>
                 {forgotPasswordText && <Link href={forgotPasswordRedirect}>{forgotPasswordText}</Link>}
                 {/* <OrSeparator><Line /><Or>or</Or><Line /></OrSeparator>

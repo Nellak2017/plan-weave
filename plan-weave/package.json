@@ -17,7 +17,9 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "cache": "jest --clearCache",
-    "clean:res": "bsb -clean-world"
+    "clean:res": "bsb -clean-world",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "dependencies": {
     "@date-io/date-fns": "^2.16.0",
@@ -73,6 +75,7 @@
     "@testing-library/user-event": "^14.5.2",
     "babel-jest": "^29.5.0",
     "bs-platform": "^9.0.2",
+    "cypress": "^14.5.2",
     "eslint": "8.39.0",
     "eslint-config-next": "13.3.4",
     "eslint-plugin-fp": "^2.3.0",
