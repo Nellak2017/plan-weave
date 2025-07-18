@@ -23,3 +23,12 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+Cypress.Commands.add('uiLogin', () => {
+    cy.session('supabase-session', () => {
+        cy.visit('/login')
+        cy.get('#email').type(Cypress.env('TEST_EMAIL'))
+        cy.get('#password').type(Cypress.env('TEST_PASSWORD'))
+        cy.get('#email-auth').click()
+        cy.url().should('not.include', '/login')
+    })
+})
