@@ -45,9 +45,9 @@ export const BottomSlot = ({ currentTime = new Date(), customHook = useBottomSlo
     return (
         <BottomContainer>
             <BottomContentContainer>
-                <BiPlusCircle onClick={() => addTask()} onKeyDown={onKeyDownFactory(addTask)} tabIndex={0} title={addToolTip} size={OWL_SIZE} />
-                <IoIosInformationCircleOutline onClick={() => fullTaskToggle()} onKeyDown={onKeyDownFactory(fullTaskToggle)} style={styleIfToggled(isFullTask)} tabIndex={0} title={fullTaskToggleTip} size={OWL_SIZE} />
-                <MultipleDeleteButton state={{ fsmControlledState }} services={{ setControlledFSMState: setMultiDeleteFSMState }} />
+                <BiPlusCircle id={'addTask'} onClick={() => addTask()} onKeyDown={onKeyDownFactory(addTask)} tabIndex={0} title={addToolTip} size={OWL_SIZE} />
+                <IoIosInformationCircleOutline id={'toggleFullTask'} onClick={() => fullTaskToggle()} onKeyDown={onKeyDownFactory(fullTaskToggle)} style={styleIfToggled(isFullTask)} tabIndex={0} title={fullTaskToggleTip} size={OWL_SIZE} />
+                <MultipleDeleteButton id={'deleteMultipleTasks'} state={{ fsmControlledState }} services={{ setControlledFSMState: setMultiDeleteFSMState }} />
                 {!isSmallScreen && <Separator />}
             </BottomContentContainer>
             {!isSmallScreen && <BottomContentContainer><p title={'Time left until End of Task Period'}>{formatTaskControlTimeLeft({ currentTime, endTime, overNightMode: isOwl })}</p></BottomContentContainer>}
