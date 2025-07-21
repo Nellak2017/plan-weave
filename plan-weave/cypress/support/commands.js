@@ -32,3 +32,15 @@ Cypress.Commands.add('uiLogin', () => {
         cy.url().should('not.include', '/login')
     })
 })
+Cypress.Commands.add('addTasks', () => {
+    
+})
+Cypress.Commands.add('searchTasks', (query) => {
+    cy.get('input[type="search"').clear().type(query)
+})
+Cypress.Commands.add('deleteAllTasks', () => {
+    
+})
+Cypress.Commands.add('taskList', () => {
+    
+})
